@@ -1,0 +1,69 @@
+import type { Product, Category, Order, ProductFilters } from '../types';
+
+const BASE = '/api';
+
+async function request<T>(path: string, opts?: RequestInit, token?: string): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${BASE}${path}`, { ...opts, headers: { ...headers, ...opts?.headers } });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+function filtersToQuery(f: ProductFilters): string {
+  const p = new URLSearchParams();
+  if (f.category) p.set('category', f.category);
+  if (f.need) p.set('need', f.need);
+  if (f.brand) p.set('brand', f.brand);
+  if (f.priceMax) p.set('priceMax', String(f.priceMax));
+  if (f.sort) p.set('sort', f.sort);
+  if (f.inStock) p.set('inStock', '1');
+  if (f.search) p.set('search', f.search);
+  const s = p.toString();
+  return s ? `?${s}` : '';
+}
+
+export const api = {
+  products: {
+    list: (filters: ProductFilters = {}) =>
+      request<Product[]>(`/products${filtersToQuery(filters)}`),
+    get: (id: string) => request<Product>(`/products/${id}`),
+  },
+  categories: {
+    list: () => request<Category[]>('/categories'),
+  },
+  orders: {
+    list: (token: string) => request<Order[]>('/orders', undefined, token),
+    get: (id: string, token: string) => request<Order>(`/orders/${id}`, undefined, token),
+    bySession: (sessionId: string, token: string) =>
+      request<Order>(`/orders?stripeSessionId=${sessionId}`, undefined, token),
+  },
+  checkout: {
+    createSession: (
+      body: { items: { productId: string; qty: number }[]; address: object },
+      token: string
+    ) => request<{ url: string }>('/checkout/session', { method: 'POST', body: JSON.stringify(body) }, token),
+  },
+  admin: {
+    dashboard: (token: string) => request<unknown>('/admin/dashboard', undefined, token),
+    orders: (token: string, status?: string) =>
+      request<unknown>(`/admin/orders${status ? `?status=${status}` : ''}`, undefined, token),
+    patchOrderStatus: (id: string, status: string, token: string) =>
+      request<unknown>(`/admin/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }, token),
+    products: {
+      list: (token: string) => request<Product[]>('/admin/products', undefined, token),
+      create: (data: Partial<Product>, token: string) =>
+        request<Product>('/admin/products', { method: 'POST', body: JSON.stringify(data) }, token),
+      update: (id: string, data: Partial<Product>, token: string) =>
+        request<Product>(`/admin/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }, token),
+      remove: (id: string, token: string) =>
+        request<unknown>(`/admin/products/${id}`, { method: 'DELETE' }, token),
+    },
+    users: (token: string) => request<unknown>('/admin/users', undefined, token),
+    sales: (token: string) => request<unknown>('/admin/sales', undefined, token),
+    earnings: (token: string) => request<unknown>('/admin/earnings', undefined, token),
+  },
+};
