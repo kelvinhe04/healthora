@@ -21,9 +21,10 @@ function AppInner() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialView = (searchParams.get('view') as View) || (localStorage.getItem('healthora_view') as View) || 'landing';
   const [view, setView] = useState<View>(initialView);
-  const [catalogFilter, setCatalogFilter] = useState<{ category?: string; need?: string }>({});
+  const [catalogFilter, setCatalogFilter] = useState<{ category?: string; need?: string; search?: string }>({});
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
   const { user } = useUser();
   const { getToken } = useAuth();
   const lastLoadedOwnerRef = useRef<string | null>(null);
@@ -38,6 +39,13 @@ function AppInner() {
   useEffect(() => {
     localStorage.setItem('healthora_view', view);
   }, [view]);
+
+  useEffect(() => {
+    const onScroll = () => setShowBackToTop(window.scrollY > 500);
+    onScroll();
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     bindOwner(user?.id ?? null);
@@ -125,8 +133,30 @@ function AppInner() {
         {view === 'checkout' && <Checkout items={items} onBack={() => nav('catalog')} />}
         {view === 'success' && <Success onBack={() => nav('landing')} />}
       </div>
+      {showBackToTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Volver arriba"
+          style={{ position: 'fixed', right: 28, bottom: 28, width: 52, height: 52, borderRadius: 999, border: '1px solid rgba(255,255,255,0.12)', background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 18px 40px -18px rgba(0,0,0,0.35)', zIndex: 80, transition: 'transform 180ms ease, opacity 180ms ease' }}
+          onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px) scale(1.04)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; }}
+        >
+          <span style={{ transform: 'rotate(-90deg)', display: 'inline-flex' }}>
+            <HeaderBackToTopIcon />
+          </span>
+        </button>
+      )}
       <Footer />
     </>
+  );
+}
+
+function HeaderBackToTopIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+      <path d="m13 6 6 6-6 6" />
+    </svg>
   );
 }
 

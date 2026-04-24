@@ -20,7 +20,9 @@ export function ProductCard({ product, onClick, onAdd }: ProductCardProps) {
       style={{ cursor: 'pointer', background: 'var(--cream)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--ink-06)', transition: 'all 220ms cubic-bezier(.2,.8,.2,1)', transform: hover ? 'translateY(-2px)' : 'none', boxShadow: hover ? '0 18px 40px -20px rgba(0,0,0,0.15)' : '0 2px 6px -4px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}
     >
       <div style={{ position: 'relative', overflow: 'hidden' }}>
-        <ProductImage product={product} size="tile" flat />
+        <div style={{ transform: hover ? 'scale(1.08)' : 'scale(1)', transition: 'transform 400ms cubic-bezier(.2,.8,.2,1)', width: '100%', height: '100%' }}>
+          <ProductImage product={product} size="tile" flat />
+        </div>
         {product.tag && (
           <span style={{ position: 'absolute', top: 12, left: 12, background: product.tag === 'Nuevo' ? 'var(--lime)' : 'var(--ink)', color: product.tag === 'Nuevo' ? 'var(--ink)' : 'var(--cream)', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{product.tag}</span>
         )}
@@ -29,7 +31,7 @@ export function ProductCard({ product, onClick, onAdd }: ProductCardProps) {
         )}
         <button
           onClick={(e) => { e.stopPropagation(); onAdd(product); }}
-          style={{ position: 'absolute', bottom: 12, right: 12, width: 40, height: 40, borderRadius: 999, background: 'var(--ink)', color: 'var(--cream)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hover ? 'scale(1)' : 'scale(0.85)', opacity: hover ? 1 : 0.8, transition: 'all 180ms' }}
+          style={{ position: 'absolute', bottom: 12, right: 12, width: 40, height: 40, borderRadius: 999, background: 'var(--ink)', color: 'var(--cream)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hover ? 'scale(1.1) rotate(180deg)' : 'scale(0.85) rotate(0deg)', opacity: hover ? 1 : 0.8, transition: 'all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: hover ? '0 8px 20px rgba(0,0,0,0.15)' : 'none' }}
           aria-label="Agregar al carrito"
         >
           <Icon name="plus" size={16} />

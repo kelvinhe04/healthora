@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import type { Product } from '../types';
 import { ProductImage } from '../components/shared/ProductImage';
@@ -22,6 +22,8 @@ export function ProductDetail({ product, onAdd, onOpenProduct, onBack }: Product
   const [tab, setTab] = useState('benefits');
   const [added, setAdded] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [isZoomingOut, setIsZoomingOut] = useState(false);
   const { data: allProducts = [] } = useProducts();
   const related = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
   const gallery = product.images?.length
@@ -34,6 +36,24 @@ export function ProductDetail({ product, onAdd, onOpenProduct, onBack }: Product
   const activeImage = gallery[activeImageIndex]?.url || product.imageUrl;
   const hasRealImages = Boolean(activeImage);
 
+  const closeZoom = () => {
+    setIsZoomingOut(true);
+    setTimeout(() => {
+      setIsZoomed(false);
+      setIsZoomingOut(false);
+    }, 250);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeZoom();
+    };
+    if (isZoomed) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isZoomed]);
+
   const handleAdd = () => {
     onAdd(product, qty);
     setAdded(true);
@@ -42,19 +62,73 @@ export function ProductDetail({ product, onAdd, onOpenProduct, onBack }: Product
 
   return (
     <main style={{ padding: '24px 40px 0' }}>
+      {isZoomed && (
+        <div 
+          onClick={closeZoom} 
+          style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(253, 252, 250, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out', backdropFilter: 'blur(10px)', padding: 40, animation: isZoomingOut ? 'zoomModalOut 0.25s cubic-bezier(0.3, 0, 0.8, 0.15) forwards' : 'zoomModalBgIn 0.3s ease-out' }}
+        >
+          <button 
+            style={{ position: 'absolute', top: 32, right: 32, background: 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 999, width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.2s', transform: isZoomingOut ? 'scale(0.8)' : 'scale(1)' }}
+          >
+            <Icon name="x" size={20} />
+          </button>
+          
+          <div style={{ animation: isZoomingOut ? 'none' : 'zoomModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: isZoomingOut ? 'scale(0.95)' : 'scale(1)', opacity: isZoomingOut ? 0 : 1, transition: 'all 0.25s cubic-bezier(0.3, 0, 0.8, 0.15)' }}>
+            {hasRealImages ? (
+              <img src={activeImage} alt={gallery[activeImageIndex]?.alt || 'Zoom'} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 16, filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.08))' }} />
+            ) : (
+              <div style={{ transform: 'scale(1.5)' }}>
+                <ProductImage product={product} size="lg" />
+              </div>
+            )}
+          </div>
+          <style>{`
+            @keyframes zoomModalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+            @keyframes zoomModalBgIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes zoomModalOut { from { opacity: 1; } to { opacity: 0; pointer-events: none; } }
+          `}</style>
+        </div>
+      )}
+
       <div style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', marginBottom: 24, letterSpacing: '0.06em' }}>
         <span onClick={onBack} style={{ cursor: 'pointer' }}>TIENDA</span> · {product.category.toUpperCase()} · <span style={{ color: 'var(--ink)' }}>{product.name.toUpperCase()}</span>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 48, alignItems: 'start' }}>
         <div>
-          <div style={{ background: hasRealImages ? 'white' : product.color, borderRadius: 28, padding: 40, minHeight: 620, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', border: hasRealImages ? '1px solid var(--ink-06)' : 'none' }}>
-            <div style={{ position: 'absolute', top: 24, left: 24, fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--ink-60)', letterSpacing: '0.12em' }}>{String(activeImageIndex + 1).padStart(2, '0')} / 04 · PRODUCT SHOT</div>
-            <ProductImage product={product} size="lg" imageUrl={activeImage} alt={gallery[activeImageIndex]?.alt} />
+          <div 
+            onClick={() => setIsZoomed(true)}
+            style={{ background: hasRealImages ? 'white' : product.color, borderRadius: 28, padding: 40, minHeight: 620, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', border: hasRealImages ? '1px solid var(--ink-06)' : 'none', cursor: 'zoom-in' }}
+          >
+            <div style={{ position: 'absolute', top: 24, left: 24, fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--ink-60)', letterSpacing: '0.12em', zIndex: 2 }}>{String(activeImageIndex + 1).padStart(2, '0')} / 04 · PRODUCT SHOT</div>
+            <div style={{ animation: 'fadeInImage 0.4s ease-out', key: activeImage, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ProductImage product={product} size="lg" imageUrl={activeImage} alt={gallery[activeImageIndex]?.alt} />
+            </div>
+            <style>{`@keyframes fadeInImage { from { opacity: 0.4; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }`}</style>
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
             {gallery.map((image, i) => (
-              <div key={image.url} onClick={() => setActiveImageIndex(i)} style={{ flex: 1, borderRadius: 14, padding: 16, background: hasRealImages ? 'white' : product.color, border: i === activeImageIndex ? '2px solid var(--ink)' : hasRealImages ? '1px solid var(--ink-06)' : '2px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 100 }}>
+              <div 
+                key={image.url} 
+                onClick={() => setActiveImageIndex(i)} 
+                onMouseEnter={() => setActiveImageIndex(i)}
+                style={{ 
+                  flex: 1, 
+                  borderRadius: 14, 
+                  padding: 16, 
+                  background: hasRealImages ? 'white' : product.color, 
+                  border: i === activeImageIndex ? '2px solid var(--ink)' : hasRealImages ? '1px solid var(--ink-06)' : '2px solid transparent', 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  height: 100,
+                  transition: 'all 0.2s ease',
+                  opacity: i === activeImageIndex ? 1 : 0.6,
+                  transform: i === activeImageIndex ? 'translateY(-2px)' : 'none'
+                }}
+                onMouseLeave={(e) => { if (i !== activeImageIndex) e.currentTarget.style.opacity = '0.6'; }}
+              >
                 <ProductImage product={product} size="xs" imageUrl={image.url} alt={image.alt} />
               </div>
             ))}

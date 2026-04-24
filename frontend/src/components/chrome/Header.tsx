@@ -18,6 +18,19 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   const { isSignedIn, user } = useUser();
   const { openSignIn, openUserProfile, signOut } = useClerk();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const submitSearch = () => {
+    const value = search.trim();
+    onNav('catalog', value ? { search: value } : {}, true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const clearSearch = () => {
+    setSearch('');
+    onNav('catalog', {}, true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <header style={{ background: 'var(--cream)', borderBottom: '1px solid var(--ink-06)', padding: '18px 40px', display: 'flex', alignItems: 'center', gap: 40, position: 'sticky', top: 0, zIndex: 50 }}>
@@ -72,10 +85,35 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
         >Recién llegados</a>
       </nav>
 
-      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'var(--ink-04)', padding: '10px 16px', borderRadius: 999, minWidth: 260, color: 'var(--ink-60)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          submitSearch();
+        }}
+        style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10, background: 'var(--ink-04)', padding: '8px 10px 8px 14px', borderRadius: 999, minWidth: 320, color: 'var(--ink-60)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: '1px solid transparent' }}
+      >
         <Icon name="search" size={16} />
-        <span>Buscar vitaminas, skincare, marcas…</span>
-      </div>
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar vitaminas, skincare, marcas..."
+          aria-label="Buscar productos"
+          style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', color: 'var(--ink)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={clearSearch}
+            style={{ ...iconBtn, width: 28, height: 28, borderRadius: 999, background: 'var(--ink-06)', color: 'var(--ink-60)', justifyContent: 'center' }}
+            aria-label="Limpiar búsqueda"
+          >
+            <Icon name="x" size={14} />
+          </button>
+        )}
+        <button type="submit" style={{ ...iconBtn, padding: '8px 12px', borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', fontSize: 12, fontFamily: '"JetBrains Mono", monospace' }} aria-label="Buscar">
+          Ir
+        </button>
+      </form>
 
       <div style={{ display: 'flex', gap: 18, color: 'var(--ink)', alignItems: 'center' }}>
         <div style={{ position: 'relative' }}>
@@ -110,7 +148,6 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             </div>
           )}
         </div>
-        <button style={iconBtn} aria-label="Favoritos"><Icon name="heart" /></button>
         <button style={{ ...iconBtn, position: 'relative' }} onClick={onOpenCart} aria-label="Carrito">
           <Icon name="bag" />
           {cartCount > 0 && (
