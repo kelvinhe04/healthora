@@ -17,7 +17,7 @@ export function Catalog({ initialFilter, onOpenProduct, onAdd }: CatalogProps) {
   const [cat, setCat] = useState(initialFilter?.category || 'Todos');
   const [need, setNeed] = useState(initialFilter?.need || null as string | null);
   const [sort, setSort] = useState('featured');
-  const [priceMax, setPriceMax] = useState(100);
+  const [priceMax, setPriceMax] = useState(1000);
   const [brands, setBrands] = useState<string[]>([]);
   const [inStock, setInStock] = useState(false);
 
@@ -75,9 +75,9 @@ export function Catalog({ initialFilter, onOpenProduct, onAdd }: CatalogProps) {
           </div>
           <div style={{ marginBottom: 32 }}>
             <div style={filterLabel}>Precio máximo · ${priceMax}</div>
-            <input type="range" min={5} max={100} value={priceMax} onChange={(e) => setPriceMax(+e.target.value)} style={{ width: '100%', accentColor: 'oklch(0.35 0.06 155)' }} />
+            <input type="range" min={5} max={1000} value={priceMax} onChange={(e) => setPriceMax(+e.target.value)} style={{ width: '100%', accentColor: 'oklch(0.35 0.06 155)' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', marginTop: 4 }}>
-              <span>$5</span><span>$100</span>
+              <span>$5</span><span>$1000</span>
             </div>
           </div>
           <div style={{ marginBottom: 32 }}>

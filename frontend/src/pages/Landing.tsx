@@ -78,7 +78,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       </section>
 
       {/* CATEGORIES */}
-      <section style={{ padding: '80px 40px 0' }}>
+      <section id="categorias" style={{ padding: '80px 40px 0' }}>
         <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', marginBottom: 32 }}>
           <div>
             <div style={headKicker}>01 · Categorías</div>
@@ -102,7 +102,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       </section>
 
       {/* BEST SELLERS */}
-      <section style={{ padding: '80px 40px 0' }}>
+      <section id="bestsellers" style={{ padding: '80px 40px 0' }}>
         <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', marginBottom: 32 }}>
           <div>
             <div style={headKicker}>02 · Best sellers</div>
@@ -116,7 +116,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       </section>
 
       {/* PROMO BAND */}
-      <section style={{ padding: '80px 40px 0' }}>
+      <section id="ofertas" style={{ padding: '80px 40px 0' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
           <div style={{ background: 'var(--lime)', borderRadius: 28, padding: 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 360, position: 'relative', overflow: 'hidden' }}>
             <div style={{ maxWidth: 420 }}>
@@ -178,7 +178,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       </section>
 
       {/* FEATURED */}
-      <section style={{ padding: '80px 40px 0' }}>
+      <section id="nuevos" style={{ padding: '80px 40px 0' }}>
         <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', marginBottom: 32 }}>
           <div>
             <div style={headKicker}>04 · Nuevos ingresos</div>

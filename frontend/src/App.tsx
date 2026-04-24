@@ -97,11 +97,11 @@ function AppInner() {
     return () => window.clearTimeout(timeoutId);
   }, [getToken, items, user?.id]);
 
-  const nav = (v: View, filter?: Record<string, string>) => {
+  const nav = (v: View, filter?: Record<string, string>, noScroll?: boolean) => {
     setView(v);
     if (filter) setCatalogFilter(filter);
     setSearchParams(v !== 'landing' ? { view: v } : {});
-    window.scrollTo(0, 0);
+    if (!noScroll) window.scrollTo(0, 0);
   };
 
   const openProduct = (p: Product) => {

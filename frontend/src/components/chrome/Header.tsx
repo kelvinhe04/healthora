@@ -6,7 +6,7 @@ import { useUser, useClerk } from '@clerk/clerk-react';
 type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin';
 
 interface HeaderProps {
-  onNav: (view: View) => void;
+  onNav: (view: View, filter?: any, noScroll?: boolean) => void;
   view?: View;
   onOpenCart: () => void;
 }
@@ -27,12 +27,49 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
       </div>
 
       <nav style={{ display: 'flex', gap: 28, fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)' }}>
-        {['Tienda', 'Categorías', 'Best sellers', 'Ofertas', 'Revista'].map((item) => (
-          <a key={item} onClick={() => onNav('catalog')} style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none', letterSpacing: '-0.01em' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--green)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink)')}
-          >{item}</a>
-        ))}
+        <a onClick={() => {
+            onNav('landing', undefined, true);
+            setTimeout(() => {
+              document.getElementById('categorias')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }} 
+          style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none', letterSpacing: '-0.01em' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--green)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink)')}
+        >Categorías</a>
+        
+        <a onClick={() => {
+            onNav('landing', undefined, true);
+            setTimeout(() => {
+              document.getElementById('bestsellers')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }} 
+          style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none', letterSpacing: '-0.01em' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--green)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink)')}
+        >Best sellers</a>
+        
+        <a onClick={() => {
+            onNav('landing', undefined, true);
+            setTimeout(() => {
+              document.getElementById('ofertas')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }} 
+          style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none', letterSpacing: '-0.01em' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--green)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink)')}
+        >Ofertas</a>
+        
+        <a onClick={() => {
+            onNav('landing', undefined, true);
+            setTimeout(() => {
+              document.getElementById('nuevos')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }} 
+          style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none', letterSpacing: '-0.01em' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--green)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink)')}
+        >Recién llegados</a>
       </nav>
 
       <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'var(--ink-04)', padding: '10px 16px', borderRadius: 999, minWidth: 260, color: 'var(--ink-60)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>
