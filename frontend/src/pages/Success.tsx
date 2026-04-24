@@ -1,19 +1,42 @@
 import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '@clerk/clerk-react';
 import { Button } from '../components/shared/Button';
 import { Icon } from '../components/shared/Icon';
 import { useOrderBySession } from '../hooks/useOrders';
 import { useCartStore } from '../store/cartStore';
-import { useEffect } from 'react';
+import { api } from '../lib/api';
+import { useEffect, useRef } from 'react';
 
 interface SuccessProps { onBack: () => void; }
 
 export function Success({ onBack }: SuccessProps) {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id') || '';
+  const { getToken, isSignedIn } = useAuth();
   const { data: order, isLoading } = useOrderBySession(sessionId);
   const clearCart = useCartStore((s) => s.clear);
+  const replaceItems = useCartStore((s) => s.replaceItems);
+  const didSyncRemoteClearRef = useRef(false);
 
   useEffect(() => { clearCart(); }, [clearCart]);
+
+  useEffect(() => {
+    if (!sessionId || !isSignedIn || didSyncRemoteClearRef.current) return;
+
+    didSyncRemoteClearRef.current = true;
+
+    void (async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        await api.cart.save([], token);
+        replaceItems([]);
+      } catch (error) {
+        console.error('Failed to clear remote cart after checkout', error);
+        didSyncRemoteClearRef.current = false;
+      }
+    })();
+  }, [getToken, isSignedIn, replaceItems, sessionId]);
 
   if (isLoading || !order) {
     return (
