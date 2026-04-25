@@ -7,7 +7,8 @@ import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
 
 interface CatalogProps {
-  initialFilter?: { category?: string; need?: string; search?: string };
+  initialFilter?: { category?: string; need?: string; search?: string; page?: number };
+  onFilterChange?: (filter: { category?: string; need?: string; search?: string; page?: number }) => void;
   onOpenProduct: (p: Product) => void;
   onAdd: (p: Product) => void;
 }
@@ -15,18 +16,18 @@ interface CatalogProps {
 const filterLabel: CSSProperties = { fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 12 };
 const ITEMS_PER_PAGE = 12;
 
-export function Catalog({ initialFilter, onOpenProduct, onAdd }: CatalogProps) {
+export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }: CatalogProps) {
   const [cat, setCat] = useState(initialFilter?.category || 'Todos');
   const [need, setNeed] = useState(initialFilter?.need || null as string | null);
   const [search, setSearch] = useState(initialFilter?.search || '');
   const [sort, setSort] = useState('featured');
   const [isSortOpen, setIsSortOpen] = useState(false);
-  const [page, setPage] = useState(1);
   const [priceMax, setPriceMax] = useState(1000);
   const [brands, setBrands] = useState<string[]>([]);
   const [brandSearch, setBrandSearch] = useState('');
   const [showAllBrands, setShowAllBrands] = useState(false);
   const [inStock, setInStock] = useState(false);
+  const page = initialFilter?.page || 1;
 
   const { data: allProducts = [] } = useProducts();
   const { data: categories = [] } = useCategories();
@@ -37,14 +38,10 @@ export function Catalog({ initialFilter, onOpenProduct, onAdd }: CatalogProps) {
     setSearch(initialFilter?.search || '');
   }, [initialFilter?.category, initialFilter?.need, initialFilter?.search]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [cat, need, search, sort, priceMax, brands, inStock]);
-
   const gridRef = useRef<HTMLDivElement>(null);
 
   function changePage(newPage: number) {
-    setPage(newPage);
+    onFilterChange?.({ category: cat !== 'Todos' ? cat : undefined, need: need || undefined, search: search.trim() || undefined, page: newPage });
     gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -94,6 +91,7 @@ export function Catalog({ initialFilter, onOpenProduct, onAdd }: CatalogProps) {
   }, [brandSearch]);
 
   const toggleBrand = (b: string) => setBrands((bs) => bs.includes(b) ? bs.filter((x) => x !== b) : [...bs, b]);
+  const syncFilter = (next: { category?: string; need?: string; search?: string }) => onFilterChange?.({ ...next, page: 1 });
 
   return (
     <main style={{ padding: '32px 40px 0' }}>
@@ -103,8 +101,8 @@ export function Catalog({ initialFilter, onOpenProduct, onAdd }: CatalogProps) {
           <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 72, letterSpacing: '-0.035em', lineHeight: 0.95, margin: 0, color: 'var(--ink)', fontWeight: 400 }}>
             {cat === 'Todos' ? <>Toda la <em style={{ color: 'var(--green)' }}>tienda</em></> : <>{cat}</>}
           </h1>
-          {need && <div style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-60)' }}>Filtro: {need} · <a onClick={() => setNeed(null)} style={{ color: 'var(--green)', cursor: 'pointer' }}>limpiar</a></div>}
-          {search && <div style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-60)' }}>Búsqueda: "{search}" · <a onClick={() => setSearch('')} style={{ color: 'var(--green)', cursor: 'pointer' }}>limpiar</a></div>}
+          {need && <div style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-60)' }}>Filtro: {need} · <a onClick={() => { setNeed(null); syncFilter({ category: cat !== 'Todos' ? cat : undefined, search: search.trim() || undefined }); }} style={{ color: 'var(--green)', cursor: 'pointer' }}>limpiar</a></div>}
+          {search && <div style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-60)' }}>Búsqueda: "{search}" · <a onClick={() => { setSearch(''); syncFilter({ category: cat !== 'Todos' ? cat : undefined, need: need || undefined }); }} style={{ color: 'var(--green)', cursor: 'pointer' }}>limpiar</a></div>}
         </div>
       </div>
 
@@ -114,7 +112,7 @@ export function Catalog({ initialFilter, onOpenProduct, onAdd }: CatalogProps) {
             <div style={filterLabel}>Categorías</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {['Todos', ...categories.map((c) => c.id)].map((c) => (
-                <label key={c} onClick={() => setCat(c)} 
+                <label key={c} onClick={() => { setCat(c); syncFilter({ category: c !== 'Todos' ? c : undefined, need: need || undefined, search: search.trim() || undefined }); }} 
                   style={{ 
                     padding: '8px 12px', 
                     marginLeft: -12, 

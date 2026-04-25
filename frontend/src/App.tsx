@@ -14,27 +14,65 @@ import { AdminApp } from './pages/admin/AdminApp';
 import { useCartStore } from './store/cartStore';
 import { useSearchParams } from 'react-router-dom';
 import { api } from './lib/api';
+import { useProduct } from './hooks/useProducts';
 
 type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin';
+type CatalogFilter = { category?: string; need?: string; search?: string; page?: number };
+
+function readCatalogFilter(searchParams: URLSearchParams): CatalogFilter {
+  const category = searchParams.get('category') || undefined;
+  const need = searchParams.get('need') || undefined;
+  const search = searchParams.get('search') || undefined;
+  const pageValue = Number(searchParams.get('page'));
+  const page = Number.isFinite(pageValue) && pageValue > 1 ? pageValue : undefined;
+  return { category, need, search, page };
+}
+
+function normalizeCatalogFilter(filter?: CatalogFilter): CatalogFilter {
+  return {
+    category: filter?.category && filter.category !== 'Todos' ? filter.category : undefined,
+    need: filter?.need || undefined,
+    search: filter?.search?.trim() ? filter.search : undefined,
+    page: filter?.page && filter.page > 1 ? filter.page : undefined,
+  };
+}
+
+function buildSearchParams(view: View, filter?: CatalogFilter, productId?: string) {
+  const normalized = normalizeCatalogFilter(filter);
+  return view === 'landing'
+    ? {}
+    : {
+        view,
+        ...(normalized.category ? { category: normalized.category } : {}),
+        ...(normalized.need ? { need: normalized.need } : {}),
+        ...(normalized.search ? { search: normalized.search } : {}),
+        ...(normalized.page ? { page: String(normalized.page) } : {}),
+        ...(view === 'product' && productId ? { productId } : {}),
+      };
+}
 
 function AppInner() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialView = (searchParams.get('view') as View) || (localStorage.getItem('healthora_view') as View) || 'landing';
   const [view, setView] = useState<View>(initialView);
-  const [catalogFilter, setCatalogFilter] = useState<{ category?: string; need?: string; search?: string }>({});
+  const [catalogFilter, setCatalogFilter] = useState<CatalogFilter>(() => readCatalogFilter(searchParams));
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [checkoutItems, setCheckoutItems] = useState<CartItem[] | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const { user } = useUser();
   const { getToken } = useAuth();
+  const productIdFromUrl = searchParams.get('productId') || '';
   const lastLoadedOwnerRef = useRef<string | null>(null);
   const skipNextCartSaveRef = useRef(false);
   const { add, items, bindOwner, replaceItems } = useCartStore();
+  const { data: productFromUrl, isLoading: isProductLoading } = useProduct(view === 'product' ? productIdFromUrl : '');
+  const activeProduct = selectedProduct && (!productIdFromUrl || selectedProduct.id === productIdFromUrl) ? selectedProduct : (productFromUrl ?? null);
 
   useEffect(() => {
     const v = searchParams.get('view') as View | null;
     if (v && v !== view) setView(v);
+    setCatalogFilter(readCatalogFilter(searchParams));
   }, [searchParams]);
 
   useEffect(() => {
@@ -106,18 +144,31 @@ function AppInner() {
     return () => window.clearTimeout(timeoutId);
   }, [getToken, items, user?.id]);
 
-  const nav = (v: View, filter?: Record<string, string>, noScroll?: boolean) => {
+  const nav = (v: View, filter?: CatalogFilter, noScroll?: boolean, productId?: string) => {
+    const nextFilter = filter ? normalizeCatalogFilter(filter) : catalogFilter;
     setView(v);
-    if (filter) setCatalogFilter(filter);
+    if (filter) setCatalogFilter(nextFilter);
     if (v !== 'checkout') setCheckoutItems(null);
-    setSearchParams(v !== 'landing' ? { view: v } : {});
+    setSearchParams(buildSearchParams(v, nextFilter, productId));
     if (!noScroll) window.scrollTo(0, 0);
+  };
+
+  const syncCatalogFilter = (filter: CatalogFilter) => {
+    const nextFilter = normalizeCatalogFilter(filter);
+    setCatalogFilter(nextFilter);
+    setSearchParams(buildSearchParams('catalog', nextFilter), { replace: true });
   };
 
   const openProduct = (p: Product) => {
     setSelectedProduct(p);
-    nav('product');
+    nav('product', undefined, undefined, p.id);
   };
+
+  useEffect(() => {
+    if (view !== 'product') return;
+    if (activeProduct || isProductLoading) return;
+    nav('catalog', catalogFilter, true);
+  }, [activeProduct, catalogFilter, isProductLoading, view]);
 
   if (view === 'admin') {
     return <AdminApp onGoToStore={() => nav('landing')} />;
@@ -130,10 +181,10 @@ function AppInner() {
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={() => { setCheckoutItems(null); setCartOpen(false); nav('checkout'); }} />
       <div style={{ minHeight: 'calc(100vh - 200px)' }}>
         {view === 'landing' && <Landing onNav={nav} onOpenProduct={openProduct} onAdd={(p, qty = 1) => { add(p, qty); setCheckoutItems(null); setCartOpen(true); }} />}
-        {view === 'catalog' && <Catalog initialFilter={catalogFilter} onOpenProduct={openProduct} onAdd={(p) => { add(p, 1); setCheckoutItems(null); setCartOpen(true); }} />}
-        {view === 'product' && selectedProduct && (
+        {view === 'catalog' && <Catalog initialFilter={catalogFilter} onFilterChange={syncCatalogFilter} onOpenProduct={openProduct} onAdd={(p) => { add(p, 1); setCheckoutItems(null); setCartOpen(true); }} />}
+        {view === 'product' && activeProduct && (
           <ProductDetail
-            product={selectedProduct}
+            product={activeProduct}
             onAdd={(p, qty) => { add(p, qty); setCheckoutItems(null); setCartOpen(true); }}
             onBuyNow={(p, qty) => {
               setCheckoutItems([{ product: p, qty }]);

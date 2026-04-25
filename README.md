@@ -1,63 +1,76 @@
-# Healthora — Farmacia Online
+# Healthora
 
-Plataforma de ecommerce para medicamentos OTC y productos de salud. Proyecto académico (Parcial 2 · Soft 9).
+Ecommerce academico enfocado en salud, cuidado personal, bebe, skincare, fitness y medicamentos OTC.
 
 ## Stack
 
-| Capa | Tecnología |
-|------|-----------|
+| Capa | Tecnologia |
+|------|------------|
 | Frontend | React 19 + Vite + TypeScript |
 | Backend | Bun + Hono |
-| Base de datos | MongoDB Atlas (Mongoose) |
-| Autenticación | Clerk (`@clerk/clerk-react`) |
+| Base de datos | MongoDB Atlas + Mongoose |
+| Auth | Clerk |
 | Pagos | Stripe |
-| Estado global | Zustand + TanStack Query |
+| Estado y data | Zustand + TanStack Query |
 
 ## Estado Actual
 
-- Catálogo real con `90` productos y `10` categorías.
-- Cada producto tiene `4` imágenes reales organizadas por categoría en `frontend/public/products/`.
-- Carrito persistente por usuario con sincronización cross-device vía backend.
-- Panel admin funcional con acceso protegido por Clerk + rol `admin`.
-- Dashboard admin conectado a datos reales de órdenes, ventas, ganancias, usuarios y stock.
-- Checkout con campos de dirección obligatorios.
-- Órdenes se crean solo cuando Stripe confirma pago (webhook).
+- Catalogo real con `90` productos y `10` categorias.
+- Cada producto tiene `4` imagenes reales en `frontend/public/products/`.
+- Carrito persistente por usuario con sincronizacion cross-device via backend.
+- Panel admin protegido con Clerk + rol `admin`.
+- Dashboard admin conectado a datos reales de ordenes, ventas, ganancias, usuarios y stock.
+- Checkout con direccion obligatoria.
+- Las ordenes solo se crean cuando Stripe confirma el pago por webhook.
+- El catalogo conserva categoria y pagina al entrar a detalle y volver atras.
 
 ## Estructura
 
-```
+```text
 Healthora/
-├── frontend/          # React + Vite (puerto 5173)
-│   └── src/
-│       ├── components/
-│       ├── pages/
-│       ├── hooks/
-│       ├── store/
-│       └── lib/api.ts
-└── backend/           # Bun + Hono (puerto 3001)
-    └── src/
-        ├── routes/
-        ├── db/
-        │   ├── models/
-        │   └── seed.ts
-        └── middleware/
+|-- frontend/
+|   |-- public/products/
+|   |-- src/
+|   |-- package.json
+|   `-- bun.lock
+|-- backend/
+|   |-- src/
+|   |   |-- db/
+|   |   |-- middleware/
+|   |   `-- routes/
+|   |-- package.json
+|   `-- bun.lock
+|-- README.md
+`-- CONTEXT.md
 ```
 
-## Configuración
+## Package Manager
 
-### Backend — `backend/.env`
+Este repo tiene `bun.lock` en `frontend/` y `backend/` porque son dos apps separadas con dependencias distintas.
+
+En la practica real:
+
+- Se usa un solo package manager por paquete.
+- Si una app usa Bun, se versiona su `bun.lock`.
+- No conviene mezclar `npm install` y `bun install` dentro de la misma carpeta.
+
+En este proyecto, la forma recomendada es usar Bun tanto en frontend como en backend.
+
+## Variables de entorno
+
+### Backend - `backend/.env`
 
 ```env
-MONGODB_URI=mongodb+srv://<user>:<password>@healthora-cluster.2njd5fn.mongodb.net/?appName=Healthora-Cluster
+MONGODB_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/healthora
 CLERK_SECRET_KEY=sk_test_...
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 PORT=3001
 FRONTEND_URL=http://localhost:5173
-ADMIN_EMAILS=tu-correo-admin@dominio.com
+ADMIN_EMAILS=tu-correo@dominio.com
 ```
 
-### Frontend — `frontend/.env.local`
+### Frontend - `frontend/.env.local`
 
 ```env
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
@@ -71,7 +84,7 @@ VITE_API_URL=http://localhost:3001
 ```bash
 cd backend
 bun install
-bun run seed   # poblar MongoDB (solo primera vez)
+bun run seed
 bun run dev
 ```
 
@@ -79,100 +92,68 @@ bun run dev
 
 ```bash
 cd frontend
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
-El frontend queda en `http://localhost:5173` y hace proxy de `/api/*` al backend en `localhost:3001`.
+## URLs locales
 
-## API — Endpoints principales
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:3001`
 
-| Método | Ruta | Descripción |
+## Endpoints Principales
+
+| Metodo | Ruta | Descripcion |
 |--------|------|-------------|
-| GET | `/products` | Listar productos (soporta filtros) |
-| GET | `/products/:id` | Detalle de producto |
-| GET | `/categories` | Listar categorías |
-| GET/PUT | `/cart` | Leer y persistir carrito del usuario |
-| POST | `/checkout/session` | Crear sesión de pago Stripe |
-| GET | `/orders` | Órdenes del usuario (requiere auth) |
+| GET | `/products` | Lista productos con filtros |
+| GET | `/products/:id` | Devuelve detalle de producto |
+| GET | `/categories` | Lista categorias |
 | GET | `/health` | Health check |
+| GET/PUT | `/cart` | Lee y persiste el carrito del usuario |
+| POST | `/checkout/session` | Crea sesion de pago Stripe |
+| GET | `/orders` | Lista ordenes del usuario autenticado |
 
-### Admin (requiere token de admin Clerk)
+### Admin
 
-| Método | Ruta | Descripción |
+| Metodo | Ruta | Descripcion |
 |--------|------|-------------|
-| GET | `/admin/access` | Validar acceso admin y rol actual |
-| GET | `/admin/dashboard` | Resumen general (KPIs, ventas diarias, órdenes recientes, stock bajo) |
-| GET/PATCH | `/admin/orders` | Gestión de órdenes (filtro por fulfillmentStatus) |
+| GET | `/admin/access` | Valida acceso admin |
+| GET | `/admin/dashboard` | KPIs, ventas, ordenes recientes y stock bajo |
+| GET/PATCH | `/admin/orders` | Gestion de fulfillment |
 | GET/POST/PUT/DELETE | `/admin/products` | CRUD de productos |
-| GET | `/admin/users` | Lista de usuarios con LTV y ordenCount |
-| PATCH | `/admin/users/:id/role` | Cambiar rol de usuario |
-| DELETE | `/admin/users/:id` | Eliminar usuario local |
-| GET | `/admin/sales` | Análisis de ventas (top productos, categorías, marcas) |
-| GET | `/admin/earnings` | Ganancias brutas/netas mensuales |
+| GET | `/admin/users` | Lista de usuarios |
+| PATCH | `/admin/users/:id/role` | Cambia rol |
+| DELETE | `/admin/users/:id` | Elimina usuario local |
+| GET | `/admin/sales` | Top productos, categorias y marcas |
+| GET | `/admin/earnings` | Revenue bruto/neto mensual |
 
-## Testing
+## Seed e imagenes
 
-- **Test card éxito**: `4242 4242 4242 4242`
-- **Test card decline**: `4000 0000 0000 0002`
-- URLs autorizadas en Clerk: `http://localhost:5173`, `http://localhost:5175`, `http://localhost:3001`
-| GET/POST/PUT/DELETE | `/admin/products` | CRUD de productos |
-| GET | `/admin/users` | Listar usuarios |
-| PATCH | `/admin/users/:id/role` | Cambiar rol local y sincronizar con Clerk |
-| GET | `/admin/sales` | Reporte de ventas |
-| GET | `/admin/earnings` | Reporte de ganancias |
+- El seed carga `90` productos y `10` categorias.
+- Las imagenes viven en `frontend/public/products/`.
+- La convencion de archivos es `/products/<categoria>/<product-id>-1.jpg` hasta `-4.jpg`.
+- Archivos de referencia disponibles:
+  - `product-image-manifest.md`
+  - `product-image-download-report.json`
 
-## Seed
+## Admin
 
-El seed actual carga **90 productos** y **10 categorías** con marcas reales y borra los datos existentes antes de insertar.
+- El acceso admin depende de `ADMIN_EMAILS` o del rol `admin` almacenado para el usuario.
+- Si cambias `ADMIN_EMAILS`, reinicia backend y vuelve a iniciar sesion.
 
-```bash
-cd backend
-bun run seed
-```
+## Checkout y ordenes
 
-## Imagenes De Productos
+- El checkout exige direccion completa.
+- Stripe test card valida: `4242 4242 4242 4242`
+- Stripe test card rechazada: `4000 0000 0000 0002`
+- Las ordenes solo se crean en `checkout.session.completed`.
 
-Las imagenes no se sirven desde el backend. Se cargan directamente desde el frontend usando archivos estaticos.
+## Archivos locales que no se versionan
 
-Ruta base:
+- `.env*`
+- `.agents/`, `.claude/`, `.playwright-mcp/`
+- `skills-lock.json`
+- `scripts/`
+- `tmp/`
 
-- `frontend/public/products/`
-
-Convencion usada por el seed:
-
-- `imageUrl: /products/<category-folder>/<id>-1.jpg`
-- `images: /products/<category-folder>/<id>-1.jpg ... /products/<category-folder>/<id>-4.jpg`
-
-Ejemplo:
-
-- producto con `id: cerave-moisturizing-cream`
-- carpeta de categoria: `hidratantes`
-- archivos esperados:
-  - `frontend/public/products/hidratantes/cerave-moisturizing-cream-1.jpg`
-  - `frontend/public/products/hidratantes/cerave-moisturizing-cream-2.jpg`
-  - `frontend/public/products/hidratantes/cerave-moisturizing-cream-3.jpg`
-  - `frontend/public/products/hidratantes/cerave-moisturizing-cream-4.jpg`
-- URL publica principal en la app: `/products/hidratantes/cerave-moisturizing-cream-1.jpg`
-
-Si una imagen todavia no existe, la app sigue funcionando y muestra el mock visual del producto.
-
-Consulta la convencion y los archivos descargados en:
-
-- `product-image-manifest.md`
-- `product-image-download-report.json`
-
-## Carrito Persistente
-
-- Invitado: carrito local vacío al cerrar sesión.
-- Usuario autenticado: carrito persistido en backend y sincronizado entre navegadores/dispositivos.
-- Después de una compra exitosa en Stripe, el carrito local y remoto se vacían automáticamente.
-
-## Acceso Admin
-
-- El acceso al panel admin ya no aparece como botón público en el navbar.
-- El entrypoint está dentro del menú del usuario autenticado.
-- El backend decide si una cuenta es admin por:
-  - `ADMIN_EMAILS` en `backend/.env`
-  - o `publicMetadata.role = admin` en Clerk
-- Si agregas un correo a `ADMIN_EMAILS`, reinicia el backend y vuelve a iniciar sesión para que tome efecto.
+Los archivos dentro de `scripts/` se tratan como tooling local. Si alguna vez estuvieron trackeados por Git, hay que quitarlos del index para que `.gitignore` pueda hacer efecto.
