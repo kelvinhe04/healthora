@@ -32,6 +32,10 @@ export interface Product {
   color: string;
   swatchColor: string;
   label: string;
+  nutritionFacts?: string;
+  certifications?: string[];
+  interactions?: string;
+  faq?: { q: string; a: string }[];
   imageUrl?: string;
   images?: {
     url: string;

@@ -189,15 +189,45 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
           </div>
 
           <div style={{ marginTop: 32 }}>
-            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--ink-06)' }}>
-              {[{ id: 'benefits', label: 'Beneficios' }, { id: 'usage', label: 'Modo de uso' }, { id: 'ingredients', label: 'Ingredientes' }, { id: 'warnings', label: 'Advertencias' }].map((t) => (
-                <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '14px 4px', marginRight: 28, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, fontFamily: '"Geist", sans-serif', color: tab === t.id ? 'var(--ink)' : 'var(--ink-60)', borderBottom: tab === t.id ? '2px solid var(--ink)' : '2px solid transparent', marginBottom: -1 }}>{t.label}</button>
+            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--ink-06)', flexWrap: 'wrap' }}>
+              {[
+                { id: 'benefits', label: 'Beneficios' },
+                { id: 'usage', label: 'Modo de uso' },
+                { id: 'ingredients', label: 'Ingredientes' },
+                ...(product.nutritionFacts ? [{ id: 'nutrition', label: 'Info. nutricional' }] : []),
+                ...(product.certifications?.length ? [{ id: 'certs', label: 'Certificaciones' }] : []),
+                ...(product.interactions ? [{ id: 'interactions', label: 'Compatibilidad' }] : []),
+                ...(product.faq?.length ? [{ id: 'faq', label: 'Preguntas frecuentes' }] : []),
+                { id: 'warnings', label: 'Advertencias' },
+              ].map((t) => (
+                <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '14px 4px', marginRight: 28, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, fontFamily: '"Geist", sans-serif', color: tab === t.id ? 'var(--ink)' : 'var(--ink-60)', borderBottom: tab === t.id ? '2px solid var(--ink)' : '2px solid transparent', marginBottom: -1, whiteSpace: 'nowrap' }}>{t.label}</button>
               ))}
             </div>
             <div style={{ padding: '20px 0', fontSize: 15, lineHeight: 1.6, color: 'var(--ink-80)', fontFamily: '"Geist", sans-serif' }}>
               {tab === 'benefits' && <ul style={{ paddingLeft: 18, margin: 0 }}>{product.benefits.map((b) => <li key={b} style={{ marginBottom: 6 }}>{b}</li>)}</ul>}
               {tab === 'usage' && <p style={{ margin: 0 }}>{product.usage}</p>}
               {tab === 'ingredients' && <p style={{ margin: 0 }}>{product.ingredients}</p>}
+              {tab === 'nutrition' && product.nutritionFacts && (
+                <pre style={{ margin: 0, fontFamily: '"JetBrains Mono", monospace', fontSize: 12, lineHeight: 1.9, whiteSpace: 'pre-wrap', color: 'var(--ink-80)' }}>{product.nutritionFacts}</pre>
+              )}
+              {tab === 'certs' && product.certifications?.length && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                  {product.certifications.map((c) => (
+                    <span key={c} style={{ border: '1px solid var(--ink-20)', borderRadius: 999, padding: '7px 16px', fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink-80)' }}>{c}</span>
+                  ))}
+                </div>
+              )}
+              {tab === 'interactions' && product.interactions && <p style={{ margin: 0 }}>{product.interactions}</p>}
+              {tab === 'faq' && product.faq?.length && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  {product.faq.map(({ q, a }) => (
+                    <div key={q}>
+                      <p style={{ fontWeight: 600, margin: '0 0 6px', color: 'var(--ink)' }}>{q}</p>
+                      <p style={{ margin: 0, color: 'var(--ink-60)' }}>{a}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
               {tab === 'warnings' && <p style={{ margin: 0, color: 'var(--coral)' }}>⚠ {product.warnings}</p>}
             </div>
           </div>
