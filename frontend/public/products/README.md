@@ -1,4 +1,4 @@
-# Product Images
+# Imagenes de productos
 
 Coloca aqui las imagenes reales de los productos del seed.
 
@@ -9,10 +9,10 @@ Coloca aqui las imagenes reales de los productos del seed.
 - Cada producto usa 4 imagenes.
 - Formato esperado por defecto: `.jpg`
 - Rutas publicas:
-  - `/products/<category-folder>/<id>-1.jpg`
-  - `/products/<category-folder>/<id>-2.jpg`
-  - `/products/<category-folder>/<id>-3.jpg`
-  - `/products/<category-folder>/<id>-4.jpg`
+  - `/products/<carpeta-categoria>/<id>-1.jpg`
+  - `/products/<carpeta-categoria>/<id>-2.jpg`
+  - `/products/<carpeta-categoria>/<id>-3.jpg`
+  - `/products/<carpeta-categoria>/<id>-4.jpg`
 
 Carpetas actuales:
 

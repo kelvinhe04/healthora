@@ -45,5 +45,9 @@ skills-lock.json
 # Local one-off scripts
 backend/src/scripts/
 
+# Local image tooling artifacts
+/product-image-manifest.md
+/product-image-download-report.json
+
 # Misc local files
 *.local
