@@ -1,7 +1,60 @@
+import { BarChart as RechartsBar, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart as RechartsLine, Line, CartesianGrid } from 'recharts';
+import { useMemo } from 'react';
+import { memo } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { Icon } from '../shared/Icon';
 
-// StatusPill
+const Ctx = ({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) => {
+  if (active && payload?.length) {
+    return <div style={{ background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 8, padding: '8px 12px', fontSize: 12, fontFamily: '"JetBrains Mono", monospace' }}>{label}: ${payload[0].value}</div>;
+  }
+  return null;
+};
+
+const LineChartInner = ({ data, height }: { data?: { date?: string; revenue?: number; name?: string; value?: number }[]; height?: number }) => {
+  const chartData = useMemo(() => {
+    if (!data) return [];
+    return data.map(d => ({ date: d.date || d.name || '', revenue: d.revenue ?? d.value ?? 0 }));
+  }, [data]);
+
+  if (!chartData.length) return <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-60)', fontSize: 13 }}>Sin datos</div>;
+  
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <RechartsLine data={chartData} margin={{ top: 10, right: 40, left: 10, bottom: 50 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--ink-06)" />
+        <XAxis dataKey="date" type="category" fontSize={9} fontFamily="JetBrains Mono" stroke="var(--ink-60)" tickLine={false} interval={0} height={50} tick={{ fill: 'var(--ink)' }} />
+        <YAxis tickFormatter={(v) => '$' + v} fontSize={10} fontFamily="JetBrains Mono" stroke="var(--ink-60)" width={60} tick={{ fill: 'var(--ink)' }} />
+        <Tooltip content={<Ctx />} />
+        <Line type="monotone" dataKey="revenue" stroke="var(--green)" strokeWidth={2} dot={{ fill: 'var(--green)', r: 2 }} activeDot={{ r: 4, stroke: 'var(--cream)', strokeWidth: 2 }} />
+      </RechartsLine>
+    </ResponsiveContainer>
+  );
+};
+
+export const LineChart = memo(LineChartInner);
+
+const BarChartInner = ({ data, height, verticalLabels }: { data?: { date?: string; revenue?: number; orders?: number; value?: number }[]; height?: number; verticalLabels?: boolean }) => {
+  const chartData = useMemo(() => {
+    if (!data) return [];
+    return data.map(d => ({ date: d.date || '', value: d.orders ?? d.value ?? 0 }));
+  }, [data]);
+
+  if (!chartData.length) return <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-60)', fontSize: 13 }}>Sin datos</div>;
+  
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <RechartsBar data={chartData} margin={{ top: 10, right: 40, left: 10, bottom: 50 }}>
+        <XAxis dataKey="date" type="category" fontSize={9} fontFamily="JetBrains Mono" stroke="var(--ink-60)" tickLine={false} interval={0} height={50} tick={verticalLabels ? { angle: -90, textAnchor: 'start', fill: 'var(--ink)' } : { fill: 'var(--ink)' }} />
+        <YAxis tickFormatter={(v) => v} fontSize={10} fontFamily="JetBrains Mono" stroke="var(--ink-60)" width={50} tick={{ fill: 'var(--ink)' }} />
+        <Bar dataKey="value" fill="var(--green)" radius={[4, 4, 0, 0]} />
+      </RechartsBar>
+    </ResponsiveContainer>
+  );
+};
+
+export const BarChart = memo(BarChartInner);
+
 const STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
   'paid': { bg: 'oklch(0.92 0.1 140)', fg: 'oklch(0.35 0.1 140)' },
   'Paid': { bg: 'oklch(0.92 0.1 140)', fg: 'oklch(0.35 0.1 140)' },
@@ -98,52 +151,6 @@ export const th: CSSProperties = { textAlign: 'left', padding: '14px 24px', font
 export const td: CSSProperties = { padding: '14px 24px', borderBottom: '1px solid var(--ink-06)', fontSize: 13, fontFamily: '"Geist", sans-serif', verticalAlign: 'middle' };
 export const trStyle: CSSProperties = { transition: 'background 120ms' };
 export const iconBtnAd: CSSProperties = { width: 30, height: 30, borderRadius: 8, border: '1px solid var(--ink-06)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-60)' };
-
-// BarChart
-export function BarChart({ data, height = 200, valueKey = 'revenue' }: { data: Record<string, number | string>[]; height?: number; valueKey?: string }) {
-  const max = Math.max(...data.map((d) => Number(d[valueKey])));
-  return (
-    <div style={{ display: 'flex', alignItems: 'end', gap: 3, height }}>
-      {data.map((d, i) => {
-        const h = (Number(d[valueKey]) / max) * (height - 30);
-        return (
-          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-            <div style={{ width: '100%', height: h, background: i === data.length - 1 ? 'var(--green)' : 'var(--ink-20)', borderRadius: '4px 4px 0 0' }} />
-            {i % 3 === 0 && <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)' }}>{d.date}</div>}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// LineChart
-export function LineChart({ data, height = 220 }: { data: { revenue: number; date?: string }[]; height?: number }) {
-  const w = 800;
-  const max = Math.max(...data.map((d) => d.revenue));
-  const min = Math.min(...data.map((d) => d.revenue));
-  const pts = data.map((d, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = height - 40 - ((d.revenue - min) / (max - min || 1)) * (height - 60);
-    return [x, y];
-  });
-  const path = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0] + ',' + p[1]).join(' ');
-  const areaPath = path + ` L${w},${height - 20} L0,${height - 20} Z`;
-  return (
-    <svg viewBox={`0 0 ${w} ${height}`} width="100%" height={height} style={{ overflow: 'visible' }}>
-      <defs>
-        <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="var(--green)" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="var(--green)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {[0.25, 0.5, 0.75].map((f) => <line key={f} x1={0} x2={w} y1={(height - 20) * f + 10} y2={(height - 20) * f + 10} stroke="var(--ink-06)" strokeWidth="1" />)}
-      <path d={areaPath} fill="url(#area)" />
-      <path d={path} stroke="var(--green)" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      {pts.map((p, i) => <circle key={i} cx={p[0]} cy={p[1]} r={i === pts.length - 1 ? 5 : 2.5} fill="var(--green)" stroke="var(--cream)" strokeWidth={i === pts.length - 1 ? 2 : 0} />)}
-    </svg>
-  );
-}
 
 // Donut
 export function Donut({ data, size = 220 }: { data: { cat?: string; pct: number; color: string }[]; size?: number }) {

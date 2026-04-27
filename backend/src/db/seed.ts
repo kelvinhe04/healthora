@@ -2301,7 +2301,7 @@ const PRODUCTS = [
   },
   {
     id: 'nars-radiant-creamy-concealer',
-    name: 'Radiant Creamy Concealer',
+    name: 'Radiant Creamy Concealer - Vanilla',
     brand: 'NARS',
     category: 'Maquillaje',
     need: 'Piel seca',
@@ -3198,7 +3198,7 @@ const PRODUCTS = [
   },
   {
     id: 'rare-beauty-soft-pinch-liquid-blush',
-    name: 'Soft Pinch Liquid Blush',
+    name: 'Soft Pinch Liquid Blush - Virtue',
     brand: 'Rare Beauty',
     category: 'Maquillaje',
     need: 'Piel seca',
@@ -3233,7 +3233,7 @@ const PRODUCTS = [
   },
   {
     id: 'nyx-fat-oil-lip-drip',
-    name: 'Fat Oil Lip Drip',
+    name: 'Fat Oil Lip Drip - Follow Back',
     brand: 'NYX Professional Makeup',
     category: 'Maquillaje',
     need: 'Piel seca',
@@ -3301,7 +3301,7 @@ const PRODUCTS = [
   },
   {
     id: 'nyx-butter-gloss',
-    name: 'Butter Gloss Non-Sticky Lip Gloss',
+    name: 'Butter Gloss Non-Sticky Lip Gloss - Peaches and Cream',
     brand: 'NYX Professional Makeup',
     category: 'Maquillaje',
     need: 'Piel seca',

@@ -19,7 +19,7 @@ type DashboardData = {
 };
 type AdminOrder = { _id: string; customerName?: string; customerEmail?: string; items?: OrderLineItem[]; total?: number; status?: string; paymentStatus?: PaymentStatus; fulfillmentStatus?: FulfillmentStatus; address?: OrderAddress; createdAt?: string };
 type AdminUser = { _id: string; name?: string; email?: string; role?: 'customer' | 'admin'; orderCount?: number; ltv?: number; createdAt?: string };
-type SalesData = { daily?: { revenue: number; date: string }[]; byCategory?: { productId: string; name: string; category: string; revenue: number; units: number }[]; topProducts?: { _id: string; revenue: number; units: number }[]; topCategories?: { _id: string; units: number; revenue: number }[]; topBrands?: { _id: string; units: number; revenue: number }[] };
+type SalesData = { summary?: { totalOrders: number; totalRevenue: number; avgOrderValue: number; totalUnits: number }; daily?: { revenue: number; date: string; orders: number; units: number }[]; revenueByCategory?: { _id: string; revenue: number; units: number }[]; byCategory?: { productId: string; name: string; brand: string; category: string; revenue: number; units: number }[]; topProducts?: { _id: string; revenue: number; units: number }[]; topCategories?: { _id: string; units: number; revenue: number }[]; topBrands?: { _id: string; units: number; revenue: number }[] };
 type EarningsData = { monthly?: { month: string; revenue: number; orders: number }[]; summary?: { gross: number; tax: number; shipping: number; fees: number; net: number; orders: number } };
 
 const fulfillmentStatusOptions: (FulfillmentStatus | '')[] = ['', 'unfulfilled', 'processing', 'shipped', 'delivered'];
@@ -398,8 +398,21 @@ function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
 function AdminPanel({ access, onGoToStore }: { access: AdminAccess; onGoToStore: () => void }) {
   const getAdminToken = useAdminToken();
   const queryClient = useQueryClient();
-  const [page, setPage] = useState<AdminPage>('dashboard');
+  const [page, setPage] = useState<AdminPage>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('healthora_admin_page') as AdminPage | null;
+      if (saved) return saved;
+    }
+    return 'dashboard';
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('healthora_admin_page', page);
+    }
+  }, [page]);
   const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState('');
+  const [orderSearch, setOrderSearch] = useState('');
 
   // Products state
   const [productModal, setProductModal] = useState<{ mode: 'add' | 'edit'; product?: Product } | null>(null);
@@ -411,18 +424,12 @@ function AdminPanel({ access, onGoToStore }: { access: AdminAccess; onGoToStore:
   const [confirmUserDelete, setConfirmUserDelete] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('healthora_admin_page') as AdminPage | null;
-    if (saved) setPage(saved);
-  }, []);
-
-  useEffect(() => {
     localStorage.setItem('healthora_admin_page', page);
   }, [page]);
 
   const dashboardQuery = useQuery({
     queryKey: ['admin-dashboard'],
     queryFn: async () => api.admin.dashboard(await getAdminToken()) as Promise<DashboardData>,
-    staleTime: 60000,
   });
   const ordersQuery = useQuery({
     queryKey: ['admin-orders', orderFulfillmentFilter],
@@ -549,14 +556,17 @@ function AdminPanel({ access, onGoToStore }: { access: AdminAccess; onGoToStore:
     });
   }, [products, productCatFilter, productSearch]);
 
+  const displayedOrders = useMemo(() => {
+    const term = orderSearch.toLowerCase();
+    return (orders || []).filter(o => {
+      const matchSearch = !term || o._id.toLowerCase().includes(term) || o.customerName?.toLowerCase().includes(term) || o.customerEmail?.toLowerCase().includes(term);
+      return matchSearch;
+    });
+  }, [orders, orderSearch]);
+
   const displayedProductIds = useMemo(() => displayedProducts.map((product) => product._id || product.id), [displayedProducts]);
   const selectedDisplayedIds = useMemo(() => selectedProductIds.filter((id) => displayedProductIds.includes(id)), [selectedProductIds, displayedProductIds]);
   const allDisplayedSelected = displayedProductIds.length > 0 && selectedDisplayedIds.length === displayedProductIds.length;
-
-  useEffect(() => {
-    const validIds = new Set((products as Product[]).map((product) => product._id || product.id));
-    setSelectedProductIds((current) => current.filter((id) => validIds.has(id)));
-  }, [products]);
 
   const isSaving = productUpdateMutation.isPending || productCreateMutation.isPending;
 
@@ -575,7 +585,7 @@ function AdminPanel({ access, onGoToStore }: { access: AdminAccess; onGoToStore:
               <KpiCard label="Usuarios" value={dashboard?.kpis.totalUsers ?? '—'} sub="clientes registrados" />
               <KpiCard label="Stock bajo" value={dashboard?.kpis.lowStock ?? '—'} sub="productos ≤5 unidades" />
             </div>
-            {dashboard?.dailySales?.length ? (
+            {(dashboard?.dailySales?.length ?? 0) > 0 ? (
               <Card title="Ingresos · últimos 30 días" sub="Revenue diario, en USD">
                 <LineChart data={dashboard.dailySales} height={240} />
               </Card>
@@ -616,22 +626,37 @@ function AdminPanel({ access, onGoToStore }: { access: AdminAccess; onGoToStore:
         {page === 'orders' && (
           <>
             <PageHeader kicker="Pedidos" title={<>Gestión de <em style={{ color: 'var(--green)' }}>pedidos</em></>} sub="Cambia estados y monitorea el ciclo completo de la orden." />
-            <Card pad={0}>
-              <div style={{ padding: '20px 24px', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', borderBottom: '1px solid var(--ink-06)' }}>
-                <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', padding: '8px 12px 0 0' }}>Estado</div>
-                {fulfillmentStatusOptions.map((status) => (
-                  <button key={status} onClick={() => setOrderFulfillmentFilter(status)} style={{ padding: '7px 14px', borderRadius: 999, fontSize: 12, cursor: 'pointer', border: '1px solid ' + (orderFulfillmentFilter === status ? 'var(--ink)' : 'var(--ink-20)'), background: orderFulfillmentFilter === status ? 'var(--ink)' : 'transparent', color: orderFulfillmentFilter === status ? 'var(--cream)' : 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>{fulfillmentStatusLabels[status]}</button>
-                ))}
-                {orderFulfillmentFilter && (
-                  <button onClick={() => setOrderFulfillmentFilter('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: '2px 4px', display: 'flex', alignItems: 'center', color: 'var(--ink-40)', borderRadius: 4, marginLeft: 8 }}>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--cream)', borderRadius: 999, padding: '9px 16px', border: '1px solid var(--ink-06)', flexShrink: 0, width: 296, boxSizing: 'border-box' }}>
+                <Icon name="search" size={14} stroke="var(--ink-40)" />
+                <input
+                  value={orderSearch}
+                  onChange={e => setOrderSearch(e.target.value)}
+                  placeholder="Buscar por ID, cliente o email…"
+                  style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 13, fontFamily: '"Geist", sans-serif', width: '100%', color: 'var(--ink)' }}
+                />
+                {orderSearch && (
+                  <button onClick={() => setOrderSearch('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: '2px 4px', display: 'flex', alignItems: 'center', color: 'var(--ink-40)', borderRadius: 4, flexShrink: 0 }}>
                     <Icon name="x" size={13} />
                   </button>
                 )}
               </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {fulfillmentStatusOptions.map((status) => (
+                  <button key={status} onClick={() => setOrderFulfillmentFilter(status)} style={{ padding: '7px 14px', borderRadius: 999, fontSize: 12, cursor: 'pointer', border: '1px solid ' + (orderFulfillmentFilter === status ? 'var(--ink)' : 'var(--ink-20)'), background: orderFulfillmentFilter === status ? 'var(--ink)' : 'transparent', color: orderFulfillmentFilter === status ? 'var(--cream)' : 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>{fulfillmentStatusLabels[status]}</button>
+                ))}
+              </div>
+            </div>
+            <Card pad={0}>
+              <div style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--ink-06)' }}>
+                <div style={{ fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}>
+                  {orderSearch ? `${displayedOrders.length} resultado${displayedOrders.length !== 1 ? 's' : ''} de ${orders?.length || 0}` : `${displayedOrders.length} pedido${displayedOrders.length !== 1 ? 's' : ''}`}
+                </div>
+              </div>
               <table style={tableStyle}>
                 <thead><tr><th style={th}>Orden</th><th style={th}>Cliente / Envío</th><th style={th}>Productos</th><th style={th}>Total</th><th style={th}>Pago</th><th style={th}>Estado</th><th style={th}>Fecha y hora</th></tr></thead>
                 <tbody>
-                  {orders.map((order) => (
+                  {displayedOrders.map((order) => (
                     <tr key={order._id} style={trStyle}>
                       <td style={{ ...td, fontFamily: '"JetBrains Mono", monospace' }}>{order._id.slice(-8).toUpperCase()}</td>
                       <td style={td}>
@@ -698,16 +723,16 @@ function AdminPanel({ access, onGoToStore }: { access: AdminAccess; onGoToStore:
 
             {/* Filter bar */}
             <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--cream)', borderRadius: 999, padding: '9px 16px', border: '1px solid var(--ink-06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--cream)', borderRadius: 999, padding: '9px 16px', border: '1px solid var(--ink-06)', flexShrink: 0, width: 296, boxSizing: 'border-box' }}>
                 <Icon name="search" size={14} stroke="var(--ink-40)" />
                 <input
                   value={productSearch}
                   onChange={e => setProductSearch(e.target.value)}
                   placeholder="Buscar por nombre o marca…"
-                  style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 13, fontFamily: '"Geist", sans-serif', width: 210, color: 'var(--ink)' }}
+                  style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 13, fontFamily: '"Geist", sans-serif', width: '100%', color: 'var(--ink)' }}
                 />
                 {productSearch && (
-                  <button onClick={() => setProductSearch('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: '2px 4px', display: 'flex', alignItems: 'center', color: 'var(--ink-40)', borderRadius: 4 }}>
+                  <button onClick={() => setProductSearch('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: '2px 4px', display: 'flex', alignItems: 'center', color: 'var(--ink-40)', borderRadius: 4, flexShrink: 0 }}>
                     <Icon name="x" size={13} />
                   </button>
                 )}
@@ -950,15 +975,29 @@ function AdminPanel({ access, onGoToStore }: { access: AdminAccess; onGoToStore:
         {page === 'sales' && (
           <>
             <PageHeader kicker="Ventas" title={<>Análisis de <em style={{ color: 'var(--green)' }}>ventas</em></>} sub="Tendencia diaria, productos y categorías más vendidas." />
-            {sales?.daily?.length ? <Card title="Tendencia de ventas" sub="Ingresos diarios · últimos 30 días"><LineChart data={sales.daily} height={260} /></Card> : null}
-            <div style={{ marginTop: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+              <KpiCard label="Total órdenes" value={sales?.summary?.totalOrders?.toLocaleString() ?? '—'} sub="pagadas en total" />
+              <KpiCard label="Revenue total" value={sales?.summary ? `$${sales.summary.totalRevenue.toLocaleString()}` : '—'} sub="todos los pedidos" />
+              <KpiCard mode="dark" label="Ticket promedio" value={sales?.summary ? `$${sales.summary.avgOrderValue.toFixed(2)}` : '—'} sub="por orden" />
+              <KpiCard label="Unidades vendidas" value={sales?.summary?.totalUnits?.toLocaleString() ?? '—'} sub="total de productos" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20, marginBottom: 24 }}>
+              <Card title="Órdenes por día" sub="Pedidos diarios · últimos 30 días" pad={20}>
+                {sales?.daily ? <BarChart data={sales.daily} height={240} verticalLabels /> : <div style={{ height: 210, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-60)', fontSize: 13 }}>Sin datos aún</div>}
+              </Card>
+              <Card title="Revenue por categoría" sub="Ingresos por categoría" pad={20}>
+                {sales?.revenueByCategory?.length ? <BarChart data={sales.revenueByCategory} height={240} /> : <div style={{ height: 210, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-60)', fontSize: 13 }}>Sin datos aún</div>}
+              </Card>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
               <Card title="Top productos por revenue" sub="Basado en órdenes pagadas">
                 <table style={tableStyle}>
-                  <thead><tr><th style={th}>Producto</th><th style={th}>Categoría</th><th style={th}>Unidades</th><th style={th}>Revenue</th></tr></thead>
+                  <thead><tr><th style={th}>Producto</th><th style={th}>Marca</th><th style={th}>Categoría</th><th style={th}>Unidades</th><th style={th}>Revenue</th></tr></thead>
                   <tbody>
                     {(sales?.byCategory || []).map((row) => (
                       <tr key={row.productId} style={trStyle}>
                         <td style={td}>{row.name}</td>
+                        <td style={td}><StatusPill status={row.brand} /></td>
                         <td style={td}><StatusPill status={row.category} /></td>
                         <td style={{ ...td, fontFamily: '"JetBrains Mono", monospace' }}>{row.units}</td>
                         <td style={{ ...td, fontFamily: '"Instrument Serif", serif', fontSize: 18 }}>${row.revenue.toFixed(2)}</td>
