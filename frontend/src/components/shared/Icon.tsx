@@ -18,6 +18,8 @@ export function Icon({ name, size = 18, stroke = 'currentColor', style }: IconPr
     case 'star': return <svg {...common} fill={stroke}><path d="M12 3l2.6 6h6.4l-5 4.5 2 6.5-6-4-6 4 2-6.5-5-4.5h6.4z"/></svg>;
     case 'leaf': return <svg {...common}><path d="M4 20c8 0 16-6 16-16C8 4 4 12 4 20Z"/><path d="M4 20 16 8"/></svg>;
     case 'shield': return <svg {...common}><path d="M12 3 4 6v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>;
+    case 'gift': return <svg {...common}><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13"/><path d="M3 12h18"/><path d="M8 8c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M12 8c0-2.2 1.8-4 4-4s4 1.8 4 4"/></svg>;
+    case 'percent': return <svg {...common}><path d="M19 5 5 19"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>;
     case 'truck': return <svg {...common}><path d="M3 16V7h11v9"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>;
     case 'headset': return <svg {...common}><path d="M4 13a8 8 0 0 1 16 0"/><path d="M4 13v3a2 2 0 0 0 2 2h1v-6H6a2 2 0 0 0-2 2Z"/><path d="M20 13v3a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2Z"/></svg>;
     case 'chevron-down': return <svg {...common}><path d="m6 9 6 6 6-6"/></svg>;
