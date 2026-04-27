@@ -14,25 +14,48 @@ function Skeleton({ height = 20, width, borderRadius = 4 }: { height?: number; w
   return (
     <div style={{
       height,
-      width,
+      width: width ?? '100%',
       borderRadius,
-      background: 'var(--ink-06)',
+      background: 'oklch(0.88 0 0)',
       position: 'relative',
       overflow: 'hidden',
       flexShrink: 0,
-      animation: 'pulse 3s ease-in-out infinite'
     }}>
       <div style={{
         position: 'absolute',
         inset: 0,
-        background: 'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.15) 50%, transparent 100%)',
-        animation: 'shimmer 20s infinite'
+        background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)',
+        animation: 'shimmer 1.5s ease-in-out infinite',
       }} />
     </div>
   );
 }
 
-export { Skeleton };
+/** Skeleton for large headings – matches Instrument Serif h1 / h3 sizing */
+function SkeletonTitle({ size = 'lg', width = '55%' }: { size?: 'lg' | 'md'; width?: string }) {
+  const height = size === 'lg' ? 52 : 30;
+  const radius = size === 'lg' ? 12 : 8;
+  return (
+    <div style={{
+      height,
+      width,
+      borderRadius: radius,
+      background: 'oklch(0.86 0 0)',
+      position: 'relative',
+      overflow: 'hidden',
+      flexShrink: 0,
+    }}>
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)',
+        animation: 'shimmer 1.5s ease-in-out infinite',
+      }} />
+    </div>
+  );
+}
+
+export { Skeleton, SkeletonTitle };
 
 const LineChartInner = ({ data, height }: { data?: { date?: string; revenue?: number; name?: string; value?: number }[]; height?: number }) => {
   const chartData = useMemo(() => {
@@ -209,14 +232,33 @@ export function KpiCard({ label, value, delta, sub, mode = 'light', loading = fa
 }
 
 // PageHeader
-interface PageHeaderProps { kicker?: string; title: ReactNode; sub?: string; actions?: ReactNode; }
-export function PageHeader({ kicker, title, sub, actions }: PageHeaderProps) {
+interface PageHeaderProps { kicker?: string; title: ReactNode; sub?: string; actions?: ReactNode; loading?: boolean; }
+export function PageHeader({ kicker, title, sub, actions, loading = false }: PageHeaderProps) {
   return (
     <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', marginBottom: 32, gap: 24 }}>
-      <div>
-        {kicker && <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-60)', marginBottom: 10 }}>{kicker}</div>}
-        <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 56, letterSpacing: '-0.035em', lineHeight: 0.95, margin: 0, fontWeight: 400, color: 'var(--ink)' }}>{title}</h1>
-        {sub && <p style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-60)', maxWidth: 540, lineHeight: 1.5 }}>{sub}</p>}
+      <div style={{ width: '100%' }}>
+        {/* Kicker */}
+        {loading ? (
+          <Skeleton height={12} width="180px" borderRadius={4} />
+        ) : (
+          kicker && <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-60)', marginBottom: 10 }}>{kicker}</div>
+        )}
+        {/* Main title */}
+        {loading ? (
+          <div style={{ marginTop: 12 }}>
+            <SkeletonTitle size="lg" width="50%" />
+          </div>
+        ) : (
+          <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 56, letterSpacing: '-0.035em', lineHeight: 0.95, margin: 0, fontWeight: 400, color: 'var(--ink)' }}>{title}</h1>
+        )}
+        {/* Sub */}
+        {loading ? (
+          <div style={{ marginTop: 14 }}>
+            <Skeleton height={14} width="360px" borderRadius={4} />
+          </div>
+        ) : (
+          sub && <p style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-60)', maxWidth: 540, lineHeight: 1.5 }}>{sub}</p>
+        )}
       </div>
       {actions && <div style={{ display: 'flex', gap: 8 }}>{actions}</div>}
     </div>
@@ -225,32 +267,32 @@ export function PageHeader({ kicker, title, sub, actions }: PageHeaderProps) {
 
 // Card
 export function Card({ title, sub, children, pad = 24, loading = false }: { title?: string; sub?: string; children?: ReactNode; pad?: number; loading?: boolean }) {
-  if (loading) {
-    return (
-      <div style={{ background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: pad }}>
-        {title && (
-          <div style={{ marginBottom: 20 }}>
-            <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 26, letterSpacing: '-0.02em', margin: 0, fontWeight: 400 }}>{title}</h3>
-            {sub && <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-60)', marginTop: 6 }}>{sub}</div>}
-          </div>
-        )}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {[20, 40, 60, 30].map((w, i) => (
-            <Skeleton key={i} height={20} width={`${w}%`} borderRadius={4} />
-          ))}
-        </div>
-      </div>
-    );
-  }
   return (
     <div style={{ background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: pad }}>
-      {title && (
+      {/* Title area — skeleton or real */}
+      {(title || loading) && (
         <div style={{ marginBottom: 20 }}>
-          <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 26, letterSpacing: '-0.02em', margin: 0, fontWeight: 400 }}>{title}</h3>
-          {sub && <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-60)', marginTop: 6 }}>{sub}</div>}
+          {loading ? (
+            <>
+              <SkeletonTitle size="md" width="45%" />
+              {sub && <div style={{ marginTop: 8 }}><Skeleton height={10} width="160px" borderRadius={4} /></div>}
+            </>
+          ) : (
+            <>
+              <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 26, letterSpacing: '-0.02em', margin: 0, fontWeight: 400 }}>{title}</h3>
+              {sub && <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-60)', marginTop: 6 }}>{sub}</div>}
+            </>
+          )}
         </div>
       )}
-      {children}
+      {/* Content area */}
+      {loading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {[65, 45, 80, 35, 55].map((w, i) => (
+            <Skeleton key={i} height={18} width={`${w}%`} borderRadius={5} />
+          ))}
+        </div>
+      ) : children}
     </div>
   );
 }

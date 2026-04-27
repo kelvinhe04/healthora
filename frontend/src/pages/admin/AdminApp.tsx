@@ -572,29 +572,36 @@ function AdminPanel({ access, onGoToStore }: { access: AdminAccess; onGoToStore:
         {/* ── Dashboard ── */}
         {page === 'dashboard' && (
           <>
-            <PageHeader kicker="Panel de administración" title={<>Dashboard <em style={{ color: 'var(--green)' }}>Healthora</em></>} sub="Resumen en vivo de ventas, órdenes, usuarios y stock." />
+            <PageHeader
+              loading={!dashboard}
+              kicker="Panel de administración"
+              title={<>Dashboard <em style={{ color: 'var(--green)' }}>Healthora</em></>}
+              sub="Resumen en vivo de ventas, órdenes, usuarios y stock."
+            />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
               <KpiCard mode="dark" label="Ingresos mes" value={dashboard ? `$${dashboard.kpis.revenue.toLocaleString()}` : '—'} delta={dashboard?.kpis.revenueDelta} sub="vs mes anterior" loading={!dashboard} />
               <KpiCard label="Órdenes mes" value={dashboard?.kpis.monthOrders ?? '—'} sub="pagadas o en curso" loading={!dashboard} />
               <KpiCard label="Usuarios" value={dashboard?.kpis.totalUsers ?? '—'} sub="clientes registrados" loading={!dashboard} />
               <KpiCard label="Stock bajo" value={dashboard?.kpis.lowStock ?? '—'} sub="productos ≤5 unidades" loading={!dashboard} />
             </div>
-            {(dashboard?.dailySales?.length ?? 0) > 0 ? (
-              <Card title="Ingresos · últimos 30 días" sub="Revenue diario, en USD">
+
+            {/* Revenue chart card — title skeletons when loading */}
+            <Card
+              title="Ingresos · últimos 30 días"
+              sub="Revenue diario, en USD"
+              loading={!dashboard}
+            >
+              {(dashboard?.dailySales?.length ?? 0) > 0 ? (
                 <LineChart data={dashboard?.dailySales} height={240} />
-              </Card>
-            ) : <Card title="Ingresos · últimos 30 días" sub="Revenue diario, en USD">
+              ) : (
                 <Skeleton height={240} borderRadius={8} />
-              </Card>}
+              )}
+            </Card>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 20, marginTop: 24 }}>
-              <Card title="Pedidos recientes" sub="Últimas 5 órdenes del ecommerce">
-                {dashboard === undefined ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Skeleton key={i} height={52} borderRadius={8} />
-                    ))}
-                  </div>
-                ) : dashboard?.recentOrders?.length ? (
+              {/* Recent orders */}
+              <Card title="Pedidos recientes" sub="Últimas 5 órdenes del ecommerce" loading={dashboard === undefined}>
+                {dashboard?.recentOrders?.length ? (
                   <table style={tableStyle}>
                     <thead><tr><th style={th}>Orden</th><th style={th}>Cliente</th><th style={th}>Total</th><th style={th}>Pago</th></tr></thead>
                     <tbody>
@@ -612,14 +619,10 @@ function AdminPanel({ access, onGoToStore }: { access: AdminAccess; onGoToStore:
                   <div style={{ fontSize: 14, color: 'var(--ink-60)' }}>No hay pedidos recientes.</div>
                 )}
               </Card>
-              <Card title="Stock crítico" sub="Productos que requieren reposición">
-                {dashboard === undefined ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {[1, 2, 3, 4].map((i) => (
-                      <Skeleton key={i} height={52} borderRadius={8} />
-                    ))}
-                  </div>
-                ) : dashboard?.lowStockProducts?.length ? (
+
+              {/* Low stock */}
+              <Card title="Stock crítico" sub="Productos que requieren reposición" loading={dashboard === undefined}>
+                {dashboard?.lowStockProducts?.length ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {(dashboard?.lowStockProducts || []).map((product) => (
                       <div key={product.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
