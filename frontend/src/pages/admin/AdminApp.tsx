@@ -531,7 +531,14 @@ function AdminPanel({ access, onGoToStore }: { access: AdminAccess; onGoToStore:
   const users = usersQuery.data || [];
   const sales = salesQuery.data;
   const earnings = earningsQuery.data;
-  const dashboard = dashboardQuery.data;
+  const dashboardData = dashboardQuery.data;
+
+  const [dashboardReady, setDashboardReady] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setDashboardReady(true), 1800);
+    return () => clearTimeout(t);
+  }, []);
+  const dashboard = dashboardData && dashboardReady ? dashboardData : undefined;
 
   const sidebarCounts = useMemo(() => ({
     orders: orders.length,

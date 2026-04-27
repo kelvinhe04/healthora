@@ -34,7 +34,7 @@ function Skeleton({ height = 20, width, borderRadius = 4 }: { height?: number; w
 
 /** Skeleton for large headings – matches Instrument Serif h1 / h3 sizing */
 function SkeletonTitle({ size = 'lg', width = '55%' }: { size?: 'lg' | 'md'; width?: string }) {
-  const height = size === 'lg' ? 52 : 30;
+  const height = size === 'lg' ? 54 : 32;
   const radius = size === 'lg' ? 12 : 8;
   return (
     <div style={{
@@ -255,8 +255,8 @@ export function PageHeader({ kicker, title, sub, actions, loading = false }: Pag
         )}
         {/* Sub */}
         {loading ? (
-          <div style={{ marginTop: 14 }}>
-            <Skeleton height={14} width="360px" borderRadius={4} />
+          <div style={{ marginTop: 12 }}>
+            <Skeleton height={20} width="360px" borderRadius={4} />
           </div>
         ) : (
           sub && <p style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-60)', maxWidth: 540, lineHeight: 1.5 }}>{sub}</p>
@@ -277,7 +277,7 @@ export function Card({ title, sub, children, pad = 24, loading = false, skeleton
           {loading ? (
             <>
               <SkeletonTitle size="md" width="45%" />
-              {sub && <div style={{ marginTop: 8 }}><Skeleton height={10} width="160px" borderRadius={4} /></div>}
+              {sub && <div style={{ marginTop: 6 }}><Skeleton height={14} width="160px" borderRadius={4} /></div>}
             </>
           ) : (
             <>
