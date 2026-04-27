@@ -5,6 +5,7 @@ import { Button } from '../shared/Button';
 import { useAuth, useUser, useClerk } from '@clerk/clerk-react';
 import { api } from '../../lib/api';
 import type { SavedAddress } from '../../types';
+import { SignInModal } from './SignInModal';
 
 type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin';
 
@@ -183,9 +184,10 @@ function AddressManagerModal({
 export function Header({ onNav, onOpenCart }: HeaderProps) {
   const cartCount = useCartStore((s) => s.count());
   const { isSignedIn, user } = useUser();
-  const { openSignIn, signOut } = useClerk();
+  const { signOut } = useClerk();
   const { getToken } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [signInModalOpen, setSignInModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
@@ -430,7 +432,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             if (isSignedIn) {
               setUserMenuOpen(!userMenuOpen);
             } else {
-              openSignIn();
+              setSignInModalOpen(true);
             }
           }}>
             {isSignedIn && user?.imageUrl ? (
@@ -466,6 +468,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
           )}
         </button>
       </div>
+      <SignInModal open={signInModalOpen} onClose={() => setSignInModalOpen(false)} />
       <AddressManagerModal
         open={addressModalOpen}
         onClose={() => { setAddressModalOpen(false); setAddressError(''); setConfirmDeleteIndex(null); resetAddressEditor(); }}
