@@ -23,7 +23,7 @@ const adminSalesRouter = new Hono()
     const daily = await Order.aggregate([
       { $match: { paymentStatus: 'paid', createdAt: { $gte: thirtyDaysAgo } } },
       { $group: {
-        _id: { $dateToString: { format: '%d/%m', date: '$createdAt' } },
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
         revenue: { $sum: '$total' },
         orders: { $sum: 1 },
         units: { $sum: { $sum: '$items.qty' } },

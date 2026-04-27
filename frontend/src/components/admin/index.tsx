@@ -34,7 +34,7 @@ const LineChartInner = ({ data, height }: { data?: { date?: string; revenue?: nu
 
 export const LineChart = memo(LineChartInner);
 
-const BarChartInner = ({ data, height, verticalLabels }: { data?: { date?: string; revenue?: number; orders?: number; value?: number }[]; height?: number; verticalLabels?: boolean }) => {
+const BarChartInner = ({ data, height }: { data?: { date?: string; revenue?: number; orders?: number; value?: number }[]; height?: number }) => {
   const chartData = useMemo(() => {
     if (!data) return [];
     return data.map(d => ({ date: d.date || '', value: d.orders ?? d.value ?? 0 }));
@@ -45,7 +45,7 @@ const BarChartInner = ({ data, height, verticalLabels }: { data?: { date?: strin
   return (
     <ResponsiveContainer width="100%" height={height}>
       <RechartsBar data={chartData} margin={{ top: 10, right: 40, left: 10, bottom: 50 }}>
-        <XAxis dataKey="date" type="category" fontSize={9} fontFamily="JetBrains Mono" stroke="var(--ink-60)" tickLine={false} interval={0} height={50} tick={verticalLabels ? { angle: -90, textAnchor: 'start', fill: 'var(--ink)' } : { fill: 'var(--ink)' }} />
+        <XAxis dataKey="date" type="category" fontSize={9} fontFamily="JetBrains Mono" stroke="var(--ink-60)" tickLine={false} interval={0} height={50} tick={{ fill: 'var(--ink)' }} />
         <YAxis tickFormatter={(v) => v} fontSize={10} fontFamily="JetBrains Mono" stroke="var(--ink-60)" width={50} tick={{ fill: 'var(--ink)' }} />
         <Bar dataKey="value" fill="var(--green)" radius={[4, 4, 0, 0]} />
       </RechartsBar>

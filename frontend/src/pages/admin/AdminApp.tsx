@@ -983,7 +983,7 @@ function AdminPanel({ access, onGoToStore }: { access: AdminAccess; onGoToStore:
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20, marginBottom: 24 }}>
               <Card title="Órdenes por día" sub="Pedidos diarios · últimos 30 días" pad={20}>
-                {sales?.daily ? <BarChart data={sales.daily} height={240} verticalLabels /> : <div style={{ height: 210, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-60)', fontSize: 13 }}>Sin datos aún</div>}
+                {sales?.daily ? <BarChart data={sales.daily} height={240} /> : <div style={{ height: 210, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-60)', fontSize: 13 }}>Sin datos aún</div>}
               </Card>
               <Card title="Revenue por categoría" sub="Ingresos por categoría" pad={20}>
                 {sales?.revenueByCategory?.length ? <BarChart data={sales.revenueByCategory} height={240} /> : <div style={{ height: 210, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-60)', fontSize: 13 }}>Sin datos aún</div>}
