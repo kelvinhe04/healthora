@@ -3,6 +3,7 @@ export interface AuthUser {
   role: string;
   name?: string;
   email?: string;
+  imageUrl?: string;
   _id?: unknown;
 }
 

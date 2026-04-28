@@ -1,8 +1,41 @@
 import { BarChart as RechartsBar, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart as RechartsLine, Line, CartesianGrid } from 'recharts';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { memo } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { Icon } from '../shared/Icon';
+
+let _adminSessionId = '';
+const _shownSkeletons = new Set<string>();
+
+export function initAdminSession() {
+  _adminSessionId = Math.random().toString(36).slice(2);
+  _shownSkeletons.clear();
+}
+
+export function useOnceLoading(key: string, isLoading: boolean): boolean {
+  const [locked, setLocked] = useState(() => !_shownSkeletons.has(key));
+  const [loadingStarted, setLoadingStarted] = useState(false);
+  const [timerDone, setTimerDone] = useState(false);
+
+  useEffect(() => {
+    if (isLoading && !loadingStarted && locked) setLoadingStarted(true);
+  }, [isLoading, loadingStarted, locked]);
+
+  useEffect(() => {
+    if (!loadingStarted) return;
+    const t = setTimeout(() => setTimerDone(true), 1800);
+    return () => clearTimeout(t);
+  }, [loadingStarted]);
+
+  useEffect(() => {
+    if (locked && loadingStarted && timerDone && !isLoading) {
+      _shownSkeletons.add(key);
+      setLocked(false);
+    }
+  }, [locked, loadingStarted, timerDone, isLoading, key]);
+
+  return locked && loadingStarted;
+}
 const Ctx = ({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) => {
   if (active && payload?.length) {
     return <div style={{ background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 8, padding: '8px 12px', fontSize: 12, fontFamily: '"JetBrains Mono", monospace' }}>{label}: ${payload[0].value}</div>;
@@ -140,12 +173,18 @@ export function StatusPill({ status }: { status: string }) {
   );
 }
 
-function useCounter(target: number, duration = 1500) {
+function useCounter(target: number, duration = 1500, animKey?: string) {
   const [count, setCount] = useState(0);
+  const hasAnimatedKey = animKey ? `kpi_animated_${_adminSessionId}_${animKey}` : null;
+  const hasAnimated = hasAnimatedKey ? sessionStorage.getItem(hasAnimatedKey) === 'true' : false;
 
   useEffect(() => {
     if (target === 0) {
       setCount(0);
+      return;
+    }
+    if (hasAnimated) {
+      setCount(target);
       return;
     }
     const start = 0;
@@ -159,10 +198,12 @@ function useCounter(target: number, duration = 1500) {
       setCount(Math.round(start + diff * eased));
       if (progress < 1) {
         requestAnimationFrame(update);
+      } else if (hasAnimatedKey) {
+        sessionStorage.setItem(hasAnimatedKey, 'true');
       }
     }
     requestAnimationFrame(update);
-  }, [target, duration]);
+  }, [target, duration, hasAnimatedKey, hasAnimated]);
 
   return count;
 }
@@ -178,8 +219,8 @@ function formatValue(value: ReactNode, num: number): string {
 }
 
 // KpiCard
-interface KpiCardProps { label: string; value?: ReactNode; delta?: number; sub?: string; mode?: 'light' | 'dark'; loading?: boolean; }
-export function KpiCard({ label, value, delta, sub, mode = 'light', loading = false }: KpiCardProps) {
+interface KpiCardProps { label: string; value?: ReactNode; delta?: number; sub?: string; mode?: 'light' | 'dark'; loading?: boolean; animKey?: string; }
+export function KpiCard({ label, value, delta, sub, mode = 'light', loading = false, animKey }: KpiCardProps) {
   const isDark = mode === 'dark';
   if (loading) {
     return (
@@ -212,7 +253,7 @@ export function KpiCard({ label, value, delta, sub, mode = 'light', loading = fa
       </div>
     );
   }
-  const animated = useCounter(rawNum);
+  const animated = useCounter(rawNum, 1500, animKey);
   const displayValue = formatValue(value, animated);
   return (
     <div style={{ background: isDark ? 'var(--green)' : 'var(--cream)', color: isDark ? 'var(--cream)' : 'var(--ink)', borderRadius: 20, padding: '24px 26px', border: isDark ? 'none' : '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', gap: 16, minHeight: 150, justifyContent: 'space-between' }}>
@@ -272,7 +313,7 @@ export function Card({ title, sub, children, pad = 24, loading = false, skeleton
   return (
     <div style={{ background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: pad }}>
       {/* Title area — skeleton or real */}
-      {(title || loading) && (
+      {title && (
         <div style={{ marginBottom: 20 }}>
           {loading ? (
             <>

@@ -7,6 +7,8 @@ import { Stars } from '../components/shared/Stars';
 import { Button } from '../components/shared/Button';
 import { Icon } from '../components/shared/Icon';
 import { useProducts } from '../hooks/useProducts';
+import { useReviews } from '../hooks/useReviews';
+import { ReviewSection } from '../components/shared/ReviewSection';
 
 interface ProductDetailProps {
   product: Product;
@@ -27,6 +29,11 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   const [isZoomingOut, setIsZoomingOut] = useState(false);
   const { data: allProducts = [] } = useProducts();
   const related = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
+  const { data: liveReviews } = useReviews(product.id);
+  const liveCount = liveReviews?.length ?? 0;
+  const liveRating = liveReviews && liveReviews.length > 0
+    ? Math.round(liveReviews.reduce((s, r) => s + r.rating, 0) / liveReviews.length * 10) / 10
+    : 0;
   const gallery = product.images?.length
     ? product.images.slice(0, 4)
     : Array.from({ length: 4 }, (_, i) => ({
@@ -149,8 +156,14 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
           <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 64, lineHeight: 0.98, letterSpacing: '-0.035em', margin: '0 0 20px', color: 'var(--ink)', fontWeight: 400 }}>{product.name}</h1>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-            <Stars value={product.rating} size={14} />
-            <span style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>{product.rating} ({product.reviews} reseñas)</span>
+            {liveCount > 0 ? (
+              <>
+                <Stars value={liveRating} size={14} />
+                <span style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>{liveRating} · {liveCount} {liveCount === 1 ? 'reseña' : 'reseñas'}</span>
+              </>
+            ) : (
+              <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-40)', letterSpacing: '0.06em' }}>SIN RESEÑAS AÚN</span>
+            )}
             {product.stock === 0 ? (
               <span style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'oklch(0.5 0.15 30)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 6, height: 6, background: 'oklch(0.5 0.15 30)', borderRadius: 999 }} />
@@ -275,6 +288,8 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
           </div>
         </section>
       )}
+
+      <ReviewSection productId={product.id} />
     </main>
   );
 }

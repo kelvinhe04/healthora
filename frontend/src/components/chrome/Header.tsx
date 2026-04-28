@@ -350,50 +350,64 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
         <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Healthora</span>
       </div>
 
+      <style>{`
+        .nav-link {
+          position: relative;
+          cursor: pointer;
+          color: var(--ink);
+          text-decoration: none;
+          letter-spacing: -0.01em;
+          transition: color 200ms;
+        }
+        .nav-link::after {
+          content: '';
+          position: absolute;
+          bottom: -3px;
+          left: 0;
+          width: 100%;
+          height: 1.5px;
+          background: var(--green);
+          transform: scaleX(0);
+          transform-origin: right;
+          transition: transform 240ms ease;
+        }
+        .nav-link:hover {
+          color: var(--green);
+        }
+        .nav-link:hover::after {
+          transform: scaleX(1);
+          transform-origin: left;
+        }
+      `}</style>
+
       <nav style={{ display: 'flex', gap: 28, fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)' }}>
-        <a onClick={() => {
+        <a className="nav-link" onClick={() => {
             onNav('landing', undefined, true);
             setTimeout(() => {
               document.getElementById('categorias')?.scrollIntoView({ behavior: 'smooth' });
             }, 100);
-          }} 
-          style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none', letterSpacing: '-0.01em' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--green)')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink)')}
-        >Categorías</a>
-        
-        <a onClick={() => {
+          }}>Categorías</a>
+
+        <a className="nav-link" onClick={() => {
             onNav('landing', undefined, true);
             setTimeout(() => {
               document.getElementById('bestsellers')?.scrollIntoView({ behavior: 'smooth' });
             }, 100);
-          }} 
-          style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none', letterSpacing: '-0.01em' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--green)')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink)')}
-        >Best sellers</a>
-        
-        <a onClick={() => {
+          }}>Best sellers</a>
+
+        <a className="nav-link" onClick={() => {
             onNav('landing', undefined, true);
             setTimeout(() => {
               document.getElementById('ofertas')?.scrollIntoView({ behavior: 'smooth' });
             }, 100);
-          }} 
-          style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none', letterSpacing: '-0.01em' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--green)')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink)')}
-        >Ofertas</a>
-        
-        <a onClick={() => {
+          }}>Ofertas</a>
+
+        <a className="nav-link" onClick={() => {
             onNav('landing', undefined, true);
             setTimeout(() => {
               document.getElementById('nuevos')?.scrollIntoView({ behavior: 'smooth' });
             }, 100);
-          }} 
-          style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none', letterSpacing: '-0.01em' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--green)')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink)')}
-        >Recién llegados</a>
+          }}>Recién llegados</a>
       </nav>
 
       <form
