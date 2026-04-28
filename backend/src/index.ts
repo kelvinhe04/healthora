@@ -15,6 +15,7 @@ import { adminUsersRouter } from './routes/admin/adminUsers';
 import { adminSalesRouter } from './routes/admin/adminSales';
 import { adminEarningsRouter } from './routes/admin/adminEarnings';
 import { accountRouter } from './routes/account';
+import { reviewsRouter } from './routes/reviews';
 
 await connectDB();
 
@@ -26,6 +27,7 @@ app.route('/products', productsRouter);
 app.route('/categories', categoriesRouter);
 app.route('/orders', ordersRouter);
 app.route('/account', accountRouter);
+app.route('/reviews', reviewsRouter);
 app.route('/cart', cartRouter);
 app.route('/checkout', checkoutRouter);
 app.route('/webhooks', webhooksRouter);

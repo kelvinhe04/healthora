@@ -81,6 +81,7 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
       role: user.role,
       name: user.name,
       email: user.email,
+      imageUrl: clerkUser.imageUrl,
       _id: user._id,
     });
 

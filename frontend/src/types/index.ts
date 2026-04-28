@@ -118,6 +118,20 @@ export interface User {
   createdAt: string;
 }
 
+export interface Review {
+  _id: string;
+  productId: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  title?: string;
+  body: string;
+  userAvatar?: string;
+  helpfulVoters: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ProductFilters {
   category?: string;
   need?: string;

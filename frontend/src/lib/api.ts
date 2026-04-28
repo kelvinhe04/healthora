@@ -1,4 +1,4 @@
-import type { Product, Category, Order, ProductFilters, SavedAddress } from '../types';
+import type { Product, Category, Order, ProductFilters, SavedAddress, Review } from '../types';
 import type { CartItem } from '../types';
 
 const BASE = '/api';
@@ -60,6 +60,14 @@ export const api = {
       body: { items: { productId: string; qty: number }[]; address: object },
       token: string
     ) => request<{ url: string }>('/checkout/session', { method: 'POST', body: JSON.stringify(body) }, token),
+  },
+  reviews: {
+    list: (productId: string) => request<Review[]>(`/reviews?productId=${encodeURIComponent(productId)}`),
+    create: (
+      data: { productId: string; rating: number; title?: string; body: string },
+      token: string
+    ) => request<Review>('/reviews', { method: 'POST', body: JSON.stringify(data) }, token),
+    helpful: (id: string, token: string) => request<Review>(`/reviews/${id}/helpful`, { method: 'PATCH' }, token),
   },
   admin: {
     access: (token: string) => request<{ allowed: boolean; role: string; name?: string; email?: string }>('/admin/access', undefined, token),
