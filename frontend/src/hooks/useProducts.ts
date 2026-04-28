@@ -6,7 +6,8 @@ export function useProducts(filters: ProductFilters = {}) {
   return useQuery({
     queryKey: ['products', filters],
     queryFn: () => api.products.list(filters),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 10,
+    placeholderData: (previousData) => previousData,
   });
 }
 

@@ -56,7 +56,7 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
             <Icon name="bag" size={32} />
             <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, color: 'var(--ink)' }}>Tu carrito está vacío</div>
             <p style={{ fontSize: 14, maxWidth: 280 }}>Agrega productos al carrito para empezar tu compra.</p>
-            <Button variant="primary" onClick={onClose}>Explorar tienda</Button>
+            <Button variant="primary" onClick={() => { onClose(); window.history.pushState({}, '', '/?view=catalog'); window.dispatchEvent(new PopStateEvent('popstate')); }}>Explorar productos</Button>
           </div>
         ) : (
           <>
@@ -65,8 +65,8 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
                 <button
                   onClick={() => setConfirmClearOpen(true)}
                   style={{
-                    border: '1px solid color-mix(in oklab, var(--coral) 24%, white)',
-                    background: 'color-mix(in oklab, var(--coral) 12%, white)',
+                    border: '1px solid #e8a5a0',
+                    background: '#fef2f1',
                     cursor: 'pointer',
                     fontSize: 11,
                     fontFamily: '"JetBrains Mono", monospace',

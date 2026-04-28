@@ -5,6 +5,13 @@ import { clerkAuth } from '../middleware/clerkAuth';
 import type { AppEnv } from '../types/hono';
 
 export const reviewsRouter = new Hono<AppEnv>()
+  .get('/stats', async (c) => {
+    const result = await Review.aggregate([
+      { $group: { _id: null, total: { $sum: 1 }, avgRating: { $avg: '$rating' } } },
+    ]);
+    const { total = 0, avgRating = 0 } = result[0] ?? {};
+    return c.json({ total, avgRating: Math.round(avgRating * 10) / 10 });
+  })
   .get('/', async (c) => {
     const productId = c.req.query('productId');
     if (!productId) return c.json({ error: 'productId requerido' }, 400);

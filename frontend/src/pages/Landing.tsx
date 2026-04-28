@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import type { Product, Category } from '../types';
 import { ProductCard } from '../components/shared/ProductCard';
@@ -7,6 +8,7 @@ import { Button } from '../components/shared/Button';
 import { Icon } from '../components/shared/Icon';
 import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
+import { api } from '../lib/api';
 
 type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club';
 
@@ -94,6 +96,13 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     window.scrollTo({ top, behavior: 'smooth' });
   };
 
+  const { data: reviewStats } = useQuery({
+    queryKey: ['review-stats'],
+    queryFn: api.reviews.stats,
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
+
   const bestSellers = products.filter((p) => p.tag === 'Best seller').slice(0, 4);
   const featured = [...products]
     .sort((a, b) => {
@@ -157,10 +166,14 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', position: 'absolute', top: 40, right: 40 }}>LIFESTYLE / MODEL SHOT</div>
               <div style={{ position: 'absolute', bottom: 40, left: 40, background: 'rgba(248, 246, 240, 0.96)', color: 'var(--ink)', padding: '18px 20px', borderRadius: 18, display: 'flex', alignItems: 'center', gap: 14, maxWidth: 280, boxShadow: '0 30px 60px -30px rgba(0,0,0,0.3)' }}>
-                <div style={{ width: 52, height: 52, borderRadius: 999, background: 'var(--lime)', color: 'oklch(0.28 0.055 155)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Instrument Serif", serif', fontSize: 22 }}>4.9</div>
+                <div style={{ width: 52, height: 52, borderRadius: 999, background: 'var(--lime)', color: 'oklch(0.28 0.055 155)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Instrument Serif", serif', fontSize: 22 }}>
+                  {reviewStats?.avgRating ? reviewStats.avgRating.toFixed(1) : '—'}
+                </div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>24,812 clientes felices</div>
-                  <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', marginTop: 2 }}>PROMEDIO GLOBAL DE ÓRDENES</div>
+                  <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>
+                    {reviewStats?.total ? reviewStats.total.toLocaleString('es-CO') + ' clientes felices' : 'Sin reseñas aún'}
+                  </div>
+                  <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', marginTop: 2 }}>PROMEDIO GLOBAL DE RESEÑAS</div>
                 </div>
               </div>
               <div

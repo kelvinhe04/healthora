@@ -23,6 +23,8 @@ import {
     trStyle,
     iconBtnAd,
     Skeleton,
+    initAdminSession,
+    useOnceLoading,
 } from "../../components/admin";
 import { ProductImage } from "../../components/shared/ProductImage";
 import { Button } from "../../components/shared/Button";
@@ -1182,6 +1184,10 @@ function AdminPanel({
     const [page, setPage] = useState<AdminPage>("dashboard");
 
     useEffect(() => {
+        initAdminSession();
+    }, []);
+
+    useEffect(() => {
         if (typeof window !== "undefined" && page !== "dashboard") {
             localStorage.setItem("healthora_admin_page", page);
         }
@@ -1218,6 +1224,7 @@ function AdminPanel({
             api.admin.dashboard(
                 await getAdminToken(),
             ) as Promise<DashboardData>,
+        staleTime: 30_000,
     });
     const ordersQuery = useQuery({
         queryKey: ["admin-orders", orderFulfillmentFilter],
@@ -1226,26 +1233,37 @@ function AdminPanel({
                 await getAdminToken(),
                 orderFulfillmentFilter || undefined,
             ) as Promise<AdminOrder[]>,
+        enabled: page === "orders",
     });
     const productsQuery = useQuery({
         queryKey: ["admin-products"],
         queryFn: async () => api.admin.products.list(await getAdminToken()),
+        enabled: page === "products",
     });
     const usersQuery = useQuery({
         queryKey: ["admin-users"],
         queryFn: async () =>
             api.admin.users(await getAdminToken()) as Promise<AdminUser[]>,
+        enabled: page === "users",
     });
     const salesQuery = useQuery({
         queryKey: ["admin-sales"],
         queryFn: async () =>
             api.admin.sales(await getAdminToken()) as Promise<SalesData>,
+        enabled: page === "sales",
     });
     const earningsQuery = useQuery({
         queryKey: ["admin-earnings"],
         queryFn: async () =>
             api.admin.earnings(await getAdminToken()) as Promise<EarningsData>,
+        enabled: page === "earnings",
     });
+
+    const showOrdersSkeleton = useOnceLoading("section_orders", ordersQuery.isLoading);
+    const showProductsSkeleton = useOnceLoading("section_products", productsQuery.isLoading);
+    const showUsersSkeleton = useOnceLoading("section_users", usersQuery.isLoading);
+    const showSalesSkeleton = useOnceLoading("section_sales", salesQuery.isLoading);
+    const showEarningsSkeleton = useOnceLoading("section_earnings", earningsQuery.isLoading);
 
     const orderStatusesMutation = useMutation({
         mutationFn: async ({
@@ -1395,11 +1413,11 @@ function AdminPanel({
 
     const sidebarCounts = useMemo(
         () => ({
-            orders: orders.length,
+            orders: dashboardData?.kpis.totalOrders ?? orders.length,
             products: products.length,
-            users: users.length,
+            users: dashboardData?.kpis.totalUsers ?? users.length,
         }),
-        [orders.length, products.length, users.length],
+        [dashboardData, orders.length, products.length, users.length],
     );
 
     const categories = useMemo(
@@ -1501,24 +1519,28 @@ function AdminPanel({
                                 delta={dashboard?.kpis.revenueDelta}
                                 sub="vs mes anterior"
                                 loading={!dashboard}
+                                animKey="revenue"
                             />
                             <KpiCard
                                 label="Órdenes mes"
                                 value={dashboard?.kpis.monthOrders ?? "—"}
                                 sub="pagadas o en curso"
                                 loading={!dashboard}
+                                animKey="orders"
                             />
                             <KpiCard
                                 label="Usuarios"
                                 value={dashboard?.kpis.totalUsers ?? "—"}
                                 sub="clientes registrados"
                                 loading={!dashboard}
+                                animKey="users"
                             />
                             <KpiCard
                                 label="Stock bajo"
                                 value={dashboard?.kpis.lowStock ?? "—"}
                                 sub="productos ≤5 unidades"
                                 loading={!dashboard}
+                                animKey="lowstock"
                             />
                         </div>
 
@@ -1827,6 +1849,7 @@ function AdminPanel({
                 {page === "orders" && (
                     <>
                         <PageHeader
+                            loading={showOrdersSkeleton}
                             kicker="Pedidos"
                             title={
                                 <>
@@ -1838,6 +1861,14 @@ function AdminPanel({
                             }
                             sub="Cambia estados y monitorea el ciclo completo de la orden."
                         />
+                        {showOrdersSkeleton ? (
+                            <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' }}>
+                                <Skeleton height={36} width={296} borderRadius={999} />
+                                {[100, 80, 90, 72, 86, 78].map((w, i) => (
+                                    <Skeleton key={i} height={32} width={w} borderRadius={999} />
+                                ))}
+                            </div>
+                        ) : (
                         <div
                             style={{
                                 display: "flex",
@@ -1943,7 +1974,59 @@ function AdminPanel({
                                 ))}
                             </div>
                         </div>
-                        <Card pad={0} loading={!orders?.length}>
+                        )}
+                        <Card pad={0} loading={showOrdersSkeleton} skeletonContent={
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ padding: '14px 24px', borderBottom: '1px solid var(--ink-06)', display: 'flex', alignItems: 'center' }}>
+                                    <Skeleton height={12} width={110} borderRadius={4} />
+                                </div>
+                                {/* Column headers */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 24px', borderBottom: '1px solid var(--ink-06)' }}>
+                                    <div style={{ flexShrink: 0, width: 78 }}><Skeleton height={9} width={44} borderRadius={3} /></div>
+                                    <div style={{ flex: 1.8 }}><Skeleton height={9} width={88} borderRadius={3} /></div>
+                                    <div style={{ flex: 1.2 }}><Skeleton height={9} width={62} borderRadius={3} /></div>
+                                    <div style={{ flexShrink: 0, width: 54 }}><Skeleton height={9} width={38} borderRadius={3} /></div>
+                                    <div style={{ flexShrink: 0, width: 72 }}><Skeleton height={9} width={34} borderRadius={3} /></div>
+                                    <div style={{ flexShrink: 0, width: 202 }}><Skeleton height={9} width={48} borderRadius={3} /></div>
+                                    <div style={{ flexShrink: 0, width: 80 }}><Skeleton height={9} width={82} borderRadius={3} /></div>
+                                </div>
+                                {[0,1,2,3,4,5,6].map(i => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 24px', borderBottom: '1px solid var(--ink-06)' }}>
+                                        {/* Orden ID */}
+                                        <Skeleton height={11} width={78} borderRadius={4} style={{ flexShrink: 0 }} />
+                                        {/* Cliente / Envío: nombre + email + 2-line dirección */}
+                                        <div style={{ flex: 1.8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                            <Skeleton height={13} width="65%" borderRadius={4} />
+                                            <Skeleton height={10} width="52%" borderRadius={4} />
+                                            <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                                <Skeleton height={10} width="76%" borderRadius={4} />
+                                                <Skeleton height={10} width="60%" borderRadius={4} />
+                                            </div>
+                                        </div>
+                                        {/* Productos: count label + 2 items */}
+                                        <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                            <Skeleton height={10} width="38%" borderRadius={4} />
+                                            <Skeleton height={11} width="90%" borderRadius={4} />
+                                            <Skeleton height={11} width="74%" borderRadius={4} />
+                                        </div>
+                                        {/* Total: serif 18px */}
+                                        <Skeleton height={18} width={54} borderRadius={4} style={{ flexShrink: 0 }} />
+                                        {/* Pago: pill */}
+                                        <Skeleton height={22} width={72} borderRadius={999} style={{ flexShrink: 0 }} />
+                                        {/* Estado: pill + select dropdown */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                                            <Skeleton height={22} width={86} borderRadius={999} />
+                                            <Skeleton height={32} width={108} borderRadius={8} />
+                                        </div>
+                                        {/* Fecha y hora: 2 lines */}
+                                        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                            <Skeleton height={11} width={68} borderRadius={4} />
+                                            <Skeleton height={11} width={50} borderRadius={4} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        }>
                             <div
                                 style={{
                                     padding: "16px 24px",
@@ -2190,7 +2273,8 @@ function AdminPanel({
                 {page === "products" && (
                     <>
                         <PageHeader
-                            kicker={`Catálogo · ${products.length} productos`}
+                            loading={showProductsSkeleton}
+                            kicker={showProductsSkeleton ? undefined : `Catálogo · ${products.length} productos`}
                             title={
                                 <>
                                     Gestión de{" "}
@@ -2200,7 +2284,9 @@ function AdminPanel({
                                 </>
                             }
                             sub="Agrega, edita, elimina y filtra el catálogo completo."
-                            actions={
+                            actions={showProductsSkeleton ? (
+                                <Skeleton height={40} width={152} borderRadius={999} />
+                            ) : (
                                 <Button
                                     variant="primary"
                                     onClick={() =>
@@ -2209,10 +2295,18 @@ function AdminPanel({
                                 >
                                     + Agregar producto
                                 </Button>
-                            }
+                            )}
                         />
 
                         {/* Filter bar */}
+                        {showProductsSkeleton ? (
+                            <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+                                <Skeleton height={36} width={296} borderRadius={999} />
+                                {[74, 88, 80, 68, 76, 84, 70, 78, 74, 66].map((w, i) => (
+                                    <Skeleton key={i} height={32} width={w} borderRadius={999} />
+                                ))}
+                            </div>
+                        ) : (
                         <div
                             style={{
                                 display: "flex",
@@ -2314,7 +2408,17 @@ function AdminPanel({
                                 ))}
                             </div>
                         </div>
+                        )}
 
+                        {showProductsSkeleton ? (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+                                <Skeleton height={12} width={248} borderRadius={4} />
+                                <div style={{ display: 'flex', gap: 8 }}>
+                                    <Skeleton height={32} width={126} borderRadius={999} />
+                                    <Skeleton height={32} width={158} borderRadius={999} />
+                                </div>
+                            </div>
+                        ) : (
                         <div
                             style={{
                                 display: "flex",
@@ -2378,8 +2482,60 @@ function AdminPanel({
                                 </Button>
                             </div>
                         </div>
+                        )}
 
-                        <Card pad={0} loading={!products?.length}>
+                        <Card pad={0} loading={showProductsSkeleton} skeletonContent={
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                {/* Column headers */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 24px', borderBottom: '1px solid var(--ink-06)' }}>
+                                    <div style={{ width: 52, flexShrink: 0 }} />
+                                    <div style={{ flex: 2 }}><Skeleton height={9} width={58} borderRadius={3} /></div>
+                                    <div style={{ flex: 1 }}><Skeleton height={9} width={66} borderRadius={3} /></div>
+                                    <div style={{ flex: 0.8 }}><Skeleton height={9} width={44} borderRadius={3} /></div>
+                                    <div style={{ flex: 0.6 }}><Skeleton height={9} width={38} borderRadius={3} /></div>
+                                    <div style={{ flex: 0.8 }}><Skeleton height={9} width={46} borderRadius={3} /></div>
+                                    <div style={{ width: 66, flexShrink: 0 }} />
+                                </div>
+                                {[0,1,2,3,4,5,6,7,8,9,10,11,12,13].map(i => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 24px', borderBottom: '1px solid var(--ink-06)' }}>
+                                        {/* Checkbox */}
+                                        <div style={{ width: 52, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+                                            <Skeleton height={16} width={16} borderRadius={3} />
+                                        </div>
+                                        {/* Producto: image 60×72 + name + brand */}
+                                        <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: 12 }}>
+                                            <Skeleton height={72} width={60} borderRadius={8} style={{ flexShrink: 0 }} />
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                                                <Skeleton height={13} width={110} borderRadius={4} />
+                                                <Skeleton height={10} width={80} borderRadius={4} />
+                                            </div>
+                                        </div>
+                                        {/* Categoría: plain text */}
+                                        <div style={{ flex: 1 }}>
+                                            <Skeleton height={11} width={72} borderRadius={4} />
+                                        </div>
+                                        {/* Precio: serif price + strikethrough */}
+                                        <div style={{ flex: 0.8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                            <Skeleton height={18} width={58} borderRadius={4} />
+                                            <Skeleton height={10} width={42} borderRadius={4} />
+                                        </div>
+                                        {/* Stock */}
+                                        <div style={{ flex: 0.6 }}>
+                                            <Skeleton height={13} width={30} borderRadius={4} />
+                                        </div>
+                                        {/* Estado: pill */}
+                                        <div style={{ flex: 0.8 }}>
+                                            <Skeleton height={22} width={62} borderRadius={999} />
+                                        </div>
+                                        {/* Actions: 2 icon buttons 30×30 */}
+                                        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                                            <Skeleton height={30} width={30} borderRadius={8} />
+                                            <Skeleton height={30} width={30} borderRadius={8} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        }>
                             <table style={tableStyle}>
                                 <thead>
                                     <tr>
@@ -3039,7 +3195,8 @@ function AdminPanel({
                 {page === "users" && (
                     <>
                         <PageHeader
-                            kicker={`Usuarios · ${users.length} cuentas`}
+                            loading={showUsersSkeleton}
+                            kicker={showUsersSkeleton ? undefined : `Usuarios · ${users.length} cuentas`}
                             title={
                                 <>
                                     Gestión de{" "}
@@ -3050,7 +3207,46 @@ function AdminPanel({
                             }
                             sub="Administra roles locales y sincronízalos con Clerk."
                         />
-                        <Card pad={0} loading={!users?.length}>
+                        <Card pad={0} loading={showUsersSkeleton} skeletonContent={
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                {/* Column headers */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 24px', borderBottom: '1px solid var(--ink-06)' }}>
+                                    <div style={{ flex: 3 }}><Skeleton height={9} width={54} borderRadius={3} /></div>
+                                    <div style={{ flex: 1.5 }}><Skeleton height={9} width={24} borderRadius={3} /></div>
+                                    <div style={{ flex: 1 }}><Skeleton height={9} width={52} borderRadius={3} /></div>
+                                    <div style={{ flex: 1 }}><Skeleton height={9} width={24} borderRadius={3} /></div>
+                                    <div style={{ flex: 1 }}><Skeleton height={9} width={58} borderRadius={3} /></div>
+                                </div>
+                                {[0,1,2,3,4,5,6,7,8,9].map(i => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 24px', borderBottom: '1px solid var(--ink-06)' }}>
+                                        {/* Usuario: avatar + name/email */}
+                                        <div style={{ flex: 3, display: 'flex', alignItems: 'center', gap: 12 }}>
+                                            <Skeleton height={36} width={36} borderRadius={999} style={{ flexShrink: 0 }} />
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                                                <Skeleton height={13} width={120} borderRadius={4} />
+                                                <Skeleton height={10} width={160} borderRadius={4} />
+                                            </div>
+                                        </div>
+                                        {/* Rol */}
+                                        <div style={{ flex: 1.5 }}>
+                                            <Skeleton height={30} width={90} borderRadius={8} />
+                                        </div>
+                                        {/* Órdenes */}
+                                        <div style={{ flex: 1 }}>
+                                            <Skeleton height={13} width={28} borderRadius={4} />
+                                        </div>
+                                        {/* LTV */}
+                                        <div style={{ flex: 1 }}>
+                                            <Skeleton height={18} width={58} borderRadius={4} />
+                                        </div>
+                                        {/* Registro */}
+                                        <div style={{ flex: 1 }}>
+                                            <Skeleton height={11} width={76} borderRadius={4} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        }>
                             <table style={tableStyle}>
                                 <thead>
                                     <tr>
@@ -3059,7 +3255,6 @@ function AdminPanel({
                                         <th style={th}>Órdenes</th>
                                         <th style={th}>LTV</th>
                                         <th style={th}>Registro</th>
-                                        <th style={th}></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -3181,29 +3376,6 @@ function AdminPanel({
                                                       ).toLocaleDateString()
                                                     : "—"}
                                             </td>
-                                            <td style={td}>
-                                                <button
-                                                    onClick={() =>
-                                                        setConfirmUserDelete({
-                                                            id: user._id,
-                                                            name:
-                                                                user.name ||
-                                                                user.email ||
-                                                                "este usuario",
-                                                        })
-                                                    }
-                                                    style={{
-                                                        ...iconBtnAd,
-                                                        color: "var(--coral)",
-                                                    }}
-                                                    title="Eliminar usuario"
-                                                >
-                                                    <Icon
-                                                        name="trash-2"
-                                                        size={14}
-                                                    />
-                                                </button>
-                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -3216,6 +3388,7 @@ function AdminPanel({
                 {page === "sales" && (
                     <>
                         <PageHeader
+                            loading={showSalesSkeleton}
                             kicker="Ventas"
                             title={
                                 <>
@@ -3242,7 +3415,8 @@ function AdminPanel({
                                     "—"
                                 }
                                 sub="pagadas en total"
-                                loading={!sales?.summary}
+                                loading={showSalesSkeleton}
+                                animKey="sales_orders"
                             />
                             <KpiCard
                                 label="Revenue total"
@@ -3252,7 +3426,8 @@ function AdminPanel({
                                         : "—"
                                 }
                                 sub="todos los pedidos"
-                                loading={!sales?.summary}
+                                loading={showSalesSkeleton}
+                                animKey="sales_revenue"
                             />
                             <KpiCard
                                 mode="dark"
@@ -3263,7 +3438,8 @@ function AdminPanel({
                                         : "—"
                                 }
                                 sub="por orden"
-                                loading={!sales?.summary}
+                                loading={showSalesSkeleton}
+                                animKey="sales_avg"
                             />
                             <KpiCard
                                 label="Unidades vendidas"
@@ -3272,7 +3448,8 @@ function AdminPanel({
                                     "—"
                                 }
                                 sub="total de productos"
-                                loading={!sales?.summary}
+                                loading={showSalesSkeleton}
+                                animKey="sales_units"
                             />
                         </div>
                         <div
@@ -3286,6 +3463,8 @@ function AdminPanel({
                             <Card
                                 title="Órdenes por día"
                                 sub="Pedidos diarios · últimos 30 días"
+                                loading={showSalesSkeleton}
+                                skeletonContent={<Skeleton height={240} borderRadius={8} />}
                             >
                                 {sales?.daily ? (
                                     <BarChart data={sales.daily} height={240} />
@@ -3296,6 +3475,8 @@ function AdminPanel({
                             <Card
                                 title="Revenue por categoría"
                                 sub="Ingresos por categoría"
+                                loading={showSalesSkeleton}
+                                skeletonContent={<Skeleton height={240} borderRadius={8} />}
                             >
                                 {sales?.revenueByCategory?.length ? (
                                     <BarChart
@@ -3317,7 +3498,20 @@ function AdminPanel({
                             <Card
                                 title="Top productos por revenue"
                                 sub="Basado en órdenes pagadas"
-                                loading={!sales?.byCategory?.length}
+                                loading={showSalesSkeleton}
+                                skeletonContent={
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                                        {[0,1,2,3,4].map(i => (
+                                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', borderBottom: '1px solid var(--ink-06)' }}>
+                                                <div style={{ flex: 2 }}><Skeleton height={13} width="75%" borderRadius={4} /></div>
+                                                <Skeleton height={22} width={72} borderRadius={999} />
+                                                <Skeleton height={22} width={80} borderRadius={999} />
+                                                <Skeleton height={13} width={32} borderRadius={4} />
+                                                <Skeleton height={16} width={52} borderRadius={4} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                }
                             >
                                 <table style={tableStyle}>
                                     <thead>
@@ -3387,7 +3581,21 @@ function AdminPanel({
                                 <Card
                                     title="Top categorías"
                                     sub="Por unidades vendidas"
-                                    loading={!sales?.topCategories?.length}
+                                    loading={showSalesSkeleton}
+                                    skeletonContent={
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                            {[0,1,2,3,4].map(i => (
+                                                <div key={i}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                                                        <Skeleton height={11} width={20} borderRadius={4} />
+                                                        <Skeleton height={13} width="50%" borderRadius={4} />
+                                                        <Skeleton height={13} width={48} borderRadius={4} />
+                                                    </div>
+                                                    <Skeleton height={6} width="100%" borderRadius={999} />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    }
                                 >
                                     <div
                                         style={{
@@ -3478,7 +3686,21 @@ function AdminPanel({
                                 <Card
                                     title="Top marcas"
                                     sub="Por unidades vendidas"
-                                    loading={!sales?.topBrands?.length}
+                                    loading={showSalesSkeleton}
+                                    skeletonContent={
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                            {[0,1,2,3,4].map(i => (
+                                                <div key={i}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                                                        <Skeleton height={11} width={20} borderRadius={4} />
+                                                        <Skeleton height={13} width="45%" borderRadius={4} />
+                                                        <Skeleton height={13} width={48} borderRadius={4} />
+                                                    </div>
+                                                    <Skeleton height={6} width="100%" borderRadius={999} />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    }
                                 >
                                     <div
                                         style={{
@@ -3575,6 +3797,7 @@ function AdminPanel({
                 {page === "earnings" && (
                     <>
                         <PageHeader
+                            loading={showEarningsSkeleton}
                             kicker="Ganancias"
                             title={
                                 <>
@@ -3602,7 +3825,8 @@ function AdminPanel({
                                         ? `$${earnings.summary.gross.toLocaleString()}`
                                         : "—"
                                 }
-                                loading={!earnings?.summary}
+                                loading={showEarningsSkeleton}
+                                animKey="earn_gross"
                             />
                             <KpiCard
                                 label="Impuestos"
@@ -3611,7 +3835,8 @@ function AdminPanel({
                                         ? `$${earnings.summary.tax.toFixed(2)}`
                                         : "—"
                                 }
-                                loading={!earnings?.summary}
+                                loading={showEarningsSkeleton}
+                                animKey="earn_tax"
                             />
                             <KpiCard
                                 label="Utilidad neta"
@@ -3620,7 +3845,8 @@ function AdminPanel({
                                         ? `$${earnings.summary.net.toLocaleString()}`
                                         : "—"
                                 }
-                                loading={!earnings?.summary}
+                                loading={showEarningsSkeleton}
+                                animKey="earn_net"
                             />
                             <KpiCard
                                 label="Comisiones Stripe"
@@ -3630,14 +3856,35 @@ function AdminPanel({
                                         : "—"
                                 }
                                 sub="estimado 2.9%"
-                                loading={!earnings?.summary}
+                                loading={showEarningsSkeleton}
+                                animKey="earn_fees"
                             />
                         </div>
                         <Card
                             title="Detalle mensual"
                             sub="Revenue y órdenes por mes"
                             pad={20}
-                            loading={!earnings?.monthly}
+                            loading={showEarningsSkeleton}
+                            skeletonContent={
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    {[0,1,2,3,4,5,6,7,8,9,10,11].map(i => (
+                                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 24px', borderBottom: '1px solid var(--ink-06)' }}>
+                                            {/* Mes */}
+                                            <div style={{ flex: 3 }}>
+                                                <Skeleton height={13} width="70%" borderRadius={4} />
+                                            </div>
+                                            {/* Órdenes */}
+                                            <div style={{ flex: 1 }}>
+                                                <Skeleton height={13} width={32} borderRadius={4} />
+                                            </div>
+                                            {/* Revenue */}
+                                            <div style={{ flex: 2 }}>
+                                                <Skeleton height={18} width={80} borderRadius={4} />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            }
                         >
                             <table style={tableStyle}>
                                 <thead>

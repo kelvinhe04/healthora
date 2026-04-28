@@ -62,6 +62,7 @@ export const api = {
     ) => request<{ url: string }>('/checkout/session', { method: 'POST', body: JSON.stringify(body) }, token),
   },
   reviews: {
+    stats: () => request<{ total: number; avgRating: number }>('/reviews/stats'),
     list: (productId: string) => request<Review[]>(`/reviews?productId=${encodeURIComponent(productId)}`),
     create: (
       data: { productId: string; rating: number; title?: string; body: string },

@@ -320,6 +320,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
       queryClient.invalidateQueries({ queryKey: ['reviews', productId] });
       queryClient.invalidateQueries({ queryKey: ['product', productId] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['review-stats'] });
       setJustSubmitted(true);
       setShowForm(false);
       setFormRating(0);
