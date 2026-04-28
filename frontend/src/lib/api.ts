@@ -1,4 +1,4 @@
-import type { Product, Category, Order, ProductFilters, SavedAddress, Review } from '../types';
+import type { Product, Category, Order, OrderAddress, ProductFilters, SavedAddress, Review } from '../types';
 import type { CartItem } from '../types';
 
 const BASE = '/api';
@@ -42,6 +42,10 @@ export const api = {
     get: (id: string, token: string) => request<Order>(`/orders/${id}`, undefined, token),
     bySession: (sessionId: string, token: string) =>
       request<Order>(`/orders?stripeSessionId=${sessionId}`, undefined, token),
+    cancel: (id: string, token: string) =>
+      request<Order>(`/orders/${id}/cancel`, { method: 'PATCH' }, token),
+    updateAddress: (id: string, address: OrderAddress, token: string) =>
+      request<Order>(`/orders/${id}/address`, { method: 'PATCH', body: JSON.stringify(address) }, token),
   },
   account: {
     addresses: {

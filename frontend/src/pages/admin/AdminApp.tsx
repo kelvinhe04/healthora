@@ -1696,10 +1696,13 @@ function AdminPanel({
                                                     <td style={td}>
                                                         <StatusPill
                                                             status={
-                                                                order.paymentStatus ===
-                                                                "paid"
+                                                                order.paymentStatus === "paid"
                                                                     ? "Pagado"
-                                                                    : "Pendiente"
+                                                                    : order.paymentStatus === "cancelled"
+                                                                      ? "Cancelado"
+                                                                      : order.paymentStatus === "refunded"
+                                                                        ? "Reembolsado"
+                                                                        : "Pendiente"
                                                             }
                                                         />
                                                     </td>
@@ -2161,10 +2164,13 @@ function AdminPanel({
                                             <td style={td}>
                                                 <StatusPill
                                                     status={
-                                                        order.paymentStatus ===
-                                                        "paid"
+                                                        order.paymentStatus === "paid"
                                                             ? "Pagado"
-                                                            : "Pendiente"
+                                                            : order.paymentStatus === "cancelled"
+                                                              ? "Cancelado"
+                                                              : order.paymentStatus === "refunded"
+                                                                ? "Reembolsado"
+                                                                : "Pendiente"
                                                     }
                                                 />
                                             </td>
@@ -2184,45 +2190,47 @@ function AdminPanel({
                                                             ]
                                                         }
                                                     />
-                                                    <select
-                                                        value={
-                                                            order.fulfillmentStatus ||
-                                                            "unfulfilled"
-                                                        }
-                                                        onChange={(e) =>
-                                                            orderStatusesMutation.mutate(
-                                                                {
-                                                                    id: order._id,
-                                                                    fulfillmentStatus:
-                                                                        e.target
-                                                                            .value as FulfillmentStatus,
-                                                                },
-                                                            )
-                                                        }
-                                                        style={{
-                                                            padding: "8px 10px",
-                                                            borderRadius: 8,
-                                                            border: "1px solid var(--ink-20)",
-                                                            background:
-                                                                "transparent",
-                                                            fontSize: 12,
-                                                        }}
-                                                    >
-                                                        {fulfillmentStatusOptions.map(
-                                                            (s) => (
-                                                                <option
-                                                                    key={s}
-                                                                    value={s}
-                                                                >
+                                                    {order.fulfillmentStatus !== "cancelled" && (
+                                                        <select
+                                                            value={
+                                                                order.fulfillmentStatus ||
+                                                                "unfulfilled"
+                                                            }
+                                                            onChange={(e) =>
+                                                                orderStatusesMutation.mutate(
                                                                     {
-                                                                        fulfillmentStatusLabels[
-                                                                            s
-                                                                        ]
-                                                                    }
-                                                                </option>
-                                                            ),
-                                                        )}
-                                                    </select>
+                                                                        id: order._id,
+                                                                        fulfillmentStatus:
+                                                                            e.target
+                                                                                .value as FulfillmentStatus,
+                                                                    },
+                                                                )
+                                                            }
+                                                            style={{
+                                                                padding: "8px 10px",
+                                                                borderRadius: 8,
+                                                                border: "1px solid var(--ink-20)",
+                                                                background:
+                                                                    "transparent",
+                                                                fontSize: 12,
+                                                            }}
+                                                        >
+                                                            {fulfillmentStatusOptions.map(
+                                                                (s) => (
+                                                                    <option
+                                                                        key={s}
+                                                                        value={s}
+                                                                    >
+                                                                        {
+                                                                            fulfillmentStatusLabels[
+                                                                                s
+                                                                            ]
+                                                                        }
+                                                                    </option>
+                                                                ),
+                                                            )}
+                                                        </select>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td

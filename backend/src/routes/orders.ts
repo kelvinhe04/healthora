@@ -7,6 +7,28 @@ import { normalizeOrder } from '../lib/orderStatus';
 import { stripe } from '../lib/stripe';
 import { sendOrderConfirmationEmail } from '../lib/email';
 
+async function addItemImages(orders: Array<Record<string, unknown>>) {
+  const ids = [...new Set(
+    orders.flatMap(o => ((o.items as Array<{ productId: string }> | undefined) ?? []).map(i => i.productId))
+  )];
+  if (!ids.length) return orders;
+
+  const prods = await Product.find({ id: { $in: ids } }).select('id imageUrl images').lean();
+  const imgMap = new Map<string, string | undefined>();
+  for (const p of prods) {
+    const pd = p as { id: string; imageUrl?: string; images?: Array<{ url: string; isPrimary?: boolean }> };
+    imgMap.set(pd.id, pd.imageUrl ?? pd.images?.find(x => x.isPrimary)?.url ?? pd.images?.[0]?.url);
+  }
+
+  return orders.map(o => ({
+    ...o,
+    items: ((o.items as Array<Record<string, unknown>> | undefined) ?? []).map(i => ({
+      ...i,
+      imageUrl: imgMap.get(i.productId as string) ?? null,
+    })),
+  }));
+}
+
 type CheckoutAddress = {
   name: string;
   phone: string;
@@ -132,11 +154,17 @@ export const ordersRouter = new Hono<AppEnv>()
 
     if (stripeSessionId) {
       const order = await Order.findOne({ stripeSessionId, customerId: clerkId }).lean();
-      if (order) return c.json(await syncOrderPaymentFromStripe(order));
+      if (order) {
+        const synced = await syncOrderPaymentFromStripe(order);
+        const [enriched] = await addItemImages([synced as unknown as Record<string, unknown>]);
+        return c.json(enriched);
+      }
 
       try {
         const createdOrder = await createOrderFromPaidSession(stripeSessionId, clerkId);
-        return c.json(createdOrder || { error: 'Not found' });
+        if (!createdOrder) return c.json({ error: 'Not found' });
+        const [enriched] = await addItemImages([createdOrder as unknown as Record<string, unknown>]);
+        return c.json(enriched);
       } catch (error) {
         console.error('[ORDERS] Failed to create order from paid session:', error);
         return c.json({ error: 'Not found' });
@@ -144,12 +172,58 @@ export const ordersRouter = new Hono<AppEnv>()
     }
 
     const orders = await Order.find({ customerId: clerkId }).sort({ createdAt: -1 }).lean();
-    return c.json(orders.map((order) => normalizeOrder(order)));
+    const normalized = orders.map((order) => normalizeOrder(order));
+    return c.json(await addItemImages(normalized as unknown as Record<string, unknown>[]));
   })
   .get('/:id', async (c) => {
     const order = await Order.findById(c.req.param('id')).lean();
     if (!order || (order as { customerId?: string }).customerId !== c.get('user').clerkId) {
       return c.json({ error: 'Not found' }, 404);
     }
-    return c.json(normalizeOrder(order));
+    const [enriched] = await addItemImages([normalizeOrder(order) as unknown as Record<string, unknown>]);
+    return c.json(enriched);
+  })
+  .patch('/:id/cancel', async (c) => {
+    const clerkId = c.get('user').clerkId;
+    const order = await Order.findById(c.req.param('id')).lean() as Record<string, unknown> | null;
+    if (!order || order.customerId !== clerkId) return c.json({ error: 'Not found' }, 404);
+
+    if (!['unfulfilled', 'processing'].includes(order.fulfillmentStatus as string)) {
+      return c.json({ error: 'El pedido ya no puede cancelarse en este estado' }, 400);
+    }
+
+    const updated = await Order.findByIdAndUpdate(
+      c.req.param('id'),
+      { fulfillmentStatus: 'cancelled', paymentStatus: 'cancelled', status: 'cancelled' },
+      { returnDocument: 'after' }
+    ).lean();
+
+    if (!updated) return c.json({ error: 'Not found' }, 404);
+    const [enriched] = await addItemImages([normalizeOrder(updated) as unknown as Record<string, unknown>]);
+    return c.json(enriched);
+  })
+  .patch('/:id/address', async (c) => {
+    const clerkId = c.get('user').clerkId;
+    const order = await Order.findById(c.req.param('id')).lean() as Record<string, unknown> | null;
+    if (!order || order.customerId !== clerkId) return c.json({ error: 'Not found' }, 404);
+
+    if (order.fulfillmentStatus !== 'unfulfilled') {
+      return c.json({ error: 'Solo puedes editar la dirección antes de que el pedido sea procesado' }, 400);
+    }
+
+    const body = await c.req.json() as Record<string, string>;
+    const { name, phone, address, city, postal } = body;
+    if (!name?.trim() || !phone?.trim() || !address?.trim() || !city?.trim() || !postal?.trim()) {
+      return c.json({ error: 'Todos los campos de dirección son requeridos' }, 400);
+    }
+
+    const updated = await Order.findByIdAndUpdate(
+      c.req.param('id'),
+      { address: { name: name.trim(), phone: phone.trim(), address: address.trim(), city: city.trim(), postal: postal.trim() } },
+      { returnDocument: 'after' }
+    ).lean();
+
+    if (!updated) return c.json({ error: 'Not found' }, 404);
+    const [enriched] = await addItemImages([normalizeOrder(updated) as unknown as Record<string, unknown>]);
+    return c.json(enriched);
   });

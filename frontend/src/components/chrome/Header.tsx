@@ -7,7 +7,7 @@ import { api } from '../../lib/api';
 import type { SavedAddress } from '../../types';
 import { SignInModal } from './SignInModal';
 
-type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin';
+type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'orders';
 
 interface HeaderProps {
   onNav: (view: View, filter?: any, noScroll?: boolean) => void;
@@ -378,6 +378,10 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
           transform: scaleX(1);
           transform-origin: left;
         }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
       `}</style>
 
       <nav style={{ display: 'flex', gap: 28, fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)' }}>
@@ -461,6 +465,9 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                 <div style={{ fontSize: 13, fontWeight: 500 }}>{user?.firstName} {user?.lastName}</div>
                 <div style={{ fontSize: 11, color: 'var(--ink-60)' }}>{user?.primaryEmailAddress?.emailAddress}</div>
               </div>
+              <button style={{ ...iconBtn, width: '100%', padding: '10px 12px', borderRadius: 8, justifyContent: 'flex-start', color: 'var(--ink)', fontSize: 13, whiteSpace: 'nowrap' }} onClick={() => { onNav('orders'); setUserMenuOpen(false); }}>
+                <Icon name="receipt" size={14} style={{ marginRight: 8 }} /> Mis pedidos
+              </button>
               <button style={{ ...iconBtn, width: '100%', padding: '10px 12px', borderRadius: 8, justifyContent: 'flex-start', color: 'var(--ink)', fontSize: 13, whiteSpace: 'nowrap' }} onClick={() => { setAddressModalOpen(true); setUserMenuOpen(false); }}>
                 <Icon name="truck" size={14} style={{ marginRight: 8 }} /> Direcciones de envío
               </button>

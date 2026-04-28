@@ -11,23 +11,26 @@ import { CartDrawer } from './pages/CartDrawer';
 import { Checkout } from './pages/Checkout';
 import { Success } from './pages/Success';
 import { Club } from './pages/Club';
+import { Orders } from './pages/Orders';
 import { AdminApp } from './pages/admin/AdminApp';
 import { SSOCallbackPage } from './components/SSOCallback';
+import { CustomCursor } from './components/shared/CustomCursor';
 import { useCartStore } from './store/cartStore';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { api } from './lib/api';
 import { useProduct } from './hooks/useProducts';
 
-type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club';
-type CatalogFilter = { category?: string; need?: string; search?: string; page?: number };
+type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club' | 'orders';
+type CatalogFilter = { category?: string; need?: string; search?: string; page?: number; brand?: string };
 
 function readCatalogFilter(searchParams: URLSearchParams): CatalogFilter {
   const category = searchParams.get('category') || undefined;
   const need = searchParams.get('need') || undefined;
   const search = searchParams.get('search') || undefined;
+  const brand = searchParams.get('brand') || undefined;
   const pageValue = Number(searchParams.get('page'));
   const page = Number.isFinite(pageValue) && pageValue > 1 ? pageValue : undefined;
-  return { category, need, search, page };
+  return { category, need, search, page, brand };
 }
 
 function normalizeCatalogFilter(filter?: CatalogFilter): CatalogFilter {
@@ -36,6 +39,7 @@ function normalizeCatalogFilter(filter?: CatalogFilter): CatalogFilter {
     need: filter?.need || undefined,
     search: filter?.search?.trim() ? filter.search : undefined,
     page: filter?.page && filter.page > 1 ? filter.page : undefined,
+    brand: filter?.brand || undefined,
   };
 }
 
@@ -49,6 +53,7 @@ function buildSearchParams(view: View, filter?: CatalogFilter, productId?: strin
         ...(normalized.need ? { need: normalized.need } : {}),
         ...(normalized.search ? { search: normalized.search } : {}),
         ...(normalized.page ? { page: String(normalized.page) } : {}),
+        ...(normalized.brand ? { brand: normalized.brand } : {}),
         ...(view === 'product' && productId ? { productId } : {}),
       };
 }
@@ -184,6 +189,7 @@ function AppInner() {
 
   return (
     <>
+      <CustomCursor />
       <Topbar />
       <Header onNav={nav} onOpenCart={() => setCartOpen(true)} />
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={() => { setCheckoutItems(null); setCartOpen(false); nav('checkout'); }} />
@@ -206,6 +212,7 @@ function AppInner() {
         {view === 'checkout' && <Checkout items={checkoutItems ?? items} onBack={() => nav('catalog')} />}
         {view === 'success' && <Success onBack={() => nav('landing')} />}
         {view === 'club' && <Club onNav={nav} />}
+        {view === 'orders' && <Orders onBack={() => nav('catalog')} />}
       </div>
       {showBackToTop && (
         <button

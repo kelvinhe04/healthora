@@ -7,8 +7,8 @@ import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
 
 interface CatalogProps {
-  initialFilter?: { category?: string; need?: string; search?: string; page?: number };
-  onFilterChange?: (filter: { category?: string; need?: string; search?: string; page?: number }) => void;
+  initialFilter?: { category?: string; need?: string; search?: string; page?: number; brand?: string };
+  onFilterChange?: (filter: { category?: string; need?: string; search?: string; page?: number; brand?: string }) => void;
   onOpenProduct: (p: Product) => void;
   onAdd: (p: Product) => void;
 }
@@ -23,7 +23,7 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
   const [sort, setSort] = useState('featured');
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [priceMax, setPriceMax] = useState(1000);
-  const [brands, setBrands] = useState<string[]>([]);
+  const [brands, setBrands] = useState<string[]>(initialFilter?.brand ? [initialFilter.brand] : []);
   const [brandSearch, setBrandSearch] = useState('');
   const [showAllBrands, setShowAllBrands] = useState(false);
   const [inStock, setInStock] = useState(false);
@@ -36,7 +36,8 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
     setCat(initialFilter?.category || 'Todos');
     setNeed(initialFilter?.need || null);
     setSearch(initialFilter?.search || '');
-  }, [initialFilter?.category, initialFilter?.need, initialFilter?.search]);
+    if (initialFilter?.brand) setBrands([initialFilter.brand]);
+  }, [initialFilter?.category, initialFilter?.need, initialFilter?.search, initialFilter?.brand]);
 
   const gridRef = useRef<HTMLDivElement>(null);
 

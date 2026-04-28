@@ -12,6 +12,130 @@ import { api } from '../lib/api';
 
 type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club';
 
+type BrandStyle = 'serif' | 'sans' | 'mono';
+type BrandItem = { name: string; s: BrandStyle };
+
+const BRAND_ROWS: BrandItem[][] = [
+  // skincare / dermatología
+  [
+    { name: 'CeraVe', s: 'sans' }, { name: 'La Roche-Posay', s: 'serif' }, { name: 'Neutrogena', s: 'sans' },
+    { name: 'The Ordinary', s: 'sans' }, { name: "Paula's Choice", s: 'serif' }, { name: 'Aveeno', s: 'sans' },
+    { name: 'EltaMD', s: 'mono' }, { name: 'Biossance', s: 'sans' }, { name: 'Naturium', s: 'sans' },
+    { name: 'Laneige', s: 'serif' }, { name: 'COSRX', s: 'mono' }, { name: 'TATCHA', s: 'mono' },
+    { name: 'Cetaphil', s: 'sans' }, { name: 'Differin', s: 'mono' }, { name: 'Eucerin', s: 'sans' },
+  ],
+  // farmacia / OTC
+  [
+    { name: 'Tylenol', s: 'sans' }, { name: 'Advil', s: 'sans' }, { name: 'Zyrtec', s: 'mono' },
+    { name: 'Mucinex', s: 'sans' }, { name: 'Flonase', s: 'mono' }, { name: 'Claritin', s: 'sans' },
+    { name: 'Nexium 24HR', s: 'mono' }, { name: 'Benadryl', s: 'sans' }, { name: 'Pepto Bismol', s: 'sans' },
+    { name: 'Pepcid', s: 'mono' }, { name: 'Robitussin', s: 'sans' }, { name: 'Voltaren', s: 'mono' },
+    { name: 'TUMS', s: 'mono' }, { name: 'Excedrin', s: 'sans' }, { name: 'Salonpas', s: 'mono' },
+  ],
+  // suplementos / nutrición
+  [
+    { name: 'Nature Made', s: 'serif' }, { name: 'Centrum', s: 'sans' }, { name: 'Nordic Naturals', s: 'serif' },
+    { name: 'Vital Proteins', s: 'mono' }, { name: 'Garden of Life', s: 'serif' }, { name: 'OLLY', s: 'mono' },
+    { name: 'Ritual', s: 'mono' }, { name: 'Culturelle', s: 'serif' }, { name: 'Emergen-C', s: 'mono' },
+    { name: 'NOW Foods', s: 'sans' }, { name: 'Orgain', s: 'serif' }, { name: 'Nuun', s: 'mono' },
+    { name: 'LMNT', s: 'mono' }, { name: "Nature's Bounty", s: 'serif' }, { name: 'SmartyPants', s: 'serif' },
+  ],
+  // cuidado personal
+  [
+    { name: 'Dove', s: 'sans' }, { name: 'Colgate', s: 'sans' }, { name: 'Listerine', s: 'serif' },
+    { name: 'Gillette', s: 'serif' }, { name: 'Native', s: 'sans' }, { name: 'Oral-B', s: 'mono' },
+    { name: 'Crest', s: 'sans' }, { name: 'Degree', s: 'sans' }, { name: 'Old Spice', s: 'serif' },
+    { name: 'Tree Hut', s: 'serif' }, { name: "Dr. Bronner's", s: 'serif' }, { name: 'method', s: 'sans' },
+    { name: 'Secret', s: 'sans' }, { name: "Dr Teal's", s: 'serif' }, { name: 'Aquaphor', s: 'sans' },
+  ],
+  // belleza / fragancias / deporte
+  [
+    { name: 'Dior', s: 'serif' }, { name: 'Valentino', s: 'serif' }, { name: 'Fenty Beauty', s: 'sans' },
+    { name: 'NARS', s: 'mono' }, { name: 'Too Faced', s: 'serif' }, { name: 'Rare Beauty', s: 'sans' },
+    { name: 'Glossier', s: 'sans' }, { name: 'Maybelline', s: 'sans' }, { name: 'Optimum Nutrition', s: 'mono' },
+    { name: 'Yves Saint Laurent', s: 'serif' }, { name: 'Versace', s: 'serif' }, { name: 'BSN', s: 'mono' },
+    { name: 'Cellucor', s: 'mono' }, { name: 'Sol de Janeiro', s: 'serif' }, { name: 'Vitafusion', s: 'sans' },
+  ],
+];
+
+const BRAND_FONTS: Record<BrandStyle, CSSProperties> = {
+  serif: { fontFamily: '"Instrument Serif", serif', fontStyle: 'italic', fontSize: 26, fontWeight: 400 },
+  sans:  { fontFamily: '"Geist", sans-serif', fontWeight: 600, fontSize: 19, letterSpacing: '-0.02em' },
+  mono:  { fontFamily: '"JetBrains Mono", monospace', fontSize: 13, letterSpacing: '0.1em', fontWeight: 700, textTransform: 'uppercase' as const },
+};
+
+function BrandLogo({ brand, onBrandClick }: { brand: BrandItem; onBrandClick: (name: string) => void }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onClick={() => onBrandClick(brand.name)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', padding: '8px 32px',
+        cursor: 'pointer', whiteSpace: 'nowrap', color: 'var(--ink)',
+        opacity: hovered ? 1 : 0.42,
+        transform: hovered ? 'scale(1.08)' : 'scale(1)',
+        transition: 'opacity 220ms ease, transform 200ms ease',
+        ...BRAND_FONTS[brand.s],
+      }}
+    >
+      {brand.name}
+    </div>
+  );
+}
+
+function BrandsMarquee({ onNav }: { onNav: (view: View, filter?: Record<string, string>) => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  const SPEEDS = [38, 58, 44, 52, 34];
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold: 0.1 }
+    );
+    obs.observe(node);
+    return () => obs.disconnect();
+  }, []);
+
+  const handleBrandClick = (name: string) => onNav('catalog', { brand: name });
+
+  return (
+    <div ref={ref} style={{ position: 'relative', overflow: 'hidden' }}>
+      <style>{`
+        @keyframes bscroll-l { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+        @keyframes bscroll-r { from { transform: translateX(-50%) } to { transform: translateX(0) } }
+        .brow-track:hover { animation-play-state: paused !important; }
+      `}</style>
+      <div style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none', background: 'linear-gradient(to right, var(--cream) 0%, transparent 8%, transparent 92%, var(--cream) 100%)' }} />
+      {BRAND_ROWS.map((row, ri) => {
+        const doubled = [...row, ...row];
+        const anim = `bscroll-${ri % 2 === 0 ? 'l' : 'r'} ${SPEEDS[ri]}s linear infinite`;
+        return (
+          <div
+            key={ri}
+            style={{
+              overflow: 'hidden', marginBottom: ri < 4 ? 8 : 0,
+              opacity: visible ? 1 : 0,
+              transform: visible ? 'translateY(0)' : 'translateY(20px)',
+              transition: `opacity 680ms cubic-bezier(.2,.8,.2,1) ${ri * 130}ms, transform 680ms cubic-bezier(.2,.8,.2,1) ${ri * 130}ms`,
+            }}
+          >
+            <div className="brow-track" style={{ display: 'flex', width: 'max-content', animation: anim, willChange: 'transform' }}>
+              {doubled.map((brand, i) => (
+                <BrandLogo key={i} brand={brand} onBrandClick={handleBrandClick} />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const NEEDS = [
   { id: 'Piel seca', label: 'Piel seca', tone: 'half-left' },
   { id: 'Energía y vitaminas', label: 'Energía y vitaminas', tone: 'half-right' },
@@ -379,11 +503,20 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
         </div>
       </RevealSection>
 
+      {/* BRANDS */}
+      <RevealSection style={{ padding: '80px 0 0' }} delay={130}>
+        <div style={{ padding: '0 40px', marginBottom: 40 }}>
+          <div style={headKicker}>04 · Marcas</div>
+          <h2 style={headTitle}>Las marcas en las que <em style={{ color: 'var(--green)' }}>confías</em></h2>
+        </div>
+        <BrandsMarquee onNav={onNav} />
+      </RevealSection>
+
       {/* FEATURED */}
-      <RevealSection id="nuevos" style={{ padding: '80px 40px 0' }} delay={140}>
+      <RevealSection id="nuevos" style={{ padding: '80px 40px 0' }} delay={150}>
         <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', marginBottom: 32 }}>
           <div>
-            <div style={headKicker}>04 · Nuevos ingresos</div>
+            <div style={headKicker}>05 · Nuevos ingresos</div>
             <h2 style={headTitle}>Recién <em style={{ color: 'var(--green)' }}>llegados</em></h2>
           </div>
           <a onClick={() => onNav('catalog')} style={seeAllLink}>Ver catálogo completo <Icon name="arrow-right" size={14} /></a>
