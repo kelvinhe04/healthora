@@ -1,5 +1,5 @@
 const cols = [
-  { title: 'Comprar', items: ['Vitaminas', 'Medicamentos', 'Cuidado personal', 'Bebé', 'Skincare', 'Fitness', 'Fragancias'] },
+  { title: 'Comprar', items: [['Vitaminas', 'Suplementos'], ['Medicamentos', 'Cuidado personal'], ['Cuidado del bebé', 'Skincare'], ['Hidratantes', 'Maquillaje'], ['Fitness', 'Fragancias']] },
   { title: 'Ayuda', items: ['Contacto', 'Preguntas frecuentes', 'Envíos', 'Devoluciones', 'Estado de mi orden'] },
   { title: 'Legal', items: ['Términos y condiciones', 'Política de privacidad', 'Política de medicamentos', 'Cookies'] },
 ];
@@ -44,7 +44,17 @@ export function Footer() {
           <div key={col.title}>
             <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6, marginBottom: 20 }}>{col.title}</div>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {col.items.map((item) => <li key={item} style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', opacity: 0.88, cursor: 'pointer' }}>{item}</li>)}
+              {col.items.map((item) => {
+                const label = Array.isArray(item) ? item[0] : item;
+                return <li key={label} style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', opacity: 0.88, cursor: 'pointer' }}>
+                  {Array.isArray(item) ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <span>{item[0]}</span>
+                      <span style={{ opacity: 0.6, fontSize: 12 }}>{item[1]}</span>
+                    </div>
+                  ) : item}
+                </li>;
+              })}
             </ul>
           </div>
         ))}
