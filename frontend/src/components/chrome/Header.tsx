@@ -197,6 +197,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   const [addressError, setAddressError] = useState('');
   const [addressLoading, setAddressLoading] = useState(false);
   const [addressSaving, setAddressSaving] = useState(false);
+  const [addressSaveSuccess, setAddressSaveSuccess] = useState(false);
   const [search, setSearch] = useState('');
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -324,6 +325,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
       setSavedAddresses(addresses);
       resetAddressEditor();
       setAddressModalOpen(false);
+      setAddressSaveSuccess(true);
     } catch (error) {
       setAddressError(error instanceof Error ? error.message : 'No se pudieron guardar las direcciones');
     } finally {
@@ -560,6 +562,27 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
         onSaveEntry={saveAddressEntry}
         onPersist={persistAddresses}
       />
+      {addressSaveSuccess && (
+        <div onClick={() => setAddressSaveSuccess(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(17, 24, 20, 0.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, zIndex: 130 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 380, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 24, boxShadow: '0 28px 80px -36px rgba(0,0,0,0.32)', overflow: 'hidden' }}>
+            <div style={{ padding: '26px 26px 22px', borderBottom: '1px solid var(--ink-06)' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 999, background: 'var(--green)', color: 'var(--cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
+                <Icon name="check" size={20} />
+              </div>
+              <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 8 }}>Direcciones guardadas</div>
+              <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 32, lineHeight: 1, letterSpacing: '-0.03em', color: 'var(--ink)' }}>
+                Cambios <em style={{ color: 'var(--green)' }}>guardados</em>
+              </div>
+              <p style={{ margin: '12px 0 0', fontSize: 14, lineHeight: 1.55, color: 'var(--ink-80)', fontFamily: '"Geist", sans-serif' }}>
+                Tus direcciones de envío se actualizaron correctamente.
+              </p>
+            </div>
+            <div style={{ padding: 24, display: 'flex', justifyContent: 'flex-end', background: 'var(--cream-2)' }}>
+              <Button variant="primary" onClick={() => setAddressSaveSuccess(false)}>Entendido</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
