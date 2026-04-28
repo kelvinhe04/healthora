@@ -21,7 +21,34 @@ import { api } from './lib/api';
 import { useProduct } from './hooks/useProducts';
 
 type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club' | 'orders';
-type CatalogFilter = { category?: string; need?: string; search?: string; page?: number; brand?: string };
+type CatalogFilter = { category?: string; need?: string; search?: string; page?: number; brand?: string; brands?: string[] };
+const CATALOG_BRANDS_STORAGE_KEY = 'healthora_catalog_brands';
+
+function getFilterBrands(filter?: CatalogFilter): string[] {
+  return filter?.brands?.length ? filter.brands : filter?.brand ? [filter.brand] : [];
+}
+
+function readStoredCatalogBrands(): string[] {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(CATALOG_BRANDS_STORAGE_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function rememberCatalogBrands(filter?: CatalogFilter) {
+  const brands = getFilterBrands(filter);
+  if (brands.length) {
+    sessionStorage.setItem(CATALOG_BRANDS_STORAGE_KEY, JSON.stringify(brands));
+  } else {
+    sessionStorage.removeItem(CATALOG_BRANDS_STORAGE_KEY);
+  }
+}
+
+function hasCatalogUrlFilters(searchParams: URLSearchParams): boolean {
+  return ['category', 'need', 'search', 'page', 'brand'].some((key) => searchParams.has(key));
+}
 
 function readCatalogFilter(searchParams: URLSearchParams): CatalogFilter {
   const category = searchParams.get('category') || undefined;
@@ -34,12 +61,14 @@ function readCatalogFilter(searchParams: URLSearchParams): CatalogFilter {
 }
 
 function normalizeCatalogFilter(filter?: CatalogFilter): CatalogFilter {
+  const brands = getFilterBrands(filter);
   return {
     category: filter?.category && filter.category !== 'Todos' ? filter.category : undefined,
     need: filter?.need || undefined,
     search: filter?.search?.trim() ? filter.search : undefined,
     page: filter?.page && filter.page > 1 ? filter.page : undefined,
-    brand: filter?.brand || undefined,
+    brand: brands[0] || undefined,
+    brands: brands.length ? brands : undefined,
   };
 }
 
@@ -53,7 +82,6 @@ function buildSearchParams(view: View, filter?: CatalogFilter, productId?: strin
         ...(normalized.need ? { need: normalized.need } : {}),
         ...(normalized.search ? { search: normalized.search } : {}),
         ...(normalized.page ? { page: String(normalized.page) } : {}),
-        ...(normalized.brand ? { brand: normalized.brand } : {}),
         ...(view === 'product' && productId ? { productId } : {}),
       };
 }
@@ -81,7 +109,18 @@ function AppInner() {
   useEffect(() => {
     const v = searchParams.get('view') as View | null;
     if (v && v !== view) setView(v);
-    setCatalogFilter(readCatalogFilter(searchParams));
+    const nextFilter = readCatalogFilter(searchParams);
+    const nextView = v || view;
+    const hasUrlFilters = hasCatalogUrlFilters(searchParams);
+    if (nextView === 'catalog' && !hasUrlFilters) {
+      const storedBrands = readStoredCatalogBrands();
+      if (storedBrands.length) {
+        nextFilter.brand = storedBrands[0];
+        nextFilter.brands = storedBrands;
+      }
+    }
+    if (nextView !== 'catalog' && !hasUrlFilters) return;
+    setCatalogFilter(nextFilter);
   }, [searchParams]);
 
   useEffect(() => {
@@ -157,6 +196,8 @@ function AppInner() {
     const nextFilter = filter ? normalizeCatalogFilter(filter) : catalogFilter;
     setView(v);
     if (filter) setCatalogFilter(nextFilter);
+    if (v === 'catalog') rememberCatalogBrands(nextFilter);
+    if (v === 'landing') sessionStorage.removeItem(CATALOG_BRANDS_STORAGE_KEY);
     if (v !== 'checkout') setCheckoutItems(null);
     setSearchParams(buildSearchParams(v, nextFilter, productId));
     if (!noScroll) window.scrollTo(0, 0);
@@ -165,6 +206,7 @@ function AppInner() {
   const syncCatalogFilter = (filter: CatalogFilter) => {
     const nextFilter = normalizeCatalogFilter(filter);
     setCatalogFilter(nextFilter);
+    rememberCatalogBrands(nextFilter);
     setSearchParams(buildSearchParams('catalog', nextFilter), { replace: true });
   };
 

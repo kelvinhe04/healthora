@@ -43,6 +43,27 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
       })).filter((img) => img.url);
   const activeImage = gallery[activeImageIndex]?.url || product.imageUrl;
   const hasRealImages = Boolean(activeImage);
+  const hasText = (value?: string) => Boolean(value?.trim());
+  const benefits = (product.benefits || []).filter((benefit) => benefit.trim());
+  const detailTabs = [
+    ...(benefits.length ? [{ id: 'benefits', label: 'Beneficios' }] : []),
+    ...(hasText(product.usage) ? [{ id: 'usage', label: 'Modo de uso' }] : []),
+    ...(hasText(product.ingredients) ? [{ id: 'ingredients', label: 'Ingredientes' }] : []),
+    ...(hasText(product.nutritionFacts) ? [{ id: 'nutrition', label: 'Info. nutricional' }] : []),
+    ...(product.certifications?.length ? [{ id: 'certs', label: 'Certificaciones' }] : []),
+    ...(hasText(product.interactions) ? [{ id: 'interactions', label: 'Compatibilidad' }] : []),
+    ...(product.faq?.length ? [{ id: 'faq', label: 'Preguntas frecuentes' }] : []),
+    ...(hasText(product.shadeTips) ? [{ id: 'shade', label: 'Tono & tez' }] : []),
+    ...(hasText(product.applicationTips) ? [{ id: 'application', label: 'Técnica' }] : []),
+    ...(hasText(product.formulaDetails) ? [{ id: 'formula', label: 'Fórmula' }] : []),
+    ...(product.skinTypes?.length ? [{ id: 'skintypes', label: 'Tipos de piel' }] : []),
+    ...(product.extraTabs?.length
+      ? product.extraTabs
+          .filter((extraTab) => hasText(extraTab.label) && hasText(extraTab.content))
+          .map((extraTab) => ({ id: `extra:${extraTab.id}`, label: extraTab.label }))
+      : []),
+    ...(hasText(product.warnings) ? [{ id: 'warnings', label: 'Advertencias' }] : []),
+  ];
 
   const closeZoom = () => {
     setIsZoomingOut(true);
@@ -64,7 +85,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
 
   useEffect(() => {
     setQty(1);
-    setTab('benefits');
+    setTab(detailTabs[0]?.id || '');
     setActiveImageIndex(0);
     setIsZoomed(false);
     setIsZoomingOut(false);
@@ -209,32 +230,17 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
             ))}
           </div>
 
+          {detailTabs.length > 0 && (
           <div style={{ marginTop: 32 }}>
             <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--ink-06)', flexWrap: 'wrap' }}>
-              {[
-                { id: 'benefits', label: 'Beneficios' },
-                { id: 'usage', label: 'Modo de uso' },
-                { id: 'ingredients', label: 'Ingredientes' },
-                ...(product.nutritionFacts ? [{ id: 'nutrition', label: 'Info. nutricional' }] : []),
-                ...(product.certifications?.length ? [{ id: 'certs', label: 'Certificaciones' }] : []),
-                ...(product.interactions ? [{ id: 'interactions', label: 'Compatibilidad' }] : []),
-                ...(product.faq?.length ? [{ id: 'faq', label: 'Preguntas frecuentes' }] : []),
-                ...(product.shadeTips ? [{ id: 'shade', label: 'Tono & tez' }] : []),
-                ...(product.applicationTips ? [{ id: 'application', label: 'Técnica' }] : []),
-                ...(product.formulaDetails ? [{ id: 'formula', label: 'Fórmula' }] : []),
-                ...(product.skinTypes?.length ? [{ id: 'skintypes', label: 'Tipos de piel' }] : []),
-                ...(product.extraTabs?.length
-                  ? product.extraTabs.map((t) => ({ id: `extra:${t.id}`, label: t.label }))
-                  : []),
-                { id: 'warnings', label: 'Advertencias' },
-              ].map((t) => (
+              {detailTabs.map((t) => (
                 <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '14px 4px', marginRight: 28, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, fontFamily: '"Geist", sans-serif', color: tab === t.id ? 'var(--ink)' : 'var(--ink-60)', borderBottom: tab === t.id ? '2px solid var(--ink)' : '2px solid transparent', marginBottom: -1, whiteSpace: 'nowrap' }}>{t.label}</button>
               ))}
             </div>
             <div style={{ padding: '20px 0', fontSize: 15, lineHeight: 1.6, color: 'var(--ink-80)', fontFamily: '"Geist", sans-serif' }}>
-              {tab === 'benefits' && <ul style={{ paddingLeft: 18, margin: 0 }}>{product.benefits.map((b) => <li key={b} style={{ marginBottom: 6 }}>{b}</li>)}</ul>}
-              {tab === 'usage' && <p style={{ margin: 0 }}>{product.usage}</p>}
-              {tab === 'ingredients' && <p style={{ margin: 0 }}>{product.ingredients}</p>}
+              {tab === 'benefits' && <ul style={{ paddingLeft: 18, margin: 0 }}>{benefits.map((b) => <li key={b} style={{ marginBottom: 6 }}>{b}</li>)}</ul>}
+              {tab === 'usage' && hasText(product.usage) && <p style={{ margin: 0 }}>{product.usage}</p>}
+              {tab === 'ingredients' && hasText(product.ingredients) && <p style={{ margin: 0 }}>{product.ingredients}</p>}
               {tab === 'nutrition' && product.nutritionFacts && (
                 <pre style={{ margin: 0, fontFamily: '"JetBrains Mono", monospace', fontSize: 12, lineHeight: 1.9, whiteSpace: 'pre-wrap', color: 'var(--ink-80)' }}>{product.nutritionFacts}</pre>
               )}
@@ -271,9 +277,10 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                   {product.extraTabs?.find((t) => `extra:${t.id}` === tab)?.content || ''}
                 </p>
               )}
-              {tab === 'warnings' && <p style={{ margin: 0, color: 'var(--coral)' }}>⚠ {product.warnings}</p>}
+              {tab === 'warnings' && hasText(product.warnings) && <p style={{ margin: 0, color: 'var(--coral)' }}>⚠ {product.warnings}</p>}
             </div>
           </div>
+          )}
         </div>
       </div>
 

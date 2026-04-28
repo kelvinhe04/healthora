@@ -391,7 +391,7 @@ export function Sidebar({ page, setPage, onGoToStore, counts, adminName, adminEm
     { id: 'products', label: 'Productos', icon: 'leaf', count: counts?.products },
     { id: 'users', label: 'Usuarios', icon: 'user', count: counts?.users },
     { id: 'sales', label: 'Ventas', icon: 'truck' },
-    { id: 'earnings', label: 'Ganancias', icon: 'star' },
+    { id: 'earnings', label: 'Ganancias', icon: 'percent' },
   ];
   return (
     <aside style={{ width: 240, background: 'var(--cream)', borderRight: '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', padding: '24px 16px', position: 'sticky', top: 0, height: '100vh' }}>

@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { requireAdmin } from '../../middleware/requireAdmin';
 import type { AppEnv } from '../../types/hono';
 import { Order } from '../../db/models/Order';
+import { sendOrderStatusUpdateEmail } from '../../lib/email';
 import { combineOrderStatus, normalizeOrder } from '../../lib/orderStatus';
 
 export const adminOrdersRouter = new Hono<AppEnv>()
@@ -61,5 +62,22 @@ export const adminOrdersRouter = new Hono<AppEnv>()
     ).lean();
 
     if (!order) return c.json({ error: 'Not found' }, 404);
+
+    if (normalizedCurrent.fulfillmentStatus !== fulfillmentStatus && order.customerEmail) {
+      try {
+        await sendOrderStatusUpdateEmail({
+          customerName: order.customerName || 'cliente',
+          customerEmail: order.customerEmail,
+          orderId: order._id.toString(),
+          fulfillmentStatus,
+          items: order.items || [],
+          total: order.total || 0,
+          address: order.address,
+        });
+      } catch (emailError) {
+        console.error('[ADMIN_ORDERS] Failed to send status update email:', emailError);
+      }
+    }
+
     return c.json(normalizeOrder(order));
   });

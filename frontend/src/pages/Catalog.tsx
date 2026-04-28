@@ -7,8 +7,8 @@ import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
 
 interface CatalogProps {
-  initialFilter?: { category?: string; need?: string; search?: string; page?: number; brand?: string };
-  onFilterChange?: (filter: { category?: string; need?: string; search?: string; page?: number; brand?: string }) => void;
+  initialFilter?: { category?: string; need?: string; search?: string; page?: number; brand?: string; brands?: string[] };
+  onFilterChange?: (filter: { category?: string; need?: string; search?: string; page?: number; brand?: string; brands?: string[] }) => void;
   onOpenProduct: (p: Product) => void;
   onAdd: (p: Product) => void;
 }
@@ -23,7 +23,7 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
   const [sort, setSort] = useState('featured');
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [priceMax, setPriceMax] = useState(1000);
-  const [brands, setBrands] = useState<string[]>(initialFilter?.brand ? [initialFilter.brand] : []);
+  const [brands, setBrands] = useState<string[]>(initialFilter?.brands?.length ? initialFilter.brands : initialFilter?.brand ? [initialFilter.brand] : []);
   const [brandSearch, setBrandSearch] = useState('');
   const [showAllBrands, setShowAllBrands] = useState(false);
   const [inStock, setInStock] = useState(false);
@@ -36,13 +36,13 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
     setCat(initialFilter?.category || 'Todos');
     setNeed(initialFilter?.need || null);
     setSearch(initialFilter?.search || '');
-    if (initialFilter?.brand) setBrands([initialFilter.brand]);
-  }, [initialFilter?.category, initialFilter?.need, initialFilter?.search, initialFilter?.brand]);
+    setBrands(initialFilter?.brands?.length ? initialFilter.brands : initialFilter?.brand ? [initialFilter.brand] : []);
+  }, [initialFilter?.category, initialFilter?.need, initialFilter?.search, initialFilter?.brand, initialFilter?.brands]);
 
   const gridRef = useRef<HTMLDivElement>(null);
 
   function changePage(newPage: number) {
-    onFilterChange?.({ category: cat !== 'Todos' ? cat : undefined, need: need || undefined, search: search.trim() || undefined, page: newPage });
+    onFilterChange?.({ category: cat !== 'Todos' ? cat : undefined, need: need || undefined, search: search.trim() || undefined, brands: brands.length ? brands : undefined, brand: brands[0], page: newPage });
     gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -91,8 +91,21 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
     setShowAllBrands(false);
   }, [brandSearch]);
 
-  const toggleBrand = (b: string) => setBrands((bs) => bs.includes(b) ? bs.filter((x) => x !== b) : [...bs, b]);
-  const syncFilter = (next: { category?: string; need?: string; search?: string }) => onFilterChange?.({ ...next, page: 1 });
+  const toggleBrand = (b: string) => {
+    setBrands((currentBrands) => {
+      const nextBrands = currentBrands.includes(b) ? currentBrands.filter((x) => x !== b) : [...currentBrands, b];
+      onFilterChange?.({
+        category: cat !== 'Todos' ? cat : undefined,
+        need: need || undefined,
+        search: search.trim() || undefined,
+        brands: nextBrands.length ? nextBrands : undefined,
+        brand: nextBrands[0],
+        page: 1,
+      });
+      return nextBrands;
+    });
+  };
+  const syncFilter = (next: { category?: string; need?: string; search?: string }) => onFilterChange?.({ ...next, brands: brands.length ? brands : undefined, brand: brands[0], page: 1 });
 
   return (
     <main style={{ padding: '32px 40px 0' }}>

@@ -137,6 +137,100 @@ const fulfillmentStatusLabels: Record<FulfillmentStatus | "", string> = {
     cancelled: "Cancelada",
 };
 
+const ADMIN_PAGE_SIZE = 10;
+
+function paginateItems<T>(items: T[], page: number) {
+    const totalPages = Math.max(1, Math.ceil(items.length / ADMIN_PAGE_SIZE));
+    const safePage = Math.min(Math.max(page, 1), totalPages);
+    const start = (safePage - 1) * ADMIN_PAGE_SIZE;
+    return {
+        page: safePage,
+        totalPages,
+        items: items.slice(start, start + ADMIN_PAGE_SIZE),
+        start: items.length ? start + 1 : 0,
+        end: Math.min(start + ADMIN_PAGE_SIZE, items.length),
+    };
+}
+
+function PaginationControls({
+    page,
+    totalPages,
+    totalItems,
+    start,
+    end,
+    onPageChange,
+}: {
+    page: number;
+    totalPages: number;
+    totalItems: number;
+    start: number;
+    end: number;
+    onPageChange: (page: number) => void;
+}) {
+    if (totalItems <= ADMIN_PAGE_SIZE) return null;
+
+    return (
+        <div
+            style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "14px 24px",
+                borderTop: "1px solid var(--ink-06)",
+                fontFamily: '"Geist", sans-serif',
+                fontSize: 12,
+                color: "var(--ink-60)",
+            }}
+        >
+            <span>
+                Mostrando {start}-{end} de {totalItems}
+            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <button
+                    type="button"
+                    onClick={() => onPageChange(page - 1)}
+                    disabled={page <= 1}
+                    style={{
+                        padding: "7px 12px",
+                        borderRadius: 999,
+                        border: "1px solid var(--ink-10)",
+                        background: "transparent",
+                        color: "var(--ink)",
+                        cursor: page <= 1 ? "not-allowed" : "pointer",
+                        opacity: page <= 1 ? 0.42 : 1,
+                    }}
+                >
+                    Anterior
+                </button>
+                <span
+                    style={{
+                        fontFamily: '"JetBrains Mono", monospace',
+                        color: "var(--ink-60)",
+                    }}
+                >
+                    {page} / {totalPages}
+                </span>
+                <button
+                    type="button"
+                    onClick={() => onPageChange(page + 1)}
+                    disabled={page >= totalPages}
+                    style={{
+                        padding: "7px 12px",
+                        borderRadius: 999,
+                        border: "1px solid var(--ink-10)",
+                        background: "transparent",
+                        color: "var(--ink)",
+                        cursor: page >= totalPages ? "not-allowed" : "pointer",
+                        opacity: page >= totalPages ? 0.42 : 1,
+                    }}
+                >
+                    Siguiente
+                </button>
+            </div>
+        </div>
+    );
+}
+
 // ─── ProductForm ─────────────────────────────────────────────────────────────
 
 type ProductForm = {
@@ -754,7 +848,7 @@ function ProductModal({
                             />
                         </div>
                         <div style={fieldS}>
-                            <label style={labelS}>Stock</label>
+                            <label style={labelS}>Existencias</label>
                             <input
                                 style={inputS}
                                 type="number"
@@ -844,24 +938,24 @@ function ProductModal({
                         <ImageDropZone
                             value={form.image2}
                             onChange={setImg("image2")}
-                            label="Imagen 2 · opcional"
+                            label="Imagen 2 (opcional)"
                         />
                         <ImageDropZone
                             value={form.image3}
                             onChange={setImg("image3")}
-                            label="Imagen 3 · opcional"
+                            label="Imagen 3 (opcional)"
                         />
                         <ImageDropZone
                             value={form.image4}
                             onChange={setImg("image4")}
-                            label="Imagen 4 · opcional"
+                            label="Imagen 4 (opcional)"
                         />
                     </div>
 
                     <div style={dividerS} />
 
                     {/* Detalles */}
-                    <div style={sectionS}>Detalles del producto</div>
+                    <div style={sectionS}>Detalles del producto (opcional)</div>
                     <div
                         style={{
                             display: "flex",
@@ -871,7 +965,7 @@ function ProductModal({
                     >
                         <div style={fieldS}>
                             <label style={labelS}>
-                                Beneficios{" "}
+                                Beneficios (opcional){" "}
                                 <span
                                     style={{
                                         fontFamily: '"Geist", sans-serif',
@@ -892,12 +986,12 @@ function ProductModal({
                                 value={form.benefits}
                                 onChange={setF("benefits")}
                                 placeholder={
-                                    "Mejora el sistema inmune\nAumenta la energía\nReduce el estrés"
+                                    "Opcional: mejora el sistema inmune\nAumenta la energía\nReduce el estrés"
                                 }
                             />
                         </div>
                         <div style={fieldS}>
-                            <label style={labelS}>Modo de uso</label>
+                            <label style={labelS}>Modo de uso (opcional)</label>
                             <textarea
                                 style={{
                                     ...inputS,
@@ -906,11 +1000,11 @@ function ProductModal({
                                 }}
                                 value={form.usage}
                                 onChange={setF("usage")}
-                                placeholder="Tomar 1 cápsula al día con agua…"
+                                placeholder="Opcional: tomar 1 cápsula al día con agua…"
                             />
                         </div>
                         <div style={fieldS}>
-                            <label style={labelS}>Ingredientes</label>
+                            <label style={labelS}>Ingredientes (opcional)</label>
                             <textarea
                                 style={{
                                     ...inputS,
@@ -919,11 +1013,11 @@ function ProductModal({
                                 }}
                                 value={form.ingredients}
                                 onChange={setF("ingredients")}
-                                placeholder="Vitamina C 500mg, Zinc 10mg…"
+                                placeholder="Opcional: vitamina C 500mg, Zinc 10mg…"
                             />
                         </div>
                         <div style={fieldS}>
-                            <label style={labelS}>Advertencias</label>
+                            <label style={labelS}>Advertencias (opcional)</label>
                             <textarea
                                 style={{
                                     ...inputS,
@@ -932,7 +1026,7 @@ function ProductModal({
                                 }}
                                 value={form.warnings}
                                 onChange={setF("warnings")}
-                                placeholder="Mantener fuera del alcance de los niños…"
+                                placeholder="Opcional: mantener fuera del alcance de los niños…"
                             />
                         </div>
                     </div>
@@ -1194,14 +1288,26 @@ function AdminPanel({
     }, [page]);
     const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     const [orderSearch, setOrderSearch] = useState("");
+    const [ordersPage, setOrdersPage] = useState(1);
+    const [orderStatusDrafts, setOrderStatusDrafts] = useState<
+        Record<string, FulfillmentStatus>
+    >({});
 
     // Products state
     const [productModal, setProductModal] = useState<{
         mode: "add" | "edit";
         product?: Product;
     } | null>(null);
+    const [productSuccess, setProductSuccess] = useState<{
+        kicker: string;
+        title: string;
+        emphasis: string;
+        message: string;
+    } | null>(null);
     const [productCatFilter, setProductCatFilter] = useState("Todos");
     const [productSearch, setProductSearch] = useState("");
+    const [productsPage, setProductsPage] = useState(1);
+    const [usersPage, setUsersPage] = useState(1);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
     const [confirmBulkDelete, setConfirmBulkDelete] = useState<{
@@ -1212,6 +1318,13 @@ function AdminPanel({
     const [confirmUserDelete, setConfirmUserDelete] = useState<{
         id: string;
         name: string;
+    } | null>(null);
+    const [confirmOrderStatus, setConfirmOrderStatus] = useState<{
+        id: string;
+        orderNumber: string;
+        customerName: string;
+        from: FulfillmentStatus;
+        to: FulfillmentStatus;
     } | null>(null);
 
     useEffect(() => {
@@ -1306,18 +1419,30 @@ function AdminPanel({
             mongoId: string;
             data: Partial<Product>;
         }) => api.admin.products.update(mongoId, data, await getAdminToken()),
-        onSuccess: () => {
+        onSuccess: (_, variables) => {
             invalidateProducts();
             setProductModal(null);
+            setProductSuccess({
+                kicker: "Producto actualizado",
+                title: "Cambios",
+                emphasis: "guardados",
+                message: `${variables.data.name || "El producto"} se actualizó correctamente.`,
+            });
         },
     });
 
     const productCreateMutation = useMutation({
         mutationFn: async (data: Partial<Product>) =>
             api.admin.products.create(data, await getAdminToken()),
-        onSuccess: () => {
+        onSuccess: (_, data) => {
             invalidateProducts();
             setProductModal(null);
+            setProductSuccess({
+                kicker: "Producto creado",
+                title: "Agregado al",
+                emphasis: "catálogo",
+                message: `${data.name || "El producto"} ya está disponible en la tienda.`,
+            });
         },
     });
 
@@ -1330,6 +1455,12 @@ function AdminPanel({
             invalidateProducts();
             setConfirmDeleteId(null);
             setDeleteError(null);
+            setProductSuccess({
+                kicker: "Producto eliminado",
+                title: "Producto",
+                emphasis: "eliminado",
+                message: "El producto se eliminó del catálogo correctamente.",
+            });
         },
         onError: (e: Error) => setDeleteError(e.message),
     });
@@ -1411,6 +1542,18 @@ function AdminPanel({
     const dashboard =
         dashboardData && dashboardReady ? dashboardData : undefined;
 
+    useEffect(() => {
+        setOrdersPage(1);
+    }, [orderFulfillmentFilter, orderSearch]);
+
+    useEffect(() => {
+        setProductsPage(1);
+    }, [productCatFilter, productSearch]);
+
+    useEffect(() => {
+        setUsersPage(1);
+    }, [users.length]);
+
     const sidebarCounts = useMemo(
         () => ({
             orders: dashboardData?.kpis.totalOrders ?? orders.length,
@@ -1450,9 +1593,24 @@ function AdminPanel({
         });
     }, [orders, orderSearch]);
 
+    const paginatedOrders = useMemo(
+        () => paginateItems(displayedOrders, ordersPage),
+        [displayedOrders, ordersPage],
+    );
+
+    const paginatedProducts = useMemo(
+        () => paginateItems(displayedProducts, productsPage),
+        [displayedProducts, productsPage],
+    );
+
+    const paginatedUsers = useMemo(
+        () => paginateItems(users, usersPage),
+        [users, usersPage],
+    );
+
     const displayedProductIds = useMemo(
-        () => displayedProducts.map((product) => product._id || product.id),
-        [displayedProducts],
+        () => paginatedProducts.items.map((product) => product._id || product.id),
+        [paginatedProducts.items],
     );
     const selectedDisplayedIds = useMemo(
         () =>
@@ -1498,7 +1656,7 @@ function AdminPanel({
                                     </em>
                                 </>
                             }
-                            sub="Resumen en vivo de ventas, órdenes, usuarios y stock."
+                            sub="Resumen en vivo de ventas, órdenes, usuarios e inventario."
                         />
                         <div
                             style={{
@@ -1536,9 +1694,9 @@ function AdminPanel({
                                 animKey="users"
                             />
                             <KpiCard
-                                label="Stock bajo"
+                                label="Existencias bajas"
                                 value={dashboard?.kpis.lowStock ?? "—"}
-                                sub="productos ≤5 unidades"
+                                sub="productos con 5 unidades o menos"
                                 loading={!dashboard}
                                 animKey="lowstock"
                             />
@@ -1547,7 +1705,7 @@ function AdminPanel({
                         {/* Revenue chart card */}
                         <Card
                             title="Ingresos · últimos 30 días"
-                            sub="Revenue diario, en USD"
+                            sub="Ingresos diarios, en USD"
                             loading={!dashboard}
                             skeletonContent={
                                 <Skeleton height={240} borderRadius={8} />
@@ -1724,7 +1882,7 @@ function AdminPanel({
 
                             {/* Low stock */}
                             <Card
-                                title="Stock crítico"
+                                title="Inventario crítico"
                                 sub="Productos que requieren reposición"
                                 loading={dashboard === undefined}
                                 skeletonContent={
@@ -1840,7 +1998,7 @@ function AdminPanel({
                                             color: "var(--ink-60)",
                                         }}
                                     >
-                                        No hay productos en stock crítico.
+                                        No hay productos con existencias críticas.
                                     </div>
                                 )}
                             </Card>
@@ -2064,7 +2222,7 @@ function AdminPanel({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {displayedOrders.map((order) => (
+                                    {paginatedOrders.items.map((order) => (
                                         <tr key={order._id} style={trStyle}>
                                             <td
                                                 style={{
@@ -2190,22 +2348,28 @@ function AdminPanel({
                                                             ]
                                                         }
                                                     />
-                                                    {order.fulfillmentStatus !== "cancelled" && (
+                                                    {!["cancelled", "delivered"].includes(order.fulfillmentStatus || "unfulfilled") && (
+                                                        <>
                                                         <select
                                                             value={
+                                                                orderStatusDrafts[
+                                                                    order._id
+                                                                ] ||
                                                                 order.fulfillmentStatus ||
                                                                 "unfulfilled"
                                                             }
-                                                            onChange={(e) =>
-                                                                orderStatusesMutation.mutate(
-                                                                    {
-                                                                        id: order._id,
-                                                                        fulfillmentStatus:
-                                                                            e.target
-                                                                                .value as FulfillmentStatus,
-                                                                    },
-                                                                )
-                                                            }
+                                                            onChange={(e) => {
+                                                                const nextStatus = e
+                                                                    .target
+                                                                    .value as FulfillmentStatus;
+                                                                setOrderStatusDrafts(
+                                                                    (current) => ({
+                                                                        ...current,
+                                                                        [order._id]:
+                                                                            nextStatus,
+                                                                    }),
+                                                                );
+                                                            }}
                                                             style={{
                                                                 padding: "8px 10px",
                                                                 borderRadius: 8,
@@ -2215,8 +2379,9 @@ function AdminPanel({
                                                                 fontSize: 12,
                                                             }}
                                                         >
-                                                            {fulfillmentStatusOptions.map(
-                                                                (s) => (
+                                                            {fulfillmentStatusOptions
+                                                                .filter(Boolean)
+                                                                .map((s) => (
                                                                     <option
                                                                         key={s}
                                                                         value={s}
@@ -2227,9 +2392,57 @@ function AdminPanel({
                                                                             ]
                                                                         }
                                                                     </option>
-                                                                ),
-                                                            )}
+                                                                ))}
                                                         </select>
+                                                        {orderStatusDrafts[
+                                                            order._id
+                                                        ] &&
+                                                            orderStatusDrafts[
+                                                                order._id
+                                                            ] !==
+                                                                (order.fulfillmentStatus ||
+                                                                    "unfulfilled") && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const currentStatus =
+                                                                            order.fulfillmentStatus ||
+                                                                            "unfulfilled";
+                                                                        setConfirmOrderStatus(
+                                                                            {
+                                                                                id: order._id,
+                                                                                orderNumber:
+                                                                                    order._id
+                                                                                        .slice(
+                                                                                            -8,
+                                                                                        )
+                                                                                        .toUpperCase(),
+                                                                                customerName:
+                                                                                    order.customerName ||
+                                                                                    "Cliente",
+                                                                                from: currentStatus,
+                                                                                to: orderStatusDrafts[
+                                                                                    order._id
+                                                                                ],
+                                                                            },
+                                                                        );
+                                                                    }}
+                                                                    style={{
+                                                                        border: "1px solid var(--ink)",
+                                                                        borderRadius: 999,
+                                                                        background:
+                                                                            "var(--ink)",
+                                                                        color: "var(--cream)",
+                                                                        fontSize: 11,
+                                                                        fontWeight: 700,
+                                                                        padding: "8px 12px",
+                                                                        cursor: "pointer",
+                                                                    }}
+                                                                >
+                                                                    Guardar
+                                                                </button>
+                                                            )}
+                                                        </>
                                                     )}
                                                 </div>
                                             </td>
@@ -2273,8 +2486,272 @@ function AdminPanel({
                                     ))}
                                 </tbody>
                             </table>
+                            <PaginationControls
+                                page={paginatedOrders.page}
+                                totalPages={paginatedOrders.totalPages}
+                                totalItems={displayedOrders.length}
+                                start={paginatedOrders.start}
+                                end={paginatedOrders.end}
+                                onPageChange={setOrdersPage}
+                            />
                         </Card>
                     </>
+                )}
+
+                {confirmOrderStatus && (
+                    <div
+                        onClick={() => setConfirmOrderStatus(null)}
+                        style={{
+                            position: "fixed",
+                            inset: 0,
+                            background: "rgba(17, 24, 20, 0.28)",
+                            zIndex: 113,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 24,
+                        }}
+                    >
+                        <div
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                width: "100%",
+                                maxWidth: 460,
+                                background: "var(--cream)",
+                                border: "1px solid var(--ink-06)",
+                                borderRadius: 24,
+                                boxShadow:
+                                    "0 28px 80px -36px rgba(0,0,0,0.32)",
+                                overflow: "hidden",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    padding: "22px 24px 18px",
+                                    borderBottom: "1px solid var(--ink-06)",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        fontSize: 10,
+                                        fontFamily:
+                                            '"JetBrains Mono", monospace',
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.12em",
+                                        color: "var(--ink-60)",
+                                        marginBottom: 8,
+                                    }}
+                                >
+                                    Confirmar estado
+                                </div>
+                                <div
+                                    style={{
+                                        fontFamily:
+                                            '"Instrument Serif", serif',
+                                        fontSize: 32,
+                                        lineHeight: 1,
+                                        letterSpacing: "-0.03em",
+                                        color: "var(--ink)",
+                                    }}
+                                >
+                                    Actualizar{" "}
+                                    <em
+                                        style={{
+                                            color: "oklch(0.52 0.12 145)",
+                                        }}
+                                    >
+                                        pedido
+                                    </em>
+                                </div>
+                                <p
+                                    style={{
+                                        margin: "12px 0 0",
+                                        fontSize: 14,
+                                        lineHeight: 1.55,
+                                        color: "var(--ink-80)",
+                                        fontFamily: '"Geist", sans-serif',
+                                    }}
+                                >
+                                    Vas a cambiar el pedido #
+                                    {confirmOrderStatus.orderNumber} de{" "}
+                                    <strong>
+                                        {
+                                            fulfillmentStatusLabels[
+                                                confirmOrderStatus.from
+                                            ]
+                                        }
+                                    </strong>{" "}
+                                    a{" "}
+                                    <strong>
+                                        {
+                                            fulfillmentStatusLabels[
+                                                confirmOrderStatus.to
+                                            ]
+                                        }
+                                    </strong>
+                                    . El cliente {confirmOrderStatus.customerName} recibirá un email de actualización.
+                                </p>
+                            </div>
+                            <div
+                                style={{
+                                    padding: 24,
+                                    display: "flex",
+                                    gap: 10,
+                                    justifyContent: "flex-end",
+                                    background: "var(--cream-2)",
+                                }}
+                            >
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setConfirmOrderStatus(null)}
+                                    disabled={orderStatusesMutation.isPending}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    variant="primary"
+                                    onClick={() => {
+                                        const nextStatus = confirmOrderStatus;
+                                        orderStatusesMutation.mutate(
+                                            {
+                                                id: nextStatus.id,
+                                                fulfillmentStatus:
+                                                    nextStatus.to,
+                                            },
+                                            {
+                                                onSuccess: () => {
+                                                    setOrderStatusDrafts(
+                                                        (current) => {
+                                                            const next = {
+                                                                ...current,
+                                                            };
+                                                            delete next[
+                                                                nextStatus.id
+                                                            ];
+                                                            return next;
+                                                        },
+                                                    );
+                                                    setConfirmOrderStatus(null);
+                                                },
+                                            },
+                                        );
+                                    }}
+                                    disabled={orderStatusesMutation.isPending}
+                                >
+                                    {orderStatusesMutation.isPending
+                                        ? "Guardando..."
+                                        : "Guardar cambio"}
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {productSuccess && (
+                    <div
+                        onClick={() => setProductSuccess(null)}
+                        style={{
+                            position: "fixed",
+                            inset: 0,
+                            background: "rgba(17, 24, 20, 0.28)",
+                            zIndex: 114,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 24,
+                        }}
+                    >
+                        <div
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                width: "100%",
+                                maxWidth: 430,
+                                background: "var(--cream)",
+                                border: "1px solid var(--ink-06)",
+                                borderRadius: 24,
+                                boxShadow:
+                                    "0 28px 80px -36px rgba(0,0,0,0.32)",
+                                overflow: "hidden",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    padding: "26px 26px 22px",
+                                    borderBottom: "1px solid var(--ink-06)",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: 44,
+                                        height: 44,
+                                        borderRadius: 999,
+                                        background: "var(--green)",
+                                        color: "var(--cream)",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        marginBottom: 18,
+                                    }}
+                                >
+                                    <Icon name="check" size={20} />
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: 10,
+                                        fontFamily:
+                                            '"JetBrains Mono", monospace',
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.12em",
+                                        color: "var(--ink-60)",
+                                        marginBottom: 8,
+                                    }}
+                                >
+                                    {productSuccess.kicker}
+                                </div>
+                                <div
+                                    style={{
+                                        fontFamily:
+                                            '"Instrument Serif", serif',
+                                        fontSize: 32,
+                                        lineHeight: 1,
+                                        letterSpacing: "-0.03em",
+                                        color: "var(--ink)",
+                                    }}
+                                >
+                                    {productSuccess.title}{" "}
+                                    <em style={{ color: "var(--green)" }}>
+                                        {productSuccess.emphasis}
+                                    </em>
+                                </div>
+                                <p
+                                    style={{
+                                        margin: "12px 0 0",
+                                        fontSize: 14,
+                                        lineHeight: 1.55,
+                                        color: "var(--ink-80)",
+                                        fontFamily: '"Geist", sans-serif',
+                                    }}
+                                >
+                                    {productSuccess.message}
+                                </p>
+                            </div>
+                            <div
+                                style={{
+                                    padding: 24,
+                                    display: "flex",
+                                    justifyContent: "flex-end",
+                                    background: "var(--cream-2)",
+                                }}
+                            >
+                                <Button
+                                    variant="primary"
+                                    onClick={() => setProductSuccess(null)}
+                                >
+                                    Entendido
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
                 )}
 
                 {/* ── Products ── */}
@@ -2587,7 +3064,7 @@ function AdminPanel({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {displayedProducts.map((product) => (
+                                    {paginatedProducts.items.map((product) => (
                                         <tr key={product.id} style={trStyle}>
                                             <td style={{ ...td, width: 52 }}>
                                                 <input
@@ -2785,6 +3262,14 @@ function AdminPanel({
                                     )}
                                 </tbody>
                             </table>
+                            <PaginationControls
+                                page={paginatedProducts.page}
+                                totalPages={paginatedProducts.totalPages}
+                                totalItems={displayedProducts.length}
+                                start={paginatedProducts.start}
+                                end={paginatedProducts.end}
+                                onPageChange={setProductsPage}
+                            />
                         </Card>
 
                         {productModal && (
@@ -3243,7 +3728,7 @@ function AdminPanel({
                                         <div style={{ flex: 1 }}>
                                             <Skeleton height={13} width={28} borderRadius={4} />
                                         </div>
-                                        {/* LTV */}
+                                        {/* Gasto total */}
                                         <div style={{ flex: 1 }}>
                                             <Skeleton height={18} width={58} borderRadius={4} />
                                         </div>
@@ -3261,12 +3746,12 @@ function AdminPanel({
                                         <th style={th}>Usuario</th>
                                         <th style={th}>Rol</th>
                                         <th style={th}>Órdenes</th>
-                                        <th style={th}>LTV</th>
+                                        <th style={th}>Gasto total</th>
                                         <th style={th}>Registro</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {users.map((user) => (
+                                    {paginatedUsers.items.map((user) => (
                                         <tr key={user._id} style={trStyle}>
                                             <td style={td}>
                                                 <div
@@ -3388,6 +3873,14 @@ function AdminPanel({
                                     ))}
                                 </tbody>
                             </table>
+                            <PaginationControls
+                                page={paginatedUsers.page}
+                                totalPages={paginatedUsers.totalPages}
+                                totalItems={users.length}
+                                start={paginatedUsers.start}
+                                end={paginatedUsers.end}
+                                onPageChange={setUsersPage}
+                            />
                         </Card>
                     </>
                 )}
@@ -3427,7 +3920,7 @@ function AdminPanel({
                                 animKey="sales_orders"
                             />
                             <KpiCard
-                                label="Revenue total"
+                                label="Ingresos totales"
                                 value={
                                     sales?.summary
                                         ? `$${sales.summary.totalRevenue.toLocaleString()}`
@@ -3439,7 +3932,7 @@ function AdminPanel({
                             />
                             <KpiCard
                                 mode="dark"
-                                label="Ticket promedio"
+                                label="Promedio por pedido"
                                 value={
                                     sales?.summary
                                         ? `$${sales.summary.avgOrderValue.toFixed(2)}`
@@ -3481,7 +3974,7 @@ function AdminPanel({
                                 )}
                             </Card>
                             <Card
-                                title="Revenue por categoría"
+                                title="Ingresos por categoría"
                                 sub="Ingresos por categoría"
                                 loading={showSalesSkeleton}
                                 skeletonContent={<Skeleton height={240} borderRadius={8} />}
@@ -3504,7 +3997,7 @@ function AdminPanel({
                             }}
                         >
                             <Card
-                                title="Top productos por revenue"
+                                title="Productos con más ingresos"
                                 sub="Basado en órdenes pagadas"
                                 loading={showSalesSkeleton}
                                 skeletonContent={
@@ -3528,7 +4021,7 @@ function AdminPanel({
                                             <th style={th}>Marca</th>
                                             <th style={th}>Categoría</th>
                                             <th style={th}>Unidades</th>
-                                            <th style={th}>Revenue</th>
+                                            <th style={th}>Ingresos</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -3870,7 +4363,7 @@ function AdminPanel({
                         </div>
                         <Card
                             title="Detalle mensual"
-                            sub="Revenue y órdenes por mes"
+                            sub="Ingresos y órdenes por mes"
                             pad={20}
                             loading={showEarningsSkeleton}
                             skeletonContent={
@@ -3899,7 +4392,7 @@ function AdminPanel({
                                     <tr>
                                         <th style={th}>Mes</th>
                                         <th style={th}>Órdenes</th>
-                                        <th style={th}>Revenue</th>
+                                        <th style={th}>Ingresos</th>
                                     </tr>
                                 </thead>
                                 <tbody>
