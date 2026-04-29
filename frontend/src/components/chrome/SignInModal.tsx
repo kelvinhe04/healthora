@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useSignIn, useSignUp, useClerk } from '@clerk/clerk-react';
 import { Button } from '../shared/Button';
 import { Icon } from '../shared/Icon';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../lib/api';
 
 type Mode = 'sign-in' | 'sign-up';
 type Step = 'email' | 'otp';
@@ -84,6 +86,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const { data: productsData } = useQuery({ queryKey: ['products', 'count'], queryFn: () => api.products.count(), staleTime: 1000 * 60 * 10 });
   const clerk = useClerk();
   const { signIn, setActive: setSignInActive, isLoaded: signInLoaded } = useSignIn();
   const { signUp, setActive: setSignUpActive, isLoaded: signUpLoaded } = useSignUp();
@@ -226,7 +229,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
           </div>
 
           <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 13 }}>
-            {['Envío gratis en pedidos +$50', '+500 productos certificados', 'Asesoría farmacéutica incluida'].map((text) => (
+            {['Envío gratis en pedidos +$50', `+${productsData?.count || 200} productos certificados`, 'Asesoría farmacéutica incluida'].map((text) => (
               <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'rgba(255,255,255,0.72)' }}>
                 <span style={{ width: 6, height: 6, borderRadius: 999, background: 'var(--lime)', flexShrink: 0, display: 'block' }} />
                 {text}

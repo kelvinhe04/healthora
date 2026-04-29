@@ -33,6 +33,7 @@ export const api = {
     list: (filters: ProductFilters = {}) =>
       request<Product[]>(`/products${filtersToQuery(filters)}`),
     get: (id: string) => request<Product>(`/products/${id}`),
+    count: () => request<{ count: number }>('/products/count'),
   },
   categories: {
     list: () => request<Category[]>('/categories'),

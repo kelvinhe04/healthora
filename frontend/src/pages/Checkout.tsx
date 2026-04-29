@@ -240,7 +240,10 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                   Continuar con Microsoft
                 </button>
                 <button style={authBtn} onClick={() => setShowSignInModal(true)}>
-                  <Icon name="lock" size={16} /> Recibir código OTP por email
+                  <span style={authLogoWrap}>
+                    <Icon name="lock" size={16} />
+                  </span>
+                  Recibir código OTP por email
                 </button>
                 <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', marginTop: 6, textAlign: 'center' }}>AUTENTICACIÓN PROTEGIDA POR CLERK</div>
               </div>
