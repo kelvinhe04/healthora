@@ -5,6 +5,8 @@ const RING_HOVER = 60;
 const DOT = 5;
 const SPEED = 0.17;
 const TARGET_HOVER = RING_HOVER / RING; // scale factor ≈ 1.67
+const TRAIL_LENGTH = 20;
+const TRAIL_DOT_SIZE = 6;
 
 const isClickable = (el: EventTarget | null): boolean => {
   const node = el as HTMLElement | null;
@@ -25,6 +27,7 @@ const isClickable = (el: EventTarget | null): boolean => {
 export function CustomCursor() {
   const ringRef = useRef<HTMLDivElement>(null);
   const dotRef  = useRef<HTMLDivElement>(null);
+  const trailRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     const ring = ringRef.current;
@@ -39,6 +42,8 @@ export function CustomCursor() {
     let sizeScale   = 1;
     let targetScale = 1;
     let raf: number;
+
+    const trailPositions = Array.from({ length: TRAIL_LENGTH }, () => ({ x: -200, y: -200 }));
 
     const onMove = (e: MouseEvent) => {
       mouse.x = e.clientX;
@@ -74,6 +79,24 @@ export function CustomCursor() {
 
       ring.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${angle}deg) scale(${sizeScale * (1 + squeeze)}, ${sizeScale * (1 - squeeze)})`;
 
+      // Trail follow logic
+      let currX = mouse.x;
+      let currY = mouse.y;
+      for (let i = 0; i < TRAIL_LENGTH; i++) {
+        // By using a higher factor like 0.45, the dots keep up better, 
+        // but because there are 20 dots and they are a bit bigger, the trail is very noticeable.
+        trailPositions[i].x += (currX - trailPositions[i].x) * 0.45;
+        trailPositions[i].y += (currY - trailPositions[i].y) * 0.45;
+        currX = trailPositions[i].x;
+        currY = trailPositions[i].y;
+
+        const el = trailRefs.current[i];
+        if (el) {
+          const scale = 1 - (i / TRAIL_LENGTH);
+          el.style.transform = `translate(${trailPositions[i].x}px, ${trailPositions[i].y}px) scale(${scale})`;
+        }
+      }
+
       raf = requestAnimationFrame(tick);
     };
 
@@ -88,6 +111,23 @@ export function CustomCursor() {
   return (
     <>
       <style>{`@media (pointer: fine) { * { cursor: none !important; } }`}</style>
+
+      {/* Trail */}
+      {Array.from({ length: TRAIL_LENGTH }).map((_, i) => (
+        <div
+          key={i}
+          ref={(el) => (trailRefs.current[i] = el)}
+          style={{
+            position: 'fixed', zIndex: 99998, pointerEvents: 'none',
+            width: TRAIL_DOT_SIZE, height: TRAIL_DOT_SIZE,
+            top: -(TRAIL_DOT_SIZE / 2), left: -(TRAIL_DOT_SIZE / 2),
+            background: 'white',
+            borderRadius: '50%',
+            mixBlendMode: 'difference',
+            willChange: 'transform',
+          }}
+        />
+      ))}
 
       {/* Ring — white + mix-blend-mode:difference inverts against any background */}
       <div
