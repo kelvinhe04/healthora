@@ -208,10 +208,81 @@ function RevealSection({ children, style, delay = 0, ...props }: RevealSectionPr
   );
 }
 
+const HERO_CONTENT = [
+  {
+    id: 'Salud de la piel',
+    pill: 'Dermatología avanzada',
+    title: <>Piel radiante y<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>saludable</span></>,
+    sub: 'Dermocosmética de grado médico para proteger y revitalizar tu rostro día tras día.',
+  },
+  {
+    id: 'Vitaminas',
+    pill: 'Defensas al máximo',
+    title: <>Vitalidad para tu<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>día a día</span></>,
+    sub: 'Refuerza tu sistema inmune y mantén tu energía con nuestra selección de vitaminas.',
+  },
+  {
+    id: 'Cuidado del bebé',
+    pill: 'Para los más pequeños',
+    title: <>Protección muy<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>delicada</span></>,
+    sub: 'Fórmulas suaves, hipoalergénicas y pediátricas para cuidar la piel de tu bebé.',
+  },
+  {
+    id: 'Cuidado personal',
+    pill: 'Rutina de higiene',
+    title: <>Siéntete bien<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>por dentro y fuera</span></>,
+    sub: 'Productos esenciales para tu cuidado e higiene personal de todos los días.',
+  },
+  {
+    id: 'Suplementos',
+    pill: 'Nutrición integral',
+    title: <>Optimiza tu<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>bienestar total</span></>,
+    sub: 'Complementos nutricionales de alta calidad para cubrir tus requerimientos diarios.',
+  },
+  {
+    id: 'Fitness',
+    pill: 'Rendimiento deportivo',
+    title: <>Alcanza tu<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>máximo nivel</span></>,
+    sub: 'Potencia tus entrenamientos, recupera músculos y supera tus límites.',
+  },
+  {
+    id: 'Medicamentos',
+    pill: 'Botiquín esencial',
+    title: <>Alivio rápido<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>y seguro</span></>,
+    sub: 'Tu farmacia de confianza con medicamentos OTC para cualquier malestar.',
+  },
+  {
+    id: 'Hidratantes',
+    pill: 'Humectación profunda',
+    title: <>Un oasis para<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>tu piel</span></>,
+    sub: 'Fórmulas que retienen la humedad durante 24 horas para una piel sedosa y suave.',
+  },
+  {
+    id: 'Fragancias',
+    pill: 'Aromas exclusivos',
+    title: <>Descubre tu<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>firma personal</span></>,
+    sub: 'Perfumes de diseñador con notas inolvidables que dejan huella.',
+  },
+  {
+    id: 'Maquillaje',
+    pill: 'Expresa tu belleza',
+    title: <>Color y<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>luminosidad</span></>,
+    sub: 'Cosméticos en tendencia y clásicos infalibles para realzar tu rostro.',
+  }
+];
+
 export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
-  const [heroDeckOpen, setHeroDeckOpen] = useState(false);
+  
+  const [activeHeroIdx, setActiveHeroIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveHeroIdx((prev) => (prev + 1) % HERO_CONTENT.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const scrollTo = (id: string) => {
     const target = document.getElementById(id);
@@ -235,149 +306,135 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       return bTime - aTime;
     })
     .slice(0, 4);
-  const donnaBornInRoma = products.find((p) => p.id === 'valentino-donna-born-in-roma-eau-de-parfum');
-  const goodGirl = products.find((p) => p.id === 'carolina-herrera-good-girl-eau-de-parfum');
   
-  const categoryDeck = Array.from(
-    new Map(
-      products
-        .filter((p) => p.category !== 'Fragancias' && (p.imageUrl || p.images?.length))
-        .map((p) => [p.category, p])
-    ).values()
-  ).slice(0, 5);
-  
-  let deck = [];
-  for (let i = 0; i < 5; i++) {
-    if (i === 3 && goodGirl) {
-      deck.push(goodGirl);
-    } else if (i < categoryDeck.length) {
-      deck.push(categoryDeck[i]);
-    }
-  }
-  if (donnaBornInRoma) deck.push(donnaBornInRoma);
-  
-  const heroDeckProducts = deck;
+  const activeHero = HERO_CONTENT[activeHeroIdx];
+  const activeProducts = products
+    .filter((p) => p.category === activeHero.id && (p.imageUrl || p.images?.length))
+    .slice(0, 4); // Take up to 4 to display 3 or 4 in the floating composition
 
   return (
     <main>
       {/* HERO */}
       <RevealSection style={{ padding: '32px 40px 0' }}>
-        <div style={{ borderRadius: 32, overflow: 'hidden', background: 'linear-gradient(120deg, oklch(0.28 0.055 155) 0%, oklch(0.32 0.06 155) 38%, oklch(0.4 0.065 155) 100%)', color: 'var(--cream)', display: 'grid', gridTemplateColumns: '1.15fr 1fr', minHeight: 560, position: 'relative' }}>
-          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(95% 90% at 84% 24%, rgba(183, 239, 221, 0.12) 0%, rgba(183, 239, 221, 0) 52%), radial-gradient(70% 70% at 8% 92%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 56%)' }} />
-          <div style={{ padding: '64px 72px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', zIndex: 2 }}>
-            <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 40 }}>
+        <div style={{ borderRadius: 32, overflow: 'hidden', background: 'linear-gradient(120deg, oklch(0.28 0.055 155) 0%, oklch(0.32 0.06 155) 38%, oklch(0.4 0.065 155) 100%)', color: 'var(--cream)', minHeight: 560, position: 'relative' }}>
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(95% 90% at 84% 24%, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 52%), radial-gradient(70% 70% at 8% 92%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 56%)' }} />
+          
+          {/* TEXT CONTENT */}
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '55%', padding: '64px 72px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', zIndex: 3, pointerEvents: 'none' }}>
+            <div style={{ pointerEvents: 'auto' }}>
+              <div key={`pill-${activeHeroIdx}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 40, animation: 'fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
                 <span style={{ width: 6, height: 6, background: 'var(--lime)', borderRadius: 999, boxShadow: '0 0 14px rgba(228, 242, 72, 0.45)' }} />
-                Nueva temporada · Otoño
+                {activeHero.pill}
               </div>
-              <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 92, lineHeight: 0.92, letterSpacing: '-0.035em', fontWeight: 400, margin: 0 }}>
-                Todo para tu<br />
-                <span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>salud</span>, cuidado<br />
-                y bienestar.
+              <h1 key={`title-${activeHeroIdx}`} style={{ fontFamily: '"Instrument Serif", serif', fontSize: 86, lineHeight: 0.95, letterSpacing: '-0.035em', fontWeight: 400, margin: 0, animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
+                {activeHero.title}
               </h1>
             </div>
-            <div>
-              <p style={{ fontSize: 17, lineHeight: 1.5, maxWidth: 440, opacity: 0.82, marginBottom: 32, fontFamily: '"Geist", sans-serif' }}>
-                Vitaminas, skincare, medicamentos, cuidado personal y más desde un solo lugar, con envío rápido y pago seguro.
+            <div style={{ pointerEvents: 'auto' }}>
+              <p key={`sub-${activeHeroIdx}`} style={{ fontSize: 17, lineHeight: 1.5, maxWidth: 440, opacity: 0, marginBottom: 32, fontFamily: '"Geist", sans-serif', animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s forwards' }}>
+                {activeHero.sub}
               </p>
               <div style={{ display: 'flex', gap: 12 }}>
-                <Button variant="lime" size="lg" onClick={() => onNav('catalog')} style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />}>Comprar ahora</Button>
-                <Button variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'var(--cream)', borderColor: 'rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(6px)' }}>Ver best sellers</Button>
+                <Button variant="lime" size="lg" onClick={() => onNav('catalog', { category: activeHero.id })} style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />}>Comprar ahora</Button>
+                <Button variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'var(--cream)', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(6px)' }}>Ver best sellers</Button>
               </div>
             </div>
           </div>
-          <div style={{ position: 'relative', overflow: 'hidden', zIndex: 2 }}>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', position: 'absolute', top: 40, right: 40 }}>LIFESTYLE / MODEL SHOT</div>
-              <div style={{ position: 'absolute', bottom: 40, left: 40, background: 'rgba(248, 246, 240, 0.96)', color: 'var(--ink)', padding: '18px 20px', borderRadius: 18, display: 'flex', alignItems: 'center', gap: 14, maxWidth: 280, boxShadow: '0 30px 60px -30px rgba(0,0,0,0.3)' }}>
-                <div style={{ width: 52, height: 52, borderRadius: 999, background: 'var(--lime)', color: 'oklch(0.28 0.055 155)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Instrument Serif", serif', fontSize: 22 }}>
-                  {reviewStats?.avgRating ? reviewStats.avgRating.toFixed(1) : '—'}
-                </div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>
-                    {reviewStats?.total ? reviewStats.total.toLocaleString('es-CO') + ' clientes felices' : 'Sin reseñas aún'}
-                  </div>
-                  <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', marginTop: 2 }}>PROMEDIO GLOBAL DE RESEÑAS</div>
-                </div>
-              </div>
-              <div
-                onMouseEnter={() => setHeroDeckOpen(true)}
-                onMouseLeave={() => setHeroDeckOpen(false)}
-                style={{ position: 'absolute', top: 34, right: 56, width: 500, height: 360 }}
-              >
-              {heroDeckProducts.map((product, index) => {
-                const collapsed = [
-                  { x: 116, y: 112, rotate: -28, z: 1 },
-                  { x: 148, y: 82, rotate: -16, z: 2 },
-                  { x: 176, y: 62, rotate: -6, z: 3 },
-                  { x: 214, y: 76, rotate: 5, z: 4 },
-                  { x: 246, y: 104, rotate: 15, z: 5 },
-                  { x: 278, y: 74, rotate: 24, z: 6 },
-                ][index] || { x: 180, y: 84, rotate: 0, z: 1 };
-                const expanded = [
-                  { x: 22, y: 132, rotate: -34, z: 1 },
-                  { x: 78, y: 54, rotate: -21, z: 2 },
-                  { x: 154, y: 10, rotate: -9, z: 3 },
-                  { x: 238, y: 54, rotate: 6, z: 4 },
-                  { x: 316, y: 126, rotate: 19, z: 5 },
-                  { x: 358, y: 28, rotate: 28, z: 6 },
-                ][index] || collapsed;
-                const pose = heroDeckOpen ? expanded : collapsed;
-                const cardShadow = heroDeckOpen
-                  ? [
-                      '0 14px 34px -20px rgba(0,0,0,0.22), 0 36px 80px -42px rgba(0,0,0,0.28)',
-                      '0 18px 40px -22px rgba(0,0,0,0.24), 0 42px 92px -46px rgba(0,0,0,0.3)',
-                      '0 22px 48px -24px rgba(0,0,0,0.28), 0 50px 104px -52px rgba(0,0,0,0.34)',
-                      '0 24px 54px -24px rgba(0,0,0,0.3), 0 56px 118px -56px rgba(0,0,0,0.36)',
-                      '0 28px 60px -26px rgba(0,0,0,0.34), 0 62px 130px -58px rgba(0,0,0,0.38)',
-                      '0 32px 70px -28px rgba(0,0,0,0.38), 0 70px 144px -64px rgba(0,0,0,0.42)',
-                    ][index]
-                  : [
-                      '0 10px 24px -16px rgba(0,0,0,0.18), 0 24px 56px -34px rgba(0,0,0,0.24)',
-                      '0 12px 28px -16px rgba(0,0,0,0.2), 0 28px 60px -36px rgba(0,0,0,0.26)',
-                      '0 14px 32px -18px rgba(0,0,0,0.22), 0 30px 68px -38px rgba(0,0,0,0.28)',
-                      '0 16px 36px -20px rgba(0,0,0,0.24), 0 34px 74px -40px rgba(0,0,0,0.3)',
-                      '0 18px 40px -20px rgba(0,0,0,0.28), 0 40px 86px -46px rgba(0,0,0,0.34)',
-                      '0 22px 48px -22px rgba(0,0,0,0.3), 0 48px 98px -50px rgba(0,0,0,0.38)',
-                    ][index];
 
-                return (
-                  <div
-                    key={product.id}
-                    style={{
-                      position: 'absolute',
-                      top: pose.y,
-                      left: pose.x,
-                      transform: `rotate(${pose.rotate}deg)`,
-                      transition: 'top 420ms cubic-bezier(.2,.8,.2,1), left 420ms cubic-bezier(.2,.8,.2,1), transform 420ms cubic-bezier(.2,.8,.2,1), box-shadow 280ms ease',
-                      zIndex: pose.z,
+          {/* FLOATING & ABSOLUTE ELEMENTS */}
+          <div key={`cat-${activeHeroIdx}`} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', position: 'absolute', top: 40, right: 40, animation: 'fadeInUp 0.5s forwards', zIndex: 2 }}>{activeHero.id.toUpperCase()}</div>
+          
+          <div style={{ position: 'absolute', bottom: 40, left: '60%', transform: 'translateX(-50%)', background: 'rgba(248, 246, 240, 0.96)', color: 'var(--ink)', padding: '18px 20px', borderRadius: 18, display: 'flex', alignItems: 'center', gap: 14, maxWidth: 280, zIndex: 5, boxShadow: '0 30px 60px -30px rgba(0,0,0,0.3)' }}>
+            <div style={{ width: 52, height: 52, borderRadius: 999, background: 'var(--lime)', color: 'oklch(0.28 0.055 155)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Instrument Serif", serif', fontSize: 22 }}>
+              {reviewStats?.avgRating ? reviewStats.avgRating.toFixed(1) : '—'}
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>
+                {reviewStats?.total ? reviewStats.total.toLocaleString('es-CO') + ' clientes felices' : 'Sin reseñas aún'}
+              </div>
+              <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', marginTop: 2 }}>PROMEDIO GLOBAL DE RESEÑAS</div>
+            </div>
+          </div>
+
+          {/* FLOATING COMPOSITION SPREAD OUT */}
+          <div key={`comp-${activeHeroIdx}`} style={{ position: 'absolute', top: 0, right: '0%', bottom: 0, width: '45%', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 2 }}>
+            {activeProducts.map((product, index) => {
+              // Asymmetric cool composition, moved further right
+              const poses = [
+                // Main central card
+                { x: 80, y: -20, rotate: -4, scale: 1.15, z: 3, delay: 0, anim: 'heroFloatA' },
+                // Top left card
+                { x: -90, y: -120, rotate: -15, scale: 0.85, z: 2, delay: 0.15, anim: 'heroFloatB' },
+                // Top right card
+                { x: 220, y: -60, rotate: 12, scale: 0.9, z: 4, delay: 0.3, anim: 'heroFloatC' },
+                // Bottom left card
+                { x: -50, y: 140, rotate: 8, scale: 0.75, z: 1, delay: 0.45, anim: 'heroFloatA' }
+              ];
+              
+              const pose = poses[index];
+              if (!pose) return null;
+
+              return (
+                <div
+                  key={product.id}
+                  style={{
+                    position: 'absolute',
+                    zIndex: pose.z,
+                    transform: `translate(${pose.x}px, ${pose.y}px) rotate(${pose.rotate}deg) scale(${pose.scale})`,
+                    opacity: 0,
+                    animation: `cardEnterSpread 0.9s cubic-bezier(0.18, 0.88, 0.24, 1) ${pose.delay}s forwards`,
+                    pointerEvents: 'auto'
+                  }}
+                >
+                  <div style={{ animation: `${pose.anim} ${6 + index}s ease-in-out infinite` }}>
+                    <div style={{ 
+                      background: 'rgba(255,255,255,0.985)', 
+                      borderRadius: 20, 
+                      padding: 14, 
+                      boxShadow: '0 24px 54px -24px rgba(0,0,0,0.3), 0 56px 118px -56px rgba(0,0,0,0.36)', 
+                      border: '1px solid rgba(255,255,255,0.6)',
+                      cursor: 'pointer',
+                      transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease'
                     }}
-                  >
-                    <div style={{ opacity: 0, animation: `heroCardIn 720ms cubic-bezier(.18,.88,.24,1) ${120 + index * 90}ms forwards` }}>
-                      <div style={{ animation: index % 2 === 0 ? 'heroFloatA 7.5s ease-in-out infinite' : 'heroFloatB 8.5s ease-in-out infinite' }}>
-                        <div style={{ background: 'rgba(255,255,255,0.985)', borderRadius: 20, padding: 14, boxShadow: cardShadow, border: '1px solid rgba(255,255,255,0.6)' }}>
-                          <ProductImage product={product} size="md" />
-                        </div>
-                      </div>
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.08) translateY(-4px)';
+                      e.currentTarget.style.boxShadow = '0 30px 60px -20px rgba(0,0,0,0.4), 0 60px 120px -40px rgba(0,0,0,0.5)';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1) translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 24px 54px -24px rgba(0,0,0,0.3), 0 56px 118px -56px rgba(0,0,0,0.36)';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)';
+                    }}
+                    onClick={() => onOpenProduct(product)}
+                    >
+                      <ProductImage product={product} size="md" />
                     </div>
                   </div>
-                );
-              })}
-              </div>
-            </div>
+                </div>
+              );
+            })}
           </div>
           <style>{`
-            @keyframes heroCardIn {
-              0% { opacity: 0; transform: translateY(28px) scale(0.9); }
-              100% { opacity: 1; transform: translateY(0) scale(1); }
+            @keyframes fadeInUp {
+              0% { opacity: 0; transform: translateY(20px); }
+              100% { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes cardEnterSpread {
+              0% { opacity: 0; transform: translate(var(--startX, 150px), var(--startY, 80px)) rotate(calc(var(--rot, 0) + 15deg)) scale(calc(var(--s, 1) * 0.7)); }
+              100% { opacity: 1; } /* Uses the inline style transform destination */
             }
             @keyframes heroFloatA {
-              0%, 100% { transform: rotate(-8deg) translateY(0); }
-              50% { transform: rotate(-5deg) translateY(-8px); }
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-16px); }
             }
             @keyframes heroFloatB {
-              0%, 100% { transform: rotate(6deg) translateY(0); }
-              50% { transform: rotate(8deg) translateY(8px); }
+              0%, 100% { transform: translateY(0) rotate(0deg); }
+              50% { transform: translateY(12px) rotate(-3deg); }
+            }
+            @keyframes heroFloatC {
+              0%, 100% { transform: translateY(0) rotate(0deg); }
+              50% { transform: translateY(-14px) rotate(4deg); }
             }
           `}</style>
         </div>

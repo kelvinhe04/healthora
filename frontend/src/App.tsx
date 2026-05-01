@@ -107,19 +107,17 @@ function AppInner() {
   const activeProduct = selectedProduct && (!productIdFromUrl || selectedProduct.id === productIdFromUrl) ? selectedProduct : (productFromUrl ?? null);
 
   useEffect(() => {
-    const v = searchParams.get('view') as View | null;
-    if (v && v !== view) setView(v);
+    const v = (searchParams.get('view') as View | null) || 'landing';
+    if (v !== view) setView(v);
     const nextFilter = readCatalogFilter(searchParams);
-    const nextView = v || view;
     const hasUrlFilters = hasCatalogUrlFilters(searchParams);
-    if (nextView === 'catalog' && !hasUrlFilters) {
+    if (v === 'catalog' && !hasUrlFilters) {
       const storedBrands = readStoredCatalogBrands();
       if (storedBrands.length) {
         nextFilter.brand = storedBrands[0];
         nextFilter.brands = storedBrands;
       }
     }
-    if (nextView !== 'catalog' && !hasUrlFilters) return;
     setCatalogFilter(nextFilter);
   }, [searchParams]);
 
