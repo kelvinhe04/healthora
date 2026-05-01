@@ -164,6 +164,40 @@ interface RevealSectionProps extends HTMLAttributes<HTMLElement> {
   delay?: number;
 }
 
+function StaggerItem({ children, index, baseDelay = 0 }: { children: ReactNode; index: number; baseDelay?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const node = ref.current;
+    if (!node) return;
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        setIsVisible(true);
+        obs.disconnect();
+      },
+      { threshold: 0.15 }
+    );
+    obs.observe(node);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(24px)',
+        transition: `opacity 600ms cubic-bezier(.2,.8,.2,1) ${baseDelay + index * 140}ms, transform 600ms cubic-bezier(.2,.8,.2,1) ${baseDelay + index * 140}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function RevealSection({ children, style, delay = 0, ...props }: RevealSectionProps) {
   const ref = useRef<HTMLElement | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -291,25 +325,52 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: cinematicRef.current,
-        start: 'top bottom',
+        start: 'top 75%',
         end: 'bottom top',
         scrub: 1,
       }
     });
 
-    // Text moves down slightly slower than background
-    tl.to('.cine-text', { y: '40%', ease: 'none' }, 0);
+    // Text starts slow at top, speeds up in middle, goes beyond section
+    tl.to('.cine-text', { 
+      y: '300%', 
+      ease: 'power2.in', 
+    }, 0);
     
-    // Product comes from bottom, scales up, and rotates into view!
+    // Product comes from bottom, scales up, and rotates into view - FASTER
     tl.fromTo('.cine-product', 
-      { y: '100vh', scale: 0.8, rotation: -35 },
-      { y: '-10vh', scale: 1.8, rotation: 15, ease: 'power1.inOut' },
+      { y: '120vh', scale: 0.6, rotation: -45 },
+      { y: '-20vh', scale: 2.0, rotation: 20, ease: 'power1.inOut' },
       0
     );
     
     // Ambient lights float up
     tl.to('.cine-light-1', { y: '-40vh', x: '10vw', ease: 'none' }, 0);
     tl.to('.cine-light-2', { y: '-50vh', x: '-10vw', ease: 'none' }, 0);
+    
+    // Left side images launch into view with different speeds - FASTER
+    tl.fromTo('.cine-filo-left-1', 
+      { y: '130vh', scale: 0.4, rotation: -50 },
+      { y: '-60px', scale: 1.5, rotation: 18, ease: 'power1.inOut' },
+      0
+    );
+    tl.fromTo('.cine-filo-left-2', 
+      { y: '140vh', scale: 0.3, rotation: -60 },
+      { y: '-80px', scale: 1.6, rotation: 25, ease: 'power1.inOut' },
+      0.05
+    );
+    
+    // Right side images launch into view with different speeds - FASTER
+    tl.fromTo('.cine-filo-right-1', 
+      { y: '130vh', scale: 0.4, rotation: 50 },
+      { y: '-50px', scale: 1.5, rotation: -15, ease: 'power1.inOut' },
+      0.02
+    );
+    tl.fromTo('.cine-filo-right-2', 
+      { y: '140vh', scale: 0.3, rotation: 60 },
+      { y: '-70px', scale: 1.6, rotation: -22, ease: 'power1.inOut' },
+      0.02
+    );
 
   }, { scope: cinematicRef });
 
@@ -436,7 +497,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             <div key={`cat-${activeHeroIdx}`} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', animation: 'fadeInUp 0.5s forwards' }}>{activeHero.id.toUpperCase()}</div>
           </Parallax>
           
-          <Parallax speed={8} style={{ position: 'absolute', bottom: 40, left: '60%', zIndex: 5 }}>
+          <Parallax speed={8} style={{ position: 'absolute', bottom: 60, left: '60%', zIndex: 5 }}>
             <div style={{ transform: 'translateX(-50%)', background: 'rgba(248, 246, 240, 0.96)', color: 'var(--ink)', padding: '18px 20px', borderRadius: 18, display: 'flex', alignItems: 'center', gap: 14, maxWidth: 280, boxShadow: '0 30px 60px -30px rgba(0,0,0,0.3)' }}>
               <div style={{ width: 52, height: 52, borderRadius: 999, background: 'var(--lime)', color: 'oklch(0.28 0.055 155)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Instrument Serif", serif', fontSize: 22 }}>
                 {reviewStats ? displayRating.toFixed(1) : '—'}
@@ -468,7 +529,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               const pose = poses[index];
               if (!pose) return null;
 
-              const baseYOffset = 30;
+              const baseYOffset = 55;
 
               const parallaxSpeeds = [18, 22, 20, 16];
               const parallaxSpeed = parallaxSpeeds[index] ?? 10;
@@ -555,16 +616,18 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           <a onClick={() => onNav('catalog')} style={seeAllLink}>Ver todas las categorías <Icon name="arrow-right" size={14} /></a>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 16 }}>
-          {categories.slice(0, 6).map((cat: Category) => (
-            <div key={cat.id} onClick={() => onNav('catalog', { category: cat.id })} style={{ background: cat.color, borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 180, cursor: 'pointer', transition: 'transform 200ms' }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-3px)')}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
-              <div style={{ width: 38, height: 38, borderRadius: 999, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="leaf" size={18} /></div>
-              <div>
-                <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, letterSpacing: '-0.02em', lineHeight: 1.05 }}>{cat.label}</div>
-                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.6, marginTop: 6 }}>{cat.sub}</div>
+          {categories.slice(0, 6).map((cat: Category, i) => (
+            <StaggerItem key={cat.id} index={i}>
+              <div onClick={() => onNav('catalog', { category: cat.id })} style={{ background: cat.color, borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 180, cursor: 'pointer', transition: 'transform 200ms' }}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-3px)')}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
+                <div style={{ width: 38, height: 38, borderRadius: 999, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="leaf" size={18} /></div>
+                <div>
+                  <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, letterSpacing: '-0.02em', lineHeight: 1.05 }}>{cat.label}</div>
+                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.6, marginTop: 6 }}>{cat.sub}</div>
+                </div>
               </div>
-            </div>
+            </StaggerItem>
           ))}
         </div>
       </RevealSection>
@@ -579,7 +642,11 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           <a onClick={() => onNav('catalog')} style={seeAllLink}>Ver todos <Icon name="arrow-right" size={14} /></a>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
-          {bestSellers.map((p) => <ProductCard key={p.id} product={p} onClick={onOpenProduct} onAdd={onAdd} />)}
+          {bestSellers.map((p, i) => (
+            <StaggerItem key={p.id} index={i}>
+              <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} />
+            </StaggerItem>
+          ))}
         </div>
       </RevealSection>
 
@@ -673,7 +740,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           <div className="cine-light-2" style={{ position: 'absolute', bottom: '30%', right: '5%', width: 350, height: 350, background: 'radial-gradient(circle, rgba(228, 242, 72, 0.05) 0%, rgba(228, 242, 72, 0) 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
           
           {/* Text Content */}
-          <div className="cine-text" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="cine-text" style={{ position: 'absolute', top: '5%', left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ textAlign: 'center', color: 'var(--ink)', padding: '0 40px' }}>
               <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: 24, opacity: 0.8 }}>Filosofía Healthora</div>
               <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 'clamp(64px, 8vw, 120px)', margin: 0, lineHeight: 0.9 }}>
@@ -682,9 +749,25 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             </div>
           </div>
           
-          {/* Product with rotation and scale animation */}
-          <div className="cine-product" style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%) scale(1.4)', filter: 'drop-shadow(0 30px 40px rgba(0,0,0,0.4))', willChange: 'transform' }}>
-            <img src="/products/ver.avif" alt="Versace Eros" style={{ width: 400, height: 'auto', maxHeight: 500 }} />
+          {/* Left side images */}
+          <Parallax speed={-3} style={{ position: 'absolute', left: '22%', top: '50%', transform: 'translateY(-50%)', zIndex: 4 }}>
+            <img className="cine-filo-left-1" src="/parallax/versace.avif" alt="Versace" style={{ width: 220, height: 'auto', maxHeight: 280, display: 'block', willChange: 'transform', filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.35))', background: 'transparent' }} />
+          </Parallax>
+          <Parallax speed={-5} style={{ position: 'absolute', left: '10%', top: '38%', transform: 'translateY(-50%)', zIndex: 3 }}>
+            <img className="cine-filo-left-2" src="/parallax/valentino.avif" alt="Valentino" style={{ width: 220, height: 'auto', maxHeight: 280, display: 'block', willChange: 'transform', filter: 'drop-shadow(0 16px 24px rgba(0,0,0,0.3))', background: 'transparent' }} />
+          </Parallax>
+          
+          {/* Right side images */}
+          <Parallax speed={4} style={{ position: 'absolute', right: '22%', top: '48%', transform: 'translateY(-50%)', zIndex: 4 }}>
+            <img className="cine-filo-right-1" src="/parallax/goodgirl-blush.avif" alt="Good Girl" style={{ width: 220, height: 'auto', maxHeight: 280, display: 'block', willChange: 'transform', filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.35))', background: 'transparent' }} />
+          </Parallax>
+          <Parallax speed={6} style={{ position: 'absolute', right: '10%', top: '62%', transform: 'translateY(-50%)', zIndex: 3 }}>
+            <img className="cine-filo-right-2" src="/parallax/paco-rabanne.avif" alt="Paco Rabanne" style={{ width: 220, height: 'auto', maxHeight: 280, display: 'block', willChange: 'transform', filter: 'drop-shadow(0 16px 24px rgba(0,0,0,0.3))', background: 'transparent' }} />
+          </Parallax>
+          
+          {/* Main Product with rotation and scale animation */}
+          <div className="cine-product" style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%) scale(1.4)', filter: 'drop-shadow(0 30px 40px rgba(0,0,0,0.4))', willChange: 'transform', zIndex: 5 }}>
+            <img src="/parallax/jean-paul.png" alt="Jean Paul" style={{ width: 260, height: 'auto', maxHeight: 320, background: 'transparent' }} />
           </div>
         </div>
       </RevealSection>
@@ -696,36 +779,38 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           <h2 style={headTitle}>¿Qué estás <em style={{ color: 'var(--green)' }}>buscando</em>?</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-          {NEEDS.map((n) => (
-            <div key={n.id} onClick={() => onNav('catalog', { need: n.id })} style={{ background: 'var(--cream-2)', borderRadius: 20, padding: '28px 24px', cursor: 'pointer', border: '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', gap: 40, minHeight: 200, transition: 'all 220ms' }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--green)'; e.currentTarget.style.color = 'var(--cream)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--cream-2)'; e.currentTarget.style.color = 'var(--ink)'; }}>
-              <div style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}>
-                <span
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 999,
-                    border: n.tone === 'ring' ? '2px solid currentColor' : 'none',
-                    background:
-                      n.tone === 'solid'
-                        ? 'currentColor'
-                        : n.tone === 'half-left'
-                          ? 'linear-gradient(90deg, currentColor 0 50%, transparent 50% 100%)'
-                          : n.tone === 'half-right'
-                            ? 'linear-gradient(90deg, transparent 0 50%, currentColor 50% 100%)'
-                            : 'transparent',
-                    outline: n.tone === 'half-left' || n.tone === 'half-right' ? '2px solid currentColor' : 'none',
-                    outlineOffset: '-2px',
-                    display: 'block',
-                  }}
-                />
+          {NEEDS.map((n, i) => (
+            <StaggerItem key={n.id} index={i}>
+              <div onClick={() => onNav('catalog', { need: n.id })} style={{ background: 'var(--cream-2)', borderRadius: 20, padding: '28px 24px', cursor: 'pointer', border: '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', gap: 40, minHeight: 200, transition: 'all 220ms' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--green)'; e.currentTarget.style.color = 'var(--cream)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--cream-2)'; e.currentTarget.style.color = 'var(--ink)'; }}>
+                <div style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}>
+                  <span
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 999,
+                      border: n.tone === 'ring' ? '2px solid currentColor' : 'none',
+                      background:
+                        n.tone === 'solid'
+                          ? 'currentColor'
+                          : n.tone === 'half-left'
+                            ? 'linear-gradient(90deg, currentColor 0 50%, transparent 50% 100%)'
+                            : n.tone === 'half-right'
+                              ? 'linear-gradient(90deg, transparent 0 50%, currentColor 50% 100%)'
+                              : 'transparent',
+                      outline: n.tone === 'half-left' || n.tone === 'half-right' ? '2px solid currentColor' : 'none',
+                      outlineOffset: '-2px',
+                      display: 'block',
+                    }}
+                  />
+                </div>
+                <div>
+                  <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 26, letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 8 }}>{n.label}</div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: '"Geist", sans-serif', opacity: 0.75 }}>Explorar <Icon name="arrow-right" size={12} /></div>
+                </div>
               </div>
-              <div>
-                <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 26, letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 8 }}>{n.label}</div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: '"Geist", sans-serif', opacity: 0.75 }}>Explorar <Icon name="arrow-right" size={12} /></div>
-              </div>
-            </div>
+            </StaggerItem>
           ))}
         </div>
       </RevealSection>
@@ -733,14 +818,16 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       {/* TRUST */}
       <RevealSection style={{ padding: '80px 40px 0' }} delay={120}>
         <div style={{ background: 'var(--cream-2)', borderRadius: 28, padding: '48px 40px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32, border: '1px solid var(--ink-06)' }}>
-          {[{ icon: 'shield', title: 'Pagos seguros', sub: 'Stripe · PCI DSS · 3D Secure' }, { icon: 'check', title: 'Productos verificados', sub: 'Farmacéuticos colegiados' }, { icon: 'truck', title: 'Envíos rápidos', sub: '24–48h en toda la región' }, { icon: 'headset', title: 'Atención al cliente', sub: 'Lun a sáb · 8am–8pm' }].map((t) => (
-            <div key={t.title} style={{ display: 'flex', gap: 14 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={t.icon} size={20} /></div>
-              <div>
-                <div style={{ fontFamily: '"Geist", sans-serif', fontSize: 15, fontWeight: 500, marginBottom: 4 }}>{t.title}</div>
-                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>{t.sub}</div>
+          {[{ icon: 'shield', title: 'Pagos seguros', sub: 'Stripe · PCI DSS · 3D Secure' }, { icon: 'check', title: 'Productos verificados', sub: 'Farmacéuticos colegiados' }, { icon: 'truck', title: 'Envíos rápidos', sub: '24–48h en toda la región' }, { icon: 'headset', title: 'Atención al cliente', sub: 'Lun a sáb · 8am–8pm' }].map((t, i) => (
+            <StaggerItem key={t.title} index={i}>
+              <div style={{ display: 'flex', gap: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={t.icon} size={20} /></div>
+                <div>
+                  <div style={{ fontFamily: '"Geist", sans-serif', fontSize: 15, fontWeight: 500, marginBottom: 4 }}>{t.title}</div>
+                  <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>{t.sub}</div>
+                </div>
               </div>
-            </div>
+            </StaggerItem>
           ))}
         </div>
       </RevealSection>
@@ -755,7 +842,11 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           <a onClick={() => onNav('catalog')} style={seeAllLink}>Ver catálogo completo <Icon name="arrow-right" size={14} /></a>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
-          {featured.map((p) => <ProductCard key={p.id} product={p} onClick={onOpenProduct} onAdd={onAdd} />)}
+          {featured.map((p, i) => (
+            <StaggerItem key={p.id} index={i}>
+              <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} />
+            </StaggerItem>
+          ))}
         </div>
       </RevealSection>
 
