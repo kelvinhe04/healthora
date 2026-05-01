@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Parallax } from 'react-scroll-parallax';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
+
+gsap.registerPlugin(ScrollTrigger);
 import type { Product, Category } from '../types';
 import { ProductCard } from '../components/shared/ProductCard';
 import { ProductImage } from '../components/shared/ProductImage';
@@ -275,6 +281,36 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
   
+  const cinematicRef = useRef<HTMLDivElement>(null);
+  
+  useGSAP(() => {
+    if (!cinematicRef.current) return;
+    
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: cinematicRef.current,
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 1,
+      }
+    });
+
+    // Text moves down slightly slower than background
+    tl.to('.cine-text', { y: '40%', ease: 'none' }, 0);
+    
+    // Product comes from bottom, scales up, and rotates into view!
+    tl.fromTo('.cine-product', 
+      { y: '100vh', scale: 0.8, rotation: -35 },
+      { y: '-10vh', scale: 1.8, rotation: 15, ease: 'power1.inOut' },
+      0
+    );
+    
+    // Ambient lights float up
+    tl.to('.cine-light-1', { y: '-40vh', x: '10vw', ease: 'none' }, 0);
+    tl.to('.cine-light-2', { y: '-50vh', x: '-10vw', ease: 'none' }, 0);
+
+  }, { scope: cinematicRef });
+
   const [activeHeroIdx, setActiveHeroIdx] = useState(0);
 
   useEffect(() => {
@@ -375,19 +411,18 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               if (!pose) return null;
 
               return (
-                <div
-                  key={product.id}
-                  style={{
-                    position: 'absolute',
-                    zIndex: pose.z,
-                    transform: `translate(${pose.x}px, ${pose.y}px) rotate(${pose.rotate}deg) scale(${pose.scale})`,
-                    opacity: 0,
-                    animation: `cardEnterSpread 0.9s cubic-bezier(0.18, 0.88, 0.24, 1) ${pose.delay}s forwards`,
-                    pointerEvents: 'auto'
-                  }}
-                >
-                  <div style={{ animation: `${pose.anim} ${6 + index}s ease-in-out infinite` }}>
-                    <div style={{ 
+                <Parallax speed={5 + index * 3} key={product.id} style={{ position: 'absolute', zIndex: pose.z, pointerEvents: 'auto' }}>
+                  <div
+                    className="hero-card"
+                    style={{
+                      transform: `translate(${pose.x}px, ${pose.y}px) rotate(${pose.rotate}deg) scale(${pose.scale})`,
+                      opacity: 0,
+                      animation: `cardEnterSpread 0.9s cubic-bezier(0.18, 0.88, 0.24, 1) ${pose.delay}s forwards`,
+                    }}
+                  >
+                    <div style={{ animation: `${pose.anim} ${6 + index}s ease-in-out infinite` }}>
+                    <div className="hero-card-inner"
+                    style={{ 
                       background: 'rgba(255,255,255,0.985)', 
                       borderRadius: 20, 
                       padding: 14, 
@@ -396,26 +431,17 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                       cursor: 'pointer',
                       transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease'
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'scale(1.08) translateY(-4px)';
-                      e.currentTarget.style.boxShadow = '0 30px 60px -20px rgba(0,0,0,0.4), 0 60px 120px -40px rgba(0,0,0,0.5)';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,1)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 24px 54px -24px rgba(0,0,0,0.3), 0 56px 118px -56px rgba(0,0,0,0.36)';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)';
-                    }}
                     onClick={() => onOpenProduct(product)}
                     >
                       <ProductImage product={product} size="md" />
                     </div>
                   </div>
                 </div>
+              </Parallax>
               );
             })}
           </div>
-          <style>{`
+<style>{`
             @keyframes fadeInUp {
               0% { opacity: 0; transform: translateY(20px); }
               100% { opacity: 1; transform: translateY(0); }
@@ -435,6 +461,15 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             @keyframes heroFloatC {
               0%, 100% { transform: translateY(0) rotate(0deg); }
               50% { transform: translateY(-14px) rotate(4deg); }
+            }
+            .hero-card:hover .hero-card-inner {
+              transform: scale(1.08) translateY(-4px);
+              box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4), 0 60px 120px -40px rgba(0,0,0,0.5);
+              border-color: rgba(255,255,255,1);
+            }
+            .promo-card:hover {
+              transform: scale(1.1) translateY(-8px) rotate(0deg) !important;
+              filter: drop-shadow(0 20px 30px rgba(0,0,0,0.25)) !important;
             }
           `}</style>
         </div>
@@ -491,9 +526,55 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               </div>
               <Button variant="primary" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />}>Comprar rutina</Button>
             </div>
-            <div style={{ position: 'absolute', right: 40, bottom: 40, display: 'flex', gap: 16 }}>
-              {products[2] && <div style={{ transform: 'rotate(-6deg)' }}><ProductImage product={products[2]} size="md" /></div>}
-              {products[6] && <div style={{ transform: 'rotate(6deg) translateY(20px)' }}><ProductImage product={products[6]} size="md" /></div>}
+            <div style={{ position: 'absolute', right: 40, bottom: 40, display: 'flex', gap: 16, zIndex: 10 }}>
+              {products[2] && (
+                <div 
+                  className="promo-card" 
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'rotate(-6deg) scale(1.08) translateY(-8px)';
+                    e.currentTarget.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.25))';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'rotate(-6deg) scale(1) translateY(0)';
+                    e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
+                  }}
+                  style={{ 
+                    transform: 'rotate(-6deg)', 
+                    cursor: 'pointer', 
+                    transition: 'transform 0.25s ease, filter 0.25s ease', 
+                    filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))',
+                    pointerEvents: 'auto',
+                    minWidth: 120,
+                    minHeight: 140,
+                  }}
+                >
+                  <ProductImage product={products[2]} size="md" />
+                </div>
+              )}
+              {products[6] && (
+                <div 
+                  className="promo-card" 
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'rotate(6deg) translateY(12px) scale(1.08) translateY(-8px)';
+                    e.currentTarget.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.25))';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'rotate(6deg) translateY(20px) scale(1) translateY(0)';
+                    e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
+                  }}
+                  style={{ 
+                    transform: 'rotate(6deg) translateY(20px)', 
+                    cursor: 'pointer', 
+                    transition: 'transform 0.25s ease, filter 0.25s ease', 
+                    filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))',
+                    pointerEvents: 'auto',
+                    minWidth: 120,
+                    minHeight: 140,
+                  }}
+                >
+                  <ProductImage product={products[6]} size="md" />
+                </div>
+              )}
             </div>
           </div>
           <div style={{ background: 'var(--cream-2)', borderRadius: 28, padding: 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 360 }}>
@@ -503,6 +584,31 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--ink-60)', marginBottom: 20 }}>Regístrate y recibe 1 muestra seleccionada en compras mayores a $200.</p>
             </div>
             <Button variant="primary" full onClick={() => onNav('club')}>Unirme al club</Button>
+          </div>
+        </div>
+      </RevealSection>
+
+      {/* PARALLAX BANNER (CINEMATIC WITH GSAP) */}
+      <RevealSection style={{ padding: '80px 0 0' }} delay={90}>
+        <div ref={cinematicRef} style={{ position: 'relative', height: '100vh', minHeight: 700, overflow: 'hidden', background: 'transparent' }}>
+          
+          {/* Ambient Lights */}
+          <div className="cine-light-1" style={{ position: 'absolute', top: '20%', left: '10%', width: 250, height: 250, background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)', filter: 'blur(20px)', transform: 'rotate(-15deg)', pointerEvents: 'none' }} />
+          <div className="cine-light-2" style={{ position: 'absolute', bottom: '30%', right: '5%', width: 350, height: 350, background: 'radial-gradient(circle, rgba(228, 242, 72, 0.05) 0%, rgba(228, 242, 72, 0) 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
+          
+          {/* Text Content */}
+          <div className="cine-text" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ textAlign: 'center', color: 'var(--ink)', padding: '0 40px' }}>
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: 24, opacity: 0.8 }}>Filosofía Healthora</div>
+              <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 'clamp(64px, 8vw, 120px)', margin: 0, lineHeight: 0.9 }}>
+                Ciencia y naturaleza<br/><em style={{ color: 'var(--lime)', fontStyle: 'italic' }}>para tu bienestar</em>
+              </h2>
+            </div>
+          </div>
+          
+          {/* Product with rotation and scale animation */}
+          <div className="cine-product" style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%) scale(1.4)', filter: 'drop-shadow(0 30px 40px rgba(0,0,0,0.4))', willChange: 'transform' }}>
+            <img src="/products/ver.avif" alt="Versace Eros" style={{ width: 400, height: 'auto', maxHeight: 500 }} />
           </div>
         </div>
       </RevealSection>

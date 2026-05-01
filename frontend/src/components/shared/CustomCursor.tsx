@@ -116,7 +116,7 @@ export function CustomCursor() {
       {Array.from({ length: TRAIL_LENGTH }).map((_, i) => (
         <div
           key={i}
-          ref={(el) => (trailRefs.current[i] = el)}
+          ref={(el) => { trailRefs.current[i] = el; }}
           style={{
             position: 'fixed', zIndex: 99998, pointerEvents: 'none',
             width: TRAIL_DOT_SIZE, height: TRAIL_DOT_SIZE,
