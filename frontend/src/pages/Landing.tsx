@@ -281,7 +281,9 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
   
+  const heroRef = useRef<HTMLDivElement>(null);
   const cinematicRef = useRef<HTMLDivElement>(null);
+  const [activeHeroIdx, setActiveHeroIdx] = useState(0);
   
   useGSAP(() => {
     if (!cinematicRef.current) return;
@@ -311,7 +313,26 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
 
   }, { scope: cinematicRef });
 
-  const [activeHeroIdx, setActiveHeroIdx] = useState(0);
+  useGSAP(() => {
+    const container = heroRef.current;
+    if (!container) return;
+
+    const items = gsap.utils.toArray<HTMLElement>('.hero-card-parallax', container);
+    items.forEach((el) => {
+      const speed = Number(el.dataset.speed ?? 10);
+      const distance = speed * 6;
+      gsap.to(el, {
+        y: -distance,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: container,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+    });
+  }, { scope: heroRef, dependencies: [activeHeroIdx] });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -334,6 +355,35 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     refetchOnMount: 'always',
   });
 
+  const [displayRating, setDisplayRating] = useState(0);
+  const [displayTotal, setDisplayTotal] = useState(0);
+
+  useEffect(() => {
+    if (!reviewStats) return;
+    const targetRating = reviewStats.avgRating ? Number(reviewStats.avgRating.toFixed(1)) : 0;
+    const targetTotal = reviewStats.total ?? 0;
+    const duration = 1600;
+    let start = 0;
+    let rafId: number;
+
+    const tick = (now: number) => {
+      if (!start) start = now;
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      setDisplayRating(Number((targetRating * eased).toFixed(1)));
+      setDisplayTotal(Math.floor(targetTotal * eased));
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(tick);
+      }
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [reviewStats]);
+
   const bestSellers = products.filter((p) => p.tag === 'Best seller').slice(0, 4);
   const featured = [...products]
     .sort((a, b) => {
@@ -352,45 +402,53 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     <main>
       {/* HERO */}
       <RevealSection style={{ padding: '32px 40px 0' }}>
-        <div style={{ borderRadius: 32, overflow: 'hidden', background: 'linear-gradient(120deg, oklch(0.28 0.055 155) 0%, oklch(0.32 0.06 155) 38%, oklch(0.4 0.065 155) 100%)', color: 'var(--cream)', minHeight: 560, position: 'relative' }}>
+        <div ref={heroRef} style={{ borderRadius: 32, overflow: 'hidden', background: 'linear-gradient(120deg, oklch(0.28 0.055 155) 0%, oklch(0.32 0.06 155) 38%, oklch(0.4 0.065 155) 100%)', color: 'var(--cream)', minHeight: 560, position: 'relative' }}>
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(95% 90% at 84% 24%, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 52%), radial-gradient(70% 70% at 8% 92%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 56%)' }} />
           
           {/* TEXT CONTENT */}
           <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '55%', padding: '64px 72px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', zIndex: 3, pointerEvents: 'none' }}>
-            <div style={{ pointerEvents: 'auto' }}>
-              <div key={`pill-${activeHeroIdx}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 40, animation: 'fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
-                <span style={{ width: 6, height: 6, background: 'var(--lime)', borderRadius: 999, boxShadow: '0 0 14px rgba(228, 242, 72, 0.45)' }} />
-                {activeHero.pill}
+            <Parallax speed={-8} style={{ pointerEvents: 'auto' }}>
+              <div>
+                <div key={`pill-${activeHeroIdx}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 40, animation: 'fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
+                  <span style={{ width: 6, height: 6, background: 'var(--lime)', borderRadius: 999, boxShadow: '0 0 14px rgba(228, 242, 72, 0.45)' }} />
+                  {activeHero.pill}
+                </div>
+                <h1 key={`title-${activeHeroIdx}`} style={{ fontFamily: '"Instrument Serif", serif', fontSize: 86, lineHeight: 0.95, letterSpacing: '-0.035em', fontWeight: 400, margin: 0, animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
+                  {activeHero.title}
+                </h1>
               </div>
-              <h1 key={`title-${activeHeroIdx}`} style={{ fontFamily: '"Instrument Serif", serif', fontSize: 86, lineHeight: 0.95, letterSpacing: '-0.035em', fontWeight: 400, margin: 0, animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
-                {activeHero.title}
-              </h1>
-            </div>
-            <div style={{ pointerEvents: 'auto' }}>
-              <p key={`sub-${activeHeroIdx}`} style={{ fontSize: 17, lineHeight: 1.5, maxWidth: 440, opacity: 0, marginBottom: 32, fontFamily: '"Geist", sans-serif', animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s forwards' }}>
-                {activeHero.sub}
-              </p>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <Button variant="lime" size="lg" onClick={() => onNav('catalog', { category: activeHero.id })} style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />}>Comprar ahora</Button>
-                <Button variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'var(--cream)', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(6px)' }}>Ver best sellers</Button>
+            </Parallax>
+            <Parallax speed={-6} style={{ pointerEvents: 'auto' }}>
+              <div>
+                <p key={`sub-${activeHeroIdx}`} style={{ fontSize: 17, lineHeight: 1.5, maxWidth: 440, opacity: 0, marginBottom: 32, fontFamily: '"Geist", sans-serif', animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s forwards' }}>
+                  {activeHero.sub}
+                </p>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <Button variant="lime" size="lg" onClick={() => onNav('catalog', { category: activeHero.id })} style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />}>Comprar ahora</Button>
+                  <Button variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'var(--cream)', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(6px)' }}>Ver best sellers</Button>
+                </div>
               </div>
-            </div>
+            </Parallax>
           </div>
 
           {/* FLOATING & ABSOLUTE ELEMENTS */}
-          <div key={`cat-${activeHeroIdx}`} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', position: 'absolute', top: 40, right: 40, animation: 'fadeInUp 0.5s forwards', zIndex: 2 }}>{activeHero.id.toUpperCase()}</div>
+          <Parallax translateY={[-30, 30]} style={{ position: 'absolute', top: 40, right: 40, zIndex: 3 }}>
+            <div key={`cat-${activeHeroIdx}`} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', animation: 'fadeInUp 0.5s forwards' }}>{activeHero.id.toUpperCase()}</div>
+          </Parallax>
           
-          <div style={{ position: 'absolute', bottom: 40, left: '60%', transform: 'translateX(-50%)', background: 'rgba(248, 246, 240, 0.96)', color: 'var(--ink)', padding: '18px 20px', borderRadius: 18, display: 'flex', alignItems: 'center', gap: 14, maxWidth: 280, zIndex: 5, boxShadow: '0 30px 60px -30px rgba(0,0,0,0.3)' }}>
-            <div style={{ width: 52, height: 52, borderRadius: 999, background: 'var(--lime)', color: 'oklch(0.28 0.055 155)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Instrument Serif", serif', fontSize: 22 }}>
-              {reviewStats?.avgRating ? reviewStats.avgRating.toFixed(1) : '—'}
-            </div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>
-                {reviewStats?.total ? reviewStats.total.toLocaleString('es-CO') + ' clientes felices' : 'Sin reseñas aún'}
+          <Parallax speed={8} style={{ position: 'absolute', bottom: 40, left: '60%', zIndex: 5 }}>
+            <div style={{ transform: 'translateX(-50%)', background: 'rgba(248, 246, 240, 0.96)', color: 'var(--ink)', padding: '18px 20px', borderRadius: 18, display: 'flex', alignItems: 'center', gap: 14, maxWidth: 280, boxShadow: '0 30px 60px -30px rgba(0,0,0,0.3)' }}>
+              <div style={{ width: 52, height: 52, borderRadius: 999, background: 'var(--lime)', color: 'oklch(0.28 0.055 155)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Instrument Serif", serif', fontSize: 22 }}>
+                {reviewStats ? displayRating.toFixed(1) : '—'}
               </div>
-              <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', marginTop: 2 }}>PROMEDIO GLOBAL DE RESEÑAS</div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>
+                  {reviewStats?.total ? displayTotal.toLocaleString('es-CO') + ' clientes felices' : 'Sin reseñas aún'}
+                </div>
+                <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', marginTop: 2 }}>PROMEDIO GLOBAL DE RESEÑAS</div>
+              </div>
             </div>
-          </div>
+          </Parallax>
 
           {/* FLOATING COMPOSITION SPREAD OUT */}
           <div key={`comp-${activeHeroIdx}`} style={{ position: 'absolute', top: 0, right: '0%', bottom: 0, width: '45%', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 2 }}>
@@ -410,34 +468,51 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               const pose = poses[index];
               if (!pose) return null;
 
+              const baseYOffset = 30;
+
+              const parallaxSpeeds = [18, 22, 20, 16];
+              const parallaxSpeed = parallaxSpeeds[index] ?? 10;
+
               return (
-                <Parallax speed={5 + index * 3} key={product.id} style={{ position: 'absolute', zIndex: pose.z, pointerEvents: 'auto' }}>
-                  <div
-                    className="hero-card"
-                    style={{
-                      transform: `translate(${pose.x}px, ${pose.y}px) rotate(${pose.rotate}deg) scale(${pose.scale})`,
-                      opacity: 0,
-                      animation: `cardEnterSpread 0.9s cubic-bezier(0.18, 0.88, 0.24, 1) ${pose.delay}s forwards`,
-                    }}
-                  >
+                <div
+                  key={product.id}
+                  style={{
+                    position: 'absolute',
+                    zIndex: pose.z,
+                    transform: `translate(${pose.x}px, ${pose.y + baseYOffset}px) rotate(${pose.rotate}deg) scale(${pose.scale})`,
+                    opacity: 0,
+                    animation: `cardEnterSpread 0.9s cubic-bezier(0.18, 0.88, 0.24, 1) ${pose.delay}s forwards`,
+                    pointerEvents: 'auto'
+                  }}
+                >
+                  <div className="hero-card-parallax" data-speed={parallaxSpeed} style={{ display: 'inline-flex' }}>
                     <div style={{ animation: `${pose.anim} ${6 + index}s ease-in-out infinite` }}>
-                    <div className="hero-card-inner"
-                    style={{ 
-                      background: 'rgba(255,255,255,0.985)', 
-                      borderRadius: 20, 
-                      padding: 14, 
-                      boxShadow: '0 24px 54px -24px rgba(0,0,0,0.3), 0 56px 118px -56px rgba(0,0,0,0.36)', 
-                      border: '1px solid rgba(255,255,255,0.6)',
-                      cursor: 'pointer',
-                      transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease'
-                    }}
-                    onClick={() => onOpenProduct(product)}
-                    >
-                      <ProductImage product={product} size="md" />
+                      <div style={{ 
+                        background: 'rgba(255,255,255,0.985)', 
+                        borderRadius: 20, 
+                        padding: 14, 
+                        boxShadow: '0 24px 54px -24px rgba(0,0,0,0.3), 0 56px 118px -56px rgba(0,0,0,0.36)', 
+                        border: '1px solid rgba(255,255,255,0.6)',
+                        cursor: 'pointer',
+                        transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.08) translateY(-4px)';
+                        e.currentTarget.style.boxShadow = '0 30px 60px -20px rgba(0,0,0,0.4), 0 60px 120px -40px rgba(0,0,0,0.5)';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1) translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 24px 54px -24px rgba(0,0,0,0.3), 0 56px 118px -56px rgba(0,0,0,0.36)';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)';
+                      }}
+                      onClick={() => onOpenProduct(product)}
+                      >
+                        <ProductImage product={product} size="md" />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </Parallax>
               );
             })}
           </div>
@@ -461,11 +536,6 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             @keyframes heroFloatC {
               0%, 100% { transform: translateY(0) rotate(0deg); }
               50% { transform: translateY(-14px) rotate(4deg); }
-            }
-            .hero-card:hover .hero-card-inner {
-              transform: scale(1.08) translateY(-4px);
-              box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4), 0 60px 120px -40px rgba(0,0,0,0.5);
-              border-color: rgba(255,255,255,1);
             }
             .promo-card:hover {
               transform: scale(1.1) translateY(-8px) rotate(0deg) !important;
@@ -528,52 +598,58 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             </div>
             <div style={{ position: 'absolute', right: 40, bottom: 40, display: 'flex', gap: 16, zIndex: 10 }}>
               {products[2] && (
-                <div 
-                  className="promo-card" 
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'rotate(-6deg) scale(1.08) translateY(-8px)';
-                    e.currentTarget.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.25))';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'rotate(-6deg) scale(1) translateY(0)';
-                    e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
-                  }}
-                  style={{ 
-                    transform: 'rotate(-6deg)', 
-                    cursor: 'pointer', 
-                    transition: 'transform 0.25s ease, filter 0.25s ease', 
-                    filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))',
-                    pointerEvents: 'auto',
-                    minWidth: 120,
-                    minHeight: 140,
-                  }}
-                >
-                  <ProductImage product={products[2]} size="md" />
-                </div>
+                <Parallax speed={4} style={{ pointerEvents: 'auto' }}>
+                  <div 
+                    className="promo-card" 
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'rotate(-6deg) scale(1.08) translateY(-8px)';
+                      e.currentTarget.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.25))';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'rotate(-6deg) scale(1) translateY(0)';
+                      e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
+                    }}
+                    onClick={() => onOpenProduct(products[2])}
+                    style={{ 
+                      transform: 'rotate(-6deg)', 
+                      cursor: 'pointer', 
+                      transition: 'transform 0.25s ease, filter 0.25s ease', 
+                      filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))',
+                      pointerEvents: 'auto',
+                      minWidth: 120,
+                      minHeight: 140,
+                    }}
+                  >
+                    <ProductImage product={products[2]} size="md" />
+                  </div>
+                </Parallax>
               )}
               {products[6] && (
-                <div 
-                  className="promo-card" 
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'rotate(6deg) translateY(12px) scale(1.08) translateY(-8px)';
-                    e.currentTarget.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.25))';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'rotate(6deg) translateY(20px) scale(1) translateY(0)';
-                    e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
-                  }}
-                  style={{ 
-                    transform: 'rotate(6deg) translateY(20px)', 
-                    cursor: 'pointer', 
-                    transition: 'transform 0.25s ease, filter 0.25s ease', 
-                    filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))',
-                    pointerEvents: 'auto',
-                    minWidth: 120,
-                    minHeight: 140,
-                  }}
-                >
-                  <ProductImage product={products[6]} size="md" />
-                </div>
+                <Parallax speed={6} style={{ pointerEvents: 'auto' }}>
+                  <div 
+                    className="promo-card" 
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'rotate(6deg) translateY(12px) scale(1.08) translateY(-8px)';
+                      e.currentTarget.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.25))';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'rotate(6deg) translateY(20px) scale(1) translateY(0)';
+                      e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
+                    }}
+                    onClick={() => onOpenProduct(products[6])}
+                    style={{ 
+                      transform: 'rotate(6deg) translateY(20px)', 
+                      cursor: 'pointer', 
+                      transition: 'transform 0.25s ease, filter 0.25s ease', 
+                      filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))',
+                      pointerEvents: 'auto',
+                      minWidth: 120,
+                      minHeight: 140,
+                    }}
+                  >
+                    <ProductImage product={products[6]} size="md" />
+                  </div>
+                </Parallax>
               )}
             </div>
           </div>
