@@ -267,7 +267,7 @@ function AppInner() {
           </span>
         </button>
       )}
-      <Footer />
+      <Footer onNav={(view, filter) => nav(view, filter)} />
     </>
   );
 }

@@ -1,10 +1,17 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, useRef, type FormEvent } from 'react';
+import { motion, type Variants } from 'framer-motion';
 import { api } from '../../lib/api';
 
+interface FooterProps {
+  onNav?: (view: 'catalog', filter?: { category?: string }) => void;
+}
+
+const allCategories = ['Vitaminas', 'Medicamentos', 'Cuidado personal', 'Cuidado del bebé', 'Salud de la piel', 'Fitness', 'Fragancias', 'Hidratantes', 'Maquillaje', 'Suplementos'];
+
 const cols = [
-  { title: 'Comprar', items: ['Vitaminas', 'Medicamentos', 'Cuidado personal', 'Bebé', 'Skincare', 'Fitness', 'Fragancias'] },
-  { title: 'Ayuda', items: ['Contacto', 'Preguntas frecuentes', 'Envíos', 'Devoluciones', 'Estado de mi orden'] },
-  { title: 'Legal', items: ['Términos y condiciones', 'Política de privacidad', 'Política de medicamentos', 'Cookies'] },
+  { title: 'Comprar', items: allCategories, isCategory: true },
+  { title: 'Ayuda', items: ['Contacto', 'Preguntas frecuentes', 'Envíos', 'Devoluciones', 'Estado de mi orden'], isCategory: false },
+  { title: 'Legal', items: ['Términos y condiciones', 'Política de privacidad', 'Política de medicamentos', 'Cookies'], isCategory: false },
 ];
 
 const socials = [
@@ -14,10 +21,210 @@ const socials = [
   { label: 'TikTok', id: 'tiktok' },
 ];
 
-export function Footer() {
+const letterVariants: Variants = {
+  hidden: { opacity: 0, y: 250 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 45,
+      damping: 22,
+      mass: 0.8,
+    },
+  },
+};
+
+const wordVariants: Variants = {
+  hidden: { opacity: 0, y: 200 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 40,
+      damping: 20,
+    },
+  },
+};
+
+const iconVariants: Variants = {
+  hidden: { opacity: 0, y: 200, scale: 0.5 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 50,
+      damping: 18,
+    },
+  },
+};
+
+const linkVariants: Variants = {
+  hidden: { opacity: 0, y: 150 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 45,
+      damping: 20,
+    },
+  },
+};
+
+const inputVariants: Variants = {
+  hidden: { opacity: 0, x: -80 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 40,
+      damping: 18,
+    },
+  },
+};
+
+const buttonVariants: Variants = {
+  hidden: { opacity: 0, x: 80 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 40,
+      damping: 18,
+    },
+  },
+};
+
+const bottomVariants: Variants = {
+  hidden: { opacity: 0, y: 80 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 20,
+      damping: 30,
+      mass: 1.2,
+    },
+  },
+};
+
+interface AnimatedProps {
+  children: React.ReactNode;
+  delay: number;
+  isAnimating: boolean;
+  variants: Variants;
+  onClick?: () => void;
+  style?: React.CSSProperties;
+}
+
+const AnimatedItem = ({ children, delay, isAnimating, variants, onClick, style }: AnimatedProps) => {
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const elementRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isAnimating && !hasAnimated && elementRef.current) {
+      const timer = setTimeout(() => {
+        setHasAnimated(true);
+      }, delay * 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isAnimating, hasAnimated, delay]);
+
+  return (
+    <motion.div
+      ref={elementRef}
+      variants={variants}
+      initial="hidden"
+      animate={hasAnimated ? 'visible' : 'hidden'}
+      onClick={onClick}
+      style={{ display: 'inline-block', ...style }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+function AnimatedLetter({ children, delay, isAnimating }: { children: React.ReactNode; delay: number; isAnimating: boolean }) {
+  return <AnimatedItem delay={delay} isAnimating={isAnimating} variants={letterVariants}>{children}</AnimatedItem>;
+}
+
+function AnimatedWord({ children, delay, isAnimating }: { children: React.ReactNode; delay: number; isAnimating: boolean }) {
+  return <AnimatedItem delay={delay} isAnimating={isAnimating} variants={wordVariants}>{children}</AnimatedItem>;
+}
+
+function AnimatedIcon({ children, delay, isAnimating }: { children: React.ReactNode; delay: number; isAnimating: boolean }) {
+  return <AnimatedItem delay={delay} isAnimating={isAnimating} variants={iconVariants}>{children}</AnimatedItem>;
+}
+
+function AnimatedLink({ children, delay, isAnimating, onClick, onMouseEnter, onMouseLeave, style }: { children: React.ReactNode; delay: number; isAnimating: boolean; onClick?: () => void; onMouseEnter?: (e: React.MouseEvent<HTMLLIElement>) => void; onMouseLeave?: (e: React.MouseEvent<HTMLLIElement>) => void; style?: React.CSSProperties }) {
+  return (
+    <AnimatedItem delay={delay} isAnimating={isAnimating} variants={linkVariants} onClick={onClick} style={style}>
+      <li 
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', opacity: 0.88, listStyle: 'none', textTransform: 'capitalize', transition: 'opacity 180ms ease' }}
+      >
+        {children}
+      </li>
+    </AnimatedItem>
+  );
+}
+
+function AnimatedInput({ delay, isAnimating, children, style }: { delay: number; isAnimating: boolean; children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <AnimatedItem delay={delay} isAnimating={isAnimating} variants={inputVariants} style={{ ...style, overflow: 'hidden' }}>
+      {children}
+    </AnimatedItem>
+  );
+}
+
+function AnimatedButton({ delay, isAnimating, children }: { delay: number; isAnimating: boolean; children: React.ReactNode }) {
+  return <AnimatedItem delay={delay} isAnimating={isAnimating} variants={buttonVariants}>{children}</AnimatedItem>;
+}
+
+function formatCategoryName(category: string): string {
+  return category;
+}
+
+export function Footer({ onNav }: FooterProps) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  
+  const footerRef = useRef<HTMLElement>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const lastScrollY = useRef(0);
+  const hasStartedRef = useRef(false);
+
+  const handleScroll = () => {
+    if (hasStartedRef.current) return;
+    
+    const currentScrollY = window.scrollY;
+    const isScrollingDown = currentScrollY > lastScrollY.current;
+    lastScrollY.current = currentScrollY;
+    
+    if (footerRef.current && isScrollingDown) {
+      const footerRect = footerRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      
+      if (footerRect.top < windowHeight * 0.9) {
+        hasStartedRef.current = true;
+        setIsAnimating(true);
+      }
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (!message) return;
@@ -62,8 +269,11 @@ export function Footer() {
     }
   };
 
+  const healthora = 'Healthora'.split('');
+  const description = 'Tu farmacia online para salud, cuidado personal, belleza y bienestar.';
+
   return (
-    <footer style={{ background: 'var(--green)', color: 'var(--cream)', padding: '64px 40px 32px', borderRadius: '32px 32px 0 0', marginTop: 80 }}>
+    <footer ref={footerRef} style={{ background: 'var(--green)', color: 'var(--cream)', padding: '64px 40px 32px', borderRadius: '32px 32px 0 0', marginTop: 80, overflow: 'hidden' }}>
       <style>{`
         .newsletter-input::placeholder { color: rgba(255, 255, 255, 0.44); }
         .newsletter-input { border-radius: 999px; }
@@ -78,65 +288,112 @@ export function Footer() {
       `}</style>
       <div style={{ display: 'grid', gridTemplateColumns: '1.4fr repeat(3, 1fr) 1.4fr', gap: 48, marginBottom: 64 }}>
         <div>
-          <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 48, letterSpacing: '-0.03em', lineHeight: 0.95, marginBottom: 20 }}>Healthora</div>
-          <p style={{ fontSize: 14, lineHeight: 1.55, opacity: 0.72, maxWidth: 260, fontFamily: '"Geist", sans-serif' }}>Tu farmacia online para salud, cuidado personal, belleza y bienestar.</p>
+          <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 48, letterSpacing: '-0.03em', lineHeight: 0.95, marginBottom: 20 }}>
+            {healthora.map((letter, i) => (
+              <AnimatedLetter key={i} delay={i * 0.08} isAnimating={isAnimating}>{letter}</AnimatedLetter>
+            ))}
+          </div>
+          <p style={{ fontSize: 14, lineHeight: 1.55, opacity: 0.72, maxWidth: 260, fontFamily: '"Geist", sans-serif' }}>
+            <AnimatedWord delay={0.7} isAnimating={isAnimating}>{description}</AnimatedWord>
+          </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 22 }}>
-            {socials.map((social) => (
-              <a
-                key={social.id}
-                href="#"
-                onClick={(e) => e.preventDefault()}
-                aria-label={social.label}
-                style={{ width: 38, height: 38, borderRadius: 999, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.06)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'white', transition: 'transform 180ms ease, background 180ms ease' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                }}
-              >
-                <SocialIcon name={social.id} />
-              </a>
+            {socials.map((social, i) => (
+              <AnimatedIcon key={social.id} delay={0.9 + i * 0.1} isAnimating={isAnimating}>
+                <a
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                  aria-label={social.label}
+                  style={{ width: 38, height: 38, borderRadius: 999, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.06)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'white', transition: 'transform 180ms ease, background 180ms ease' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                  }}
+                >
+                  <SocialIcon name={social.id} />
+                </a>
+              </AnimatedIcon>
             ))}
           </div>
         </div>
-        {cols.map((col) => (
+        {cols.map((col, colIndex) => (
           <div key={col.title}>
-            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6, marginBottom: 20 }}>{col.title}</div>
+            <motion.div
+              variants={wordVariants}
+              initial="hidden"
+              animate={isAnimating ? 'visible' : 'hidden'}
+              transition={{ delay: 1.3 + colIndex * 0.12 }}
+              style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6, marginBottom: 20 }}
+            >
+              {col.title}
+            </motion.div>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {col.items.map((item) => <li key={item} style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', opacity: 0.88, cursor: 'pointer' }}>{item}</li>)}
+              {col.items.map((item, itemIndex) => (
+                <AnimatedLink 
+                  key={item} 
+                  delay={1.4 + colIndex * 0.12 + itemIndex * 0.06} 
+                  isAnimating={isAnimating}
+                  onClick={() => col.isCategory && onNav?.('catalog', { category: formatCategoryName(item) })}
+                  onMouseEnter={(e) => col.isCategory && (e.currentTarget.style.opacity = '1')}
+                  onMouseLeave={(e) => col.isCategory && (e.currentTarget.style.opacity = '0.88')}
+                  style={{ cursor: col.isCategory ? 'pointer' : 'default' }}
+                >
+                  {col.isCategory ? formatCategoryName(item) : item}
+                </AnimatedLink>
+              ))}
             </ul>
           </div>
         ))}
         <div>
-          <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6, marginBottom: 20 }}>Newsletter</div>
-          <p style={{ fontSize: 14, lineHeight: 1.55, opacity: 0.88, marginBottom: 18, fontFamily: '"Geist", sans-serif' }}>Recibe ofertas, lanzamientos y consejos de bienestar.</p>
-          <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: '#315f42', borderRadius: 999, padding: 4, alignItems: 'center' }}>
-            <input
-              className="newsletter-input"
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (status !== 'loading') {
-                  setStatus('idle');
-                  setMessage('');
-                }
-              }}
-              placeholder="tu@email.com"
-              autoComplete="email"
-              disabled={status === 'loading'}
-              style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', color: 'var(--cream)', WebkitTextFillColor: 'var(--cream)', caretColor: 'var(--cream)', padding: '10px 16px', fontSize: 13, fontFamily: '"Geist", sans-serif', opacity: status === 'loading' ? 0.7 : 1 }}
-            />
-            <button
-              type="submit"
-              disabled={status === 'loading'}
-              style={{ background: 'var(--lime)', color: 'var(--ink)', border: 'none', padding: '10px 18px', borderRadius: 999, cursor: status === 'loading' ? 'wait' : 'pointer', fontFamily: '"Geist", sans-serif', fontSize: 13, fontWeight: 500, opacity: status === 'loading' ? 0.72 : 1 }}
-            >
-              {status === 'loading' ? 'Enviando...' : 'Suscribirme'}
-            </button>
+          <motion.div
+            variants={wordVariants}
+            initial="hidden"
+            animate={isAnimating ? 'visible' : 'hidden'}
+            transition={{ delay: 2.0 }}
+            style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6, marginBottom: 20 }}
+          >
+            Newsletter
+          </motion.div>
+          <motion.p
+            variants={wordVariants}
+            initial="hidden"
+            animate={isAnimating ? 'visible' : 'hidden'}
+            transition={{ delay: 2.1 }}
+            style={{ fontSize: 14, lineHeight: 1.55, opacity: 0.88, marginBottom: 18, fontFamily: '"Geist", sans-serif' }}
+          >
+            Recibe ofertas, lanzamientos y consejos de bienestar.
+          </motion.p>
+          <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: '#315f42', borderRadius: 999, padding: 4, alignItems: 'center', overflow: 'hidden', gap: 4, width: 'fit-content' }}>
+            <AnimatedInput delay={2.2} isAnimating={isAnimating} style={{ width: 160, minWidth: 0 }}>
+              <input
+                className="newsletter-input"
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (status !== 'loading') {
+                    setStatus('idle');
+                    setMessage('');
+                  }
+                }}
+                placeholder="tu@email.com"
+                autoComplete="email"
+                disabled={status === 'loading'}
+                style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--cream)', WebkitTextFillColor: 'var(--cream)', caretColor: 'var(--cream)', padding: '10px 12px', fontSize: 13, fontFamily: '"Geist", sans-serif', opacity: status === 'loading' ? 0.7 : 1 }}
+              />
+            </AnimatedInput>
+            <AnimatedButton delay={2.4} isAnimating={isAnimating}>
+              <button
+                type="submit"
+                disabled={status === 'loading'}
+                style={{ background: 'var(--lime)', color: 'var(--ink)', border: 'none', padding: '10px 18px', borderRadius: 999, cursor: status === 'loading' ? 'wait' : 'pointer', fontFamily: '"Geist", sans-serif', fontSize: 13, fontWeight: 500, opacity: status === 'loading' ? 0.72 : 1 }}
+              >
+                {status === 'loading' ? 'Enviando...' : 'Suscribirme'}
+              </button>
+            </AnimatedButton>
           </form>
           {message && (
             <p style={{ margin: '10px 0 0', fontSize: 12, lineHeight: 1.45, fontFamily: '"Geist", sans-serif', color: status === 'success' ? 'var(--lime)' : '#ffd7d7' }}>
@@ -145,10 +402,16 @@ export function Footer() {
           )}
         </div>
       </div>
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 80 }}
+        animate={isAnimating ? 'visible' : 'hidden'}
+        transition={{ duration: 0.8, delay: 2.8 }}
+        variants={bottomVariants}
+        style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6 }}
+      >
         <span>© 2026 Healthora · Farmacia digital</span>
         <span>Pagos seguros · Visa · Mastercard · Amex · Stripe</span>
-      </div>
+      </motion.div>
     </footer>
   );
 }
