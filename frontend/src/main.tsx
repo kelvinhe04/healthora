@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ParallaxProvider } from 'react-scroll-parallax';
 import { App } from './App';
 import { SSOCallbackPage } from './components/SSOCallback';
 import { useNavigate } from 'react-router-dom';
@@ -22,13 +23,15 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ClerkProvider publishableKey={clerkPk} afterSignOutUrl="/">
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/sso-callback" element={<SSOCallbackWrapper />} />
-            <Route path="/*" element={<App />} />
-          </Routes>
-        </BrowserRouter>
-      </QueryClientProvider>
+          <ParallaxProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/sso-callback" element={<SSOCallbackWrapper />} />
+                <Route path="/*" element={<App />} />
+              </Routes>
+            </BrowserRouter>
+          </ParallaxProvider>
+        </QueryClientProvider>
     </ClerkProvider>
   </StrictMode>
 );
