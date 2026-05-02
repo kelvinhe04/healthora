@@ -490,22 +490,22 @@ export function KpiCard({
   animKey,
 }: KpiCardProps) {
   const isDark = mode === "dark";
-  if (loading) {
-    return (
-      <div
-        style={{
-          background: isDark ? "var(--green)" : "var(--cream)",
-          color: isDark ? "var(--cream)" : "var(--ink)",
-          borderRadius: 20,
-          padding: "24px 26px",
-          border: isDark ? "none" : "1px solid var(--ink-06)",
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-          minHeight: 150,
-          justifyContent: "space-between",
-        }}
-      >
+if (loading) {
+      return (
+        <div
+          style={{
+            background: isDark ? "var(--green)" : "var(--cream)",
+            color: isDark ? "var(--cream)" : "var(--ink)",
+            borderRadius: 20,
+            padding: "20px 26px",
+            border: isDark ? "none" : "1px solid var(--ink-06)",
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            minHeight: 150,
+            justifyContent: "space-between",
+          }}
+        >
         <Skeleton height={12} width="65%" borderRadius={4} />
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <Skeleton height={48} borderRadius={8} />
@@ -527,11 +527,11 @@ export function KpiCard({
           background: isDark ? "var(--green)" : "var(--cream)",
           color: isDark ? "var(--cream)" : "var(--ink)",
           borderRadius: 20,
-          padding: "24px 26px",
+          padding: "20px 26px",
           border: isDark ? "none" : "1px solid var(--ink-06)",
           display: "flex",
           flexDirection: "column",
-          gap: 16,
+          gap: 10,
           minHeight: 150,
           justifyContent: "space-between",
         }}
@@ -621,11 +621,11 @@ export function KpiCard({
         background: isDark ? "var(--green)" : "var(--cream)",
         color: isDark ? "var(--cream)" : "var(--ink)",
         borderRadius: 20,
-        padding: "24px 26px",
+        padding: "20px 26px",
         border: isDark ? "none" : "1px solid var(--ink-06)",
         display: "flex",
         flexDirection: "column",
-        gap: 16,
+        gap: 10,
         minHeight: 150,
         justifyContent: "space-between",
       }}
