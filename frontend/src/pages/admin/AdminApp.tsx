@@ -1386,6 +1386,11 @@ function AdminPanel({
 
   useEffect(() => {
     initAdminSession();
+    queryClient.prefetchQuery({
+      queryKey: ["admin-users"],
+      queryFn: async () =>
+        api.admin.users(await getAdminToken()) as Promise<AdminUser[]>,
+    });
   }, []);
 
   useEffect(() => {
@@ -1393,7 +1398,16 @@ function AdminPanel({
       localStorage.setItem("healthora_admin_page", page);
     }
   }, [page]);
-  const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
+const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
+  const [usersLoading, setUsersLoading] = useState(true);
+
+  useEffect(() => {
+    if (page === "users") {
+      setUsersLoading(true);
+      const timer = setTimeout(() => setUsersLoading(false), 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [page]);
   const [orderSearch, setOrderSearch] = useState("");
   const [ordersPage, setOrdersPage] = useState(1);
   const [orderStatusDrafts, setOrderStatusDrafts] = useState<
@@ -1443,7 +1457,6 @@ function AdminPanel({
     queryKey: ["admin-dashboard"],
     queryFn: async () =>
       api.admin.dashboard(await getAdminToken()) as Promise<DashboardData>,
-    staleTime: 30_000,
   });
   const ordersQuery = useQuery({
     queryKey: ["admin-orders"],
@@ -1465,7 +1478,6 @@ function AdminPanel({
     queryKey: ["admin-users"],
     queryFn: async () =>
       api.admin.users(await getAdminToken()) as Promise<AdminUser[]>,
-    enabled: page === "users",
   });
   const salesQuery = useQuery({
     queryKey: ["admin-sales"],
@@ -1489,8 +1501,8 @@ function AdminPanel({
     productsQuery.isLoading,
   );
   const showUsersSkeleton = useOnceLoading(
-    "section_users",
-    usersQuery.isLoading,
+    `section_users_${usersPage}`,
+    usersLoading,
   );
   const showSalesSkeleton = useOnceLoading(
     "section_sales",
@@ -1677,6 +1689,10 @@ function AdminPanel({
   const orders = ordersQuery.data || [];
   const products = productsQuery.data || [];
   const users = usersQuery.data || [];
+  const customers = useMemo(
+    () => users.filter((u) => u.role === "customer"),
+    [users],
+  );
   const sales = salesQuery.data;
   const earnings = earningsQuery.data;
   const dashboardData = dashboardQuery.data;
@@ -1700,13 +1716,19 @@ function AdminPanel({
     setUsersPage(1);
   }, [users.length]);
 
+  useEffect(() => {
+    if (page === "users") {
+      usersQuery.refetch();
+    }
+  }, [page]);
+
   const sidebarCounts = useMemo(
     () => ({
       orders: dashboardData?.kpis.totalOrders ?? orders.length,
       products: productsCountQuery.data?.count ?? 0,
-      users: dashboardData?.kpis.totalUsers ?? users.length,
+      users: customers.length,
     }),
-    [dashboardData, orders.length, productsCountQuery.data, users.length],
+    [dashboardData, orders.length, productsCountQuery.data, customers.length],
   );
 
   const STATIC_CATEGORIES = [
@@ -1752,9 +1774,12 @@ function AdminPanel({
         o._id.toLowerCase().includes(term) ||
         o.customerName?.toLowerCase().includes(term) ||
         o.customerEmail?.toLowerCase().includes(term);
-      return matchSearch;
+      const matchFulfillment =
+        !orderFulfillmentFilter ||
+        o.fulfillmentStatus === orderFulfillmentFilter;
+      return matchSearch && matchFulfillment;
     });
-  }, [orders, orderSearch]);
+  }, [orders, orderSearch, orderFulfillmentFilter]);
 
   const paginatedOrders = useMemo(
     () => paginateItems(displayedOrders, ordersPage),
@@ -1767,8 +1792,8 @@ function AdminPanel({
   );
 
   const paginatedUsers = useMemo(
-    () => paginateItems(users, usersPage),
-    [users, usersPage],
+    () => paginateItems(customers, usersPage),
+    [customers, usersPage],
   );
 
   const displayedProductIds = useMemo(
@@ -1846,8 +1871,8 @@ function AdminPanel({
                 animKey="orders"
               />
               <KpiCard
-                label="Usuarios"
-                value={dashboard?.kpis.totalUsers ?? "—"}
+                label="Clientes"
+                value={customers.length ?? "—"}
                 sub="clientes registrados"
                 loading={!dashboard}
                 animKey="users"
@@ -3918,14 +3943,14 @@ function AdminPanel({
               kicker={
                 showUsersSkeleton
                   ? undefined
-                  : `Usuarios · ${users.length} cuentas`
+                  : `Clientes · ${customers.length} cuentas`
               }
               title={
                 <>
-                  Gestión de <em style={{ color: "var(--green)" }}>usuarios</em>
+                  Gestión de <em style={{ color: "var(--green)" }}>clientes</em>
                 </>
               }
-              sub="Administra roles locales y sincronízalos con Clerk."
+              sub="Listado de clientes finales del e-commerce."
             />
             <Card
               pad={0}
@@ -4075,25 +4100,20 @@ function AdminPanel({
                         </div>
                       </td>
                       <td style={td}>
-                        <select
-                          value={user.role || "customer"}
-                          onChange={(e) =>
-                            roleMutation.mutate({
-                              id: user._id,
-                              role: e.target.value as "customer" | "admin",
-                            })
-                          }
+                        <div
                           style={{
-                            padding: "8px 10px",
-                            borderRadius: 8,
-                            border: "1px solid var(--ink-20)",
-                            background: "transparent",
-                            fontSize: 12,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            padding: "6px 10px",
+                            borderRadius: 6,
+                            background: "var(--ink-06)",
+                            fontSize: 11,
+                            fontFamily: '"JetBrains Mono", monospace',
+                            color: "var(--ink-70)",
                           }}
                         >
-                          <option value="customer">Customer</option>
-                          <option value="admin">Admin</option>
-                        </select>
+                          Cliente
+                        </div>
                       </td>
                       <td
                         style={{

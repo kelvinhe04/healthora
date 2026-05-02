@@ -1019,7 +1019,7 @@ export function Sidebar({
       icon: "leaf",
       count: counts?.products,
     },
-    { id: "users", label: "Usuarios", icon: "user", count: counts?.users },
+    { id: "users", label: "Clientes", icon: "user", count: counts?.users },
     { id: "sales", label: "Ventas", icon: "truck" },
     { id: "earnings", label: "Ganancias", icon: "percent" },
   ];
