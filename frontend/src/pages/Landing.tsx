@@ -325,15 +325,15 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: cinematicRef.current,
-        start: 'top 75%',
-        end: 'bottom top',
-        scrub: 1,
+        start: 'top 140%',
+        end: 'bottom 20%',
+        scrub: 0.6,
       }
     });
 
     // Text starts slow at top, speeds up in middle, goes beyond section
     tl.to('.cine-text', { 
-      y: '300%', 
+      y: '380%', 
       ease: 'power2.in', 
     }, 0);
     
@@ -350,24 +350,24 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     
     // Left side images launch into view with different speeds - FASTER
     tl.fromTo('.cine-filo-left-1', 
-      { y: '130vh', scale: 0.4, rotation: -50 },
+      { y: '95vh', scale: 0.55, rotation: -42 },
       { y: '-60px', scale: 1.5, rotation: 18, ease: 'power1.inOut' },
       0
     );
     tl.fromTo('.cine-filo-left-2', 
-      { y: '140vh', scale: 0.3, rotation: -60 },
+      { y: '105vh', scale: 0.5, rotation: -50 },
       { y: '-80px', scale: 1.6, rotation: 25, ease: 'power1.inOut' },
       0.05
     );
     
     // Right side images launch into view with different speeds - FASTER
     tl.fromTo('.cine-filo-right-1', 
-      { y: '130vh', scale: 0.4, rotation: 50 },
+      { y: '95vh', scale: 0.55, rotation: 42 },
       { y: '-50px', scale: 1.5, rotation: -15, ease: 'power1.inOut' },
       0.02
     );
     tl.fromTo('.cine-filo-right-2', 
-      { y: '140vh', scale: 0.3, rotation: 60 },
+      { y: '105vh', scale: 0.5, rotation: 50 },
       { y: '-70px', scale: 1.6, rotation: -22, ease: 'power1.inOut' },
       0.02
     );
