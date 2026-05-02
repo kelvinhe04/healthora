@@ -4604,7 +4604,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                 label="Ingresos brutos"
                 value={
                   earnings?.summary
-                    ? `$${earnings.summary.gross.toLocaleString()}`
+                    ? `$${earnings.summary.gross.toFixed(2)}`
                     : "—"
                 }
                 loading={showEarningsSkeleton}

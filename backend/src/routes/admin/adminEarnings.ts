@@ -30,7 +30,7 @@ export const adminEarningsRouter = new Hono<AppEnv>()
 
     const s = summary[0] || { gross: 0, tax: 0, shipping: 0, count: 0 };
     const fees = Math.round(s.gross * 0.029 * 100) / 100;
-    const net = Math.round((s.gross - fees) * 100) / 100;
+    const net = Math.round((s.gross - s.tax - fees) * 100) / 100;
 
     return c.json({
       monthly,
