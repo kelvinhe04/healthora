@@ -223,6 +223,68 @@ const LineChartInner = ({
 
 export const LineChart = memo(LineChartInner);
 
+type BarChartRow = { label: string; value: number; kind?: "orders" | "revenue" };
+
+function formatDayLabel(date: string) {
+  if (!date) return "";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return date;
+  return d.toLocaleDateString("es-MX", { day: "2-digit", month: "2-digit" });
+}
+
+function formatMoney(value: number) {
+  return `$${value.toLocaleString("en-US")}`;
+}
+
+function BarTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: { payload?: BarChartRow }[];
+}) {
+  if (!active || !payload?.length || !payload[0].payload) return null;
+
+  const row = payload[0].payload;
+  const isOrders = row.kind === "orders";
+
+  return (
+    <div
+      style={{
+        background: "var(--cream)",
+        border: "1px solid var(--ink-10)",
+        borderRadius: 12,
+        boxShadow: "0 16px 32px -20px rgba(0,0,0,0.22)",
+        padding: "10px 12px",
+        minWidth: 150,
+        fontFamily: '"Geist", sans-serif',
+        color: "var(--ink)",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          color: "var(--ink-60)",
+          marginBottom: 6,
+          fontFamily: '"JetBrains Mono", monospace',
+        }}
+      >
+        {isOrders ? "Pedidos diarios" : "Ingresos por categoría"}
+      </div>
+      <div style={{ fontSize: 13, lineHeight: 1.35 }}>
+        <div style={{ marginBottom: 2 }}>
+          {isOrders ? "Fecha" : "Categoría"}: {isOrders ? formatDayLabel(row.label) : row.label}
+        </div>
+        <div>
+          {isOrders ? "Órdenes" : "Ingresos"}: {isOrders ? row.value : formatMoney(row.value)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const BarChartInner = ({
   data,
   height,
@@ -233,9 +295,10 @@ const BarChartInner = ({
   const chartData = useMemo(() => {
     if (!data) return [];
     return data.map((d) => ({
-      date: d.date || "",
+      label: d.date || "",
       value: d.orders ?? d.value ?? 0,
-    }));
+      kind: typeof d.orders === "number" ? "orders" : "revenue",
+    } as BarChartRow));
   }, [data]);
 
   if (!chartData.length)
@@ -262,7 +325,7 @@ const BarChartInner = ({
           margin={{ top: 10, right: 40, left: 10, bottom: 70 }}
         >
           <XAxis
-            dataKey="date"
+            dataKey="label"
             type="category"
             fontSize={9}
             fontFamily="JetBrains Mono"
@@ -290,7 +353,8 @@ const BarChartInner = ({
             width={50}
             tick={{ fill: "var(--ink)" }}
           />
-          <Bar dataKey="value" fill="var(--green)" radius={[4, 4, 0, 0]} />
+          <Tooltip content={<BarTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+          <Bar dataKey="value" fill="var(--green)" radius={[4, 4, 0, 0]} cursor="pointer" />
         </RechartsBar>
       </ResponsiveContainer>
     </div>

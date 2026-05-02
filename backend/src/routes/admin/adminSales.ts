@@ -3,11 +3,31 @@ import { requireAdmin } from "../../middleware/requireAdmin";
 import { Order } from "../../db/models/Order";
 import { Product } from "../../db/models/Product";
 
+function buildRollingDays(totalDays) {
+  const today = new Date();
+  const endExclusive = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + 1));
+  const start = new Date(endExclusive);
+  start.setUTCDate(start.getUTCDate() - totalDays);
+
+  const days = [];
+  for (let i = 0; i < totalDays; i += 1) {
+    const current = new Date(start);
+    current.setUTCDate(start.getUTCDate() + i);
+    days.push({
+      date: current.toISOString().slice(0, 10),
+      revenue: 0,
+      orders: 0,
+      units: 0,
+    });
+  }
+
+  return { start, endExclusive, days };
+}
+
 const adminSalesRouter = new Hono()
   .use("*", requireAdmin)
   .get("/", async (c) => {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const rollingDays = buildRollingDays(30);
 
     const summary = await Order.aggregate([
       { $match: { paymentStatus: "paid" } },
@@ -23,10 +43,24 @@ const adminSalesRouter = new Hono()
     ]);
 
     const daily = await Order.aggregate([
-      { $match: { paymentStatus: "paid", createdAt: { $gte: thirtyDaysAgo } } },
+      {
+        $match: {
+          paymentStatus: "paid",
+          createdAt: {
+            $gte: rollingDays.start,
+            $lt: rollingDays.endExclusive,
+          },
+        },
+      },
       {
         $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "UTC",
+            },
+          },
           revenue: { $sum: "$total" },
           orders: { $sum: 1 },
           units: { $sum: { $sum: "$items.qty" } },
@@ -144,6 +178,24 @@ const adminSalesRouter = new Hono()
       }),
     );
 
+    const dailyMap = new Map(
+      daily.map(function (entry) {
+        return [entry._id, entry];
+      }),
+    );
+
+    const dailySeries = rollingDays.days.map(function (day) {
+      const entry = dailyMap.get(day.date);
+      return entry
+        ? {
+            date: day.date,
+            revenue: entry.revenue,
+            orders: entry.orders,
+            units: entry.units,
+          }
+        : day;
+    });
+
     const byCategory = topProducts.map(function (item) {
       const p = map.get(item._id);
       return {
@@ -163,14 +215,7 @@ const adminSalesRouter = new Hono()
         avgOrderValue: 0,
         totalUnits: 0,
       },
-      daily: daily.map(function (d) {
-        return {
-          date: d._id,
-          revenue: d.revenue,
-          orders: d.orders,
-          units: d.units,
-        };
-      }),
+      daily: dailySeries,
       revenueByCategory,
       byCategory,
       topProducts: topProductNames,
