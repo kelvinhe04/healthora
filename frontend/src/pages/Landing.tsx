@@ -393,7 +393,16 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
         },
       });
     });
-  }, { scope: heroRef, dependencies: [activeHeroIdx] });
+  }, { scope: heroRef, dependencies: [activeHeroIdx, products.length] });
+
+  useEffect(() => {
+    if (products.length === 0) return;
+    const rafId = requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+    });
+
+    return () => cancelAnimationFrame(rafId);
+  }, [products.length]);
 
   useEffect(() => {
     const timer = setInterval(() => {
