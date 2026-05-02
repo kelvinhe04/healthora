@@ -501,9 +501,8 @@ if (loading) {
             border: isDark ? "none" : "1px solid var(--ink-06)",
             display: "flex",
             flexDirection: "column",
-            gap: 10,
-            minHeight: 150,
-            justifyContent: "space-between",
+            gap: 4,
+            justifyContent: "flex-start",
           }}
         >
         <Skeleton height={12} width="65%" borderRadius={4} />
@@ -531,9 +530,8 @@ if (loading) {
           border: isDark ? "none" : "1px solid var(--ink-06)",
           display: "flex",
           flexDirection: "column",
-          gap: 10,
-          minHeight: 150,
-          justifyContent: "space-between",
+          gap: 4,
+          justifyContent: "flex-start",
         }}
       >
         <div
@@ -625,9 +623,8 @@ if (loading) {
         border: isDark ? "none" : "1px solid var(--ink-06)",
         display: "flex",
         flexDirection: "column",
-        gap: 10,
-        minHeight: 150,
-        justifyContent: "space-between",
+        gap: 4,
+        justifyContent: "flex-start",
       }}
     >
       <div
