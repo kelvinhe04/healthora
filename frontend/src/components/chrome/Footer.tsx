@@ -167,9 +167,8 @@ function AnimatedLink({ children, delay, isAnimating, onClick, onMouseEnter, onM
   return (
     <AnimatedItem delay={delay} isAnimating={isAnimating} variants={linkVariants} onClick={onClick} style={style}>
       <li 
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-        style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', opacity: 0.88, listStyle: 'none', textTransform: 'capitalize', transition: 'opacity 180ms ease' }}
+        className="footer-link"
+        style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', opacity: 0.88, listStyle: 'none', textTransform: 'capitalize', display: 'inline-block' }}
       >
         {children}
       </li>
@@ -285,6 +284,34 @@ export function Footer({ onNav }: FooterProps) {
           box-shadow: 0 0 0 1000px #315f42 inset;
           transition: background-color 9999s ease-in-out 0s;
         }
+        .footer-link {
+          position: relative;
+          cursor: pointer;
+          color: var(--cream);
+          text-decoration: none;
+          letter-spacing: -0.01em;
+          transition: color 200ms;
+          display: inline-block;
+        }
+        .footer-link::after {
+          content: '';
+          position: absolute;
+          bottom: -3px;
+          left: 0;
+          width: 100%;
+          height: 1.5px;
+          background: var(--lime);
+          transform: scaleX(0);
+          transform-origin: right;
+          transition: transform 240ms ease;
+        }
+        .footer-link:hover {
+          color: var(--lime);
+        }
+        .footer-link:hover::after {
+          transform: scaleX(1);
+          transform-origin: left;
+        }
       `}</style>
       <div style={{ display: 'grid', gridTemplateColumns: '1.4fr repeat(3, 1fr) 1.4fr', gap: 48, marginBottom: 64 }}>
         <div>
@@ -337,8 +364,7 @@ export function Footer({ onNav }: FooterProps) {
                   delay={1.4 + colIndex * 0.12 + itemIndex * 0.06} 
                   isAnimating={isAnimating}
                   onClick={() => col.isCategory && onNav?.('catalog', { category: formatCategoryName(item) })}
-                  onMouseEnter={(e) => col.isCategory && (e.currentTarget.style.opacity = '1')}
-                  onMouseLeave={(e) => col.isCategory && (e.currentTarget.style.opacity = '0.88')}
+                  
                   style={{ cursor: col.isCategory ? 'pointer' : 'default' }}
                 >
                   {col.isCategory ? formatCategoryName(item) : item}
