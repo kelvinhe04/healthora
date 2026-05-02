@@ -4595,9 +4595,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(4, 1fr)",
-                gap: 12,
+                gap: 16,
                 marginBottom: 24,
-                padding: "0 4px",
               }}
             >
               <KpiCard
