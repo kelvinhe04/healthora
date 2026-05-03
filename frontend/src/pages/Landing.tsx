@@ -715,7 +715,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               </div>
               <AnimatedButton variant="primary" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Comprar rutina" />
             </div>
-            <div style={{ position: 'absolute', right: 40, bottom: 40, display: 'flex', gap: 16, zIndex: 10 }}>
+            <div style={{ position: 'absolute', right: -15, bottom: 60, display: 'flex', gap: 16, zIndex: 10, alignItems: 'flex-end' }}>
               {products[2] && (
                 <Parallax speed={4} style={{ pointerEvents: 'auto' }}>
                   <div 
@@ -748,16 +748,16 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                   <div 
                     className="promo-card" 
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'rotate(6deg) translateY(12px) scale(1.08) translateY(-8px)';
+                      e.currentTarget.style.transform = 'rotate(14deg) translateY(12px) scale(1.08) translateY(-8px)';
                       e.currentTarget.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.25))';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'rotate(6deg) translateY(20px) scale(1) translateY(0)';
+                      e.currentTarget.style.transform = 'rotate(14deg) translateY(20px) scale(1) translateY(0)';
                       e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
                     }}
                     onClick={() => onOpenProduct(products[6])}
                     style={{ 
-                      transform: 'rotate(6deg) translateY(20px)', 
+                      transform: 'rotate(14deg) translateY(20px)',
                       cursor: 'pointer', 
                       transition: 'transform 0.25s ease, filter 0.25s ease', 
                       filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))',
