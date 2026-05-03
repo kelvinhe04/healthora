@@ -237,9 +237,9 @@ function OrderDetail({
           {canEditAddr && !editingAddress && (
             <button
               onClick={onStartEditAddr}
-              style={{ fontSize: 12, fontFamily: '"Geist", sans-serif', color: DARK_GREEN, background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+              style={{ fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--green)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
             >
-              <Icon name="pencil" size={12} stroke={DARK_GREEN} /> Editar
+              <Icon name="pencil" size={12} stroke="var(--green)" /> Editar
             </button>
           )}
         </div>
@@ -293,11 +293,11 @@ function OrderDetail({
         <>
           {divider}
           {showCancelConfirm ? (
-            <div style={{ padding: '18px 20px', borderRadius: 14, border: '1px solid color-mix(in oklab, var(--coral) 28%, white)', background: 'color-mix(in oklab, var(--coral) 5%, white)' }}>
-              <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>
+            <div style={{ padding: '18px 20px', borderRadius: 14, border: '1px solid var(--coral)', background: 'color-mix(in oklab, var(--coral) 10%, transparent)' }}>
+              <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 600, color: 'var(--coral)', marginBottom: 6 }}>
                 ¿Confirmar cancelación?
               </div>
-              <div style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginBottom: 14, lineHeight: 1.5 }}>
+              <div style={{ fontSize: 13, color: 'var(--ink-80)', fontFamily: '"Geist", sans-serif', marginBottom: 14, lineHeight: 1.5 }}>
                 Esta acción no se puede deshacer. El pedido quedará cancelado permanentemente.
               </div>
               {cancelError && <div style={{ fontSize: 13, color: 'var(--coral)', marginBottom: 10, fontFamily: '"Geist", sans-serif' }}>{cancelError}</div>}
@@ -313,7 +313,7 @@ function OrderDetail({
           ) : (
             <button
               onClick={onRequestCancel}
-              style={{ alignSelf: 'flex-start', padding: '10px 20px', borderRadius: 10, background: 'transparent', color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: '1px solid color-mix(in oklab, var(--coral) 30%, white)', cursor: 'pointer' }}
+              style={{ alignSelf: 'flex-start', padding: '10px 20px', borderRadius: 10, background: 'color-mix(in oklab, var(--coral) 10%, transparent)', color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: 'none', cursor: 'pointer', fontWeight: 500 }}
             >
               Cancelar pedido
             </button>

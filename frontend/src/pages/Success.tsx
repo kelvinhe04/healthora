@@ -51,7 +51,7 @@ export function Success({ onBack }: SuccessProps) {
   return (
     <main style={{ padding: '60px 40px 0', display: 'flex', justifyContent: 'center' }}>
       <div style={{ maxWidth: 560, textAlign: 'center' }}>
-        <div style={{ width: 80, height: 80, borderRadius: 999, background: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px', color: 'var(--ink)' }}>
+        <div style={{ width: 80, height: 80, borderRadius: 999, background: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px', color: 'oklch(0.2 0.015 155)' }}>
           <Icon name="check" size={36} />
         </div>
         <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'var(--green)', letterSpacing: '0.12em', marginBottom: 12 }}>

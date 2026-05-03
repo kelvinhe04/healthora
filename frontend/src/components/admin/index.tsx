@@ -1118,8 +1118,8 @@ export function Sidebar({
                   fontFamily: '"JetBrains Mono", monospace',
                   padding: "2px 6px",
                   borderRadius: 999,
-                  background: page === it.id ? "var(--lime)" : "var(--ink-06)",
-                  color: page === it.id ? "var(--ink)" : "var(--ink-60)",
+                  background: page === it.id ? "var(--green)" : "var(--ink-06)",
+                  color: page === it.id ? "white" : "var(--ink-60)",
                 }}
               >
                 {it.count}
@@ -1159,6 +1159,9 @@ export function Sidebar({
           style={{
             width: "100%",
             marginBottom: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
             fontSize: 12,
             fontFamily: '"Geist", sans-serif',
             color: "var(--ink-60)",
@@ -1171,7 +1174,8 @@ export function Sidebar({
             textAlign: "left",
           }}
         >
-          ← Ver tienda
+          <Icon name="arrow-left" size={14} />
+          Ver tienda
         </button>
         <div
           style={{

@@ -96,7 +96,7 @@ function AddressManagerModal({
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {addresses.map((address, index) => (
-                <div key={`${address.label}-${address.address}-${index}`} style={{ padding: 16, borderRadius: 18, border: address.isDefault ? '1px solid color-mix(in oklab, var(--green) 24%, white)' : '1px solid var(--ink-06)', background: address.isDefault ? 'color-mix(in oklab, var(--green) 7%, white)' : 'var(--cream-2)' }}>
+                <div key={`${address.label}-${address.address}-${index}`} style={{ padding: 16, borderRadius: 18, border: address.isDefault ? '1px solid color-mix(in oklab, var(--green) 30%, transparent)' : '1px solid var(--ink-06)', background: address.isDefault ? 'color-mix(in oklab, var(--green) 12%, transparent)' : 'var(--cream-2)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>

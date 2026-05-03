@@ -530,7 +530,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                 </p>
                 <div style={{ display: 'flex', gap: 12 }}>
                   <Button variant="lime" size="lg" onClick={() => onNav('catalog', { category: activeHero.id })} className="hero-cta" style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />}>Comprar ahora</Button>
-                  <Button variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'var(--cream)', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(6px)' }}>Ver best sellers</Button>
+                  <Button variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'white', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(6px)' }}>Ver best sellers</Button>
                 </div>
               </div>
             </Parallax>

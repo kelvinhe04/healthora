@@ -9,6 +9,16 @@ export const adminUsersRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
   .get('/', async (c) => {
     const users = await User.find().sort({ createdAt: -1 }).lean();
+    
+    let clerkUsers: any[] = [];
+    try {
+      const response = await clerk.users.getUserList({ limit: 500 });
+      clerkUsers = Array.isArray(response) ? response : (response.data || []);
+    } catch (error) {
+      console.error('[ADMIN] Failed to fetch Clerk users:', error);
+    }
+    const clerkUserMap = new Map(clerkUsers.map(u => [u.id, u]));
+
     const enriched = await Promise.all(
       users.map(async (user) => {
         const orders = await Order.find({
@@ -19,7 +29,15 @@ export const adminUsersRouter = new Hono<AppEnv>()
           ],
         }).lean();
         const ltv = orders.reduce((sum, order) => sum + ((order as { total?: number }).total || 0), 0);
-        return { ...user, orderCount: orders.length, ltv: Math.round(ltv * 100) / 100 };
+        
+        const cUser = clerkUserMap.get(user.clerkId);
+        
+        return { 
+          ...user, 
+          orderCount: orders.length, 
+          ltv: Math.round(ltv * 100) / 100,
+          imageUrl: cUser?.imageUrl 
+        };
       })
     );
 

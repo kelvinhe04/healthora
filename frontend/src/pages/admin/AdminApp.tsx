@@ -87,6 +87,7 @@ type AdminUser = {
   orderCount?: number;
   ltv?: number;
   createdAt?: string;
+  imageUrl?: string;
 };
 type SalesData = {
   summary?: {
@@ -4062,22 +4063,37 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                             gap: 12,
                           }}
                         >
-                          <div
-                            style={{
-                              width: 36,
-                              height: 36,
-                              borderRadius: 999,
-                              background: "var(--green)",
-                              color: "var(--lime)",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontFamily: '"Instrument Serif", serif',
-                              fontSize: 15,
-                            }}
-                          >
-                            {(user.name || "U")[0]}
-                          </div>
+                          {user.imageUrl ? (
+                            <img
+                              src={user.imageUrl}
+                              alt={user.name || "Avatar"}
+                              style={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: 999,
+                                objectFit: "cover",
+                                flexShrink: 0,
+                              }}
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: 999,
+                                background: "var(--green)",
+                                color: "var(--lime)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontFamily: '"Instrument Serif", serif',
+                                fontSize: 16,
+                                flexShrink: 0,
+                              }}
+                            >
+                              {(user.name || "U")[0].toUpperCase()}
+                            </div>
+                          )}
                           <div>
                             <div
                               style={{

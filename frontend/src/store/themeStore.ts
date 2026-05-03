@@ -29,9 +29,21 @@ export const useThemeStore = create<ThemeState>()(
 
 export function applyTheme(theme: Theme) {
   const root = document.documentElement;
+  
+  // Apply a transition class globally for a smooth animation
+  root.classList.add('theme-transition');
+  
+  // Force a browser reflow so the transition class registers before the theme changes
+  void root.offsetHeight;
+  
   if (theme === 'dark') {
     root.classList.add('dark');
   } else {
     root.classList.remove('dark');
   }
+  
+  // Remove the transition class after animation to avoid lag on hovers/resize
+  window.setTimeout(() => {
+    root.classList.remove('theme-transition');
+  }, 400);
 }

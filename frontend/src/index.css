@@ -88,26 +88,35 @@ html.dark .promo-banner h3 { color: var(--ink) !important; }
 html.dark .promo-banner p  { color: var(--ink-60) !important; }
 
 /* ─── Dark mode: Category cards ─────────────────────────────────────────────── */
-/* Filter was dimming text along with the bg. Better: keep vivid pastel bg,      */
-/* and force all text/icon to pure white.                                         */
-html.dark .category-card {
-  /* No filter — pastel colors pop nicely against the very dark page bg */
-}
-/* Icon circle */
+/* Pastel backgrounds are LIGHT colors — white text has no contrast.             */
+/* Use dark ink text, same as light mode. Cards look naturally "light" on dark   */
+/* page background which creates nice contrast without any filter needed.         */
 html.dark .category-card > div:first-child {
-  background: rgba(255, 255, 255, 0.22) !important;
-  color: white !important;
+  background: rgba(0, 0, 0, 0.10) !important;
+  color: oklch(0.2 0.03 155) !important;
 }
-/* Text block */
 html.dark .category-card .cat-text {
-  color: white !important;
+  color: oklch(0.18 0.03 155) !important;
   opacity: 1 !important;
 }
 html.dark .category-card .cat-text > div:last-child {
-  opacity: 0.75 !important;
-  color: white !important;
+  opacity: 0.65 !important;
+  color: oklch(0.18 0.03 155) !important;
 }
 
+
+/* ─── Theme Transition ───────────────────────────────────────────────────────── */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *:before,
+html.theme-transition *:after {
+  transition: background-color 400ms cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 400ms cubic-bezier(0.4, 0, 0.2, 1), 
+              color 400ms cubic-bezier(0.4, 0, 0.2, 1), 
+              fill 400ms cubic-bezier(0.4, 0, 0.2, 1), 
+              stroke 400ms cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 400ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
 
 /* ─── Root layout ────────────────────────────────────────────────────────────── */
 #root {
