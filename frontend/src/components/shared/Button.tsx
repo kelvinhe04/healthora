@@ -13,6 +13,7 @@ interface ButtonProps {
   icon?: ReactNode;
   disabled?: boolean;
   type?: 'button' | 'submit';
+  className?: string;
 }
 
 const variants: Record<Variant, CSSProperties> = {
@@ -30,7 +31,7 @@ const sizes: Record<Size, CSSProperties> = {
   lg: { padding: '16px 32px', fontSize: 15 },
 };
 
-export function Button({ children, variant = 'primary', onClick, size = 'md', style = {}, full, icon, disabled, type = 'button' }: ButtonProps) {
+export function Button({ children, variant = 'primary', onClick, size = 'md', style = {}, full, icon, disabled, type = 'button', className }: ButtonProps) {
   const base: CSSProperties = {
     fontFamily: '"Geist", sans-serif',
     fontWeight: 500,
@@ -52,6 +53,7 @@ export function Button({ children, variant = 'primary', onClick, size = 'md', st
       type={type}
       onClick={onClick}
       disabled={disabled}
+      className={className}
       style={{ ...base, ...sizes[size], ...variants[variant], ...style }}
       onMouseOver={(e) => !disabled && (e.currentTarget.style.transform = 'translateY(-1px)')}
       onMouseOut={(e) => (e.currentTarget.style.transform = 'translateY(0)')}

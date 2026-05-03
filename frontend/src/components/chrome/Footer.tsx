@@ -392,7 +392,7 @@ export function Footer({ onNav }: FooterProps) {
           >
             Recibe ofertas, lanzamientos y consejos de bienestar.
           </motion.p>
-          <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: '#315f42', borderRadius: 999, padding: 4, alignItems: 'center', overflow: 'hidden', gap: 4, width: 'fit-content' }}>
+          <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: 'rgba(0,0,0,0.22)', borderRadius: 999, padding: 4, alignItems: 'center', overflow: 'hidden', gap: 4, width: 'fit-content', border: '1px solid rgba(255,255,255,0.1)' }}>
             <AnimatedInput delay={2.2} isAnimating={isAnimating} style={{ width: 160, minWidth: 0 }}>
               <input
                 className="newsletter-input"
@@ -415,7 +415,7 @@ export function Footer({ onNav }: FooterProps) {
               <button
                 type="submit"
                 disabled={status === 'loading'}
-                style={{ background: 'var(--lime)', color: 'var(--ink)', border: 'none', padding: '10px 18px', borderRadius: 999, cursor: status === 'loading' ? 'wait' : 'pointer', fontFamily: '"Geist", sans-serif', fontSize: 13, fontWeight: 500, opacity: status === 'loading' ? 0.72 : 1 }}
+                style={{ background: 'var(--lime)', color: 'oklch(0.2 0.015 155)', border: 'none', padding: '10px 18px', borderRadius: 999, cursor: status === 'loading' ? 'wait' : 'pointer', fontFamily: '"Geist", sans-serif', fontSize: 13, fontWeight: 600, opacity: status === 'loading' ? 0.72 : 1 }}
               >
                 {status === 'loading' ? 'Enviando...' : 'Suscribirme'}
               </button>

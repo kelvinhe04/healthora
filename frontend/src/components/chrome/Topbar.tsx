@@ -22,7 +22,7 @@ export function Topbar() {
           <div key={group} className="marquee-group" aria-hidden={group === 1}>
             {marqueeMsgs.map((m, i) => (
               <span key={`${group}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 24, padding: '0 40px', whiteSpace: 'nowrap' }}>
-                <span style={{ width: 4, height: 4, background: 'var(--lime)', borderRadius: 999, flexShrink: 0 }} />
+                <span style={{ width: 4, height: 4, background: 'var(--cream)', borderRadius: 999, flexShrink: 0, opacity: 0.5 }} />
                 {m}
               </span>
             ))}

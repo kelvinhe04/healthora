@@ -16,6 +16,7 @@ import { AdminApp } from './pages/admin/AdminApp';
 import { SSOCallbackPage } from './components/SSOCallback';
 import { CustomCursor } from './components/shared/CustomCursor';
 import { useCartStore } from './store/cartStore';
+import { useThemeStore, applyTheme } from './store/themeStore';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { api } from './lib/api';
 import { useProduct } from './hooks/useProducts';
@@ -98,6 +99,10 @@ function AppInner() {
   const [cartOpen, setCartOpen] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const { user } = useUser();
+
+  // Sync theme class on mount (React re-hydration after anti-FOUC script)
+  const theme = useThemeStore((s) => s.theme);
+  useEffect(() => { applyTheme(theme); }, [theme]);
   const { getToken } = useAuth();
   const productIdFromUrl = searchParams.get('productId') || '';
   const lastLoadedOwnerRef = useRef<string | null>(null);

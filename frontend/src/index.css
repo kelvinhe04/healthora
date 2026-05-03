@@ -1,126 +1,115 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-}
-
+/* ─── Keyframes ──────────────────────────────────────────────────────────────── */
 @keyframes shimmer {
   from { transform: translateX(-100%); }
   to   { transform: translateX(100%); }
 }
-
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.55; }
 }
-
 @keyframes skeletonFade {
   0%, 100% { opacity: 0.45; }
   50%       { opacity: 0.8; }
+}
+
+/* ─── Light theme (default) ─────────────────────────────────────────────────── */
+/* Variables are defined in index.html :root block to avoid FOUC.               */
+/* We only override them here for dark mode.                                    */
+
+/* ─── Dark theme overrides ──────────────────────────────────────────────────── */
+html.dark {
+  /* Backgrounds */
+  --cream:   oklch(0.13 0.012 155);   /* main bg — very dark, green-tinted      */
+  --cream-2: oklch(0.18 0.012 155);   /* secondary bg — cards, sidebars         */
+
+  /* Text scale — inverted from light */
+  --ink:     oklch(0.96 0.006 85);    /* primary text — near-white              */
+  --ink-80:  oklch(0.84 0.005 85);    /* secondary text                         */
+  --ink-60:  oklch(0.68 0.004 85);    /* muted text                             */
+  --ink-40:  oklch(0.50 0.003 85);    /* placeholder / disabled                 */
+  --ink-20:  oklch(0.30 0.003 85);    /* borders (visible)                      */
+  --ink-12:  oklch(0.24 0.004 155);   /* faint borders                          */
+  --ink-06:  oklch(0.20 0.005 155);   /* subtle dividers                        */
+  --ink-04:  oklch(0.17 0.005 155);   /* input backgrounds                      */
+
+  /* Brand accents — slightly brighter in dark */
+  --green:   oklch(0.50 0.10 155);    /* interactive green — brighter on dark   */
+  --lime:    oklch(0.90 0.18 115);    /* lime accent — unchanged                */
+  --coral:   oklch(0.68 0.17 30);     /* coral accent — unchanged               */
+
+  color-scheme: dark;
+}
+
+/* Dark mode body */
+html.dark body {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+/* Scrollbar in dark mode */
+html.dark ::-webkit-scrollbar-thumb {
+  background: var(--ink-20);
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-40);
+}
+
+/* Shimmer gradient in dark mode — lighter flash against dark bg */
+html.dark .shimmer-track {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 100%
+  );
+}
+
+/* Smooth theme transition — avoid jarring flash */
+html {
+  transition: background-color 260ms ease, color 260ms ease;
+}
+
+
+/* ─── Dark mode: Hero CTA button ────────────────────────────────────────────── */
+/* In dark mode the lime button keeps its lime bg but needs dark ink text        */
+/* (var(--ink) in dark mode is near-white which reads poorly on lime).           */
+html.dark .hero-cta {
+  background: oklch(0.18 0.04 155) !important;
+  color: var(--lime) !important;
+  border: 1px solid oklch(0.28 0.06 155) !important;
+}
+
+/* ─── Dark mode: Promo banner ───────────────────────────────────────────────── */
+html.dark .promo-banner {
+  background: oklch(0.22 0.045 155) !important;
+  border: 1px solid oklch(0.28 0.05 155);
+}
+html.dark .promo-banner h3 { color: var(--ink) !important; }
+html.dark .promo-banner p  { color: var(--ink-60) !important; }
+
+/* ─── Dark mode: Category cards ─────────────────────────────────────────────── */
+/* Raise from 0.55 → 0.72 so cards are visible but still clearly dark mode.    */
+html.dark .category-card {
+  filter: brightness(0.72) saturate(1.3);
+}
+html.dark .category-card .cat-text {
+  color: oklch(0.96 0.006 85) !important;
+  opacity: 1 !important;
+}
+html.dark .category-card .cat-text > div:last-child {
+  opacity: 0.7 !important;
+}
+
+/* ─── Dark mode: Footer ──────────────────────────────────────────────────────── */
+/* The footer always uses var(--green) bg + var(--cream) text.                   */
+/* In dark mode var(--cream) → near-black, making all footer text invisible.     */
+/* We re-scope cream to its light-mode value inside the footer.                  */
+html.dark footer {
+  --cream: oklch(0.985 0.008 85);
+  --ink:   oklch(0.2 0.015 155);
+}
+
+/* ─── Root layout ────────────────────────────────────────────────────────────── */
+#root {
+  min-height: 100vh;
 }

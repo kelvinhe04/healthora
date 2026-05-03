@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useCartStore } from '../../store/cartStore';
+import { useThemeStore } from '../../store/themeStore';
 import { Icon } from '../shared/Icon';
 import { Button } from '../shared/Button';
 import { useAuth, useUser, useClerk } from '@clerk/clerk-react';
@@ -183,6 +184,7 @@ function AddressManagerModal({
 
 export function Header({ onNav, onOpenCart }: HeaderProps) {
   const cartCount = useCartStore((s) => s.count());
+  const { theme, toggle: toggleTheme } = useThemeStore();
   const { isSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const { getToken } = useAuth();
@@ -516,6 +518,17 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             </div>
           )}
         </div>
+        {/* Dark mode toggle */}
+        <button
+          onClick={toggleTheme}
+          style={{ ...iconBtn, width: 34, height: 34, borderRadius: 999, border: '1px solid var(--ink-06)', justifyContent: 'center', color: 'var(--ink)', transition: 'background 200ms, border-color 200ms' }}
+          aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
+          title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+        >
+          <span style={{ display: 'flex', transition: 'transform 400ms cubic-bezier(.34,1.56,.64,1)', transform: theme === 'dark' ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
+          </span>
+        </button>
         <button style={{ ...iconBtn, position: 'relative' }} onClick={onOpenCart} aria-label="Carrito">
           <Icon name="bag" />
           {cartCount > 0 && (

@@ -507,7 +507,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     <main>
       {/* HERO */}
       <RevealSection style={{ padding: '32px 40px 0' }}>
-        <div ref={heroRef} style={{ borderRadius: 32, overflow: 'hidden', background: 'linear-gradient(120deg, oklch(0.28 0.055 155) 0%, oklch(0.32 0.06 155) 38%, oklch(0.4 0.065 155) 100%)', color: 'var(--cream)', minHeight: 560, position: 'relative' }}>
+        <div ref={heroRef} style={{ borderRadius: 32, overflow: 'hidden', background: 'linear-gradient(120deg, oklch(0.28 0.055 155) 0%, oklch(0.32 0.06 155) 38%, oklch(0.4 0.065 155) 100%)', color: 'oklch(0.985 0.008 85)', minHeight: 560, position: 'relative' }}>
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(95% 90% at 84% 24%, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 52%), radial-gradient(70% 70% at 8% 92%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 56%)' }} />
           
           {/* TEXT CONTENT */}
@@ -515,21 +515,21 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             <Parallax speed={-8} style={{ pointerEvents: 'auto' }}>
               <div>
                 <div key={`pill-${activeHeroIdx}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 40, animation: 'fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
-                  <span style={{ width: 6, height: 6, background: 'var(--lime)', borderRadius: 999, boxShadow: '0 0 14px rgba(228, 242, 72, 0.45)' }} />
+                  <span style={{ width: 6, height: 6, background: 'var(--lime)', borderRadius: 999, boxShadow: '0 0 10px rgba(210,230,60,0.5)' }} />
                   {activeHero.pill}
                 </div>
-                <h1 key={`title-${activeHeroIdx}`} style={{ fontFamily: '"Instrument Serif", serif', fontSize: 86, lineHeight: 0.95, letterSpacing: '-0.035em', fontWeight: 400, margin: 0, animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
+                <h1 key={`title-${activeHeroIdx}`} style={{ fontFamily: '"Instrument Serif", serif', fontSize: 86, lineHeight: 0.95, letterSpacing: '-0.035em', fontWeight: 400, margin: 0, color: 'oklch(0.985 0.008 85)', animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
                   {activeHero.title}
                 </h1>
               </div>
             </Parallax>
             <Parallax speed={-6} style={{ pointerEvents: 'auto' }}>
               <div>
-                <p key={`sub-${activeHeroIdx}`} style={{ fontSize: 17, lineHeight: 1.5, maxWidth: 440, opacity: 0, marginBottom: 32, fontFamily: '"Geist", sans-serif', animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s forwards' }}>
+                <p key={`sub-${activeHeroIdx}`} style={{ fontSize: 17, lineHeight: 1.5, maxWidth: 440, color: 'oklch(0.85 0.006 85)', opacity: 0, marginBottom: 32, fontFamily: '"Geist", sans-serif', animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s forwards' }}>
                   {activeHero.sub}
                 </p>
                 <div style={{ display: 'flex', gap: 12 }}>
-                  <Button variant="lime" size="lg" onClick={() => onNav('catalog', { category: activeHero.id })} style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />}>Comprar ahora</Button>
+                  <Button variant="lime" size="lg" onClick={() => onNav('catalog', { category: activeHero.id })} className="hero-cta" style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />}>Comprar ahora</Button>
                   <Button variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'var(--cream)', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(6px)' }}>Ver best sellers</Button>
                 </div>
               </div>
@@ -542,15 +542,15 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           </Parallax>
           
           <Parallax speed={8} style={{ position: 'absolute', bottom: 60, left: '60%', zIndex: 5 }}>
-            <div style={{ transform: 'translateX(-50%)', background: 'rgba(248, 246, 240, 0.96)', color: 'var(--ink)', padding: '18px 20px', borderRadius: 18, display: 'flex', alignItems: 'center', gap: 14, maxWidth: 280, boxShadow: '0 30px 60px -30px rgba(0,0,0,0.3)' }}>
+            <div style={{ transform: 'translateX(-50%)', background: 'rgba(248, 246, 240, 0.96)', color: 'oklch(0.2 0.015 155)', padding: '18px 20px', borderRadius: 18, display: 'flex', alignItems: 'center', gap: 14, maxWidth: 280, boxShadow: '0 30px 60px -30px rgba(0,0,0,0.3)' }}>
               <div style={{ width: 52, height: 52, borderRadius: 999, background: 'var(--lime)', color: 'oklch(0.28 0.055 155)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Instrument Serif", serif', fontSize: 22 }}>
                 {reviewStats ? displayRating.toFixed(1) : '—'}
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3, color: 'oklch(0.2 0.015 155)' }}>
                   {reviewStats?.total ? displayTotal.toLocaleString('es-CO') + ' clientes felices' : 'Sin reseñas aún'}
                 </div>
-                <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', marginTop: 2 }}>PROMEDIO GLOBAL DE RESEÑAS</div>
+                <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'oklch(0.5 0.015 155)', marginTop: 2 }}>PROMEDIO GLOBAL DE RESEÑAS</div>
               </div>
             </div>
           </Parallax>
@@ -666,11 +666,11 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               ))
             : categories.slice(0, 6).map((cat: Category, i) => (
                 <StaggerItem key={cat.id} index={i}>
-                  <div onClick={() => onNav('catalog', { category: cat.id })} style={{ background: cat.color, borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 180, cursor: 'pointer', transition: 'transform 200ms' }}
+                  <div onClick={() => onNav('catalog', { category: cat.id })} className="category-card" style={{ background: cat.color, borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 180, cursor: 'pointer', transition: 'transform 200ms' }}
                     onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-3px)')}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
                     <div style={{ width: 38, height: 38, borderRadius: 999, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="leaf" size={18} /></div>
-                    <div>
+                    <div className="cat-text">
                       <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, letterSpacing: '-0.02em', lineHeight: 1.05 }}>{cat.label}</div>
                       <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.6, marginTop: 6 }}>{cat.sub}</div>
                     </div>
@@ -705,7 +705,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       {/* PROMO BAND */}
       <RevealSection id="ofertas" style={{ padding: '80px 40px 0' }} delay={80}>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
-          <div style={{ background: 'var(--lime)', borderRadius: 28, padding: 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 360, position: 'relative', overflow: 'hidden' }}>
+          <div className="promo-banner" style={{ background: 'var(--lime)', borderRadius: 28, padding: 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 360, position: 'relative', overflow: 'hidden' }}>
             <div style={{ maxWidth: 420 }}>
               <div style={{ ...headKicker, color: 'var(--ink-60)' }}>Promoción destacada</div>
               <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 56, letterSpacing: '-0.03em', lineHeight: 0.98, margin: '12px 0 20px', color: 'var(--ink)' }}>25% OFF en tu<br />rutina de skincare</h3>

@@ -33,6 +33,8 @@ export function Icon({ name, size = 18, stroke = 'currentColor', style }: IconPr
     case 'alert-circle': return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01" strokeWidth={2.5}/></svg>;
     case 'thumbs-up': return <svg {...common}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14Z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>;
     case 'receipt': return <svg {...common}><path d="M4 2v20l2.5-1.5L9 22l2.5-1.5L14 22l2.5-1.5L19 22V2"/><path d="M9 9h6M9 13h4"/></svg>;
+    case 'sun': return <svg {...common}><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>;
+    case 'moon': return <svg {...common}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
     default: return null;
   }
 }

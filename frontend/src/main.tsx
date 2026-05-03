@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ParallaxProvider } from 'react-scroll-parallax';
+import './index.css';
 import { App } from './App';
 import { SSOCallbackPage } from './components/SSOCallback';
 import { useNavigate } from 'react-router-dom';

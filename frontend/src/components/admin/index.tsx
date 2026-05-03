@@ -9,9 +9,9 @@ import {
   Line,
   CartesianGrid,
 } from "recharts";
-import { useMemo, useState, useEffect } from "react";
-import { memo } from "react";
+import { useMemo, useState, useEffect, memo } from "react";
 import type { CSSProperties, ReactNode } from "react";
+import { useThemeStore } from "../../store/themeStore";
 import { Icon } from "../shared/Icon";
 
 let _adminSessionId = "";
@@ -1005,6 +1005,7 @@ export function Sidebar({
   adminName,
   adminEmail,
 }: SidebarProps) {
+  const { theme, toggle: toggleTheme } = useThemeStore();
   const items: {
     id: AdminPage;
     label: string;
@@ -1128,6 +1129,31 @@ export function Sidebar({
         ))}
       </nav>
       <div style={{ marginTop: "auto" }}>
+        <button
+          onClick={toggleTheme}
+          style={{
+            width: "100%",
+            marginBottom: 8,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 12,
+            fontFamily: '"Geist", sans-serif',
+            color: "var(--ink-60)",
+            padding: "8px 12px",
+            borderRadius: 10,
+            border: "1px solid var(--ink-06)",
+            background: "transparent",
+            cursor: "pointer",
+            textAlign: "left",
+          }}
+          title={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+        >
+          <span style={{ display: "flex", transition: "transform 400ms cubic-bezier(.34,1.56,.64,1)", transform: theme === "dark" ? "rotate(180deg)" : "rotate(0deg)" }}>
+            <Icon name={theme === "dark" ? "sun" : "moon"} size={14} />
+          </span>
+          {theme === "dark" ? "Modo claro" : "Modo oscuro"}
+        </button>
         <button
           onClick={onGoToStore}
           style={{
