@@ -3,7 +3,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import type { CartItem, OrderAddress, SavedAddress } from '../types';
 import { ProductImage } from '../components/shared/ProductImage';
-import { Button } from '../components/shared/Button';
+import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 import { SignInModal } from '../components/chrome/SignInModal';
 import { api } from '../lib/api';
@@ -281,8 +281,8 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                       postal: savedAddress.postal,
                     })}
                     style={{
-                      border: savedAddress.isDefault ? '1px solid color-mix(in oklab, var(--green) 24%, white)' : '1px solid var(--ink-12)',
-                      background: savedAddress.isDefault ? 'color-mix(in oklab, var(--green) 8%, white)' : 'var(--cream)',
+                      border: savedAddress.isDefault ? '1px solid var(--green)' : '1px solid var(--ink-20)',
+                      background: savedAddress.isDefault ? 'var(--ink-06)' : 'var(--ink-04)',
                       borderRadius: 999,
                       padding: '8px 12px',
                       cursor: 'pointer',
@@ -305,9 +305,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             </div>
             {addressError && <div style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{addressError}</div>}
             {step === 2 && (
-              <Button variant="primary" onClick={() => { if (!isAddressValid) { setAddressError('Por favor completa todos los campos requeridos'); } else { setStep(3); }}} style={{ marginTop: 16 }} disabled={!isAddressValid}>
-                Continuar al pago
-              </Button>
+              <AnimatedButton variant="primary" onClick={() => { if (!isAddressValid) { setAddressError('Por favor completa todos los campos requeridos'); } else { setStep(3); }}} style={{ marginTop: 16 }} disabled={!isAddressValid} text="Continuar al pago" />
             )}
           </section>
 
@@ -324,21 +322,19 @@ export function Checkout({ items, onBack }: CheckoutProps) {
               Serás redirigido a Stripe Checkout para completar el pago de forma segura. Acepta tarjetas Visa, Mastercard, Amex y más.
             </div>
             {error && <div style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{error}</div>}
-            <Button variant="primary" size="lg" full onClick={handlePay} style={{ marginTop: 20 }} icon={<Icon name="lock" size={14} />} disabled={processing}>
-              {processing ? 'Redirigiendo a Stripe…' : `Pagar $${total.toFixed(2)}`}
-            </Button>
+            <AnimatedButton variant="primary" size="lg" full onClick={handlePay} style={{ marginTop: 20 }} icon={<Icon name="lock" size={14} />} disabled={processing} text={processing ? 'Redirigiendo a Stripe…' : `Pagar $${total.toFixed(2)}`} />
           </section>
         </div>
 
         {/* Order Summary */}
         <aside style={{ position: 'sticky', top: 100, background: 'var(--cream-2)', borderRadius: 24, padding: 28, border: '1px solid var(--ink-06)' }}>
           <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 14 }}>Resumen de orden</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 28, marginBottom: 18 }}>
             {items.map((it) => (
               <div key={it.product.id} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <div style={{ width: 50, height: 56, background: it.product.color, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
                   <ProductImage product={it.product} size="xs" />
-                  <span style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: 999, background: 'var(--ink)', color: 'var(--cream)', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"JetBrains Mono", monospace', fontWeight: 700 }}>{it.qty}</span>
+                  <span style={{ position: 'absolute', top: -5, right: -4, width: 15, height: 15, borderRadius: 999, background: 'oklch(0.1 0.01 155)', color: '#fff', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"JetBrains Mono", monospace', fontWeight: 700 }}>{it.qty}</span>
                 </div>
                 <div style={{ flex: 1, fontSize: 13, fontFamily: '"Geist", sans-serif' }}>
                   <div style={{ fontWeight: 500, lineHeight: 1.3 }}>{it.product.name}</div>
@@ -375,9 +371,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                   Quitar
                 </button>
               ) : (
-                <button type="submit" disabled={processing} style={{ height: 44, border: 'none', borderRadius: 999, background: 'var(--ink)', color: 'var(--cream)', padding: '0 16px', cursor: processing ? 'not-allowed' : 'pointer', fontSize: 12, fontFamily: '"Geist", sans-serif', fontWeight: 600 }}>
-                  Aplicar
-                </button>
+                <AnimatedButton type="submit" disabled={processing} variant="primary" size="sm" text="Aplicar" />
               )}
             </form>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>

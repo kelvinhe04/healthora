@@ -4,7 +4,7 @@ import type { Product } from '../types';
 import { ProductImage } from '../components/shared/ProductImage';
 import { ProductCard } from '../components/shared/ProductCard';
 import { Stars } from '../components/shared/Stars';
-import { Button } from '../components/shared/Button';
+import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 import { useProducts } from '../hooks/useProducts';
 import { useReviews } from '../hooks/useReviews';
@@ -216,11 +216,9 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
               <span style={{ width: 40, textAlign: 'center', fontFamily: '"Geist", sans-serif', fontSize: 15 }}>{qty}</span>
               <button onClick={() => setQty((q) => Math.min(product.stock, q + 1))} style={qtyBtn} disabled={product.stock === 0 || qty >= product.stock}><Icon name="plus" size={14} /></button>
             </div>
-            <Button variant="primary" size="lg" onClick={handleAdd} disabled={product.stock === 0} style={{ flex: 1 }}>
-              {product.stock === 0 ? 'Sin stock' : added ? '✓ Agregado al carrito' : `Agregar al carrito · $${(product.price * qty).toFixed(2)}`}
-            </Button>
+            <AnimatedButton variant="primary" size="lg" onClick={handleAdd} disabled={product.stock === 0} style={{ flex: 1 }} text={product.stock === 0 ? 'Sin stock' : added ? '✓ Agregado al carrito' : `Agregar al carrito · $${(product.price * qty).toFixed(2)}`} />
           </div>
-          <Button variant="outline" full onClick={() => onBuyNow(product, qty)} disabled={product.stock === 0}>Comprar ahora con un clic</Button>
+          <AnimatedButton variant="outline" full onClick={() => onBuyNow(product, qty)} disabled={product.stock === 0} text="Comprar ahora con un clic" />
 
           <div style={{ marginTop: 24, background: 'var(--cream-2)', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid var(--ink-06)' }}>
             {[{ icon: 'truck', t: 'Envío gratis en órdenes sobre $50' }, { icon: 'shield', t: 'Pago seguro con Stripe · 3D Secure' }, { icon: 'check', t: 'Productos verificados por farmacéuticos' }].map((row) => (

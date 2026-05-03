@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 import type { Product, Category } from '../types';
 import { ProductCard, ProductCardSkeleton } from '../components/shared/ProductCard';
 import { ProductImage } from '../components/shared/ProductImage';
-import { Button } from '../components/shared/Button';
+import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
@@ -529,8 +529,8 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                   {activeHero.sub}
                 </p>
                 <div style={{ display: 'flex', gap: 12 }}>
-                  <Button variant="lime" size="lg" onClick={() => onNav('catalog', { category: activeHero.id })} className="hero-cta" style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />}>Comprar ahora</Button>
-                  <Button variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'white', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(6px)' }}>Ver best sellers</Button>
+                  <AnimatedButton variant="lime" size="lg" onClick={() => onNav('catalog', { category: activeHero.id })} className="hero-cta" style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />} text="Comprar ahora" />
+                  <AnimatedButton variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'white', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(6px)' }} text="Ver best sellers" />
                 </div>
               </div>
             </Parallax>
@@ -657,7 +657,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             <div style={headKicker}>01 · Categorías</div>
             <h2 style={headTitle}>Compra por <em style={{ color: 'var(--green)' }}>necesidad</em></h2>
           </div>
-          <a onClick={() => onNav('catalog')} style={seeAllLink}>Ver todas las categorías <Icon name="arrow-right" size={14} /></a>
+          <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Ver todas las categorías" />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 16 }}>
           {showCategoriesSkeleton
@@ -688,7 +688,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             <div style={headKicker}>02 · Más vendidos</div>
             <h2 style={headTitle}>Lo más vendido <em style={{ color: 'var(--green)' }}>esta semana</em></h2>
           </div>
-          <a onClick={() => onNav('catalog')} style={seeAllLink}>Ver todos <Icon name="arrow-right" size={14} /></a>
+          <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Ver todos" />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
           {showProductsSkeleton
@@ -713,7 +713,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 28, padding: '8px 12px', borderRadius: 999, background: 'rgba(8, 6, 13, 0.08)', color: 'var(--ink)', fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 Categorías: Salud de la piel · Hidratantes
               </div>
-              <Button variant="primary" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />}>Comprar rutina</Button>
+              <AnimatedButton variant="primary" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Comprar rutina" />
             </div>
             <div style={{ position: 'absolute', right: 40, bottom: 40, display: 'flex', gap: 16, zIndex: 10 }}>
               {products[2] && (
@@ -778,7 +778,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 36, letterSpacing: '-0.02em', lineHeight: 1, margin: '12px 0 16px' }}>Una muestra <em style={{ color: 'var(--green)' }}>gratis</em> en órdenes premium</h3>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--ink-60)', marginBottom: 20 }}>Regístrate y recibe 1 muestra seleccionada en compras mayores a $200.</p>
             </div>
-            <Button variant="primary" full onClick={() => onNav('club')}>Unirme al club</Button>
+            <AnimatedButton variant="primary" full onClick={() => onNav('club')} text="Unirme al club" />
           </div>
         </div>
       </RevealSection>
@@ -910,7 +910,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             <div style={headKicker}>04 · Nuevos ingresos</div>
             <h2 style={headTitle}>Recién <em style={{ color: 'var(--green)' }}>llegados</em></h2>
           </div>
-          <a onClick={() => onNav('catalog')} style={seeAllLink}>Ver catálogo completo <Icon name="arrow-right" size={14} /></a>
+          <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Ver catálogo completo" />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
           {showProductsSkeleton

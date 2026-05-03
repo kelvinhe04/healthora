@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSignIn, useSignUp, useClerk } from '@clerk/clerk-react';
-import { Button } from '../shared/Button';
+import { AnimatedButton } from '../shared/AnimatedButton';
 import { Icon } from '../shared/Icon';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
@@ -286,9 +286,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
 
                 {error && <p style={{ fontSize: 13, color: 'var(--coral)', fontFamily: '"Geist", sans-serif', margin: 0 }}>{error}</p>}
 
-                <Button variant="green" full type="submit" disabled={loading}>
-                  {loading ? 'Verificando…' : (mode === 'sign-in' ? 'Ingresar' : 'Crear cuenta')}
-                </Button>
+                <AnimatedButton variant="green" full type="submit" disabled={loading} text={loading ? 'Verificando…' : (mode === 'sign-in' ? 'Ingresar' : 'Crear cuenta')} />
 
                 <button
                   type="button"
@@ -366,9 +364,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
                   </p>
                 )}
 
-                <Button variant="green" full type="submit" disabled={loading} style={{ marginTop: 4 }}>
-                  {loading ? 'Enviando código…' : (mode === 'sign-in' ? 'Continuar con email' : 'Enviar código de acceso')}
-                </Button>
+                <AnimatedButton variant="green" full type="submit" disabled={loading} style={{ marginTop: 4 }} text={loading ? 'Enviando código…' : (mode === 'sign-in' ? 'Continuar con email' : 'Enviar código de acceso')} />
               </form>
 
               <p style={{ marginTop: 20, textAlign: 'center', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-40)', lineHeight: 1.5, margin: '20px 0 0' }}>

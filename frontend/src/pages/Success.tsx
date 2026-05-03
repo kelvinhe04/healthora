@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
-import { Button } from '../components/shared/Button';
+import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 import { useOrderBySession } from '../hooks/useOrders';
 import { useCartStore } from '../store/cartStore';
@@ -72,7 +72,7 @@ export function Success({ onBack }: SuccessProps) {
           ))}
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-          <Button variant="primary" onClick={onBack}>Seguir comprando</Button>
+          <AnimatedButton variant="primary" onClick={onBack} text="Seguir comprando" />
         </div>
       </div>
     </main>

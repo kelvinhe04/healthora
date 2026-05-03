@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { ProductImage } from '../components/shared/ProductImage';
-import { Button } from '../components/shared/Button';
+import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 
 interface CartDrawerProps {
@@ -56,7 +56,7 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
             <Icon name="bag" size={32} />
             <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, color: 'var(--ink)' }}>Tu carrito está vacío</div>
             <p style={{ fontSize: 14, maxWidth: 280 }}>Agrega productos al carrito para empezar tu compra.</p>
-            <Button variant="primary" onClick={() => { onClose(); window.history.pushState({}, '', '/?view=catalog'); window.dispatchEvent(new PopStateEvent('popstate')); }}>Explorar productos</Button>
+            <AnimatedButton variant="primary" onClick={() => { onClose(); window.history.pushState({}, '', '/?view=catalog'); window.dispatchEvent(new PopStateEvent('popstate')); }} text="Explorar productos" />
           </div>
         ) : (
           <>
@@ -111,7 +111,7 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
               <Row k="Impuestos (7%)" v={`$${tax.toFixed(2)}`} />
               <div style={{ height: 1, background: 'var(--ink-06)', margin: '12px 0' }} />
               <Row k={<strong style={{ fontSize: 15 }}>Total</strong>} v={<strong style={{ fontSize: 22, fontFamily: '"Instrument Serif", serif' }}>${total.toFixed(2)}</strong>} />
-              <Button variant="primary" size="lg" full onClick={onCheckout} style={{ marginTop: 16 }} icon={<Icon name="arrow-right" size={14} />}>Ir a checkout</Button>
+              <AnimatedButton variant="primary" size="lg" full onClick={onCheckout} style={{ marginTop: 16 }} icon={<Icon name="arrow-right" size={14} />} text="Ir a checkout" />
               <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', marginTop: 12, letterSpacing: '0.06em' }}>
                 <Icon name="lock" size={10} /> PAGO SEGURO CON STRIPE
               </div>
@@ -157,8 +157,8 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
                 </p>
               </div>
               <div style={{ padding: 24, display: 'flex', gap: 10, justifyContent: 'flex-end', background: 'var(--cream-2)' }}>
-                <Button variant="outline" onClick={() => setConfirmClearOpen(false)}>Cancelar</Button>
-                <Button variant="primary" onClick={handleConfirmClear}>Sí, vaciar todo</Button>
+                <AnimatedButton variant="outline" onClick={() => setConfirmClearOpen(false)} text="Cancelar" />
+                <AnimatedButton variant="primary" onClick={handleConfirmClear} text="Sí, vaciar todo" />
               </div>
             </div>
           </div>

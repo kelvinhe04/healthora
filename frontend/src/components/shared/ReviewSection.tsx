@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Stars } from './Stars';
-import { Button } from './Button';
+import { AnimatedButton } from './AnimatedButton';
 import { Icon } from './Icon';
 import { SignInModal } from '../chrome/SignInModal';
 import { useReviews } from '../../hooks/useReviews';
@@ -715,23 +715,21 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
               )}
 
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                <Button
+                <AnimatedButton
                   variant="primary"
                   onClick={handleSubmit}
                   disabled={mutation.isPending}
                   style={{ flex: 1, minWidth: 160 }}
-                >
-                  {mutation.isPending ? 'Enviando…' : 'Publicar reseña'}
-                </Button>
-                <Button
+                  text={mutation.isPending ? 'Enviando…' : 'Publicar reseña'}
+                />
+                <AnimatedButton
                   variant="outline"
                   onClick={() => {
                     setShowForm(false);
                     setFormError('');
                   }}
-                >
-                  Cancelar
-                </Button>
+                  text="Cancelar"
+                />
               </div>
             </div>
           )}

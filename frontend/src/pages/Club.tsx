@@ -1,4 +1,4 @@
-import { Button } from '../components/shared/Button';
+import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 
 type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin';
@@ -45,9 +45,7 @@ export function Club({ onNav }: ClubProps) {
         <p style={{ fontSize: 16, opacity: 0.8, maxWidth: 400, margin: '0 auto 32px', lineHeight: 1.5 }}>
           Crea tu cuenta o inicia sesión para empezar a acumular beneficios desde tu primera compra.
         </p>
-        <Button variant="lime" size="lg" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />}>
-          Comenzar ahora
-        </Button>
+        <AnimatedButton variant="lime" size="lg" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Comenzar ahora" />
       </div>
     </main>
   );

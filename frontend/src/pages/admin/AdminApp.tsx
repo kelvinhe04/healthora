@@ -27,7 +27,7 @@ import {
   useOnceLoading,
 } from "../../components/admin";
 import { ProductImage } from "../../components/shared/ProductImage";
-import { Button } from "../../components/shared/Button";
+import { AnimatedButton } from "../../components/shared/AnimatedButton";
 import { Icon } from "../../components/shared/Icon";
 import { api } from "../../lib/api";
 import type {
@@ -1171,16 +1171,8 @@ function ProductModal({
             {validationError || error || ""}
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <Button variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button variant="primary" onClick={handleSave} disabled={saving}>
-              {saving
-                ? "Guardando…"
-                : mode === "add"
-                  ? "Agregar producto"
-                  : "Guardar cambios"}
-            </Button>
+            <AnimatedButton variant="outline" onClick={onClose} text="Cancelar" />
+            <AnimatedButton variant="primary" onClick={handleSave} disabled={saving} text={saving ? "Guardando…" : mode === "add" ? "Agregar producto" : "Guardar cambios"} />
           </div>
         </div>
       </div>
@@ -1268,19 +1260,8 @@ function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
             continuar.
           </p>
           <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
-            <Button
-              variant="primary"
-              onClick={() =>
-                openSignIn({
-                  redirectUrl: `${window.location.origin}?view=admin`,
-                })
-              }
-            >
-              Iniciar sesión como admin
-            </Button>
-            <Button variant="outline" onClick={onGoToStore}>
-              Volver a la tienda
-            </Button>
+            <AnimatedButton variant="primary" onClick={() => openSignIn({ redirectUrl: `${window.location.origin}?view=admin` })} text="Iniciar sesión como admin" />
+            <AnimatedButton variant="outline" onClick={onGoToStore} text="Volver a la tienda" />
           </div>
         </div>
       </main>
@@ -1360,9 +1341,7 @@ function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
             Tu cuenta no tiene permisos de administrador.
           </p>
           <div style={{ marginTop: 24 }}>
-            <Button variant="outline" onClick={onGoToStore}>
-              Volver a la tienda
-            </Button>
+            <AnimatedButton variant="outline" onClick={onGoToStore} text="Volver a la tienda" />
           </div>
         </div>
       </main>
@@ -2752,28 +2731,17 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                   background: "var(--cream-2)",
                 }}
               >
-                <Button
-                  variant="outline"
-                  onClick={() => setConfirmOrderStatus(null)}
-                  disabled={orderStatusesMutation.isPending}
-                >
-                  Cancelar
-                </Button>
-                <Button
+                <AnimatedButton variant="outline" onClick={() => setConfirmOrderStatus(null)} disabled={orderStatusesMutation.isPending} text="Cancelar" />
+                <AnimatedButton
                   variant="primary"
                   onClick={() => {
                     const nextStatus = confirmOrderStatus;
                     orderStatusesMutation.mutate(
-                      {
-                        id: nextStatus.id,
-                        fulfillmentStatus: nextStatus.to,
-                      },
+                      { id: nextStatus.id, fulfillmentStatus: nextStatus.to },
                       {
                         onSuccess: () => {
                           setOrderStatusDrafts((current) => {
-                            const next = {
-                              ...current,
-                            };
+                            const next = { ...current };
                             delete next[nextStatus.id];
                             return next;
                           });
@@ -2783,11 +2751,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     );
                   }}
                   disabled={orderStatusesMutation.isPending}
-                >
-                  {orderStatusesMutation.isPending
-                    ? "Guardando..."
-                    : "Guardar cambio"}
-                </Button>
+                  text={orderStatusesMutation.isPending ? "Guardando..." : "Guardar cambio"}
+                />
               </div>
             </div>
           </div>
@@ -2886,12 +2851,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                   background: "var(--cream-2)",
                 }}
               >
-                <Button
-                  variant="primary"
-                  onClick={() => setProductSuccess(null)}
-                >
-                  Entendido
-                </Button>
+                <AnimatedButton variant="primary" onClick={() => setProductSuccess(null)} text="Entendido" />
               </div>
             </div>
           </div>
@@ -2918,12 +2878,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                 showProductsSkeleton ? (
                   <Skeleton height={40} width={152} borderRadius={999} />
                 ) : (
-                  <Button
-                    variant="primary"
-                    onClick={() => setProductModal({ mode: "add" })}
-                  >
-                    + Agregar producto
-                  </Button>
+                  <AnimatedButton variant="primary" onClick={() => setProductModal({ mode: "add" })} text="+ Agregar producto" />
                 )
               }
             />
@@ -3087,46 +3042,25 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     flexWrap: "wrap",
                   }}
                 >
-                  <Button
+                  <AnimatedButton
                     variant="outline"
-                    onClick={() =>
-                      setSelectedProductIds((current) =>
-                        current.filter(
-                          (id) => !displayedProductIds.includes(id),
-                        ),
-                      )
-                    }
+                    onClick={() => setSelectedProductIds((current) => current.filter((id) => !displayedProductIds.includes(id)))}
                     disabled={selectedDisplayedIds.length === 0}
-                  >
-                    Limpiar selección
-                  </Button>
-                  <Button
+                    text="Limpiar selección"
+                  />
+                  <AnimatedButton
                     variant="outline"
-                    onClick={() =>
-                      setConfirmBulkDelete({
-                        ids: selectedDisplayedIds,
-                        title: "Eliminar seleccionados",
-                        description: `Se eliminarán ${selectedDisplayedIds.length} productos seleccionados de esta vista.`,
-                      })
-                    }
+                    onClick={() => setConfirmBulkDelete({ ids: selectedDisplayedIds, title: "Eliminar seleccionados", description: `Se eliminarán ${selectedDisplayedIds.length} productos seleccionados de esta vista.` })}
                     disabled={selectedDisplayedIds.length === 0}
-                    style={{
-                      color: "oklch(0.5 0.15 30)",
-                      borderColor: "oklch(0.85 0.08 30)",
-                    }}
-                  >
-                    Eliminar seleccionados
-                  </Button>
-                  <Button
+                    style={{ color: "oklch(0.5 0.15 30)", borderColor: "oklch(0.85 0.08 30)" }}
+                    text="Eliminar seleccionados"
+                  />
+                  <AnimatedButton
                     variant="outline"
                     onClick={() => setConfirmDeleteAll(true)}
-                    style={{
-                      color: "var(--coral)",
-                      borderColor: "oklch(0.85 0.08 30)",
-                    }}
-                  >
-                    Eliminar todo
-                  </Button>
+                    style={{ color: "var(--coral)", borderColor: "oklch(0.85 0.08 30)" }}
+                    text="Eliminar todo"
+                  />
                 </div>
               </div>
             )}
@@ -3572,27 +3506,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                       background: "var(--cream-2)",
                     }}
                   >
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setConfirmDeleteId(null);
-                        setDeleteError(null);
-                      }}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      variant="primary"
-                      onClick={() => {
-                        setDeleteError(null);
-                        productDeleteMutation.mutate(confirmDeleteId);
-                      }}
-                      disabled={productDeleteMutation.isPending}
-                    >
-                      {productDeleteMutation.isPending
-                        ? "Eliminando…"
-                        : "Sí, eliminar"}
-                    </Button>
+                    <AnimatedButton variant="outline" onClick={() => { setConfirmDeleteId(null); setDeleteError(null); }} text="Cancelar" />
+                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); productDeleteMutation.mutate(confirmDeleteId); }} disabled={productDeleteMutation.isPending} text={productDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
                   </div>
                 </div>
               </div>
@@ -3689,27 +3604,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                       background: "var(--cream-2)",
                     }}
                   >
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setConfirmBulkDelete(null);
-                        setDeleteError(null);
-                      }}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      variant="primary"
-                      onClick={() => {
-                        setDeleteError(null);
-                        bulkDeleteMutation.mutate(confirmBulkDelete.ids);
-                      }}
-                      disabled={bulkDeleteMutation.isPending}
-                    >
-                      {bulkDeleteMutation.isPending
-                        ? "Eliminando…"
-                        : "Sí, eliminar"}
-                    </Button>
+                    <AnimatedButton variant="outline" onClick={() => { setConfirmBulkDelete(null); setDeleteError(null); }} text="Cancelar" />
+                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); bulkDeleteMutation.mutate(confirmBulkDelete.ids); }} disabled={bulkDeleteMutation.isPending} text={bulkDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
                   </div>
                 </div>
               </div>
@@ -3801,27 +3697,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                       justifyContent: "flex-end",
                     }}
                   >
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setConfirmDeleteAll(false);
-                        setDeleteError(null);
-                      }}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      variant="primary"
-                      onClick={() => {
-                        setDeleteError(null);
-                        deleteAllMutation.mutate();
-                      }}
-                      disabled={deleteAllMutation.isPending}
-                    >
-                      {deleteAllMutation.isPending
-                        ? "Eliminando…"
-                        : "Sí, eliminar todo"}
-                    </Button>
+                    <AnimatedButton variant="outline" onClick={() => { setConfirmDeleteAll(false); setDeleteError(null); }} text="Cancelar" />
+                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); deleteAllMutation.mutate(); }} disabled={deleteAllMutation.isPending} text={deleteAllMutation.isPending ? "Eliminando…" : "Sí, eliminar todo"} />
                   </div>
                 </div>
               </div>
@@ -3911,26 +3788,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                       background: "var(--cream-2)",
                     }}
                   >
-                    <Button
-                      variant="outline"
-                      onClick={() => setConfirmUserDelete(null)}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      variant="primary"
-                      onClick={() =>
-                        userDeleteMutation.mutate(confirmUserDelete.id)
-                      }
-                      disabled={userDeleteMutation.isPending}
-                      style={{
-                        background: "oklch(0.5 0.15 30)",
-                      }}
-                    >
-                      {userDeleteMutation.isPending
-                        ? "Eliminando…"
-                        : "Sí, eliminar"}
-                    </Button>
+                    <AnimatedButton variant="outline" onClick={() => setConfirmUserDelete(null)} text="Cancelar" />
+                    <AnimatedButton variant="primary" onClick={() => userDeleteMutation.mutate(confirmUserDelete.id)} disabled={userDeleteMutation.isPending} style={{ background: "oklch(0.5 0.15 30)" }} text={userDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
                   </div>
                 </div>
               </div>

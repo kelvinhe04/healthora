@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, type FormEvent } from 'react';
+import { AnimatedButton } from '../shared/AnimatedButton';
 import { motion, type Variants } from 'framer-motion';
 import { api } from '../../lib/api';
 
@@ -184,7 +185,7 @@ function AnimatedInput({ delay, isAnimating, children, style }: { delay: number;
   );
 }
 
-function AnimatedButton({ delay, isAnimating, children }: { delay: number; isAnimating: boolean; children: React.ReactNode }) {
+function RevealButton({ delay, isAnimating, children }: { delay: number; isAnimating: boolean; children: React.ReactNode }) {
   return <AnimatedItem delay={delay} isAnimating={isAnimating} variants={buttonVariants}>{children}</AnimatedItem>;
 }
 
@@ -411,15 +412,16 @@ export function Footer({ onNav }: FooterProps) {
                 style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--cream)', WebkitTextFillColor: 'var(--cream)', caretColor: 'var(--cream)', padding: '10px 12px', fontSize: 13, fontFamily: '"Geist", sans-serif', opacity: status === 'loading' ? 0.7 : 1 }}
               />
             </AnimatedInput>
-            <AnimatedButton delay={2.4} isAnimating={isAnimating}>
-              <button
+            <RevealButton delay={2.4} isAnimating={isAnimating}>
+              <AnimatedButton
                 type="submit"
+                variant="lime"
+                size="sm"
                 disabled={status === 'loading'}
-                style={{ background: 'var(--lime)', color: 'oklch(0.2 0.015 155)', border: 'none', padding: '10px 18px', borderRadius: 999, cursor: status === 'loading' ? 'wait' : 'pointer', fontFamily: '"Geist", sans-serif', fontSize: 13, fontWeight: 600, opacity: status === 'loading' ? 0.72 : 1 }}
-              >
-                {status === 'loading' ? 'Enviando...' : 'Suscribirme'}
-              </button>
-            </AnimatedButton>
+                style={{ color: 'oklch(0.2 0.015 155)' }}
+                text={status === 'loading' ? 'Enviando...' : 'Suscribirme'}
+              />
+            </RevealButton>
           </form>
           {message && (
             <p style={{ margin: '10px 0 0', fontSize: 12, lineHeight: 1.45, fontFamily: '"Geist", sans-serif', color: status === 'success' ? 'var(--lime)' : '#ffd7d7' }}>

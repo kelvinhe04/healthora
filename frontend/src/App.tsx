@@ -259,19 +259,28 @@ function AppInner() {
         {view === 'club' && <Club onNav={nav} />}
         {view === 'orders' && <Orders onBack={() => nav('catalog')} />}
       </div>
-      {showBackToTop && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          aria-label="Volver arriba"
-          style={{ position: 'fixed', right: 28, bottom: 28, width: 52, height: 52, borderRadius: 999, border: '1px solid rgba(255,255,255,0.12)', background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 18px 40px -18px rgba(0,0,0,0.35)', zIndex: 80, transition: 'transform 180ms ease, opacity 180ms ease' }}
-          onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px) scale(1.04)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; }}
-        >
-          <span style={{ transform: 'rotate(-90deg)', display: 'inline-flex' }}>
-            <HeaderBackToTopIcon />
-          </span>
-        </button>
-      )}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        aria-label="Volver arriba"
+        style={{
+          position: 'fixed', right: 28, bottom: 28, width: 52, height: 52,
+          borderRadius: 999, border: '1px solid rgba(255,255,255,0.12)',
+          background: 'var(--green)', color: 'var(--lime)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', boxShadow: '0 18px 40px -18px rgba(0,0,0,0.35)',
+          zIndex: 80,
+          opacity: showBackToTop ? 1 : 0,
+          transform: showBackToTop ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.92)',
+          pointerEvents: showBackToTop ? 'auto' : 'none',
+          transition: 'opacity 280ms ease, transform 280ms cubic-bezier(0.34,1.56,0.64,1)',
+        }}
+        onMouseEnter={(e) => { if (showBackToTop) e.currentTarget.style.transform = 'translateY(-2px) scale(1.04)'; }}
+        onMouseLeave={(e) => { if (showBackToTop) e.currentTarget.style.transform = 'translateY(0) scale(1)'; }}
+      >
+        <span style={{ transform: 'rotate(-90deg)', display: 'inline-flex' }}>
+          <HeaderBackToTopIcon />
+        </span>
+      </button>
       <Footer onNav={(view, filter) => nav(view, filter)} />
     </>
   );

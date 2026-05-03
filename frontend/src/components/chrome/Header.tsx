@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useCartStore } from '../../store/cartStore';
 import { useThemeStore } from '../../store/themeStore';
 import { Icon } from '../shared/Icon';
-import { Button } from '../shared/Button';
+import { AnimatedButton } from '../shared/AnimatedButton';
 import { useAuth, useUser, useClerk } from '@clerk/clerk-react';
 import { api } from '../../lib/api';
 import type { SavedAddress } from '../../types';
@@ -152,12 +152,12 @@ function AddressManagerModal({
           {error && <div style={{ marginTop: 14, fontSize: 13, color: 'var(--coral)', fontFamily: '"Geist", sans-serif' }}>{error}</div>}
 
           <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
-            <Button variant="primary" onClick={onSaveEntry}>{editingIndex === null ? 'Agregar dirección' : 'Actualizar dirección'}</Button>
+            <AnimatedButton variant="primary" onClick={onSaveEntry} text={editingIndex === null ? 'Agregar dirección' : 'Actualizar dirección'} />
           </div>
 
           <div style={{ height: 1, background: 'var(--ink-06)', margin: '22px 0 18px' }} />
 
-          <Button variant="green" full onClick={onPersist} disabled={saving}>{saving ? 'Guardando…' : 'Guardar direcciones'}</Button>
+          <AnimatedButton variant="green" full onClick={onPersist} disabled={saving} text={saving ? 'Guardando…' : 'Guardar direcciones'} />
         </div>
 
         {confirmDeleteIndex !== null && addresses[confirmDeleteIndex] && (
@@ -171,8 +171,8 @@ function AddressManagerModal({
                 </p>
               </div>
               <div style={{ padding: 24, display: 'flex', gap: 10, justifyContent: 'flex-end', background: 'var(--cream-2)' }}>
-                <Button variant="outline" onClick={onCancelDelete}>Cancelar</Button>
-                <Button variant="primary" onClick={() => { void onConfirmDelete(); }} disabled={saving}>Sí, eliminar</Button>
+                <AnimatedButton variant="outline" onClick={onCancelDelete} text="Cancelar" />
+                <AnimatedButton variant="primary" onClick={() => { void onConfirmDelete(); }} disabled={saving} text="Sí, eliminar" />
               </div>
             </div>
           </div>
@@ -591,7 +591,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               </p>
             </div>
             <div style={{ padding: 24, display: 'flex', justifyContent: 'flex-end', background: 'var(--cream-2)' }}>
-              <Button variant="primary" onClick={() => setAddressSaveSuccess(false)}>Entendido</Button>
+              <AnimatedButton variant="primary" onClick={() => setAddressSaveSuccess(false)} text="Entendido" />
             </div>
           </div>
         </div>
