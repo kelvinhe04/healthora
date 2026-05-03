@@ -100,14 +100,6 @@ html.dark .category-card .cat-text > div:last-child {
   opacity: 0.7 !important;
 }
 
-/* ─── Dark mode: Footer ──────────────────────────────────────────────────────── */
-/* The footer always uses var(--green) bg + var(--cream) text.                   */
-/* In dark mode var(--cream) → near-black, making all footer text invisible.     */
-/* We re-scope cream to its light-mode value inside the footer.                  */
-html.dark footer {
-  --cream: oklch(0.985 0.008 85);
-  --ink:   oklch(0.2 0.015 155);
-}
 
 /* ─── Root layout ────────────────────────────────────────────────────────────── */
 #root {

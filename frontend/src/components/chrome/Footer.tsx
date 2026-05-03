@@ -272,22 +272,22 @@ export function Footer({ onNav }: FooterProps) {
   const description = 'Tu farmacia online para salud, cuidado personal, belleza y bienestar.';
 
   return (
-    <footer ref={footerRef} style={{ background: 'var(--green)', color: 'var(--cream)', padding: '64px 40px 32px', borderRadius: '32px 32px 0 0', marginTop: 80, overflow: 'hidden' }}>
+    <footer ref={footerRef} style={{ background: 'var(--green)', color: 'oklch(0.15 0.025 155)', padding: '64px 40px 32px', borderRadius: '32px 32px 0 0', marginTop: 80, overflow: 'hidden' }}>
       <style>{`
-        .newsletter-input::placeholder { color: rgba(255, 255, 255, 0.44); }
+        .newsletter-input::placeholder { color: rgba(0, 0, 0, 0.38); }
         .newsletter-input { border-radius: 999px; }
         .newsletter-input:-webkit-autofill,
         .newsletter-input:-webkit-autofill:hover,
         .newsletter-input:-webkit-autofill:focus {
-          -webkit-text-fill-color: var(--cream);
-          caret-color: var(--cream);
-          box-shadow: 0 0 0 1000px #315f42 inset;
+          -webkit-text-fill-color: oklch(0.15 0.025 155);
+          caret-color: oklch(0.15 0.025 155);
+          box-shadow: 0 0 0 1000px rgba(0,0,0,0.12) inset;
           transition: background-color 9999s ease-in-out 0s;
         }
         .footer-link {
           position: relative;
           cursor: pointer;
-          color: var(--cream);
+          color: oklch(0.15 0.025 155);
           text-decoration: none;
           letter-spacing: -0.01em;
           transition: color 200ms;
@@ -300,13 +300,14 @@ export function Footer({ onNav }: FooterProps) {
           left: 0;
           width: 100%;
           height: 1.5px;
-          background: var(--lime);
+          background: oklch(0.15 0.025 155);
           transform: scaleX(0);
           transform-origin: right;
           transition: transform 240ms ease;
         }
         .footer-link:hover {
-          color: var(--lime);
+          color: oklch(0.15 0.025 155);
+          opacity: 0.65;
         }
         .footer-link:hover::after {
           transform: scaleX(1);
@@ -330,14 +331,14 @@ export function Footer({ onNav }: FooterProps) {
                   href="#"
                   onClick={(e) => e.preventDefault()}
                   aria-label={social.label}
-                  style={{ width: 38, height: 38, borderRadius: 999, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.06)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'white', transition: 'transform 180ms ease, background 180ms ease' }}
+                  style={{ width: 38, height: 38, borderRadius: 999, border: '1px solid rgba(0,0,0,0.18)', background: 'rgba(0,0,0,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'oklch(0.15 0.025 155)', transition: 'transform 180ms ease, background 180ms ease' }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                    e.currentTarget.style.background = 'rgba(0,0,0,0.16)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                    e.currentTarget.style.background = 'rgba(0,0,0,0.08)';
                   }}
                 >
                   <SocialIcon name={social.id} />
@@ -408,7 +409,7 @@ export function Footer({ onNav }: FooterProps) {
                 placeholder="tu@email.com"
                 autoComplete="email"
                 disabled={status === 'loading'}
-                style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--cream)', WebkitTextFillColor: 'var(--cream)', caretColor: 'var(--cream)', padding: '10px 12px', fontSize: 13, fontFamily: '"Geist", sans-serif', opacity: status === 'loading' ? 0.7 : 1 }}
+                style={{ background: 'transparent', border: 'none', outline: 'none', color: 'oklch(0.15 0.025 155)', WebkitTextFillColor: 'oklch(0.15 0.025 155)', caretColor: 'oklch(0.15 0.025 155)', padding: '10px 12px', fontSize: 13, fontFamily: '"Geist", sans-serif', opacity: status === 'loading' ? 0.7 : 1 }}
               />
             </AnimatedInput>
             <AnimatedButton delay={2.4} isAnimating={isAnimating}>
@@ -433,7 +434,7 @@ export function Footer({ onNav }: FooterProps) {
         animate={isAnimating ? 'visible' : 'hidden'}
         transition={{ duration: 0.8, delay: 2.8 }}
         variants={bottomVariants}
-        style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6 }}
+        style={{ borderTop: '1px solid rgba(0,0,0,0.12)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.55 }}
       >
         <span>© 2026 Healthora · Farmacia digital</span>
         <span>Pagos seguros · Visa · Mastercard · Amex · Stripe</span>
