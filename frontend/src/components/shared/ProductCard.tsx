@@ -5,6 +5,7 @@ import { ProductImage } from './ProductImage';
 import { Stars } from './Stars';
 import { Icon } from './Icon';
 import { useReviews } from '../../hooks/useReviews';
+import { useThemeStore } from '../../store/themeStore';
 
 // ─── Shared shimmer helper ────────────────────────────────────────────────────
 function ShimmerBox({ style }: { style?: CSSProperties }) {
@@ -72,6 +73,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onClick, onAdd }: ProductCardProps) {
   const [hover, setHover] = useState(false);
+  const dark = useThemeStore((s) => s.theme === 'dark');
   const { data: liveReviews } = useReviews(product.id);
   const liveCount = liveReviews?.length ?? 0;
   const liveRating = liveReviews && liveReviews.length > 0
@@ -111,7 +113,7 @@ export function ProductCard({ product, onClick, onAdd }: ProductCardProps) {
 
         {/* Badges */}
         {product.stock === 0 ? (
-          <span style={{ position: 'absolute', top: 12, left: 12, background: 'var(--ink)', color: 'var(--cream)', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Agotado</span>
+          <span style={{ position: 'absolute', top: 12, left: 12, background: dark ? 'oklch(0.10 0.012 155)' : 'var(--ink)', color: dark ? 'oklch(0.96 0.006 85)' : 'var(--cream)', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Agotado</span>
         ) : product.tag ? (
           <span style={{ position: 'absolute', top: 12, left: 12, background: product.tag === 'Nuevo' ? 'var(--lime)' : 'oklch(0.18 0.03 155)', color: product.tag === 'Nuevo' ? 'oklch(0.18 0.03 155)' : 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{product.tag}</span>
         ) : null}

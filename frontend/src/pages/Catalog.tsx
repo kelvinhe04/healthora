@@ -130,8 +130,9 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
         </div>
       </div>
 
-      <div ref={gridRef} style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 32 }}>
-        <aside style={{ position: 'sticky', top: 100, alignSelf: 'start' }}>
+      <div ref={gridRef} style={{ display: 'grid', gridTemplateColumns: '284px 1fr', gap: 32 }}>
+        <aside style={{ position: 'sticky', top: 100, alignSelf: 'start', height: 'calc(100vh - 120px)' }}>
+          <div style={{ height: '100%', overflowY: 'auto', overscrollBehavior: 'contain', scrollbarGutter: 'stable', paddingRight: 14, paddingLeft: 12 }}>
           <div style={{ marginBottom: 32 }}>
             <div style={filterLabel}>Categorías</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -228,6 +229,7 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, cursor: 'pointer', fontFamily: '"Geist", sans-serif' }}>
               <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} style={{ accentColor: 'var(--green)' }} /> En stock
             </label>
+          </div>
           </div>
         </aside>
 

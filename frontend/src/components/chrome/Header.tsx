@@ -201,6 +201,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   const [addressSaving, setAddressSaving] = useState(false);
   const [addressSaveSuccess, setAddressSaveSuccess] = useState(false);
   const [search, setSearch] = useState('');
+  const [searchBtnHovered, setSearchBtnHovered] = useState(false);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -475,8 +476,44 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             <Icon name="x" size={14} />
           </button>
         )}
-        <button type="submit" style={{ ...iconBtn, padding: '8px 12px', borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', fontSize: 12, fontFamily: '"JetBrains Mono", monospace' }} aria-label="Buscar">
-          <Icon name="arrow-right" size={14} />
+        <button
+          type="submit"
+          aria-label="Buscar"
+          onMouseEnter={() => setSearchBtnHovered(true)}
+          onMouseLeave={() => setSearchBtnHovered(false)}
+          style={{
+            ...iconBtn,
+            padding: '8px 12px',
+            borderRadius: 999,
+            background: searchBtnHovered ? 'color-mix(in srgb, var(--green) 88%, black)' : 'var(--green)',
+            color: 'var(--lime)',
+            fontSize: 12,
+            fontFamily: '"JetBrains Mono", monospace',
+            transform: searchBtnHovered ? 'translateY(-1px)' : 'translateY(0)',
+            transition: 'background 180ms ease, transform 180ms ease',
+            overflow: 'hidden',
+            position: 'relative',
+          }}
+        >
+          <span style={{ position: 'relative', display: 'inline-flex', overflow: 'hidden' }}>
+            <span style={{
+              display: 'inline-flex',
+              transform: searchBtnHovered ? 'translateY(-100%)' : 'translateY(0)',
+              transition: 'transform 150ms ease-in-out',
+            }}>
+              <Icon name="arrow-right" size={14} />
+            </span>
+            <span style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              display: 'inline-flex',
+              transform: searchBtnHovered ? 'translateY(0)' : 'translateY(100%)',
+              transition: 'transform 150ms ease-in-out',
+            }}>
+              <Icon name="arrow-right" size={14} />
+            </span>
+          </span>
         </button>
       </form>
 
