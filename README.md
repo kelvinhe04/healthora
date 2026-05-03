@@ -34,6 +34,7 @@ E-commerce académico de farmacia y salud. Catálogo real de 200 productos en 10
 - Catálogo conserva categoría, página y filtros al volver desde detalle de producto.
 - Roles `customer` y `admin` gestionados por Clerk + MongoDB.
 - Reseñas de productos con rating y comentarios.
+- Modo oscuro (dark mode) con transición animada de 400ms.
 - Emails de confirmación de pedido con nodemailer (SMTP Gmail).
 
 ---

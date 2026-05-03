@@ -11,7 +11,7 @@ function ShimmerBox({ style }: { style?: CSSProperties }) {
   return (
     <div
       style={{
-        background: 'oklch(0.91 0.004 155)',
+        background: 'var(--skeleton-base)',
         borderRadius: 6,
         position: 'relative',
         overflow: 'hidden',
@@ -23,7 +23,7 @@ function ShimmerBox({ style }: { style?: CSSProperties }) {
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)',
+          background: 'linear-gradient(90deg, transparent 0%, var(--skeleton-shimmer) 50%, transparent 100%)',
           animation: 'shimmer 1.4s linear infinite',
           willChange: 'transform',
         }}

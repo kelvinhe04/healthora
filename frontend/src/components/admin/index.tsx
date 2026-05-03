@@ -91,7 +91,7 @@ function Skeleton({
         height,
         width: width ?? "100%",
         borderRadius,
-        background: "oklch(0.88 0 0)",
+        background: "var(--skeleton-base)",
         position: "relative",
         overflow: "hidden",
         flexShrink: 0,
@@ -103,7 +103,7 @@ function Skeleton({
           position: "absolute",
           inset: 0,
           background:
-            "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.82) 50%, transparent 100%)",
+            "linear-gradient(90deg, transparent 0%, var(--skeleton-shimmer) 50%, transparent 100%)",
           animation: "shimmer 1.4s linear infinite",
           willChange: "transform",
         }}
@@ -128,7 +128,7 @@ function SkeletonTitle({
         height,
         width,
         borderRadius: radius,
-        background: "oklch(0.86 0 0)",
+        background: "var(--skeleton-base)",
         position: "relative",
         overflow: "hidden",
         flexShrink: 0,
@@ -139,7 +139,7 @@ function SkeletonTitle({
           position: "absolute",
           inset: 0,
           background:
-            "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.82) 50%, transparent 100%)",
+            "linear-gradient(90deg, transparent 0%, var(--skeleton-shimmer) 50%, transparent 100%)",
           animation: "shimmer 1.4s linear infinite",
           willChange: "transform",
         }}
@@ -995,6 +995,7 @@ interface SidebarProps {
   counts?: Partial<Record<AdminPage, number>>;
   adminName?: string;
   adminEmail?: string;
+  adminPhoto?: string;
 }
 
 export function Sidebar({
@@ -1004,6 +1005,7 @@ export function Sidebar({
   counts,
   adminName,
   adminEmail,
+  adminPhoto,
 }: SidebarProps) {
   const { theme, toggle: toggleTheme } = useThemeStore();
   const items: {
@@ -1198,9 +1200,15 @@ export function Sidebar({
                 justifyContent: "center",
                 fontFamily: '"Instrument Serif", serif',
                 fontSize: 13,
+                overflow: "hidden",
+                flexShrink: 0,
               }}
             >
-              A
+              {adminPhoto ? (
+                <img src={adminPhoto} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                (adminName?.[0] ?? "A").toUpperCase()
+              )}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 500, lineHeight: 1.2 }}>

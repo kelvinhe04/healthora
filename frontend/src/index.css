@@ -37,6 +37,9 @@ html.dark {
   --lime:    oklch(0.90 0.18 115);    /* lime accent — unchanged                */
   --coral:   oklch(0.68 0.17 30);     /* coral accent — unchanged               */
 
+  --skeleton-base: oklch(0.24 0.008 155);
+  --skeleton-shimmer: rgba(255,255,255,0.06);
+
   color-scheme: dark;
 }
 

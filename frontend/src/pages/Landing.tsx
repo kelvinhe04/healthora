@@ -319,7 +319,7 @@ function CategorySkeleton() {
         borderRadius: 20,
         overflow: 'hidden',
         height: 180,
-        background: 'oklch(0.91 0.004 155)',
+        background: 'var(--skeleton-base)',
         position: 'relative',
       }}
     >
@@ -327,7 +327,7 @@ function CategorySkeleton() {
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)',
+          background: 'linear-gradient(90deg, transparent 0%, var(--skeleton-shimmer) 50%, transparent 100%)',
           animation: 'shimmer 1.4s linear infinite',
           willChange: 'transform',
         }}
@@ -835,16 +835,16 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             ? Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} style={{ background: 'var(--cream-2)', borderRadius: 20, padding: '28px 24px', border: '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 200, gap: 40 }}>
                   {/* Icon circle */}
-                  <div style={{ width: 44, height: 44, borderRadius: 999, background: 'oklch(0.88 0.004 155)', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
+                  <div style={{ width: 44, height: 44, borderRadius: 999, background: 'var(--skeleton-base)', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, var(--skeleton-shimmer) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
                   </div>
                   {/* Text block */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div style={{ height: 26, width: '70%', borderRadius: 6, background: 'oklch(0.88 0.004 155)', position: 'relative', overflow: 'hidden' }}>
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
+                    <div style={{ height: 26, width: '70%', borderRadius: 6, background: 'var(--skeleton-base)', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, var(--skeleton-shimmer) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
                     </div>
-                    <div style={{ height: 12, width: '40%', borderRadius: 4, background: 'oklch(0.91 0.004 155)', position: 'relative', overflow: 'hidden' }}>
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
+                    <div style={{ height: 12, width: '40%', borderRadius: 4, background: 'var(--skeleton-base)', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, var(--skeleton-shimmer) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
                     </div>
                   </div>
                 </div>

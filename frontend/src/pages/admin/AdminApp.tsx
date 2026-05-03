@@ -1381,6 +1381,7 @@ function AdminPanel({
   access: AdminAccess;
   onGoToStore: () => void;
 }) {
+  const { user } = useUser();
   const getAdminToken = useAdminToken();
   const queryClient = useQueryClient();
   const [page, setPage] = useState<AdminPage>("dashboard");
@@ -1828,6 +1829,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
         counts={sidebarCounts}
         adminName={access.name}
         adminEmail={access.email}
+        adminPhoto={user?.imageUrl}
       />
       <div style={{ padding: "36px 48px 80px", overflow: "auto" }}>
         {/* ── Dashboard ── */}
