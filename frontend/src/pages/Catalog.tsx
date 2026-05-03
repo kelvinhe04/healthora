@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import type { Product } from '../types';
-import { ProductCard } from '../components/shared/ProductCard';
+import { ProductCard, ProductCardSkeleton } from '../components/shared/ProductCard';
 import { Icon } from '../components/shared/Icon';
 import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
@@ -29,8 +29,18 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
   const [inStock, setInStock] = useState(false);
   const page = initialFilter?.page || 1;
 
-  const { data: allProducts = [] } = useProducts();
+  const { data: allProducts = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [] } = useCategories();
+
+  // Show skeleton on every mount (navigation) — not just cold loads.
+  // TanStack Query returns cached data instantly, so isLoading alone won't
+  // trigger the skeleton when navigating from Landing → Catalog.
+  const [isMounting, setIsMounting] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setIsMounting(false), 1800);
+    return () => clearTimeout(t);
+  }, []);
+  const showSkeleton = productsLoading || isMounting;
 
   useEffect(() => {
     setCat(initialFilter?.category || 'Todos');
@@ -179,22 +189,29 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
                 )}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {visibleBrands.map((b) => {
-                  const selected = brands.includes(b);
-                  return (
-                    <button
-                      key={b}
-                      type="button"
-                      onClick={() => toggleBrand(b)}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 999, border: selected ? '1px solid var(--green)' : '1px solid var(--ink-20)', background: selected ? 'var(--green)' : 'transparent', color: selected ? 'var(--cream)' : 'var(--ink)', cursor: 'pointer', fontSize: 12, fontFamily: '"Geist", sans-serif', transition: 'all 0.2s ease' }}
-                    >
-                      <span>{b}</span>
-                      <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', opacity: selected ? 0.8 : 0.6 }}>{brandCounts[b]}</span>
-                    </button>
-                  );
-                })}
+                {showSkeleton
+                  ? Array.from({ length: 8 }).map((_, i) => (
+                      <div key={i} style={{ height: 34, width: `${55 + (i % 3) * 20}px`, borderRadius: 999, background: 'oklch(0.91 0.004 155)', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
+                      </div>
+                    ))
+                  : visibleBrands.map((b) => {
+                      const selected = brands.includes(b);
+                      return (
+                        <button
+                          key={b}
+                          type="button"
+                          onClick={() => toggleBrand(b)}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 999, border: selected ? '1px solid var(--green)' : '1px solid var(--ink-20)', background: selected ? 'var(--green)' : 'transparent', color: selected ? 'var(--cream)' : 'var(--ink)', cursor: 'pointer', fontSize: 12, fontFamily: '"Geist", sans-serif', transition: 'all 0.2s ease' }}
+                        >
+                          <span>{b}</span>
+                          <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', opacity: selected ? 0.8 : 0.6 }}>{brandCounts[b]}</span>
+                        </button>
+                      );
+                    })
+                }
               </div>
-              {filteredBrands.length === 0 && <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>No hay marcas que coincidan.</div>}
+              {!showSkeleton && filteredBrands.length === 0 && <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>No hay marcas que coincidan.</div>}
               {filteredBrands.length > 8 && (
                 <button
                   type="button"
@@ -216,7 +233,13 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
 
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--ink-06)' }}>
-            <span style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>Mostrando {(currentPage - 1) * ITEMS_PER_PAGE + (filtered.length ? 1 : 0)}-{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} de {filtered.length} resultados</span>
+            {showSkeleton ? (
+              <div style={{ height: 14, width: 180, borderRadius: 4, background: 'oklch(0.91 0.004 155)', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
+              </div>
+            ) : (
+              <span style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>Mostrando {(currentPage - 1) * ITEMS_PER_PAGE + (filtered.length ? 1 : 0)}-{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} de {filtered.length} resultados</span>
+            )}
             
             <div style={{ position: 'relative' }}>
               <button 
@@ -252,7 +275,11 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
               )}
             </div>
           </div>
-          {filtered.length === 0 ? (
+          {showSkeleton ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+              {Array.from({ length: 12 }).map((_, i) => <ProductCardSkeleton key={i} />)}
+            </div>
+          ) : filtered.length === 0 ? (
             <div style={{ padding: 80, textAlign: 'center', color: 'var(--ink-60)', fontFamily: '"Instrument Serif", serif', fontSize: 28 }}>Sin resultados con estos filtros.</div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>

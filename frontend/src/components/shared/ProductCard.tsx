@@ -1,9 +1,68 @@
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { Product } from '../../types';
 import { ProductImage } from './ProductImage';
 import { Stars } from './Stars';
 import { Icon } from './Icon';
 import { useReviews } from '../../hooks/useReviews';
+
+// ─── Shared shimmer helper ────────────────────────────────────────────────────
+function ShimmerBox({ style }: { style?: CSSProperties }) {
+  return (
+    <div
+      style={{
+        background: 'oklch(0.91 0.004 155)',
+        borderRadius: 6,
+        position: 'relative',
+        overflow: 'hidden',
+        flexShrink: 0,
+        ...style,
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)',
+          animation: 'shimmer 1.4s linear infinite',
+          willChange: 'transform',
+        }}
+      />
+    </div>
+  );
+}
+
+export function ProductCardSkeleton() {
+  return (
+    <div
+      style={{
+        background: 'var(--cream)',
+        borderRadius: 14,
+        overflow: 'hidden',
+        border: '1px solid var(--ink-06)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Image area */}
+      <ShimmerBox style={{ height: 220, borderRadius: 0 }} />
+
+      {/* Text content */}
+      <div style={{ padding: '16px 16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Brand */}
+        <ShimmerBox style={{ height: 10, width: '40%' }} />
+        {/* Name line 1 */}
+        <ShimmerBox style={{ height: 14, width: '90%' }} />
+        {/* Name line 2 */}
+        <ShimmerBox style={{ height: 14, width: '65%' }} />
+        {/* Rating */}
+        <ShimmerBox style={{ height: 10, width: '50%', marginTop: 2 }} />
+        {/* Price */}
+        <ShimmerBox style={{ height: 18, width: '35%', marginTop: 4 }} />
+      </div>
+    </div>
+  );
+}
 
 interface ProductCardProps {
   product: Product;

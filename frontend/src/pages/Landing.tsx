@@ -8,7 +8,7 @@ import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 
 gsap.registerPlugin(ScrollTrigger);
 import type { Product, Category } from '../types';
-import { ProductCard } from '../components/shared/ProductCard';
+import { ProductCard, ProductCardSkeleton } from '../components/shared/ProductCard';
 import { ProductImage } from '../components/shared/ProductImage';
 import { Button } from '../components/shared/Button';
 import { Icon } from '../components/shared/Icon';
@@ -311,10 +311,45 @@ const HERO_CONTENT = [
   }
 ];
 
+
+function CategorySkeleton() {
+  return (
+    <div
+      style={{
+        borderRadius: 20,
+        overflow: 'hidden',
+        height: 180,
+        background: 'oklch(0.91 0.004 155)',
+        position: 'relative',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)',
+          animation: 'shimmer 1.4s linear infinite',
+          willChange: 'transform',
+        }}
+      />
+    </div>
+  );
+}
+
 export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
-  const { data: products = [] } = useProducts();
-  const { data: categories = [] } = useCategories();
-  
+  const { data: products = [], isLoading: productsLoading } = useProducts();
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+
+  // Show skeleton for 1800ms on every mount — matches admin skeleton duration.
+  // Without this, cached data makes isLoading=false instantly on navigation.
+  const [isMounting, setIsMounting] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setIsMounting(false), 1800);
+    return () => clearTimeout(t);
+  }, []);
+  const showProductsSkeleton = productsLoading || isMounting;
+  const showCategoriesSkeleton = categoriesLoading || isMounting;
+
   const heroRef = useRef<HTMLDivElement>(null);
   const cinematicRef = useRef<HTMLDivElement>(null);
   const [activeHeroIdx, setActiveHeroIdx] = useState(0);
@@ -625,19 +660,24 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           <a onClick={() => onNav('catalog')} style={seeAllLink}>Ver todas las categorías <Icon name="arrow-right" size={14} /></a>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 16 }}>
-          {categories.slice(0, 6).map((cat: Category, i) => (
-            <StaggerItem key={cat.id} index={i}>
-              <div onClick={() => onNav('catalog', { category: cat.id })} style={{ background: cat.color, borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 180, cursor: 'pointer', transition: 'transform 200ms' }}
-                onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-3px)')}
-                onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
-                <div style={{ width: 38, height: 38, borderRadius: 999, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="leaf" size={18} /></div>
-                <div>
-                  <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, letterSpacing: '-0.02em', lineHeight: 1.05 }}>{cat.label}</div>
-                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.6, marginTop: 6 }}>{cat.sub}</div>
-                </div>
-              </div>
-            </StaggerItem>
-          ))}
+          {showCategoriesSkeleton
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <CategorySkeleton key={i} />
+              ))
+            : categories.slice(0, 6).map((cat: Category, i) => (
+                <StaggerItem key={cat.id} index={i}>
+                  <div onClick={() => onNav('catalog', { category: cat.id })} style={{ background: cat.color, borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 180, cursor: 'pointer', transition: 'transform 200ms' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-3px)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
+                    <div style={{ width: 38, height: 38, borderRadius: 999, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="leaf" size={18} /></div>
+                    <div>
+                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, letterSpacing: '-0.02em', lineHeight: 1.05 }}>{cat.label}</div>
+                      <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.6, marginTop: 6 }}>{cat.sub}</div>
+                    </div>
+                  </div>
+                </StaggerItem>
+              ))
+          }
         </div>
       </RevealSection>
 
@@ -651,11 +691,14 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           <a onClick={() => onNav('catalog')} style={seeAllLink}>Ver todos <Icon name="arrow-right" size={14} /></a>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
-          {bestSellers.map((p, i) => (
-            <StaggerItem key={p.id} index={i}>
-              <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} />
-            </StaggerItem>
-          ))}
+          {showProductsSkeleton
+            ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
+            : bestSellers.map((p, i) => (
+                <StaggerItem key={p.id} index={i}>
+                  <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} />
+                </StaggerItem>
+              ))
+          }
         </div>
       </RevealSection>
 
@@ -788,39 +831,58 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           <h2 style={headTitle}>¿Qué estás <em style={{ color: 'var(--green)' }}>buscando</em>?</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-          {NEEDS.map((n, i) => (
-            <StaggerItem key={n.id} index={i}>
-              <div onClick={() => onNav('catalog', { need: n.id })} style={{ background: 'var(--cream-2)', borderRadius: 20, padding: '28px 24px', cursor: 'pointer', border: '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', gap: 40, minHeight: 200, transition: 'all 220ms' }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--green)'; e.currentTarget.style.color = 'var(--cream)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--cream-2)'; e.currentTarget.style.color = 'var(--ink)'; }}>
-                <div style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}>
-                  <span
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 999,
-                      border: n.tone === 'ring' ? '2px solid currentColor' : 'none',
-                      background:
-                        n.tone === 'solid'
-                          ? 'currentColor'
-                          : n.tone === 'half-left'
-                            ? 'linear-gradient(90deg, currentColor 0 50%, transparent 50% 100%)'
-                            : n.tone === 'half-right'
-                              ? 'linear-gradient(90deg, transparent 0 50%, currentColor 50% 100%)'
-                              : 'transparent',
-                      outline: n.tone === 'half-left' || n.tone === 'half-right' ? '2px solid currentColor' : 'none',
-                      outlineOffset: '-2px',
-                      display: 'block',
-                    }}
-                  />
+          {showProductsSkeleton
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} style={{ background: 'var(--cream-2)', borderRadius: 20, padding: '28px 24px', border: '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 200, gap: 40 }}>
+                  {/* Icon circle */}
+                  <div style={{ width: 44, height: 44, borderRadius: 999, background: 'oklch(0.88 0.004 155)', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
+                  </div>
+                  {/* Text block */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ height: 26, width: '70%', borderRadius: 6, background: 'oklch(0.88 0.004 155)', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
+                    </div>
+                    <div style={{ height: 12, width: '40%', borderRadius: 4, background: 'oklch(0.91 0.004 155)', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 26, letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 8 }}>{n.label}</div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: '"Geist", sans-serif', opacity: 0.75 }}>Explorar <Icon name="arrow-right" size={12} /></div>
-                </div>
-              </div>
-            </StaggerItem>
-          ))}
+              ))
+            : NEEDS.map((n, i) => (
+                <StaggerItem key={n.id} index={i}>
+                  <div onClick={() => onNav('catalog', { need: n.id })} style={{ background: 'var(--cream-2)', borderRadius: 20, padding: '28px 24px', cursor: 'pointer', border: '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', gap: 40, minHeight: 200, transition: 'all 220ms' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--green)'; e.currentTarget.style.color = 'var(--cream)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--cream-2)'; e.currentTarget.style.color = 'var(--ink)'; }}>
+                    <div style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}>
+                      <span
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: 999,
+                          border: n.tone === 'ring' ? '2px solid currentColor' : 'none',
+                          background:
+                            n.tone === 'solid'
+                              ? 'currentColor'
+                              : n.tone === 'half-left'
+                                ? 'linear-gradient(90deg, currentColor 0 50%, transparent 50% 100%)'
+                                : n.tone === 'half-right'
+                                  ? 'linear-gradient(90deg, transparent 0 50%, currentColor 50% 100%)'
+                                  : 'transparent',
+                          outline: n.tone === 'half-left' || n.tone === 'half-right' ? '2px solid currentColor' : 'none',
+                          outlineOffset: '-2px',
+                          display: 'block',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 26, letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 8 }}>{n.label}</div>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: '"Geist", sans-serif', opacity: 0.75 }}>Explorar <Icon name="arrow-right" size={12} /></div>
+                    </div>
+                  </div>
+                </StaggerItem>
+              ))
+          }
         </div>
       </RevealSection>
 
@@ -851,11 +913,14 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           <a onClick={() => onNav('catalog')} style={seeAllLink}>Ver catálogo completo <Icon name="arrow-right" size={14} /></a>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
-          {featured.map((p, i) => (
-            <StaggerItem key={p.id} index={i}>
-              <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} />
-            </StaggerItem>
-          ))}
+          {showProductsSkeleton
+            ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
+            : featured.map((p, i) => (
+                <StaggerItem key={p.id} index={i}>
+                  <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} />
+                </StaggerItem>
+              ))
+          }
         </div>
       </RevealSection>
 
