@@ -8,6 +8,7 @@ interface CartState {
   ownerId: string;
   items: CartItem[];
   cartsByOwner: Record<string, CartItem[]>;
+  freeSample: Product | null;
   bindOwner: (ownerId: string | null | undefined) => void;
   replaceItems: (items: CartItem[]) => void;
   add: (product: Product, qty?: number) => void;
@@ -16,6 +17,7 @@ interface CartState {
   clear: () => void;
   count: () => number;
   subtotal: () => number;
+  setFreeSample: (p: Product | null) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -24,6 +26,7 @@ export const useCartStore = create<CartState>()(
       ownerId: GUEST_OWNER,
       items: [],
       cartsByOwner: {},
+      freeSample: null,
       bindOwner: (ownerId) =>
         set((s) => {
           const nextOwnerId = ownerId || GUEST_OWNER;
@@ -85,9 +88,11 @@ export const useCartStore = create<CartState>()(
         set((s) => ({
           items: [],
           cartsByOwner: { ...s.cartsByOwner, [s.ownerId]: [] },
+          freeSample: null,
         })),
       count: () => get().items.reduce((n, i) => n + i.qty, 0),
       subtotal: () => get().items.reduce((n, i) => n + i.product.price * i.qty, 0),
+      setFreeSample: (p) => set({ freeSample: p }),
     }),
     { name: 'healthora-cart' }
   )
