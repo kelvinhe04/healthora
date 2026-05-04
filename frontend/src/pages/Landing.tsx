@@ -917,11 +917,11 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
         <div style={{ background: 'var(--cream-2)', borderRadius: isMobile ? 20 : 28, padding: isMobile ? '28px 20px' : isTablet ? '32px 28px' : '48px 40px', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : isTablet ? '1fr 1fr' : 'repeat(4, 1fr)', gap: isMobile ? 20 : 32, border: '1px solid var(--ink-06)' }}>
           {[{ icon: 'shield', title: 'Pagos seguros', sub: 'Stripe · PCI DSS · 3D Secure' }, { icon: 'check', title: 'Productos verificados', sub: 'Farmacéuticos colegiados' }, { icon: 'truck', title: 'Envíos rápidos', sub: '24–48h en toda la región' }, { icon: 'headset', title: 'Atención al cliente', sub: 'Lun a sáb · 8am–8pm' }].map((t, i) => (
             <StaggerItem key={t.title} index={i}>
-              <div style={{ display: 'flex', gap: 14 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={t.icon} size={20} /></div>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left', gap: isMobile ? 10 : 14 }}>
+                <div style={{ width: isMobile ? 52 : 44, height: isMobile ? 52 : 44, borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={t.icon} size={isMobile ? 22 : 20} /></div>
                 <div>
-                  <div style={{ fontFamily: '"Geist", sans-serif', fontSize: 15, fontWeight: 500, marginBottom: 4 }}>{t.title}</div>
-                  <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>{t.sub}</div>
+                  <div style={{ fontFamily: '"Geist", sans-serif', fontSize: isMobile ? 13 : 15, fontWeight: 600, marginBottom: 4 }}>{t.title}</div>
+                  <div style={{ fontSize: isMobile ? 11 : 12, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', lineHeight: 1.4 }}>{t.sub}</div>
                 </div>
               </div>
             </StaggerItem>

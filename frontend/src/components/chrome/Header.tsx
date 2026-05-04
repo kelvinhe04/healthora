@@ -212,6 +212,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   const [addressSaveSuccess, setAddressSaveSuccess] = useState(false);
   const [search, setSearch] = useState('');
   const [searchBtnHovered, setSearchBtnHovered] = useState(false);
+  const [signOutModal, setSignOutModal] = useState(false);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -492,7 +493,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                   <Icon name="shield" size={14} style={{ marginRight: 8 }} /> Panel admin
                 </button>
               )}
-              <button style={{ ...iconBtn, width: '100%', padding: '10px 12px', borderRadius: 8, justifyContent: 'flex-start', color: 'var(--coral)', fontSize: 13 }} onClick={() => { signOut(); setUserMenuOpen(false); }}>
+              <button style={{ ...iconBtn, width: '100%', padding: '10px 12px', borderRadius: 8, justifyContent: 'flex-start', color: 'var(--coral)', fontSize: 13 }} onClick={() => { setSignOutModal(true); setUserMenuOpen(false); }}>
                 <Icon name="log-out" size={14} style={{ marginRight: 8 }} /> Cerrar sesión
               </button>
             </div>
@@ -605,6 +606,37 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             </div>
             <div style={{ padding: 24, display: 'flex', justifyContent: 'flex-end', background: 'var(--cream-2)' }}>
               <AnimatedButton variant="primary" onClick={() => setAddressSaveSuccess(false)} text="Entendido" />
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Sign-out confirmation modal */}
+      {signOutModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          onClick={() => setSignOutModal(false)}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(6px)' }} />
+          <div style={{ position: 'relative', background: 'var(--cream)', borderRadius: 20, width: '100%', maxWidth: 400, boxShadow: '0 32px 80px -20px rgba(0,0,0,0.35)', overflow: 'hidden', animation: 'fadeInUp 0.3s cubic-bezier(0.2,0.8,0.2,1) forwards' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '32px 28px 24px', textAlign: 'center' }}>
+              <div style={{ width: 52, height: 52, borderRadius: 999, background: 'oklch(0.96 0.01 30)', color: 'var(--coral)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                <Icon name="log-out" size={22} />
+              </div>
+              <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 22, fontWeight: 400, margin: '0 0 10px', color: 'var(--ink)' }}>
+                ¿Cerrar sesión?
+              </h3>
+              <p style={{ fontSize: 14, color: 'var(--ink-60)', lineHeight: 1.55, margin: 0, fontFamily: '"Geist", sans-serif' }}>
+                Tu carrito y preferencias se conservarán para la próxima vez que entres.
+              </p>
+            </div>
+            <div style={{ padding: '0 28px 28px', display: 'flex', gap: 10 }}>
+              <button style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: '1px solid var(--ink-12)', background: 'transparent', color: 'var(--ink)', fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 500, cursor: 'pointer' }}
+                onClick={() => setSignOutModal(false)}>
+                Cancelar
+              </button>
+              <button style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: 'none', background: 'var(--coral)', color: '#fff', fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 600, cursor: 'pointer' }}
+                onClick={() => { setSignOutModal(false); signOut(); }}>
+                Cerrar sesión
+              </button>
             </div>
           </div>
         </div>
