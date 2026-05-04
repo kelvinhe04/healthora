@@ -5,6 +5,7 @@ import { ProductCard, ProductCardSkeleton } from '../components/shared/ProductCa
 import { Icon } from '../components/shared/Icon';
 import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 interface CatalogProps {
   initialFilter?: { category?: string; need?: string; search?: string; page?: number; brand?: string; brands?: string[] };
@@ -17,6 +18,11 @@ const filterLabel: CSSProperties = { fontFamily: '"JetBrains Mono", monospace', 
 const ITEMS_PER_PAGE = 12;
 
 export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }: CatalogProps) {
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
+  const isTablet = bp === 'tablet';
+  const isSmall = isMobile || isTablet;
+  const [filterOpen, setFilterOpen] = useState(false);
   const [cat, setCat] = useState(initialFilter?.category || 'Todos');
   const [need, setNeed] = useState(initialFilter?.need || null as string | null);
   const [search, setSearch] = useState(initialFilter?.search || '');
@@ -117,22 +123,8 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
   };
   const syncFilter = (next: { category?: string; need?: string; search?: string }) => onFilterChange?.({ ...next, brands: brands.length ? brands : undefined, brand: brands[0], page: 1 });
 
-  return (
-    <main style={{ padding: '32px 40px 0' }}>
-      <div style={{ background: 'var(--cream-2)', borderRadius: 24, padding: '40px 48px', marginBottom: 32, display: 'flex', alignItems: 'end', justifyContent: 'space-between', border: '1px solid var(--ink-06)' }}>
-        <div>
-          <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 10 }}>Catálogo · {filtered.length} productos</div>
-          <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 72, letterSpacing: '-0.035em', lineHeight: 0.95, margin: 0, color: 'var(--ink)', fontWeight: 400 }}>
-            {cat === 'Todos' ? <>Toda la <em style={{ color: 'var(--green)' }}>tienda</em></> : <>{cat}</>}
-          </h1>
-          {need && <div style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-60)' }}>Filtro: {need} · <a onClick={() => { setNeed(null); syncFilter({ category: cat !== 'Todos' ? cat : undefined, search: search.trim() || undefined }); }} style={{ color: 'var(--green)', cursor: 'pointer' }}>limpiar</a></div>}
-          {search && <div style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-60)' }}>Búsqueda: "{search}" · <a onClick={() => { setSearch(''); syncFilter({ category: cat !== 'Todos' ? cat : undefined, need: need || undefined }); }} style={{ color: 'var(--green)', cursor: 'pointer' }}>limpiar</a></div>}
-        </div>
-      </div>
-
-      <div ref={gridRef} style={{ display: 'grid', gridTemplateColumns: '284px 1fr', gap: 32 }}>
-        <aside style={{ position: 'sticky', top: 100, alignSelf: 'start', height: 'calc(100vh - 120px)' }}>
-          <div style={{ height: '100%', overflowY: 'auto', overscrollBehavior: 'contain', scrollbarGutter: 'stable', paddingRight: 14, paddingLeft: 12 }}>
+  const filterPanelContent = (
+    <div style={{ height: '100%', overflowY: 'auto', overscrollBehavior: 'contain', scrollbarGutter: 'stable', paddingRight: isSmall ? 0 : 14, paddingLeft: isSmall ? 0 : 12 }}>
           <div style={{ marginBottom: 32 }}>
             <div style={filterLabel}>Categorías</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -231,39 +223,78 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
             </label>
           </div>
           </div>
-        </aside>
+  );
+
+  return (
+    <main style={{ padding: isMobile ? '20px 16px 0' : isTablet ? '28px 24px 0' : '32px 40px 0' }}>
+      <div style={{ background: 'var(--cream-2)', borderRadius: isMobile ? 16 : 24, padding: isMobile ? '24px 20px' : isTablet ? '28px 32px' : '40px 48px', marginBottom: 28, border: '1px solid var(--ink-06)' }}>
+        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 10 }}>Catálogo · {filtered.length} productos</div>
+        <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 44 : isTablet ? 56 : 72, letterSpacing: '-0.035em', lineHeight: 0.95, margin: 0, color: 'var(--ink)', fontWeight: 400 }}>
+          {cat === 'Todos' ? <>Toda la <em style={{ color: 'var(--green)' }}>tienda</em></> : <>{cat}</>}
+        </h1>
+        {need && <div style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-60)' }}>Filtro: {need} · <a onClick={() => { setNeed(null); syncFilter({ category: cat !== 'Todos' ? cat : undefined, search: search.trim() || undefined }); }} style={{ color: 'var(--green)', cursor: 'pointer' }}>limpiar</a></div>}
+        {search && <div style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-60)' }}>Búsqueda: "{search}" · <a onClick={() => { setSearch(''); syncFilter({ category: cat !== 'Todos' ? cat : undefined, need: need || undefined }); }} style={{ color: 'var(--green)', cursor: 'pointer' }}>limpiar</a></div>}
+      </div>
+
+      {/* Mobile/Tablet filter drawer */}
+      {isSmall && filterOpen && (
+        <div onClick={() => setFilterOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 100 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '85%', maxWidth: 360, background: 'var(--cream)', padding: '20px 20px 40px', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 26, letterSpacing: '-0.02em' }}>Filtros</span>
+              <button onClick={() => setFilterOpen(false)} style={{ background: 'transparent', border: '1px solid var(--ink-06)', borderRadius: 999, padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: 'var(--ink)' }}><Icon name="x" size={16} /></button>
+            </div>
+            {filterPanelContent}
+          </div>
+        </div>
+      )}
+
+      <div ref={gridRef} style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '284px 1fr', gap: 32 }}>
+        {/* Desktop sidebar */}
+        {!isSmall && (
+          <aside style={{ position: 'sticky', top: 100, alignSelf: 'start', height: 'calc(100vh - 120px)' }}>
+            {filterPanelContent}
+          </aside>
+        )}
 
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--ink-06)' }}>
-            {showSkeleton ? (
-              <div style={{ height: 14, width: 180, borderRadius: 4, background: 'oklch(0.91 0.004 155)', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
-              </div>
-            ) : (
-              <span style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>Mostrando {(currentPage - 1) * ITEMS_PER_PAGE + (filtered.length ? 1 : 0)}-{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} de {filtered.length} resultados</span>
-            )}
-            
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--ink-06)', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
+              {isSmall && (
+                <button onClick={() => setFilterOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '9px 14px', borderRadius: 999, border: '1px solid var(--ink-20)', background: 'transparent', fontSize: 13, fontFamily: '"Geist", sans-serif', cursor: 'pointer', color: 'var(--ink)', flexShrink: 0 }}>
+                  <Icon name="menu" size={14} /> Filtros
+                </button>
+              )}
+              {!isSmall && (showSkeleton ? (
+                <div style={{ height: 14, width: 180, borderRadius: 4, background: 'oklch(0.91 0.004 155)', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%)', animation: 'shimmer 1.4s linear infinite' }} />
+                </div>
+              ) : (
+                <span style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>Mostrando {(currentPage - 1) * ITEMS_PER_PAGE + (filtered.length ? 1 : 0)}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} de {filtered.length}</span>
+              ))}
+            </div>
+
             <div style={{ position: 'relative' }}>
-              <button 
+              <button
                 onClick={() => setIsSortOpen(!isSortOpen)}
                 style={{ padding: '10px 16px', borderRadius: 999, border: '1px solid var(--ink-20)', background: 'transparent', fontSize: 13, fontFamily: '"Geist", sans-serif', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, color: 'var(--ink)' }}
               >
                 {sort === 'featured' ? 'Destacados' : sort === 'rating' ? 'Mejor valorados' : sort === 'priceAsc' ? 'Menor precio' : 'Mayor precio'}
                 <Icon name="chevron-down" size={14} />
               </button>
-              
+
               {isSortOpen && (
                 <>
                   <div style={{ position: 'fixed', inset: 0, zIndex: 10 }} onClick={() => setIsSortOpen(false)} />
-                  <div style={{ position: 'absolute', top: '100%', right: '50%', transform: 'translateX(50%)', marginTop: 8, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 16, padding: 6, minWidth: 180, boxShadow: '0 12px 32px rgba(0,0,0,0.12)', zIndex: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 16, padding: 6, minWidth: 180, boxShadow: '0 12px 32px rgba(0,0,0,0.12)', zIndex: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {[
                       { value: 'featured', label: 'Destacados' },
                       { value: 'rating', label: 'Mejor valorados' },
                       { value: 'priceAsc', label: 'Menor precio' },
                       { value: 'priceDesc', label: 'Mayor precio' },
                     ].map((o) => (
-                      <button 
-                        key={o.value} 
+                      <button
+                        key={o.value}
                         onClick={() => { setSort(o.value); setIsSortOpen(false); }}
                         style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: 'none', background: sort === o.value ? 'var(--ink-04)' : 'transparent', color: sort === o.value ? 'var(--ink)' : 'var(--ink-60)', fontSize: 13, fontFamily: '"Geist", sans-serif', cursor: 'pointer', textAlign: 'left', fontWeight: sort === o.value ? 500 : 400, transition: 'all 0.2s' }}
                         onMouseEnter={(e) => { if (sort !== o.value) { e.currentTarget.style.background = 'rgba(0,0,0,0.02)'; e.currentTarget.style.color = 'var(--ink)'; } }}
@@ -278,13 +309,13 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
             </div>
           </div>
           {showSkeleton ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: isMobile ? 12 : 20 }}>
               {Array.from({ length: 12 }).map((_, i) => <ProductCardSkeleton key={i} />)}
             </div>
           ) : filtered.length === 0 ? (
-            <div style={{ padding: 80, textAlign: 'center', color: 'var(--ink-60)', fontFamily: '"Instrument Serif", serif', fontSize: 28 }}>Sin resultados con estos filtros.</div>
+            <div style={{ padding: isMobile ? '40px 0' : 80, textAlign: 'center', color: 'var(--ink-60)', fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 22 : 28 }}>Sin resultados con estos filtros.</div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: isMobile ? 12 : 20 }}>
               {paginated.map((p) => <ProductCard key={p.id} product={p} onClick={onOpenProduct} onAdd={onAdd} />)}
             </div>
           )}

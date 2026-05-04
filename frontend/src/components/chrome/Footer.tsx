@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, type FormEvent } from 'react';
 import { AnimatedButton } from '../shared/AnimatedButton';
 import { motion, type Variants } from 'framer-motion';
 import { api } from '../../lib/api';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 interface FooterProps {
   onNav?: (view: 'catalog', filter?: { category?: string }) => void;
@@ -198,6 +199,10 @@ export function Footer({ onNav }: FooterProps) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
+  const isTablet = bp === 'tablet';
+  
   const footerRef = useRef<HTMLElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const lastScrollY = useRef(0);
@@ -273,7 +278,7 @@ export function Footer({ onNav }: FooterProps) {
   const description = 'Tu farmacia online para salud, cuidado personal, belleza y bienestar.';
 
   return (
-    <footer ref={footerRef} style={{ background: 'var(--green)', color: 'var(--cream)', padding: '64px 40px 32px', borderRadius: '32px 32px 0 0', marginTop: 80, overflow: 'hidden' }}>
+    <footer ref={footerRef} style={{ background: 'var(--green)', color: 'var(--cream)', padding: isMobile ? '48px 24px 24px' : '64px 40px 32px', borderRadius: isMobile ? '24px 24px 0 0' : '32px 32px 0 0', marginTop: isMobile ? 40 : 80, overflow: 'hidden' }}>
       <style>{`
         .newsletter-input::placeholder { color: color-mix(in srgb, var(--cream) 50%, transparent); }
         .newsletter-input { border-radius: 999px; }
@@ -314,7 +319,7 @@ export function Footer({ onNav }: FooterProps) {
           transform-origin: left;
         }
       `}</style>
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr repeat(3, 1fr) 1.4fr', gap: 48, marginBottom: 64 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : '1.4fr repeat(3, 1fr) 1.4fr', gap: isMobile ? 40 : isTablet ? 32 : 48, marginBottom: isMobile ? 40 : 64 }}>
         <div>
           <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 48, letterSpacing: '-0.03em', lineHeight: 0.95, marginBottom: 20 }}>
             {healthora.map((letter, i) => (
@@ -435,7 +440,7 @@ export function Footer({ onNav }: FooterProps) {
         animate={isAnimating ? 'visible' : 'hidden'}
         transition={{ duration: 0.8, delay: 2.8 }}
         variants={bottomVariants}
-        style={{ borderTop: '1px solid rgba(0,0,0,0.12)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.55 }}
+        style={{ borderTop: '1px solid rgba(0,0,0,0.12)', paddingTop: 24, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 0, justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.55 }}
       >
         <span>© 2026 Healthora · Farmacia digital</span>
         <span>Pagos seguros · Visa · Mastercard · Amex · Stripe</span>

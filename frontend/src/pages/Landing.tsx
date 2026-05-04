@@ -14,6 +14,7 @@ import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import { api } from '../lib/api';
 
 type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club';
@@ -337,6 +338,14 @@ function CategorySkeleton() {
 }
 
 export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
+  const isTablet = bp === 'tablet';
+  const isSmall = isMobile || isTablet;
+
+  const secPad = isMobile ? '48px 16px 0' : isTablet ? '64px 24px 0' : '80px 40px 0';
+  const secPadNoH = isMobile ? '0 16px' : isTablet ? '0 24px' : '0 40px';
+
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
@@ -503,77 +512,95 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     .filter((p) => p.category === activeHero.id && (p.imageUrl || p.images?.length))
     .slice(0, 4); // Take up to 4 to display 3 or 4 in the floating composition
 
+  const promoSkinProduct = products.find(p => p.name.includes('Superfood Cleanser')) || products.find(p => p.category === 'Salud de la piel' && (p.imageUrl || p.images?.length)) || products[2];
+  const promoHydrationProduct = products.find(p => p.name.includes('Toleriane Double Repair Face Moisturizer')) || products.find(p => p.category === 'Hidratantes' && (p.imageUrl || p.images?.length)) || products[6];
+
   return (
     <main>
       {/* HERO */}
-      <RevealSection style={{ padding: '32px 40px 0' }}>
-        <div ref={heroRef} style={{ borderRadius: 32, overflow: 'hidden', background: 'linear-gradient(120deg, oklch(0.28 0.055 155) 0%, oklch(0.32 0.06 155) 38%, oklch(0.4 0.065 155) 100%)', color: 'oklch(0.985 0.008 85)', minHeight: 560, position: 'relative' }}>
+      <RevealSection style={{ padding: isMobile ? '16px 16px 0' : isTablet ? '24px 24px 0' : '32px 40px 0' }}>
+        <div ref={heroRef} style={{ borderRadius: isMobile ? 20 : 32, overflow: 'hidden', background: 'linear-gradient(120deg, oklch(0.28 0.055 155) 0%, oklch(0.32 0.06 155) 38%, oklch(0.4 0.065 155) 100%)', color: 'oklch(0.985 0.008 85)', minHeight: isMobile ? 420 : 560, position: 'relative' }}>
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(95% 90% at 84% 24%, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 52%), radial-gradient(70% 70% at 8% 92%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 56%)' }} />
-          
+
           {/* TEXT CONTENT */}
-          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '55%', padding: '64px 72px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', zIndex: 3, pointerEvents: 'none' }}>
-            <Parallax speed={-8} style={{ pointerEvents: 'auto' }}>
+          <div style={{ position: isMobile ? 'relative' : 'absolute', left: 0, top: 0, bottom: 0, width: isMobile ? '100%' : isTablet ? '65%' : '55%', padding: isMobile ? '36px 24px 200px' : isTablet ? '44px 40px' : '64px 72px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', zIndex: 3, pointerEvents: 'none', gap: isMobile ? 24 : 0 }}>
+            <Parallax speed={isMobile ? 0 : -8} style={{ pointerEvents: 'auto' }}>
               <div>
-                <div key={`pill-${activeHeroIdx}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 40, animation: 'fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
+                <div key={`pill-${activeHeroIdx}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: isMobile ? 20 : 40, animation: 'fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
                   <span style={{ width: 6, height: 6, background: 'var(--lime)', borderRadius: 999, boxShadow: '0 0 10px rgba(210,230,60,0.5)' }} />
                   {activeHero.pill}
                 </div>
-                <h1 key={`title-${activeHeroIdx}`} style={{ fontFamily: '"Instrument Serif", serif', fontSize: 86, lineHeight: 0.95, letterSpacing: '-0.035em', fontWeight: 400, margin: 0, color: 'oklch(0.985 0.008 85)', animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
+                <h1 key={`title-${activeHeroIdx}`} style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 48 : isTablet ? 64 : 86, lineHeight: 0.95, letterSpacing: '-0.035em', fontWeight: 400, margin: 0, color: 'oklch(0.985 0.008 85)', animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
                   {activeHero.title}
                 </h1>
               </div>
             </Parallax>
-            <Parallax speed={-6} style={{ pointerEvents: 'auto' }}>
+            <Parallax speed={isMobile ? 0 : -6} style={{ pointerEvents: 'auto' }}>
               <div>
-                <p key={`sub-${activeHeroIdx}`} style={{ fontSize: 17, lineHeight: 1.5, maxWidth: 440, color: 'oklch(0.85 0.006 85)', opacity: 0, marginBottom: 32, fontFamily: '"Geist", sans-serif', animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s forwards' }}>
+                <p key={`sub-${activeHeroIdx}`} style={{ fontSize: isMobile ? 14 : 17, lineHeight: 1.5, maxWidth: 440, color: 'oklch(0.85 0.006 85)', opacity: 0, marginBottom: isMobile ? 20 : 32, fontFamily: '"Geist", sans-serif', animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s forwards' }}>
                   {activeHero.sub}
                 </p>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <AnimatedButton variant="lime" size="lg" onClick={() => onNav('catalog', { category: activeHero.id })} className="hero-cta" style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />} text="Comprar ahora" />
-                  <AnimatedButton variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'white', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(6px)' }} text="Ver best sellers" />
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <AnimatedButton variant="lime" size={isMobile ? 'md' : 'lg'} onClick={() => onNav('catalog', { category: activeHero.id })} className="hero-cta" style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />} text="Comprar ahora" />
+                  {!isMobile && <AnimatedButton variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'white', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(6px)' }} text="Ver best sellers" />}
                 </div>
               </div>
             </Parallax>
           </div>
 
           {/* FLOATING & ABSOLUTE ELEMENTS */}
-          <Parallax translateY={[-30, 30]} style={{ position: 'absolute', top: 40, right: 40, zIndex: 3 }}>
-            <div key={`cat-${activeHeroIdx}`} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', animation: 'fadeInUp 0.5s forwards' }}>{activeHero.id.toUpperCase()}</div>
-          </Parallax>
-          
-          <Parallax speed={8} style={{ position: 'absolute', bottom: 60, left: '60%', zIndex: 5 }}>
-            <div style={{ transform: 'translateX(-50%)', background: 'rgba(248, 246, 240, 0.96)', color: 'oklch(0.2 0.015 155)', padding: '18px 20px', borderRadius: 18, display: 'flex', alignItems: 'center', gap: 14, maxWidth: 280, boxShadow: '0 30px 60px -30px rgba(0,0,0,0.3)' }}>
-              <div style={{ width: 52, height: 52, borderRadius: 999, background: 'var(--lime)', color: 'oklch(0.28 0.055 155)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Instrument Serif", serif', fontSize: 22 }}>
-                {reviewStats ? displayRating.toFixed(1) : '—'}
-              </div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3, color: 'oklch(0.2 0.015 155)' }}>
-                  {reviewStats?.total ? displayTotal.toLocaleString('es-CO') + ' clientes felices' : 'Sin reseñas aún'}
-                </div>
-                <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'oklch(0.5 0.015 155)', marginTop: 2 }}>PROMEDIO GLOBAL DE RESEÑAS</div>
-              </div>
-            </div>
-          </Parallax>
+          {!isMobile && (
+            <Parallax translateY={[-30, 30]} style={{ position: 'absolute', top: 40, right: 40, zIndex: 3 }}>
+              <div key={`cat-${activeHeroIdx}`} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', animation: 'fadeInUp 0.5s forwards' }}>{activeHero.id.toUpperCase()}</div>
+            </Parallax>
+          )}
 
-          {/* FLOATING COMPOSITION SPREAD OUT */}
-          <div key={`comp-${activeHeroIdx}`} style={{ position: 'absolute', top: 0, right: '0%', bottom: 0, width: '45%', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 2 }}>
+          {!isMobile && (
+            <Parallax speed={8} style={{ position: 'absolute', bottom: 60, left: '60%', zIndex: 5 }}>
+              <div style={{ transform: 'translateX(-50%)', background: 'rgba(248, 246, 240, 0.96)', color: 'oklch(0.2 0.015 155)', padding: '18px 20px', borderRadius: 18, display: 'flex', alignItems: 'center', gap: 14, maxWidth: 280, boxShadow: '0 30px 60px -30px rgba(0,0,0,0.3)' }}>
+                <div style={{ width: 52, height: 52, borderRadius: 999, background: 'var(--lime)', color: 'oklch(0.28 0.055 155)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Instrument Serif", serif', fontSize: 22 }}>
+                  {reviewStats ? displayRating.toFixed(1) : '—'}
+                </div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3, color: 'oklch(0.2 0.015 155)' }}>
+                    {reviewStats?.total ? displayTotal.toLocaleString('es-CO') + ' clientes felices' : 'Sin reseñas aún'}
+                  </div>
+                  <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'oklch(0.5 0.015 155)', marginTop: 2 }}>PROMEDIO GLOBAL DE RESEÑAS</div>
+                </div>
+              </div>
+            </Parallax>
+          )}
+
+          {/* FLOATING COMPOSITION */}
+          <div key={`comp-${activeHeroIdx}`} style={{ position: 'absolute', top: isMobile ? 'auto' : 0, left: isMobile ? 0 : 'auto', right: isMobile ? 0 : isTablet ? '5%' : '0%', bottom: isMobile ? 0 : 0, height: isMobile ? 220 : 'auto', width: isMobile ? '100%' : isTablet ? '45%' : '45%', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 2 }}>
             {activeProducts.map((product, index) => {
-              // Asymmetric cool composition, moved further right
-              const poses = [
-                // Main central card
+              const rScale = isTablet && !isMobile ? 0.7 : 1;
+              const rDist = isTablet && !isMobile ? 0.65 : 1;
+
+              // Asymmetric cool composition for desktop/tablet
+              const basePoses = [
                 { x: 80, y: -20, rotate: -4, scale: 1.15, z: 3, delay: 0, anim: 'heroFloatA' },
-                // Top left card
                 { x: -90, y: -120, rotate: -15, scale: 0.85, z: 2, delay: 0.15, anim: 'heroFloatB' },
-                // Top right card
                 { x: 220, y: -60, rotate: 12, scale: 0.9, z: 4, delay: 0.3, anim: 'heroFloatC' },
-                // Bottom left card
                 { x: -50, y: 140, rotate: 8, scale: 0.75, z: 1, delay: 0.45, anim: 'heroFloatA' }
               ];
               
-              const pose = poses[index];
+              // Centered fan composition for mobile at the bottom
+              const mobilePoses = [
+                { x: 20, y: 30, rotate: 6, scale: 0.55, z: 4, delay: 0, anim: 'heroFloatA' },
+                { x: -70, y: 40, rotate: -14, scale: 0.48, z: 3, delay: 0.1, anim: 'heroFloatB' },
+                { x: 90, y: 45, rotate: 18, scale: 0.45, z: 2, delay: 0.2, anim: 'heroFloatC' },
+                { x: -130, y: 60, rotate: -24, scale: 0.38, z: 1, delay: 0.3, anim: 'heroFloatA' }
+              ];
+              
+              const pose = isMobile ? mobilePoses[index] : basePoses[index];
               if (!pose) return null;
 
-              const baseYOffset = 55;
+              const x = pose.x * rDist;
+              const y = pose.y * rDist;
+              const scale = pose.scale * rScale;
+
+              const baseYOffset = isMobile ? 0 : 55;
 
               const parallaxSpeeds = [18, 22, 20, 16];
               const parallaxSpeed = parallaxSpeeds[index] ?? 10;
@@ -584,7 +611,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                   style={{
                     position: 'absolute',
                     zIndex: pose.z,
-                    transform: `translate(${pose.x}px, ${pose.y + baseYOffset}px) rotate(${pose.rotate}deg) scale(${pose.scale})`,
+                    transform: `translate(${x}px, ${y + baseYOffset}px) rotate(${pose.rotate}deg) scale(${scale})`,
                     opacity: 0,
                     animation: `cardEnterSpread 0.9s cubic-bezier(0.18, 0.88, 0.24, 1) ${pose.delay}s forwards`,
                     pointerEvents: 'auto'
@@ -651,27 +678,27 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       </RevealSection>
 
       {/* CATEGORIES */}
-      <RevealSection id="categorias" style={{ padding: '80px 40px 0' }} delay={40}>
-        <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', marginBottom: 32 }}>
+      <RevealSection id="categorias" style={{ padding: secPad }} delay={40}>
+        <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'end', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: 12, marginBottom: 24 }}>
           <div>
             <div style={headKicker}>01 · Categorías</div>
-            <h2 style={headTitle}>Compra por <em style={{ color: 'var(--green)' }}>necesidad</em></h2>
+            <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>Compra por <em style={{ color: 'var(--green)' }}>necesidad</em></h2>
           </div>
           <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Ver todas las categorías" />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', gap: isMobile ? 10 : 16 }}>
           {showCategoriesSkeleton
-            ? Array.from({ length: 6 }).map((_, i) => (
+            ? Array.from({ length: isMobile ? 4 : 6 }).map((_, i) => (
                 <CategorySkeleton key={i} />
               ))
-            : categories.slice(0, 6).map((cat: Category, i) => (
+            : categories.slice(0, isMobile ? 4 : 6).map((cat: Category, i) => (
                 <StaggerItem key={cat.id} index={i}>
-                  <div onClick={() => onNav('catalog', { category: cat.id })} className="category-card" style={{ background: cat.color, borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 180, cursor: 'pointer', transition: 'transform 200ms' }}
+                  <div onClick={() => onNav('catalog', { category: cat.id })} className="category-card" style={{ background: cat.color, borderRadius: isMobile ? 16 : 20, padding: isMobile ? 18 : 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: isMobile ? 140 : 180, cursor: 'pointer', transition: 'transform 200ms' }}
                     onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-3px)')}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
-                    <div style={{ width: 38, height: 38, borderRadius: 999, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="leaf" size={18} /></div>
+                    <div style={{ width: 34, height: 34, borderRadius: 999, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="leaf" size={16} /></div>
                     <div className="cat-text">
-                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, letterSpacing: '-0.02em', lineHeight: 1.05 }}>{cat.label}</div>
+                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 18 : 24, letterSpacing: '-0.02em', lineHeight: 1.05 }}>{cat.label}</div>
                       <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.6, marginTop: 6 }}>{cat.sub}</div>
                     </div>
                   </div>
@@ -682,15 +709,15 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       </RevealSection>
 
       {/* BEST SELLERS */}
-      <RevealSection id="bestsellers" style={{ padding: '80px 40px 0' }} delay={60}>
-        <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', marginBottom: 32 }}>
+      <RevealSection id="bestsellers" style={{ padding: secPad }} delay={60}>
+        <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'end', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: 12, marginBottom: 24 }}>
           <div>
             <div style={headKicker}>02 · Más vendidos</div>
-            <h2 style={headTitle}>Lo más vendido <em style={{ color: 'var(--green)' }}>esta semana</em></h2>
+            <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>Lo más vendido <em style={{ color: 'var(--green)' }}>esta semana</em></h2>
           </div>
           <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Ver todos" />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 12 : 20 }}>
           {showProductsSkeleton
             ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
             : bestSellers.map((p, i) => (
@@ -703,20 +730,18 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       </RevealSection>
 
       {/* PROMO BAND */}
-      <RevealSection id="ofertas" style={{ padding: '80px 40px 0' }} delay={80}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
-          <div className="promo-banner" style={{ background: 'var(--lime)', borderRadius: 28, padding: 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 360, position: 'relative', overflow: 'hidden' }}>
+      <RevealSection id="ofertas" style={{ padding: secPad }} delay={80}>
+        <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '2fr 1fr', gap: 16 }}>
+          <div className="promo-banner" style={{ background: 'var(--lime)', borderRadius: isSmall ? 20 : 28, padding: isMobile ? 28 : isTablet ? 36 : 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: isMobile ? 280 : 360, position: 'relative', overflow: 'hidden' }}>
             <div style={{ maxWidth: 420 }}>
               <div style={{ ...headKicker, color: 'var(--ink-60)' }}>Promoción destacada</div>
-              <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 56, letterSpacing: '-0.03em', lineHeight: 0.98, margin: '12px 0 20px', color: 'var(--ink)' }}>25% OFF en tu<br />rutina de skincare</h3>
-              <p style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--ink-60)', marginBottom: 12, maxWidth: 380 }}>Aplica en productos de <strong>Salud de la piel</strong> e <strong>Hidratantes</strong>. Válido hasta el 30 de abril con el código <strong>PIEL25</strong>.</p>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 28, padding: '8px 12px', borderRadius: 999, background: 'rgba(8, 6, 13, 0.08)', color: 'var(--ink)', fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                Categorías: Salud de la piel · Hidratantes
-              </div>
+              <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 36 : isTablet ? 44 : 56, letterSpacing: '-0.03em', lineHeight: 0.98, margin: '12px 0 16px', color: 'var(--ink)' }}>25% OFF en tu<br />rutina de skincare</h3>
+              <p style={{ fontSize: isMobile ? 13 : 15, lineHeight: 1.5, color: 'var(--ink-60)', marginBottom: 24, maxWidth: 380 }}>Aplica en productos de <strong>Salud de la piel</strong> e <strong>Hidratantes</strong>. Válido hasta el 30 de mayo con el código <strong>PIEL25</strong>.</p>
               <AnimatedButton variant="primary" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Comprar rutina" />
             </div>
-            <div style={{ position: 'absolute', right: -15, bottom: 60, display: 'flex', gap: 16, zIndex: 10, alignItems: 'flex-end' }}>
-              {products[2] && (
+            {!isMobile && (
+              <div style={{ position: 'absolute', right: -15, bottom: 60, display: 'flex', gap: 16, zIndex: 10, alignItems: 'flex-end', transform: isTablet ? 'scale(0.8)' : 'none', transformOrigin: 'bottom right' }}>
+                {promoSkinProduct && (
                 <Parallax speed={4} style={{ pointerEvents: 'auto' }}>
                   <div 
                     className="promo-card" 
@@ -728,7 +753,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                       e.currentTarget.style.transform = 'rotate(-6deg) scale(1) translateY(0)';
                       e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
                     }}
-                    onClick={() => onOpenProduct(products[2])}
+                    onClick={() => onOpenProduct(promoSkinProduct)}
                     style={{ 
                       transform: 'rotate(-6deg)', 
                       cursor: 'pointer', 
@@ -739,11 +764,11 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                       minHeight: 140,
                     }}
                   >
-                    <ProductImage product={products[2]} size="md" />
+                    <ProductImage product={promoSkinProduct} size="md" />
                   </div>
                 </Parallax>
               )}
-              {products[6] && (
+              {promoHydrationProduct && (
                 <Parallax speed={6} style={{ pointerEvents: 'auto' }}>
                   <div 
                     className="promo-card" 
@@ -755,7 +780,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                       e.currentTarget.style.transform = 'rotate(14deg) translateY(20px) scale(1) translateY(0)';
                       e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
                     }}
-                    onClick={() => onOpenProduct(products[6])}
+                    onClick={() => onOpenProduct(promoHydrationProduct)}
                     style={{ 
                       transform: 'rotate(14deg) translateY(20px)',
                       cursor: 'pointer', 
@@ -766,16 +791,17 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                       minHeight: 140,
                     }}
                   >
-                    <ProductImage product={products[6]} size="md" />
+                    <ProductImage product={promoHydrationProduct} size="md" />
                   </div>
                 </Parallax>
               )}
-            </div>
+              </div>
+            )}
           </div>
-          <div style={{ background: 'var(--cream-2)', borderRadius: 28, padding: 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 360 }}>
+          <div style={{ background: 'var(--cream-2)', borderRadius: isSmall ? 20 : 28, padding: isMobile ? 24 : 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: isMobile ? 220 : 360 }}>
             <div>
               <div style={headKicker}>Club Healthora</div>
-              <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 36, letterSpacing: '-0.02em', lineHeight: 1, margin: '12px 0 16px' }}>Una muestra <em style={{ color: 'var(--green)' }}>gratis</em> en órdenes premium</h3>
+              <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 26 : 36, letterSpacing: '-0.02em', lineHeight: 1, margin: '12px 0 16px' }}>Una muestra <em style={{ color: 'var(--green)' }}>gratis</em> en órdenes premium</h3>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--ink-60)', marginBottom: 20 }}>Regístrate y recibe 1 muestra seleccionada en compras mayores a $200.</p>
             </div>
             <AnimatedButton variant="primary" full onClick={() => onNav('club')} text="Unirme al club" />
@@ -783,54 +809,54 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
         </div>
       </RevealSection>
 
-      {/* PARALLAX BANNER (CINEMATIC WITH GSAP) */}
-      <RevealSection style={{ padding: '80px 0 0' }} delay={90}>
-        <div ref={cinematicRef} style={{ position: 'relative', height: '100vh', minHeight: 700, overflow: 'hidden', background: 'transparent' }}>
-          
+      {/* PARALLAX BANNER (CINEMATIC WITH GSAP) — simplified on mobile */}
+      <RevealSection style={{ padding: isMobile ? '48px 0 0' : '80px 0 0' }} delay={90}>
+        <div ref={cinematicRef} style={{ position: 'relative', height: isMobile ? '60vh' : '100vh', minHeight: isMobile ? 320 : 700, overflow: 'hidden', background: 'transparent' }}>
+
           {/* Ambient Lights */}
           <div className="cine-light-1" style={{ position: 'absolute', top: '20%', left: '10%', width: 250, height: 250, background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)', filter: 'blur(20px)', transform: 'rotate(-15deg)', pointerEvents: 'none' }} />
           <div className="cine-light-2" style={{ position: 'absolute', bottom: '30%', right: '5%', width: 350, height: 350, background: 'radial-gradient(circle, rgba(228, 242, 72, 0.05) 0%, rgba(228, 242, 72, 0) 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
-          
+
           {/* Text Content */}
           <div className="cine-text" style={{ position: 'absolute', top: '5%', left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ textAlign: 'center', color: 'var(--ink)', padding: '0 40px' }}>
-              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: 24, opacity: 0.8 }}>Filosofía Healthora</div>
-              <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 'clamp(64px, 8vw, 120px)', margin: 0, lineHeight: 0.9 }}>
+            <div style={{ textAlign: 'center', color: 'var(--ink)', padding: isMobile ? '0 20px' : '0 40px' }}>
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: isMobile ? 11 : 14, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: 16, opacity: 0.8 }}>Filosofía Healthora</div>
+              <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 'clamp(32px, 8vw, 52px)' : 'clamp(64px, 8vw, 120px)', margin: 0, lineHeight: 0.9 }}>
                 Ciencia y naturaleza<br/><em style={{ color: 'var(--lime)', fontStyle: 'italic' }}>para tu bienestar</em>
               </h2>
             </div>
           </div>
           
-          {/* Left side images */}
+          {/* Left/right side images — hidden on mobile */}
+          {!isMobile && (<>
           <Parallax speed={-3} style={{ position: 'absolute', left: '22%', top: '50%', transform: 'translateY(-50%)', zIndex: 4 }}>
             <img className="cine-filo-left-1" src="/parallax/versace.avif" alt="Versace" style={{ width: 220, height: 'auto', maxHeight: 280, display: 'block', willChange: 'transform', filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.35))', background: 'transparent' }} />
           </Parallax>
           <Parallax speed={-5} style={{ position: 'absolute', left: '10%', top: '38%', transform: 'translateY(-50%)', zIndex: 3 }}>
             <img className="cine-filo-left-2" src="/parallax/valentino.avif" alt="Valentino" style={{ width: 220, height: 'auto', maxHeight: 280, display: 'block', willChange: 'transform', filter: 'drop-shadow(0 16px 24px rgba(0,0,0,0.3))', background: 'transparent' }} />
           </Parallax>
-          
-          {/* Right side images */}
           <Parallax speed={4} style={{ position: 'absolute', right: '22%', top: '48%', transform: 'translateY(-50%)', zIndex: 4 }}>
             <img className="cine-filo-right-1" src="/parallax/goodgirl-blush.avif" alt="Good Girl" style={{ width: 220, height: 'auto', maxHeight: 280, display: 'block', willChange: 'transform', filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.35))', background: 'transparent' }} />
           </Parallax>
           <Parallax speed={6} style={{ position: 'absolute', right: '10%', top: '62%', transform: 'translateY(-50%)', zIndex: 3 }}>
             <img className="cine-filo-right-2" src="/parallax/paco-rabanne.avif" alt="Paco Rabanne" style={{ width: 220, height: 'auto', maxHeight: 280, display: 'block', willChange: 'transform', filter: 'drop-shadow(0 16px 24px rgba(0,0,0,0.3))', background: 'transparent' }} />
           </Parallax>
-          
+          </>)}
+
           {/* Main Product with rotation and scale animation */}
           <div className="cine-product" style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%) scale(1.4)', filter: 'drop-shadow(0 30px 40px rgba(0,0,0,0.4))', willChange: 'transform', zIndex: 5 }}>
-            <img src="/parallax/jean-paul.png" alt="Jean Paul" style={{ width: 260, height: 'auto', maxHeight: 320, background: 'transparent' }} />
+            <img src="/parallax/jean-paul.png" alt="Jean Paul" style={{ width: isMobile ? 160 : 260, height: 'auto', maxHeight: isMobile ? 200 : 320, background: 'transparent' }} />
           </div>
         </div>
       </RevealSection>
 
       {/* BY NEED */}
-      <RevealSection style={{ padding: '80px 40px 0' }} delay={100}>
-        <div style={{ marginBottom: 32 }}>
+      <RevealSection style={{ padding: secPad }} delay={100}>
+        <div style={{ marginBottom: 24 }}>
           <div style={headKicker}>03 · Por necesidad</div>
-          <h2 style={headTitle}>¿Qué estás <em style={{ color: 'var(--green)' }}>buscando</em>?</h2>
+          <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>¿Qué estás <em style={{ color: 'var(--green)' }}>buscando</em>?</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 10 : 16 }}>
           {showProductsSkeleton
             ? Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} style={{ background: 'var(--cream-2)', borderRadius: 20, padding: '28px 24px', border: '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 200, gap: 40 }}>
@@ -887,8 +913,8 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       </RevealSection>
 
       {/* TRUST */}
-      <RevealSection style={{ padding: '80px 40px 0' }} delay={120}>
-        <div style={{ background: 'var(--cream-2)', borderRadius: 28, padding: '48px 40px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32, border: '1px solid var(--ink-06)' }}>
+      <RevealSection style={{ padding: secPad }} delay={120}>
+        <div style={{ background: 'var(--cream-2)', borderRadius: isMobile ? 20 : 28, padding: isMobile ? '28px 20px' : isTablet ? '32px 28px' : '48px 40px', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : isTablet ? '1fr 1fr' : 'repeat(4, 1fr)', gap: isMobile ? 20 : 32, border: '1px solid var(--ink-06)' }}>
           {[{ icon: 'shield', title: 'Pagos seguros', sub: 'Stripe · PCI DSS · 3D Secure' }, { icon: 'check', title: 'Productos verificados', sub: 'Farmacéuticos colegiados' }, { icon: 'truck', title: 'Envíos rápidos', sub: '24–48h en toda la región' }, { icon: 'headset', title: 'Atención al cliente', sub: 'Lun a sáb · 8am–8pm' }].map((t, i) => (
             <StaggerItem key={t.title} index={i}>
               <div style={{ display: 'flex', gap: 14 }}>
@@ -904,15 +930,15 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       </RevealSection>
 
       {/* FEATURED */}
-      <RevealSection id="nuevos" style={{ padding: '80px 40px 0' }} delay={130}>
-        <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', marginBottom: 32 }}>
+      <RevealSection id="nuevos" style={{ padding: secPad }} delay={130}>
+        <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'end', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: 12, marginBottom: 24 }}>
           <div>
             <div style={headKicker}>04 · Nuevos ingresos</div>
-            <h2 style={headTitle}>Recién <em style={{ color: 'var(--green)' }}>llegados</em></h2>
+            <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>Recién <em style={{ color: 'var(--green)' }}>llegados</em></h2>
           </div>
           <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Ver catálogo completo" />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 12 : 20 }}>
           {showProductsSkeleton
             ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
             : featured.map((p, i) => (
@@ -925,10 +951,10 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       </RevealSection>
 
       {/* BRANDS */}
-      <RevealSection id="marcas" style={{ padding: '80px 0 0' }} delay={150}>
-        <div style={{ padding: '0 40px', marginBottom: 40 }}>
+      <RevealSection id="marcas" style={{ padding: isMobile ? '48px 0 0' : isTablet ? '64px 0 0' : '80px 0 0' }} delay={150}>
+        <div style={{ padding: secPadNoH, marginBottom: 32 }}>
           <div style={headKicker}>05 · Marcas</div>
-          <h2 style={headTitle}>Las marcas en las que <em style={{ color: 'var(--green)' }}>confías</em></h2>
+          <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>Las marcas en las que <em style={{ color: 'var(--green)' }}>confías</em></h2>
         </div>
         <BrandsMarquee onNav={onNav} />
       </RevealSection>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { useUser } from '@clerk/clerk-react';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import type { CartItem, OrderAddress, SavedAddress } from '../types';
 import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
@@ -38,15 +39,45 @@ const stepCard: CSSProperties = { background: 'var(--cream-2)', borderRadius: 20
 const stepHeader: CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
 const stepNum: CSSProperties = { fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--ink-60)', letterSpacing: '0.12em', marginBottom: 4 };
 const stepTitle: CSSProperties = { fontFamily: '"Instrument Serif", serif', fontSize: 28, letterSpacing: '-0.02em', margin: 0, color: 'var(--ink)', fontWeight: 400 };
-const authBtn: CSSProperties = { padding: '14px 18px', borderRadius: 12, border: '1px solid var(--ink-20)', background: 'var(--cream)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', width: '100%' };
-const authLogoWrap: CSSProperties = { width: 28, height: 28, borderRadius: 8, background: 'white', border: '1px solid var(--ink-06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 6px 14px -12px rgba(0,0,0,0.24)' };
+const authBtn: CSSProperties = { padding: '14px 18px', borderRadius: 12, border: '1px solid var(--ink-20)', background: 'var(--cream)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', width: '100%', transition: 'all 0.2s ease' };
+const authLogoWrap: CSSProperties = { width: 28, height: 28, borderRadius: 8, background: 'white', border: '1px solid var(--ink-06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 6px 14px -12px rgba(0,0,0,0.24)', transition: 'transform 0.2s ease' };
 const authLogoImg: CSSProperties = { width: 18, height: 18, display: 'block' };
+
+function AuthButton({ onClick, icon, text }: { onClick: () => void; icon: ReactNode; text: string }) {
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.borderColor = 'var(--green)';
+        e.currentTarget.style.boxShadow = '0 8px 24px -12px rgba(0,0,0,0.15)';
+        const iconWrap = e.currentTarget.querySelector('span');
+        if (iconWrap) iconWrap.style.transform = 'scale(1.1) rotate(-5deg)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.borderColor = 'var(--ink-20)';
+        e.currentTarget.style.boxShadow = 'none';
+        const iconWrap = e.currentTarget.querySelector('span');
+        if (iconWrap) iconWrap.style.transform = 'scale(1) rotate(0deg)';
+      }}
+      style={authBtn}
+    >
+      <span style={authLogoWrap}>{icon}</span>
+      {text}
+    </button>
+  );
+}
 
 function roundMoney(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
 export function Checkout({ items, onBack }: CheckoutProps) {
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
+  const isTablet = bp === 'tablet';
+  const isSmall = isMobile || isTablet;
   const { isSignedIn, user } = useUser();
   const { getToken } = useAuth();
   const [step, setStep] = useState(isSignedIn ? 2 : 1);
@@ -200,16 +231,16 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   };
 
   return (
-    <main style={{ padding: '24px 40px 0' }}>
+    <main style={{ padding: isMobile ? '20px 16px 0' : isTablet ? '24px 24px 0' : '24px 40px 0' }}>
       <button onClick={onBack} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--ink-60)', fontSize: 13, marginBottom: 24, fontFamily: '"Geist", sans-serif' }}>
         <Icon name="arrow-left" size={14} /> Volver a la tienda
       </button>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 48, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1.3fr 1fr', gap: isSmall ? 24 : 48, alignItems: 'start' }}>
         <div>
           <div style={{ marginBottom: 32 }}>
             <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 10 }}>Checkout · Paso {step} de 3</div>
-            <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 60, letterSpacing: '-0.035em', lineHeight: 1, margin: 0, color: 'var(--ink)', fontWeight: 400 }}>Finaliza tu <em style={{ color: 'var(--green)' }}>compra</em></h1>
+            <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 40 : isTablet ? 50 : 60, letterSpacing: '-0.035em', lineHeight: 1, margin: 0, color: 'var(--ink)', fontWeight: 400 }}>Finaliza tu <em style={{ color: 'var(--green)' }}>compra</em></h1>
           </div>
 
           <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
@@ -227,34 +258,35 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             </div>
             {!isSignedIn ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 20 }}>
-                <button style={authBtn} onClick={() => setShowSignInModal(true)}>
-                  <span style={authLogoWrap}>
-                    <img src="/brands/google.svg" alt="Google" style={authLogoImg} />
-                  </span>
-                  Continuar con Google
-                </button>
-                <button style={authBtn} onClick={() => setShowSignInModal(true)}>
-                  <span style={authLogoWrap}>
-                    <img src="/brands/microsoft.svg" alt="Microsoft" style={authLogoImg} />
-                  </span>
-                  Continuar con Microsoft
-                </button>
-                <button style={authBtn} onClick={() => setShowSignInModal(true)}>
-                  <span style={authLogoWrap}>
-                    <Icon name="lock" size={16} />
-                  </span>
-                  Recibir código OTP por email
-                </button>
+                <AuthButton 
+                  onClick={() => setShowSignInModal(true)} 
+                  icon={<img src="/brands/google.svg" alt="Google" style={authLogoImg} />} 
+                  text="Continuar con Google" 
+                />
+                <AuthButton 
+                  onClick={() => setShowSignInModal(true)} 
+                  icon={<img src="/brands/microsoft.svg" alt="Microsoft" style={authLogoImg} />} 
+                  text="Continuar con Microsoft" 
+                />
+                <AuthButton 
+                  onClick={() => setShowSignInModal(true)} 
+                  icon={<Icon name="lock" size={16} />} 
+                  text="Recibir código OTP por email" 
+                />
                 <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', marginTop: 6, textAlign: 'center' }}>AUTENTICACIÓN PROTEGIDA POR CLERK</div>
               </div>
             ) : (
-              <div style={{ marginTop: 14, padding: 14, background: 'var(--cream-2)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontFamily: '"Instrument Serif", serif' }}>
-                  {user?.firstName?.[0] || 'U'}
-                </div>
+              <div style={{ marginTop: 16, padding: 16, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 14 }}>
+                {user?.imageUrl ? (
+                  <img src={user.imageUrl} alt={user?.fullName || 'Usuario'} style={{ width: 40, height: 40, borderRadius: 999, objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: 40, height: 40, borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontFamily: '"Instrument Serif", serif' }}>
+                    {user?.firstName?.[0] || user?.primaryEmailAddress?.emailAddress?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                )}
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 500 }}>{user?.primaryEmailAddress?.emailAddress}</div>
-                  <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>SESIÓN ACTIVA</div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{user?.fullName || user?.primaryEmailAddress?.emailAddress}</div>
+                  <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', marginTop: 2 }}>SESIÓN ACTIVA</div>
                 </div>
               </div>
             )}
@@ -296,7 +328,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                 ))}
               </div>
             )}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginTop: 20 }}>
               <FormInput label="Nombre completo" value={address.name} onChange={(v) => { setAddress({ ...address, name: v }); setAddressError(''); }} placeholder="María Gómez" required />
               <FormInput label="Teléfono" value={address.phone} onChange={(v) => { setAddress({ ...address, phone: v }); setAddressError(''); }} placeholder="+1 555 000 000" required />
               <FormInput label="Dirección" value={address.address} onChange={(v) => { setAddress({ ...address, address: v }); setAddressError(''); }} placeholder="Calle, número, apto" full required />
@@ -327,7 +359,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
         </div>
 
         {/* Order Summary */}
-        <aside style={{ position: 'sticky', top: 100, background: 'var(--cream-2)', borderRadius: 24, padding: 28, border: '1px solid var(--ink-06)' }}>
+        <aside style={{ position: isSmall ? 'static' : 'sticky', top: 100, background: 'var(--cream-2)', borderRadius: 24, padding: 28, border: '1px solid var(--ink-06)', marginBottom: isSmall ? 40 : 0 }}>
           <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 14 }}>Resumen de orden</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 28, marginBottom: 18 }}>
             {items.map((it) => (
@@ -379,11 +411,14 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                 if (code === 'BIENVENIDA' && hasPaidOrders) return false;
                 if (code === 'PIEL25' && !canApplyPromotion(code, items)) return false;
                 return true;
-              }).map((code) => (
-                <button key={code} type="button" onClick={() => handleApplyPromo(code)} disabled={processing} style={{ border: '1px solid var(--ink-12)', background: appliedPromo?.code === code ? 'var(--lime)' : 'var(--cream)', color: 'var(--ink)', borderRadius: 999, padding: '6px 9px', cursor: processing ? 'not-allowed' : 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>
-                  {code}
-                </button>
-              ))}
+              }).map((code) => {
+                const isActive = appliedPromo?.code === code;
+                return (
+                  <button key={code} type="button" onClick={() => handleApplyPromo(code)} disabled={processing} style={{ border: isActive ? '1px solid var(--lime)' : '1px solid var(--ink-12)', background: isActive ? 'var(--lime)' : 'var(--cream)', color: isActive ? 'oklch(0.2 0.03 155)' : 'var(--ink)', borderRadius: 999, padding: '6px 9px', cursor: processing ? 'not-allowed' : 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>
+                    {code}
+                  </button>
+                );
+              })}
             </div>
             {appliedPromo && (
               <div aria-live="polite" style={{ marginTop: 10, padding: 10, borderRadius: 12, background: 'color-mix(in oklab, var(--green) 9%, white)', border: '1px solid color-mix(in oklab, var(--green) 18%, white)', color: 'var(--green)', fontSize: 12, fontFamily: '"Geist", sans-serif', lineHeight: 1.4 }}>

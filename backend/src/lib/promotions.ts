@@ -19,11 +19,13 @@ const PROMOTIONS = {
     label: '15% nuevos clientes',
     percent: 0.15,
     eligibleCategories: null,
+    expiresAt: null,
   },
   PIEL25: {
     label: '25% rutina skincare',
     percent: 0.25,
     eligibleCategories: ['Salud de la piel', 'Hidratantes'],
+    expiresAt: '2026-05-30T23:59:59Z',
   },
 } as const;
 
@@ -39,6 +41,10 @@ export function getPromotion(code: string, items: PromotionItem[]): PromotionRes
   const normalizedCode = normalizePromotionCode(code);
   const promotion = PROMOTIONS[normalizedCode as keyof typeof PROMOTIONS];
   if (!promotion) return null;
+
+  if (promotion.expiresAt && new Date() > new Date(promotion.expiresAt)) {
+    return null;
+  }
 
   const eligibleSubtotal = items.reduce((sum, item) => {
     const eligibleCategories = promotion.eligibleCategories as readonly string[] | null;

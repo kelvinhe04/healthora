@@ -4,6 +4,7 @@ import { useCartStore } from '../store/cartStore';
 import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 interface CartDrawerProps {
   open: boolean;
@@ -25,6 +26,9 @@ const qtyBtn = { width: 28, height: 28, borderRadius: 999, border: 'none', backg
 export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
   const { items, update, remove, clear } = useCartStore();
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
+  const drawerPad = isMobile ? '16px' : '28px';
   const subtotal = items.reduce((s, it) => s + it.product.price * it.qty, 0);
   const shipping = subtotal > 50 || subtotal === 0 ? 0 : 6.90;
   const tax = subtotal * 0.07;
@@ -42,8 +46,8 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none', transition: 'opacity 200ms', zIndex: 100 }} />
-      <aside style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 460, background: 'var(--cream)', zIndex: 101, transform: open ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 280ms cubic-bezier(.2,.8,.2,1)', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '24px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--ink-06)' }}>
+      <aside style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: `min(460px, 100vw)`, background: 'var(--cream)', zIndex: 101, transform: open ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 280ms cubic-bezier(.2,.8,.2,1)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: `24px ${drawerPad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--ink-06)' }}>
           <div>
             <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Tu carrito</div>
             <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'var(--ink-60)', letterSpacing: '0.08em' }}>{items.length} {items.length === 1 ? 'ARTÍCULO' : 'ARTÍCULOS'}</div>
@@ -60,7 +64,7 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
           </div>
         ) : (
           <>
-            <div style={{ flex: 1, overflow: 'auto', padding: '8px 28px' }}>
+            <div style={{ flex: 1, overflow: 'auto', padding: `8px ${drawerPad}` }}>
               <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 0 6px' }}>
                 <button
                   onClick={() => setConfirmClearOpen(true)}
@@ -105,14 +109,17 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
                 </div>
               ))}
             </div>
-            <div style={{ padding: '20px 28px 24px', borderTop: '1px solid var(--ink-06)', background: 'var(--cream-2)' }}>
-              <Row k="Subtotal" v={`$${subtotal.toFixed(2)}`} />
-              <Row k="Envío" v={shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`} />
-              <Row k="Impuestos (7%)" v={`$${tax.toFixed(2)}`} />
-              <div style={{ height: 1, background: 'var(--ink-06)', margin: '12px 0' }} />
-              <Row k={<strong style={{ fontSize: 15 }}>Total</strong>} v={<strong style={{ fontSize: 22, fontFamily: '"Instrument Serif", serif' }}>${total.toFixed(2)}</strong>} />
-              <AnimatedButton variant="primary" size="lg" full onClick={onCheckout} style={{ marginTop: 16 }} icon={<Icon name="arrow-right" size={14} />} text="Ir a checkout" />
-              <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', marginTop: 12, letterSpacing: '0.06em' }}>
+            <div style={{ padding: `10px ${drawerPad} 14px`, borderTop: '1px solid var(--ink-06)', background: 'var(--cream-2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}><span>Envío</span><span>{shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}><span>Impuestos (7%)</span><span>${tax.toFixed(2)}</span></div>
+              <div style={{ height: 1, background: 'var(--ink-06)', margin: '8px 0' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 0', marginBottom: 10 }}>
+                <strong style={{ fontSize: 14, fontFamily: '"Geist", sans-serif' }}>Total</strong>
+                <strong style={{ fontSize: 20, fontFamily: '"Instrument Serif", serif' }}>${total.toFixed(2)}</strong>
+              </div>
+              <AnimatedButton variant="primary" size="lg" full onClick={onCheckout} icon={<Icon name="arrow-right" size={14} />} text="Ir a checkout" />
+              <div style={{ textAlign: 'center', fontSize: 10, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', marginTop: 8, letterSpacing: '0.06em' }}>
                 <Icon name="lock" size={10} /> PAGO SEGURO CON STRIPE
               </div>
             </div>

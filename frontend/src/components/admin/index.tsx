@@ -504,6 +504,7 @@ export function KpiCard({
           gap: 16,
           minHeight: 150,
           justifyContent: "space-between",
+          minWidth: 0,
         }}
       >
         <Skeleton height={12} width="65%" borderRadius={4} />
@@ -534,6 +535,7 @@ export function KpiCard({
           gap: 16,
           minHeight: 150,
           justifyContent: "space-between",
+          minWidth: 0,
         }}
       >
         <div
@@ -628,6 +630,7 @@ export function KpiCard({
         gap: 16,
         minHeight: 150,
         justifyContent: "space-between",
+        minWidth: 0,
       }}
     >
       <div
@@ -820,6 +823,7 @@ export function Card({
         border: "1px solid var(--ink-06)",
         borderRadius: 20,
         padding: pad,
+        minWidth: 0,
       }}
     >
       {/* Title area — skeleton or real */}

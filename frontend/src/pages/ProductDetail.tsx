@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import type { Product } from '../types';
 import { ProductImage } from '../components/shared/ProductImage';
 import { ProductCard } from '../components/shared/ProductCard';
@@ -21,6 +22,10 @@ interface ProductDetailProps {
 const qtyBtn: CSSProperties = { width: 36, height: 36, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' };
 
 export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack }: ProductDetailProps) {
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
+  const isTablet = bp === 'tablet';
+  const isSmall = isMobile || isTablet;
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState('benefits');
   const [added, setAdded] = useState(false);
@@ -98,7 +103,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   };
 
   return (
-    <main style={{ padding: '24px 40px 0' }}>
+    <main style={{ padding: isMobile ? '20px 16px 0' : isTablet ? '24px 24px 0' : '24px 40px 0' }}>
       {isZoomed && (
         <div 
           onClick={closeZoom} 
@@ -131,7 +136,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
         <span onClick={onBack} style={{ cursor: 'pointer' }}>TIENDA</span> · {product.category.toUpperCase()} · <span style={{ color: 'var(--ink)' }}>{product.name.toUpperCase()}</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 48, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1.1fr 1fr', gap: isSmall ? 24 : 48, alignItems: 'start' }}>
         <div>
           <div 
             onClick={() => setIsZoomed(true)}
@@ -174,7 +179,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
 
         <div style={{ paddingTop: 8 }}>
           <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 12 }}>{product.brand} · {product.category}</div>
-          <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 64, lineHeight: 0.98, letterSpacing: '-0.035em', margin: '0 0 20px', color: 'var(--ink)', fontWeight: 400 }}>{product.name}</h1>
+          <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 42 : isTablet ? 52 : 64, lineHeight: 0.98, letterSpacing: '-0.035em', margin: '0 0 20px', color: 'var(--ink)', fontWeight: 400 }}>{product.name}</h1>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
             {liveCount > 0 ? (
@@ -288,7 +293,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
             <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 10 }}>También te puede gustar</div>
             <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 44, letterSpacing: '-0.03em', margin: 0, color: 'var(--ink)', fontWeight: 400 }}>Productos <em style={{ color: 'var(--green)' }}>relacionados</em></h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isSmall ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 20 }}>
             {related.map((p) => <ProductCard key={p.id} product={p} onClick={onOpenProduct} onAdd={(pr) => onAdd(pr, 1)} />)}
           </div>
         </section>

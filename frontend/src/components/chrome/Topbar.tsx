@@ -1,3 +1,5 @@
+import { useThemeStore } from '../../store/themeStore';
+
 const msgs = [
   'Envío gratis en compras mayores a $50',
   'Muestra gratis en órdenes mayores a $200',
@@ -9,6 +11,8 @@ const msgs = [
 const marqueeMsgs = Array.from({ length: 3 }, () => msgs).flat();
 
 export function Topbar() {
+  const theme = useThemeStore((s) => s.theme);
+  const isDark = theme === 'dark';
   return (
     <div style={{ background: 'var(--ink)', color: 'var(--cream)', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 0', overflow: 'hidden', position: 'relative' }}>
       <style>{`
@@ -22,7 +26,7 @@ export function Topbar() {
           <div key={group} className="marquee-group" aria-hidden={group === 1}>
             {marqueeMsgs.map((m, i) => (
               <span key={`${group}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 24, padding: '0 40px', whiteSpace: 'nowrap' }}>
-                <span style={{ width: 4, height: 4, background: 'var(--cream)', borderRadius: 999, flexShrink: 0, opacity: 0.5 }} />
+                <span style={{ width: 4, height: 4, background: isDark ? 'var(--green)' : '#CCFF00', borderRadius: 999, flexShrink: 0, boxShadow: isDark ? 'none' : '0 0 8px rgba(204, 255, 0, 0.6)' }} />
                 {m}
               </span>
             ))}

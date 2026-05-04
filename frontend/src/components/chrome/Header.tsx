@@ -7,6 +7,7 @@ import { useAuth, useUser, useClerk } from '@clerk/clerk-react';
 import { api } from '../../lib/api';
 import type { SavedAddress } from '../../types';
 import { SignInModal } from './SignInModal';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'orders';
 
@@ -188,6 +189,15 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   const { isSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const { getToken } = useAuth();
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
+  const [headerWide, setHeaderWide] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 1280);
+  useEffect(() => {
+    const update = () => setHeaderWide(window.innerWidth >= 1280);
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [signInModalOpen, setSignInModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -348,9 +358,26 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const navLinks = [
+    { label: 'Categorías', anchor: 'categorias' },
+    { label: 'Más vendidos', anchor: 'bestsellers' },
+    { label: 'Ofertas', anchor: 'ofertas' },
+    { label: 'Recién llegados', anchor: 'nuevos' },
+    { label: 'Marcas', anchor: 'marcas' },
+  ];
+
+  const scrollToSection = (anchor: string) => {
+    onNav('landing', undefined, true);
+    setMobileMenuOpen(false);
+    setTimeout(() => {
+      const el = document.getElementById(anchor);
+      if (el) window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
+    }, 100);
+  };
+
   return (
-    <header style={{ background: 'var(--cream)', borderBottom: '1px solid var(--ink-06)', padding: '18px 40px', display: 'flex', alignItems: 'center', gap: 40, position: 'sticky', top: 0, zIndex: 50 }}>
-      <div onClick={() => onNav('landing')} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+    <header style={{ background: 'var(--cream)', borderBottom: '1px solid var(--ink-06)', padding: isMobile ? '14px 16px' : headerWide ? '18px 40px' : '16px 24px', display: 'flex', alignItems: 'center', gap: isMobile ? 12 : headerWide ? 24 : 14, position: 'sticky', top: 0, zIndex: 50 }}>
+      <div onClick={() => onNav('landing')} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flexShrink: 0 }}>
         <div style={{ width: 28, height: 28, borderRadius: 999, background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--lime)', fontFamily: '"Instrument Serif", serif', fontSize: 18 }}>h</div>
         <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Healthora</span>
       </div>
@@ -376,155 +403,71 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
           transform-origin: right;
           transition: transform 240ms ease;
         }
-        .nav-link:hover {
-          color: var(--green);
+        .nav-link:hover { color: var(--green); }
+        .nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .mobile-nav-link {
+          display: block;
+          padding: 14px 0;
+          font-size: 22px;
+          font-family: "Instrument Serif", serif;
+          color: var(--ink);
+          cursor: pointer;
+          border-bottom: 1px solid var(--ink-06);
+          letter-spacing: -0.02em;
         }
-        .nav-link:hover::after {
-          transform: scaleX(1);
-          transform-origin: left;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
+        .mobile-nav-link:last-child { border-bottom: none; }
       `}</style>
 
-      <nav style={{ display: 'flex', gap: 28, fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)' }}>
-        <a className="nav-link" onClick={() => {
-            onNav('landing', undefined, true);
-            setTimeout(() => {
-              const el = document.getElementById('categorias');
-              if (el) {
-                const rect = el.getBoundingClientRect();
-                const offset = 80;
-                window.scrollTo({ top: window.scrollY + rect.top - offset, behavior: 'smooth' });
-              }
-            }, 100);
-          }}>Categorías</a>
+      {/* Desktop nav — only at ≥1280px */}
+      {headerWide && (
+        <nav style={{ display: 'flex', gap: 22, fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)' }}>
+          {navLinks.map((link) => (
+            <a key={link.anchor} className="nav-link" onClick={() => scrollToSection(link.anchor)}>{link.label}</a>
+          ))}
+        </nav>
+      )}
 
-        <a className="nav-link" onClick={() => {
-            onNav('landing', undefined, true);
-            setTimeout(() => {
-              const el = document.getElementById('bestsellers');
-              if (el) {
-                const rect = el.getBoundingClientRect();
-                const offset = 80;
-                window.scrollTo({ top: window.scrollY + rect.top - offset, behavior: 'smooth' });
-              }
-            }, 100);
-          }}>Más vendidos</a>
-
-        <a className="nav-link" onClick={() => {
-            onNav('landing', undefined, true);
-            setTimeout(() => {
-              const el = document.getElementById('ofertas');
-              if (el) {
-                const rect = el.getBoundingClientRect();
-                const offset = 80;
-                window.scrollTo({ top: window.scrollY + rect.top - offset, behavior: 'smooth' });
-              }
-            }, 100);
-          }}>Ofertas</a>
-
-        <a className="nav-link" onClick={() => {
-            onNav('landing', undefined, true);
-            setTimeout(() => {
-              const el = document.getElementById('nuevos');
-              if (el) {
-                const rect = el.getBoundingClientRect();
-                const offset = 80;
-                window.scrollTo({ top: window.scrollY + rect.top - offset, behavior: 'smooth' });
-              }
-            }, 100);
-          }}>Recién llegados</a>
-
-        <a className="nav-link" onClick={() => {
-            onNav('landing', undefined, true);
-            setTimeout(() => {
-              const el = document.getElementById('marcas');
-              if (el) {
-                const rect = el.getBoundingClientRect();
-                const offset = 80;
-                window.scrollTo({ top: window.scrollY + rect.top - offset, behavior: 'smooth' });
-              }
-            }, 100);
-          }}>Marcas</a>
-      </nav>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          submitSearch();
-        }}
-        style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10, background: 'var(--ink-04)', padding: '8px 10px 8px 14px', borderRadius: 999, minWidth: 320, color: 'var(--ink-60)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: '1px solid transparent' }}
-      >
-        <Icon name="search" size={16} />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar vitaminas, skincare, marcas..."
-          aria-label="Buscar productos"
-          style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', color: 'var(--ink)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}
-        />
-        {search && (
-          <button
-            type="button"
-            onClick={clearSearch}
-            style={{ ...iconBtn, width: 28, height: 28, borderRadius: 999, background: 'var(--ink-06)', color: 'var(--ink-60)', justifyContent: 'center' }}
-            aria-label="Limpiar búsqueda"
-          >
-            <Icon name="x" size={14} />
-          </button>
-        )}
-        <button
-          type="submit"
-          aria-label="Buscar"
-          onMouseEnter={() => setSearchBtnHovered(true)}
-          onMouseLeave={() => setSearchBtnHovered(false)}
-          style={{
-            ...iconBtn,
-            padding: '8px 12px',
-            borderRadius: 999,
-            background: searchBtnHovered ? 'color-mix(in srgb, var(--green) 88%, black)' : 'var(--green)',
-            color: 'var(--lime)',
-            fontSize: 12,
-            fontFamily: '"JetBrains Mono", monospace',
-            transform: searchBtnHovered ? 'translateY(-1px)' : 'translateY(0)',
-            transition: 'background 180ms ease, transform 180ms ease',
-            overflow: 'hidden',
-            position: 'relative',
-          }}
+      {/* Search — hidden on mobile only */}
+      {!isMobile && (
+        <form
+          onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
+          style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10, background: 'var(--ink-04)', padding: '8px 10px 8px 14px', borderRadius: 999, minWidth: 0, flex: headerWide ? '0 1 280px' : '1 1 160px', color: 'var(--ink-60)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: '1px solid transparent' }}
         >
-          <span style={{ position: 'relative', display: 'inline-flex', overflow: 'hidden' }}>
-            <span style={{
-              display: 'inline-flex',
-              transform: searchBtnHovered ? 'translateY(-100%)' : 'translateY(0)',
-              transition: 'transform 150ms ease-in-out',
-            }}>
-              <Icon name="arrow-right" size={14} />
+          <Icon name="search" size={16} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={headerWide ? 'Buscar vitaminas, skincare, marcas...' : 'Buscar productos...'}
+            aria-label="Buscar productos"
+            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', color: 'var(--ink)', fontSize: 13, fontFamily: '"Geist", sans-serif', minWidth: 0 }}
+          />
+          {search && (
+            <button type="button" onClick={clearSearch} style={{ ...iconBtn, width: 28, height: 28, borderRadius: 999, background: 'var(--ink-06)', color: 'var(--ink-60)', justifyContent: 'center' }} aria-label="Limpiar búsqueda">
+              <Icon name="x" size={14} />
+            </button>
+          )}
+          <button
+            type="submit"
+            aria-label="Buscar"
+            onMouseEnter={() => setSearchBtnHovered(true)}
+            onMouseLeave={() => setSearchBtnHovered(false)}
+            style={{ ...iconBtn, padding: '8px 12px', borderRadius: 999, background: searchBtnHovered ? 'color-mix(in srgb, var(--green) 88%, black)' : 'var(--green)', color: 'var(--lime)', fontSize: 12, fontFamily: '"JetBrains Mono", monospace', transform: searchBtnHovered ? 'translateY(-1px)' : 'translateY(0)', transition: 'background 180ms ease, transform 180ms ease', overflow: 'hidden', position: 'relative' }}
+          >
+            <span style={{ position: 'relative', display: 'inline-flex', overflow: 'hidden' }}>
+              <span style={{ display: 'inline-flex', transform: searchBtnHovered ? 'translateY(-100%)' : 'translateY(0)', transition: 'transform 150ms ease-in-out' }}><Icon name="arrow-right" size={14} /></span>
+              <span style={{ position: 'absolute', left: 0, top: 0, display: 'inline-flex', transform: searchBtnHovered ? 'translateY(0)' : 'translateY(100%)', transition: 'transform 150ms ease-in-out' }}><Icon name="arrow-right" size={14} /></span>
             </span>
-            <span style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              display: 'inline-flex',
-              transform: searchBtnHovered ? 'translateY(0)' : 'translateY(100%)',
-              transition: 'transform 150ms ease-in-out',
-            }}>
-              <Icon name="arrow-right" size={14} />
-            </span>
-          </span>
-        </button>
-      </form>
+          </button>
+        </form>
+      )}
 
-      <div style={{ display: 'flex', gap: 18, color: 'var(--ink)', alignItems: 'center' }}>
+      {/* Right icons */}
+      <div style={{ display: 'flex', gap: isMobile ? 10 : 18, color: 'var(--ink)', alignItems: 'center', marginLeft: isMobile ? 'auto' : undefined }}>
         <div ref={userMenuRef} style={{ position: 'relative' }}>
           <button style={iconBtn} aria-label="Cuenta" onClick={() => {
-            if (isSignedIn) {
-              setUserMenuOpen(!userMenuOpen);
-            } else {
-              setSignInModalOpen(true);
-            }
+            if (isSignedIn) setUserMenuOpen(!userMenuOpen);
+            else setSignInModalOpen(true);
           }}>
             {isSignedIn && user?.imageUrl ? (
               <img src={user.imageUrl} alt="Perfil" style={{ width: 24, height: 24, borderRadius: 999, objectFit: 'cover' }} />
@@ -533,7 +476,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             )}
           </button>
           {isSignedIn && userMenuOpen && (
-            <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: 8, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 12, padding: 8, minWidth: 220, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100 }}>
+            <div style={{ position: 'absolute', top: '100%', right: 0, left: 'auto', transform: 'none', marginTop: 8, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 12, padding: 8, minWidth: 220, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100 }}>
               <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--ink-06)', marginBottom: 4 }}>
                 <div style={{ fontSize: 13, fontWeight: 500 }}>{user?.firstName} {user?.lastName}</div>
                 <div style={{ fontSize: 11, color: 'var(--ink-60)' }}>{user?.primaryEmailAddress?.emailAddress}</div>
@@ -555,24 +498,57 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             </div>
           )}
         </div>
-        {/* Dark mode toggle */}
-        <button
-          onClick={toggleTheme}
-          style={{ ...iconBtn, width: 34, height: 34, borderRadius: 999, border: '1px solid var(--ink-06)', justifyContent: 'center', color: 'var(--ink)', transition: 'background 200ms, border-color 200ms' }}
-          aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
-          title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-        >
+
+        <button onClick={toggleTheme} style={{ ...iconBtn, width: 34, height: 34, borderRadius: 999, border: '1px solid var(--ink-06)', justifyContent: 'center', color: 'var(--ink)', transition: 'background 200ms, border-color 200ms' }} aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}>
           <span style={{ display: 'flex', transition: 'transform 400ms cubic-bezier(.34,1.56,.64,1)', transform: theme === 'dark' ? 'rotate(180deg)' : 'rotate(0deg)' }}>
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
           </span>
         </button>
+
         <button style={{ ...iconBtn, position: 'relative' }} onClick={onOpenCart} aria-label="Carrito">
           <Icon name="bag" />
           {cartCount > 0 && (
             <span style={{ position: 'absolute', top: -4, right: -6, background: 'var(--green)', color: 'var(--lime)', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', width: 18, height: 18, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>{cartCount}</span>
           )}
         </button>
+
+        {/* Hamburger — shown below 1280px */}
+        {!headerWide && (
+          <button style={{ ...iconBtn, width: 34, height: 34, borderRadius: 999, border: '1px solid var(--ink-06)', justifyContent: 'center' }} onClick={() => setMobileMenuOpen(true)} aria-label="Menú">
+            <Icon name="menu" size={18} />
+          </button>
+        )}
       </div>
+
+      {/* Nav drawer — shown below 1280px */}
+      {!headerWide && mobileMenuOpen && (
+        <div onClick={() => setMobileMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: 0, right: 0, width: '80%', maxWidth: 320, height: '100%', background: 'var(--cream)', padding: '24px 24px 40px', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 999, background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--lime)', fontFamily: '"Instrument Serif", serif', fontSize: 18 }}>h</div>
+                <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 22, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Healthora</span>
+              </div>
+              <button style={{ ...iconBtn, width: 34, height: 34, justifyContent: 'center', borderRadius: 999, border: '1px solid var(--ink-06)' }} onClick={() => setMobileMenuOpen(false)} aria-label="Cerrar menú">
+                <Icon name="x" size={18} />
+              </button>
+            </div>
+
+            {/* Mobile search */}
+            <form onSubmit={(e) => { e.preventDefault(); submitSearch(); setMobileMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--ink-04)', padding: '10px 14px', borderRadius: 999, marginBottom: 28, border: '1px solid transparent' }}>
+              <Icon name="search" size={15} />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar productos..." aria-label="Buscar" style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', color: 'var(--ink)', fontSize: 14, fontFamily: '"Geist", sans-serif' }} />
+              <button type="submit" style={{ ...iconBtn, padding: '6px 10px', borderRadius: 999, background: 'var(--green)', color: 'var(--lime)' }}><Icon name="arrow-right" size={13} /></button>
+            </form>
+
+            <nav>
+              {navLinks.map((link) => (
+                <a key={link.anchor} className="mobile-nav-link" onClick={() => scrollToSection(link.anchor)}>{link.label}</a>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
       <SignInModal open={signInModalOpen} onClose={() => setSignInModalOpen(false)} />
       <AddressManagerModal
         open={addressModalOpen}

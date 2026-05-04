@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useBreakpoint } from "../../hooks/useBreakpoint";
 import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -1212,11 +1213,12 @@ function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
           display: "grid",
           placeItems: "center",
           background: "var(--cream-2)",
-          padding: 40,
+          padding: "clamp(16px, 4vw, 40px)",
         }}
       >
         <div
           style={{
+            width: "100%",
             maxWidth: 520,
             background: "var(--cream)",
             border: "1px solid var(--ink-06)",
@@ -1259,7 +1261,7 @@ function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
             Debes iniciar sesión con una cuenta autorizada como admin para
             continuar.
           </p>
-          <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
+          <div style={{ display: "flex", gap: 10, marginTop: 24, flexWrap: "wrap" }}>
             <AnimatedButton variant="primary" onClick={() => openSignIn({ redirectUrl: `${window.location.origin}?view=admin` })} text="Iniciar sesión como admin" />
             <AnimatedButton variant="outline" onClick={onGoToStore} text="Volver a la tienda" />
           </div>
@@ -1291,11 +1293,12 @@ function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
           display: "grid",
           placeItems: "center",
           background: "var(--cream-2)",
-          padding: 40,
+          padding: "clamp(16px, 4vw, 40px)",
         }}
       >
         <div
           style={{
+            width: "100%",
             maxWidth: 520,
             background: "var(--cream)",
             border: "1px solid var(--ink-06)",
@@ -1363,6 +1366,11 @@ function AdminPanel({
   const { user } = useUser();
   const getAdminToken = useAdminToken();
   const queryClient = useQueryClient();
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
+  const isTablet = bp === 'tablet';
+  const isSmall = isMobile || isTablet;
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [page, setPage] = useState<AdminPage>("dashboard");
 
   useEffect(() => {
@@ -1796,21 +1804,55 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "240px 1fr",
+        gridTemplateColumns: isSmall ? "1fr" : "240px 1fr",
         minHeight: "100vh",
         background: "var(--cream-2)",
       }}
     >
-      <Sidebar
-        page={page}
-        setPage={setPage}
-        onGoToStore={onGoToStore}
-        counts={sidebarCounts}
-        adminName={access.name}
-        adminEmail={access.email}
-        adminPhoto={user?.imageUrl}
-      />
-      <div style={{ padding: "36px 48px 80px", overflow: "auto" }}>
+      {/* Mobile top bar */}
+      {isSmall && (
+        <div style={{ position: "sticky", top: 0, zIndex: 50, background: "var(--cream)", borderBottom: "1px solid var(--ink-06)", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 26, height: 26, borderRadius: 999, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--lime)", fontFamily: '"Instrument Serif", serif', fontSize: 16 }}>h</div>
+            <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20, letterSpacing: "-0.02em" }}>Admin</span>
+          </div>
+          <button onClick={() => setSidebarOpen(true)} style={{ background: "transparent", border: "1px solid var(--ink-06)", borderRadius: 999, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--ink)" }}>
+            <Icon name="menu" size={18} />
+          </button>
+        </div>
+      )}
+
+      {/* Sidebar — always visible on desktop, drawer on mobile/tablet */}
+      {!isSmall && (
+        <Sidebar
+          page={page}
+          setPage={setPage}
+          onGoToStore={onGoToStore}
+          counts={sidebarCounts}
+          adminName={access.name}
+          adminEmail={access.email}
+          adminPhoto={user?.imageUrl}
+        />
+      )}
+
+      {/* Mobile sidebar drawer */}
+      {isSmall && sidebarOpen && (
+        <div onClick={() => setSidebarOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 200 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "80%", maxWidth: 280 }}>
+            <Sidebar
+              page={page}
+              setPage={(p) => { setPage(p); setSidebarOpen(false); }}
+              onGoToStore={() => { setSidebarOpen(false); onGoToStore(); }}
+              counts={sidebarCounts}
+              adminName={access.name}
+              adminEmail={access.email}
+              adminPhoto={user?.imageUrl}
+            />
+          </div>
+        </div>
+      )}
+
+      <div style={{ padding: isMobile ? "20px 16px 60px" : isTablet ? "28px 28px 60px" : "36px 48px 80px", overflow: "auto" }}>
         {/* ── Dashboard ── */}
         {page === "dashboard" && (
           <>
@@ -1827,8 +1869,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: 16,
+                gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : isTablet ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
+                gap: isMobile ? 12 : 16,
                 marginBottom: 24,
               }}
             >
@@ -1885,7 +1927,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1.2fr 1fr",
+                gridTemplateColumns: isSmall ? "1fr" : "1.2fr 1fr",
                 gap: 20,
                 marginTop: 24,
               }}
@@ -1932,7 +1974,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                 }
               >
                 {dashboard?.recentOrders?.length ? (
-                  <table style={tableStyle}>
+                  <div style={{ overflowX: 'auto', width: '100%' }}>
+                  <table style={{ ...tableStyle, minWidth: 420 }}>
                     <thead>
                       <tr>
                         <th style={th}>Orden</th>
@@ -1995,6 +2038,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 ) : (
                   <div
                     style={{
@@ -2400,7 +2444,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     : `${displayedOrders.length} pedido${displayedOrders.length !== 1 ? "s" : ""}`}
                 </div>
               </div>
-              <table style={tableStyle}>
+              <div style={{ overflowX: 'auto', width: '100%' }}>
+              <table style={{ ...tableStyle, minWidth: 680 }}>
                 <thead>
                   <tr>
                     <th style={th}>Orden</th>
@@ -2627,6 +2672,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                   ))}
                 </tbody>
               </table>
+              </div>
               <PaginationControls
                 page={paginatedOrders.page}
                 totalPages={paginatedOrders.totalPages}
@@ -3180,7 +3226,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                 </div>
               }
             >
-              <table style={tableStyle}>
+              <div style={{ overflowX: 'auto', width: '100%' }}>
+              <table style={{ ...tableStyle, minWidth: 600 }}>
                 <thead>
                   <tr>
                     <th style={{ ...th, width: 52 }}>
@@ -3373,6 +3420,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                   )}
                 </tbody>
               </table>
+              </div>
               <PaginationControls
                 page={paginatedProducts.page}
                 totalPages={paginatedProducts.totalPages}
@@ -3903,7 +3951,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                 </div>
               }
             >
-              <table style={tableStyle}>
+              <div style={{ overflowX: 'auto', width: '100%' }}>
+              <table style={{ ...tableStyle, minWidth: 520 }}>
                 <thead>
                   <tr>
                     <th style={th}>Usuario</th>
@@ -4025,6 +4074,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                   ))}
                 </tbody>
               </table>
+              </div>
               <PaginationControls
                 page={paginatedUsers.page}
                 totalPages={paginatedUsers.totalPages}
@@ -4053,7 +4103,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
+                gridTemplateColumns: isSmall ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
                 gap: 16,
                 marginBottom: 28,
               }}
@@ -4132,7 +4182,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr",
                 gap: 20,
               }}
             >
@@ -4167,7 +4217,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                   </div>
                 }
               >
-                <table style={tableStyle}>
+                <div style={{ overflowX: 'auto', width: '100%' }}>
+                <table style={{ ...tableStyle, minWidth: 420 }}>
                   <thead>
                     <tr>
                       <th style={th}>Producto</th>
@@ -4208,6 +4259,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     ))}
                   </tbody>
                 </table>
+                </div>
               </Card>
               <div
                 style={{
@@ -4554,7 +4606,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                 </div>
               }
             >
-              <table style={tableStyle}>
+              <div style={{ overflowX: 'auto', width: '100%' }}>
+              <table style={{ ...tableStyle, minWidth: 340 }}>
                 <thead>
                   <tr>
                     <th style={th}>Mes</th>
@@ -4590,6 +4643,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                   ))}
                 </tbody>
               </table>
+              </div>
             </Card>
           </>
         )}

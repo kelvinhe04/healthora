@@ -96,8 +96,8 @@ export function AnimatedButton({
               style={{
                 display: 'inline-block',
                 transform: hovered && !disabled ? 'translateY(-100%)' : 'translateY(0)',
-                transition: 'transform 150ms ease-in-out',
-                transitionDelay: `${index * 0.018}s`,
+                transition: 'transform 120ms ease-in-out',
+                transitionDelay: `${index * 0.014}s`,
               }}
             >
               {char === ' ' ? ' ' : char}
@@ -109,8 +109,8 @@ export function AnimatedButton({
                 top: 0,
                 display: 'inline-block',
                 transform: hovered && !disabled ? 'translateY(0)' : 'translateY(100%)',
-                transition: 'transform 150ms ease-in-out',
-                transitionDelay: `${index * 0.018}s`,
+                transition: 'transform 120ms ease-in-out',
+                transitionDelay: `${index * 0.014}s`,
               }}
             >
               {char === ' ' ? ' ' : char}
@@ -125,8 +125,8 @@ export function AnimatedButton({
             style={{
               display: 'inline-flex',
               transform: hovered && !disabled ? 'translateY(-100%)' : 'translateY(0)',
-              transition: 'transform 150ms ease-in-out',
-              transitionDelay: `${(text.length - 1) * 0.018 + 0.15}s`,
+              transition: 'transform 120ms ease-in-out',
+              transitionDelay: `${(text.length - 1) * 0.014 + 0.1}s`,
             }}
           >
             {icon}
@@ -138,8 +138,8 @@ export function AnimatedButton({
               top: 0,
               display: 'inline-flex',
               transform: hovered && !disabled ? 'translateY(0)' : 'translateY(100%)',
-              transition: 'transform 150ms ease-in-out',
-              transitionDelay: `${(text.length - 1) * 0.018 + 0.15}s`,
+              transition: 'transform 120ms ease-in-out',
+              transitionDelay: `${(text.length - 1) * 0.014 + 0.1}s`,
             }}
           >
             {icon}

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-react';
 import { useOrders } from '../hooks/useOrders';
@@ -117,6 +118,8 @@ function OrderDetail({
   showCancelConfirm, isCancelling, cancelError, onRequestCancel, onConfirmCancel, onAbortCancel,
   editingAddress, addrForm, isSavingAddr, addrError, onStartEditAddr, onAddrChange, onSaveAddr, onCancelEditAddr,
 }: OrderDetailProps) {
+  const bpInner = useBreakpoint();
+  const isMobileInner = bpInner === 'mobile';
   const s = STATUS_CFG[order.status] ?? STATUS_CFG.paid;
   const canCancel = ['unfulfilled', 'processing'].includes(order.fulfillmentStatus) && !['cancelled', 'refunded'].includes(order.status);
   const canEditAddr = order.fulfillmentStatus === 'unfulfilled' && !['cancelled', 'refunded'].includes(order.status);
@@ -135,7 +138,7 @@ function OrderDetail({
   const divider = <div style={{ height: 1, background: 'var(--ink-06)', margin: '20px 0' }} />;
 
   return (
-    <div style={{ background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 24, padding: 32, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 24, padding: isMobileInner ? 20 : 32, display: 'flex', flexDirection: 'column' }}>
 
       {/* Order header */}
       <div style={{ marginBottom: 6 }}>
@@ -246,7 +249,7 @@ function OrderDetail({
 
         {editingAddress ? (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobileInner ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 14 }}>
               {([
                 { key: 'name',   label: 'Nombre',       placeholder: 'Nombre completo' },
                 { key: 'phone',  label: 'Teléfono',      placeholder: '+1 555 000 000' },
@@ -327,6 +330,16 @@ function OrderDetail({
 const EMPTY_ADDR: OrderAddress = { name: '', phone: '', address: '', city: '', postal: '' };
 
 export function Orders({ onBack }: OrdersProps) {
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
+  const isTablet = bp === 'tablet';
+  const [windowWidth, setWindowWidth] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1200);
+  useEffect(() => {
+    const update = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  const stackLayout = windowWidth < 500;
   const ordersQuery = useOrders();
   const { data: orders, isLoading } = ordersQuery;
   const queryClient = useQueryClient();
@@ -408,7 +421,7 @@ export function Orders({ onBack }: OrdersProps) {
   };
 
   return (
-    <main style={{ padding: '48px 40px 80px', maxWidth: 1280, margin: '0 auto' }}>
+    <main style={{ padding: stackLayout ? '24px 16px 60px' : isMobile ? '32px 20px 60px' : isTablet ? '40px 28px 60px' : '48px 40px 80px', maxWidth: 1280, margin: '0 auto' }}>
       <style>{`
         @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
         @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
@@ -444,7 +457,7 @@ export function Orders({ onBack }: OrdersProps) {
       </div>
 
       {showOrdersSkeleton ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '310px 1fr', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: stackLayout ? '1fr' : '260px 1fr', gap: 16 }}>
           {/* Order list skeleton */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[100, 100, 100, 100, 100, 100].map((h, i) => (
@@ -495,10 +508,10 @@ export function Orders({ onBack }: OrdersProps) {
           </div>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '310px 1fr', gap: 24, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: stackLayout ? '1fr' : '260px 1fr', gap: 16, alignItems: 'start' }}>
 
           {/* Order list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'sticky', top: 88, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto', paddingRight: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, ...(stackLayout ? {} : { position: 'sticky', top: 88, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto', paddingRight: 4 }) }}>
             {sorted.map(order => {
               const s = STATUS_CFG[order.status] ?? STATUS_CFG.paid;
               const isActive = order._id === selected?._id;
