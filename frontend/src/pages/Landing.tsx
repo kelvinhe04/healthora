@@ -337,6 +337,8 @@ function CategorySkeleton() {
   );
 }
 
+let landingInitialLoadDone = false;
+
 export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
@@ -349,12 +351,12 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
-  // Show skeleton for 1800ms on every mount — matches admin skeleton duration.
-  // Without this, cached data makes isLoading=false instantly on navigation.
-  const [isMounting, setIsMounting] = useState(true);
+  const [isMounting, setIsMounting] = useState(!landingInitialLoadDone);
   useEffect(() => {
-    const t = setTimeout(() => setIsMounting(false), 1800);
-    return () => clearTimeout(t);
+    if (!landingInitialLoadDone) {
+      const t = setTimeout(() => { setIsMounting(false); landingInitialLoadDone = true; }, 1800);
+      return () => clearTimeout(t);
+    }
   }, []);
   const showProductsSkeleton = productsLoading || isMounting;
   const showCategoriesSkeleton = categoriesLoading || isMounting;
@@ -814,9 +816,9 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           {/* Text Content */}
           <div className="cine-text" style={{ position: 'absolute', top: '5%', left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ textAlign: 'center', color: 'var(--ink)', padding: isMobile ? '0 20px' : '0 40px' }}>
-              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: isMobile ? 11 : 14, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: 16, opacity: 0.8 }}>Filosofía Healthora</div>
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: isMobile ? 11 : 14, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: 16, opacity: 0.8 }}>Nuestra selección</div>
               <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 'clamp(32px, 8vw, 52px)' : 'clamp(64px, 8vw, 120px)', margin: 0, lineHeight: 0.9 }}>
-                Ciencia y naturaleza<br/><em style={{ color: 'var(--lime)', fontStyle: 'italic' }}>para tu bienestar</em>
+                El aroma que<br/><em style={{ color: 'var(--lime)', fontStyle: 'italic' }}>te define</em>
               </h2>
             </div>
           </div>

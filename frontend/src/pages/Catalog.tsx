@@ -17,6 +17,8 @@ interface CatalogProps {
 const filterLabel: CSSProperties = { fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 12 };
 const ITEMS_PER_PAGE = 12;
 
+let catalogInitialLoadDone = false;
+
 export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }: CatalogProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
@@ -39,12 +41,12 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
   const { data: categories = [] } = useCategories();
 
   // Show skeleton on every mount (navigation) — not just cold loads.
-  // TanStack Query returns cached data instantly, so isLoading alone won't
-  // trigger the skeleton when navigating from Landing → Catalog.
-  const [isMounting, setIsMounting] = useState(true);
+  const [isMounting, setIsMounting] = useState(!catalogInitialLoadDone);
   useEffect(() => {
-    const t = setTimeout(() => setIsMounting(false), 1800);
-    return () => clearTimeout(t);
+    if (!catalogInitialLoadDone) {
+      const t = setTimeout(() => { setIsMounting(false); catalogInitialLoadDone = true; }, 1800);
+      return () => clearTimeout(t);
+    }
   }, []);
   const showSkeleton = productsLoading || isMounting;
 

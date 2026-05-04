@@ -439,7 +439,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={headerWide ? 'Buscar vitaminas, skincare, marcas...' : 'Buscar productos...'}
+            placeholder={headerWide ? 'Buscar vitaminas, cuidado de piel, marcas...' : 'Buscar productos...'}
             aria-label="Buscar productos"
             style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', color: 'var(--ink)', fontSize: 13, fontFamily: '"Geist", sans-serif', minWidth: 0 }}
           />

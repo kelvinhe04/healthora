@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSignIn, useSignUp, useClerk } from '@clerk/clerk-react';
 import { AnimatedButton } from '../shared/AnimatedButton';
 import { Icon } from '../shared/Icon';
+import { ModalOverlay } from '../shared/ModalOverlay';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 
@@ -91,7 +92,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
   const { signIn, setActive: setSignInActive, isLoaded: signInLoaded } = useSignIn();
   const { signUp, setActive: setSignUpActive, isLoaded: signUpLoaded } = useSignUp();
 
-  if (!open) return null;
+
 
   const reset = () => {
     setStep('email');
@@ -187,16 +188,8 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
   };
 
   return (
-    <div
-      onClick={handleClose}
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(17, 24, 20, 0.36)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24, zIndex: 200, backdropFilter: 'blur(2px)',
-      }}
-    >
+    <ModalOverlay open={open} onClose={handleClose} zIndex={200} overlayColor="rgba(17, 24, 20, 0.36)" backdropFilter="blur(2px)">
       <div
-        onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 780, background: 'var(--cream)',
           borderRadius: 28,
@@ -377,6 +370,6 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
           )}
         </div>
       </div>
-    </div>
+    </ModalOverlay>
   );
 }

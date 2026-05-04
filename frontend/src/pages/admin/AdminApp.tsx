@@ -30,6 +30,7 @@ import {
 import { ProductImage } from "../../components/shared/ProductImage";
 import { AnimatedButton } from "../../components/shared/AnimatedButton";
 import { Icon } from "../../components/shared/Icon";
+import { ModalOverlay } from "../../components/shared/ModalOverlay";
 import { api } from "../../lib/api";
 import type {
   FulfillmentStatus,
@@ -551,6 +552,7 @@ function ImageDropZone({
 // ─── ProductModal ─────────────────────────────────────────────────────────────
 
 function ProductModal({
+  open,
   mode,
   product,
   categories,
@@ -559,6 +561,7 @@ function ProductModal({
   saving,
   error,
 }: {
+  open: boolean;
   mode: "add" | "edit";
   product?: Product;
   categories: string[];
@@ -571,6 +574,13 @@ function ProductModal({
     product ? productToForm(product) : { ...emptyForm },
   );
   const [validationError, setValidationError] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setForm(product ? productToForm(product) : { ...emptyForm });
+      setValidationError("");
+    }
+  }, [open]);
 
   const setF =
     (key: keyof ProductForm) =>
@@ -659,19 +669,7 @@ function ProductModal({
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.45)",
-        zIndex: 1000,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-      }}
-      onClick={onClose}
-    >
+    <ModalOverlay open={open} onClose={onClose} zIndex={1000} overlayColor="rgba(0,0,0,0.45)">
       <div
         style={{
           background: "var(--cream)",
@@ -684,7 +682,6 @@ function ProductModal({
           display: "flex",
           flexDirection: "column",
         }}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div
@@ -759,7 +756,7 @@ function ProductModal({
             }}
           >
             <div style={fieldS}>
-              <label style={labelS}>Nombre</label>
+              <label style={labelS}>Nombre <span style={{ color: "#e53e3e" }}>*</span></label>
               <input
                 style={inputS}
                 value={form.name}
@@ -768,7 +765,7 @@ function ProductModal({
               />
             </div>
             <div style={fieldS}>
-              <label style={labelS}>Marca</label>
+              <label style={labelS}>Marca <span style={{ color: "#e53e3e" }}>*</span></label>
               <input
                 style={inputS}
                 value={form.brand}
@@ -777,7 +774,7 @@ function ProductModal({
               />
             </div>
             <div style={fieldS}>
-              <label style={labelS}>Categoría</label>
+              <label style={labelS}>Categoría <span style={{ color: "#e53e3e" }}>*</span></label>
               <select
                 style={{
                   ...inputS,
@@ -805,7 +802,7 @@ function ProductModal({
               </select>
             </div>
             <div style={fieldS}>
-              <label style={labelS}>Necesidad</label>
+              <label style={labelS}>Necesidad <span style={{ color: "#e53e3e" }}>*</span></label>
               <input
                 style={inputS}
                 value={form.need}
@@ -815,7 +812,7 @@ function ProductModal({
             </div>
           </div>
           <div style={fieldS}>
-            <label style={labelS}>Descripción corta</label>
+            <label style={labelS}>Descripción corta <span style={{ color: "#e53e3e" }}>*</span></label>
             <textarea
               style={{
                 ...inputS,
@@ -842,7 +839,7 @@ function ProductModal({
             }}
           >
             <div style={fieldS}>
-              <label style={labelS}>Precio ($)</label>
+              <label style={labelS}>Precio ($) <span style={{ color: "#e53e3e" }}>*</span></label>
               <input
                 style={inputS}
                 type="number"
@@ -853,7 +850,7 @@ function ProductModal({
               />
             </div>
             <div style={fieldS}>
-              <label style={labelS}>Existencias</label>
+              <label style={labelS}>Existencias <span style={{ color: "#e53e3e" }}>*</span></label>
               <input
                 style={inputS}
                 type="number"
@@ -1155,7 +1152,7 @@ function ProductModal({
           </div>
         </div>
       </div>
-    </div>
+    </ModalOverlay>
   );
 }
 
@@ -1509,6 +1506,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
 
   const invalidateProducts = () => {
     void queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    void queryClient.invalidateQueries({ queryKey: ["admin-products-count"] });
     void queryClient.invalidateQueries({ queryKey: ["products"] });
     void queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] });
   };
@@ -2664,22 +2662,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
           </>
         )}
 
-        {confirmOrderStatus && (
-          <div
-            onClick={() => setConfirmOrderStatus(null)}
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(17, 24, 20, 0.28)",
-              zIndex: 113,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 24,
-            }}
-          >
+        <ModalOverlay open={!!confirmOrderStatus} onClose={() => setConfirmOrderStatus(null)} zIndex={113} overlayColor="rgba(17, 24, 20, 0.28)">
             <div
-              onClick={(e) => e.stopPropagation()}
               style={{
                 width: "100%",
                 maxWidth: 460,
@@ -2735,15 +2719,15 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     fontFamily: '"Geist", sans-serif',
                   }}
                 >
-                  Vas a cambiar el pedido #{confirmOrderStatus.orderNumber} de{" "}
+                  Vas a cambiar el pedido #{confirmOrderStatus?.orderNumber} de{" "}
                   <strong>
-                    {fulfillmentStatusLabels[confirmOrderStatus.from]}
+                    {fulfillmentStatusLabels[confirmOrderStatus?.from ?? '']}
                   </strong>{" "}
                   a{" "}
                   <strong>
-                    {fulfillmentStatusLabels[confirmOrderStatus.to]}
+                    {fulfillmentStatusLabels[confirmOrderStatus?.to ?? '']}
                   </strong>
-                  . El cliente {confirmOrderStatus.customerName} recibirá un
+                  . El cliente {confirmOrderStatus?.customerName} recibirá un
                   email de actualización.
                 </p>
               </div>
@@ -2780,25 +2764,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                 />
               </div>
             </div>
-          </div>
-        )}
+        </ModalOverlay>
 
-        {productSuccess && (
-          <div
-            onClick={() => setProductSuccess(null)}
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(17, 24, 20, 0.28)",
-              zIndex: 114,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 24,
-            }}
-          >
+        <ModalOverlay open={!!productSuccess} onClose={() => setProductSuccess(null)} zIndex={114} overlayColor="rgba(17, 24, 20, 0.28)">
             <div
-              onClick={(e) => e.stopPropagation()}
               style={{
                 width: "100%",
                 maxWidth: 430,
@@ -2840,7 +2809,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     marginBottom: 8,
                   }}
                 >
-                  {productSuccess.kicker}
+                  {productSuccess?.kicker}
                 </div>
                 <div
                   style={{
@@ -2851,9 +2820,9 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     color: "var(--ink)",
                   }}
                 >
-                  {productSuccess.title}{" "}
+                  {productSuccess?.title}{" "}
                   <em style={{ color: "var(--green)" }}>
-                    {productSuccess.emphasis}
+                    {productSuccess?.emphasis}
                   </em>
                 </div>
                 <p
@@ -2865,7 +2834,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     fontFamily: '"Geist", sans-serif',
                   }}
                 >
-                  {productSuccess.message}
+                  {productSuccess?.message}
                 </p>
               </div>
               <div
@@ -2879,8 +2848,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                 <AnimatedButton variant="primary" onClick={() => setProductSuccess(null)} text="Entendido" />
               </div>
             </div>
-          </div>
-        )}
+        </ModalOverlay>
 
         {/* ── Products ── */}
         {page === "products" && (
@@ -3410,49 +3378,31 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
               />
             </Card>
 
-            {productModal && (
-              <ProductModal
-                mode={productModal.mode}
-                product={productModal.product}
-                categories={categories}
-                onClose={() => setProductModal(null)}
-                onSave={(data) => {
-                  if (productModal.mode === "add") {
-                    productCreateMutation.mutate(data);
-                  } else if (productModal.product) {
-                    productUpdateMutation.mutate({
-                      mongoId: productModal.product._id,
-                      data,
-                    });
-                  }
-                }}
-                saving={isSaving}
-                error={
-                  (productCreateMutation.error as Error)?.message ||
-                  (productUpdateMutation.error as Error)?.message
+            <ProductModal
+              open={!!productModal}
+              mode={productModal?.mode ?? "add"}
+              product={productModal?.product}
+              categories={categories}
+              onClose={() => setProductModal(null)}
+              onSave={(data) => {
+                if (productModal?.mode === "add") {
+                  productCreateMutation.mutate(data);
+                } else if (productModal?.product) {
+                  productUpdateMutation.mutate({
+                    mongoId: productModal.product._id,
+                    data,
+                  });
                 }
-              />
-            )}
+              }}
+              saving={isSaving}
+              error={
+                (productCreateMutation.error as Error)?.message ||
+                (productUpdateMutation.error as Error)?.message
+              }
+            />
 
-            {confirmDeleteId && (
-              <div
-                onClick={() => {
-                  setConfirmDeleteId(null);
-                  setDeleteError(null);
-                }}
-                style={{
-                  position: "fixed",
-                  inset: 0,
-                  background: "rgba(17, 24, 20, 0.28)",
-                  zIndex: 110,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 24,
-                }}
-              >
+            <ModalOverlay open={!!confirmDeleteId} onClose={() => { setConfirmDeleteId(null); setDeleteError(null); }} zIndex={110} overlayColor="rgba(17, 24, 20, 0.28)">
                 <div
-                  onClick={(e) => e.stopPropagation()}
                   style={{
                     width: "100%",
                     maxWidth: 420,
@@ -3537,28 +3487,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); productDeleteMutation.mutate(confirmDeleteId); }} disabled={productDeleteMutation.isPending} text={productDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
                   </div>
                 </div>
-              </div>
-            )}
+            </ModalOverlay>
 
-            {confirmBulkDelete && (
-              <div
-                onClick={() => {
-                  setConfirmBulkDelete(null);
-                  setDeleteError(null);
-                }}
-                style={{
-                  position: "fixed",
-                  inset: 0,
-                  background: "rgba(17, 24, 20, 0.28)",
-                  zIndex: 111,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 24,
-                }}
-              >
+            <ModalOverlay open={!!confirmBulkDelete} onClose={() => { setConfirmBulkDelete(null); setDeleteError(null); }} zIndex={111} overlayColor="rgba(17, 24, 20, 0.28)">
                 <div
-                  onClick={(e) => e.stopPropagation()}
                   style={{
                     width: "100%",
                     maxWidth: 440,
@@ -3596,7 +3528,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                         color: "var(--ink)",
                       }}
                     >
-                      {confirmBulkDelete.title}
+                      {confirmBulkDelete?.title}
                     </div>
                     <p
                       style={{
@@ -3607,7 +3539,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                         fontFamily: '"Geist", sans-serif',
                       }}
                     >
-                      {confirmBulkDelete.description}
+                      {confirmBulkDelete?.description}
                     </p>
                     {deleteError && (
                       <div
@@ -3632,31 +3564,13 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     }}
                   >
                     <AnimatedButton variant="outline" onClick={() => { setConfirmBulkDelete(null); setDeleteError(null); }} text="Cancelar" />
-                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); bulkDeleteMutation.mutate(confirmBulkDelete.ids); }} disabled={bulkDeleteMutation.isPending} text={bulkDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
+                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); if (confirmBulkDelete) bulkDeleteMutation.mutate(confirmBulkDelete.ids); }} disabled={bulkDeleteMutation.isPending} text={bulkDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
                   </div>
                 </div>
-              </div>
-            )}
+            </ModalOverlay>
 
-            {confirmDeleteAll && (
-              <div
-                onClick={() => {
-                  setConfirmDeleteAll(false);
-                  setDeleteError(null);
-                }}
-                style={{
-                  position: "fixed",
-                  inset: 0,
-                  background: "rgba(17, 24, 20, 0.28)",
-                  zIndex: 111,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 24,
-                }}
-              >
+            <ModalOverlay open={confirmDeleteAll} onClose={() => { setConfirmDeleteAll(false); setDeleteError(null); }} zIndex={111} overlayColor="rgba(17, 24, 20, 0.28)">
                 <div
-                  onClick={(e) => e.stopPropagation()}
                   style={{
                     width: "100%",
                     maxWidth: 440,
@@ -3728,23 +3642,9 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); deleteAllMutation.mutate(); }} disabled={deleteAllMutation.isPending} text={deleteAllMutation.isPending ? "Eliminando…" : "Sí, eliminar todo"} />
                   </div>
                 </div>
-              </div>
-            )}
+            </ModalOverlay>
 
-            {confirmUserDelete && (
-              <div
-                onClick={() => setConfirmUserDelete(null)}
-                style={{
-                  position: "fixed",
-                  inset: 0,
-                  background: "rgba(17, 24, 20, 0.28)",
-                  zIndex: 112,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 24,
-                }}
-              >
+            <ModalOverlay open={!!confirmUserDelete} onClose={() => setConfirmUserDelete(null)} zIndex={112} overlayColor="rgba(17, 24, 20, 0.28)">
                 <div
                   onClick={(e) => e.stopPropagation()}
                   style={{
@@ -3802,7 +3702,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                         fontFamily: '"Geist", sans-serif',
                       }}
                     >
-                      ¿Eliminar a {confirmUserDelete.name}? Esto eliminará su
+                      ¿Eliminar a {confirmUserDelete?.name}? Esto eliminará su
                       cuenta local. El usuario seguirá existiendo en Clerk.
                     </p>
                   </div>
@@ -3816,11 +3716,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     }}
                   >
                     <AnimatedButton variant="outline" onClick={() => setConfirmUserDelete(null)} text="Cancelar" />
-                    <AnimatedButton variant="primary" onClick={() => userDeleteMutation.mutate(confirmUserDelete.id)} disabled={userDeleteMutation.isPending} style={{ background: "oklch(0.5 0.15 30)" }} text={userDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
+                    <AnimatedButton variant="primary" onClick={() => confirmUserDelete && userDeleteMutation.mutate(confirmUserDelete.id)} disabled={userDeleteMutation.isPending} style={{ background: "oklch(0.5 0.15 30)" }} text={userDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
                   </div>
                 </div>
-              </div>
-            )}
+            </ModalOverlay>
           </>
         )}
 
@@ -4248,7 +4147,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                 }}
               >
                 <Card
-                  title="Top categorías"
+                  title="Mejores categorías"
                   sub="Por unidades vendidas"
                   loading={showSalesSkeleton}
                   skeletonContent={
@@ -4365,7 +4264,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                   </div>
                 </Card>
                 <Card
-                  title="Top marcas"
+                  title="Mejores marcas"
                   sub="Por unidades vendidas"
                   loading={showSalesSkeleton}
                   skeletonContent={

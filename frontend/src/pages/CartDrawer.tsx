@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useCartStore } from '../store/cartStore';
+import { ModalOverlay } from '../components/shared/ModalOverlay';
 import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
@@ -126,22 +127,8 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
           </>
         )}
 
-        {confirmClearOpen && (
-          <div
-            onClick={() => setConfirmClearOpen(false)}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'rgba(17, 24, 20, 0.28)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 24,
-              zIndex: 3,
-            }}
-          >
+        <ModalOverlay open={confirmClearOpen} onClose={() => setConfirmClearOpen(false)} zIndex={3} overlayColor="rgba(17, 24, 20, 0.28)" absolute>
             <div
-              onClick={(e) => e.stopPropagation()}
               style={{
                 width: '100%',
                 maxWidth: 360,
@@ -168,8 +155,7 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
                 <AnimatedButton variant="primary" onClick={handleConfirmClear} text="Sí, vaciar todo" />
               </div>
             </div>
-          </div>
-        )}
+        </ModalOverlay>
       </aside>
     </>
   );

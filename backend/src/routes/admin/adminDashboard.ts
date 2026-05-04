@@ -62,7 +62,7 @@ export const adminDashboardRouter = new Hono<AppEnv>()
     }
 
     const recentOrders = (await Order.find().sort({ createdAt: -1 }).limit(5).lean()).map((order) => normalizeOrder(order));
-    const lowStockProducts = await Product.find({ stock: { $lte: 5, $gt: 0 }, active: true }).sort({ stock: 1 }).limit(6).lean();
+    const lowStockProducts = await Product.find({ stock: { $lte: 5 }, active: true }).sort({ stock: 1 }).limit(6).lean();
 
     return c.json({
       kpis: {
