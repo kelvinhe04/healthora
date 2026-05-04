@@ -3,6 +3,7 @@ import { requireAdmin } from "../../middleware/requireAdmin";
 import type { AppEnv } from "../../types/hono";
 import { Product } from "../../db/models/Product";
 import { Category } from "../../db/models/Category";
+import { recalculateNew } from "../../lib/bestsellers";
 
 export const adminProductsRouter = new Hono<AppEnv>()
   .use("*", requireAdmin)
@@ -12,6 +13,7 @@ export const adminProductsRouter = new Hono<AppEnv>()
     try {
       const body = await c.req.json<object>();
       const product = await Product.create(body);
+      recalculateNew().catch((e) => console.error('[new-products] recalc error:', e));
       return c.json(product.toObject(), 201);
     } catch (error: unknown) {
       if (
@@ -59,6 +61,7 @@ export const adminProductsRouter = new Hono<AppEnv>()
   })
   .delete("/:id", async (c) => {
     await Product.findByIdAndDelete(c.req.param("id"));
+    recalculateNew().catch((e) => console.error('[new-products] recalc error:', e));
     return c.body(null, 204);
   })
   .delete("/", async (c) => {

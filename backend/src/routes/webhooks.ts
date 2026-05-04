@@ -4,6 +4,7 @@ import { Order } from '../db/models/Order';
 import { Product } from '../db/models/Product';
 import { normalizeOrder } from '../lib/orderStatus';
 import { sendOrderConfirmationEmail } from '../lib/email';
+import { recalculateBestsellers } from '../lib/bestsellers';
 
 type CheckoutAddress = {
   name: string;
@@ -132,6 +133,9 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
       }
     }
   }
+
+  // Recalculate bestsellers after any payment event
+  recalculateBestsellers().catch((e) => console.error('[bestsellers] recalc error:', e));
 
   console.log('[WEBHOOK] Request processed');
   return c.json({ received: true });

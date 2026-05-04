@@ -16,10 +16,13 @@ import { adminSalesRouter } from './routes/admin/adminSales';
 import { adminEarningsRouter } from './routes/admin/adminEarnings';
 import { accountRouter } from './routes/account';
 import { sendOrderConfirmationEmail } from './lib/email';
+import { recalculateBestsellers, recalculateNew } from './lib/bestsellers';
 import { reviewsRouter } from './routes/reviews';
 import { newsletterRouter } from './routes/newsletter';
 
 await connectDB();
+await recalculateBestsellers();
+await recalculateNew();
 
 const app = new Hono();
 

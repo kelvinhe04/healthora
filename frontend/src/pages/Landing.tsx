@@ -498,14 +498,8 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     return () => cancelAnimationFrame(rafId);
   }, [reviewStats]);
 
-  const bestSellers = products.filter((p) => p.tag === 'Best seller').slice(0, 4);
-  const featured = [...products]
-    .sort((a, b) => {
-      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return bTime - aTime;
-    })
-    .slice(0, 4);
+  const bestSellers = products.filter((p) => p.tag === 'Más vendido').slice(0, 4);
+  const featured = products.filter((p) => p.tag === 'Nuevo').slice(0, 4);
   
   const activeHero = HERO_CONTENT[activeHeroIdx];
   const activeProducts = products

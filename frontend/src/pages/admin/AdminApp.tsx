@@ -288,8 +288,8 @@ const emptyForm: ProductForm = {
 function normalizeTag(tag: string) {
   const normalized = tag.trim().toLowerCase().replace(/\s+/g, " ");
   if (!normalized) return "";
-  if (normalized === "best seller" || normalized === "bestseller")
-    return "Best seller";
+  if (normalized === "best seller" || normalized === "bestseller" || normalized === "más vendido")
+    return "Más vendido";
   if (normalized === "nuevo") return "Nuevo";
   if (normalized === "premium") return "Premium";
   if (normalized === "oferta") return "Oferta";
@@ -900,28 +900,6 @@ function ProductModal({
               gap: 16,
             }}
           >
-            <div style={fieldS}>
-              <label style={labelS}>Tag</label>
-              <select
-                style={{
-                  ...inputS,
-                  appearance: "none",
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "right 12px center",
-                  paddingRight: 32,
-                  cursor: "pointer",
-                }}
-                value={form.tag}
-                onChange={setSelect("tag")}
-              >
-                <option value="">Sin tag</option>
-                <option value="Best seller">Best seller</option>
-                <option value="Nuevo">Nuevo</option>
-                <option value="Premium">Premium</option>
-                <option value="Oferta">Oferta</option>
-              </select>
-            </div>
           </div>
 
           <div style={dividerS} />
