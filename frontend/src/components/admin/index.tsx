@@ -363,38 +363,46 @@ const BarChartInner = ({
 
 export const BarChart = memo(BarChartInner);
 
-const STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
-  paid: { bg: "oklch(0.92 0.1 140)", fg: "oklch(0.35 0.1 140)" },
-  Paid: { bg: "oklch(0.92 0.1 140)", fg: "oklch(0.35 0.1 140)" },
-  Pagada: { bg: "oklch(0.92 0.1 140)", fg: "oklch(0.35 0.1 140)" },
-  Pagado: { bg: "oklch(0.92 0.1 140)", fg: "oklch(0.35 0.1 140)" },
-  Pendiente: { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)" },
-  processing: { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)" },
-  unfulfilled: { bg: "oklch(0.95 0.04 85)", fg: "oklch(0.45 0.05 85)" },
-  "Pendiente de preparación": {
-    bg: "oklch(0.95 0.04 85)",
-    fg: "oklch(0.45 0.05 85)",
-  },
-  "En preparación": { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)" },
-  shipped: { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)" },
-  Enviada: { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)" },
-  delivered: { bg: "oklch(0.92 0.1 140)", fg: "oklch(0.35 0.1 140)" },
-  Entregada: { bg: "oklch(0.92 0.1 140)", fg: "oklch(0.35 0.1 140)" },
-  pending_payment: { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)" },
-  "Pendiente de pago": { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)" },
-  cancelled: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)" },
-  Cancelado: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)" },
-  Cancelada: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)" },
-  refunded: { bg: "oklch(0.92 0.08 300)", fg: "oklch(0.4 0.1 300)" },
-  Reembolsado: { bg: "oklch(0.92 0.08 300)", fg: "oklch(0.4 0.1 300)" },
-  Reembolsada: { bg: "oklch(0.92 0.08 300)", fg: "oklch(0.4 0.1 300)" },
-  Activo: { bg: "oklch(0.92 0.1 140)", fg: "oklch(0.35 0.1 140)" },
-  Inactivo: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)" },
-  Programado: { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)" },
+const STATUS_COLORS: Record<string, { bg: string; fg: string; darkBg: string; darkFg: string }> = {
+  // Green — paid / delivered / active
+  paid:      { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
+  Paid:      { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
+  Pagada:    { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
+  Pagado:    { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
+  delivered: { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
+  Entregada: { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
+  Activo:    { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
+  // Amber — pending payment / unfulfilled
+  Pendiente:            { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
+  pending_payment:      { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
+  "Pendiente de pago":  { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
+  unfulfilled:                  { bg: "oklch(0.95 0.04 85)", fg: "oklch(0.45 0.05 85)", darkBg: "oklch(0.26 0.05 85)",  darkFg: "oklch(0.82 0.07 85)"  },
+  "Pendiente de preparación":   { bg: "oklch(0.95 0.04 85)", fg: "oklch(0.45 0.05 85)", darkBg: "oklch(0.26 0.05 85)",  darkFg: "oklch(0.82 0.07 85)"  },
+  // Blue — processing / in-prep / scheduled
+  processing:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
+  Preparando:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
+  "En preparación":{ bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
+  Programado:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
+  // Teal — shipped
+  shipped: { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  Enviada: { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  // Coral — cancelled / inactive
+  cancelled: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
+  Cancelado: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
+  Cancelada: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
+  Inactivo:  { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
+  // Purple — refunded
+  refunded:    { bg: "oklch(0.92 0.08 300)", fg: "oklch(0.4 0.1 300)",  darkBg: "oklch(0.27 0.08 300)", darkFg: "oklch(0.82 0.11 300)" },
+  Reembolsado: { bg: "oklch(0.92 0.08 300)", fg: "oklch(0.4 0.1 300)",  darkBg: "oklch(0.27 0.08 300)", darkFg: "oklch(0.82 0.11 300)" },
+  Reembolsada: { bg: "oklch(0.92 0.08 300)", fg: "oklch(0.4 0.1 300)",  darkBg: "oklch(0.27 0.08 300)", darkFg: "oklch(0.82 0.11 300)" },
 };
 
 export function StatusPill({ status }: { status: string }) {
-  const c = STATUS_COLORS[status] || { bg: "var(--ink-06)", fg: "var(--ink)" };
+  const { theme } = useThemeStore();
+  const dark = theme === "dark";
+  const entry = STATUS_COLORS[status];
+  const bg = entry ? (dark ? entry.darkBg : entry.bg) : (dark ? "oklch(0.22 0.005 155)" : "var(--ink-06)");
+  const fg = entry ? (dark ? entry.darkFg : entry.fg) : "var(--ink)";
   return (
     <span
       style={{
@@ -403,8 +411,8 @@ export function StatusPill({ status }: { status: string }) {
         gap: 6,
         padding: "4px 10px",
         borderRadius: 999,
-        background: c.bg,
-        color: c.fg,
+        background: bg,
+        color: fg,
         fontSize: 11,
         fontFamily: '"JetBrains Mono", monospace',
         letterSpacing: "0.04em",
@@ -413,9 +421,7 @@ export function StatusPill({ status }: { status: string }) {
         whiteSpace: "nowrap",
       }}
     >
-      <span
-        style={{ width: 5, height: 5, borderRadius: 999, background: c.fg }}
-      />
+      <span style={{ width: 5, height: 5, borderRadius: 999, background: fg }} />
       {status}
     </span>
   );

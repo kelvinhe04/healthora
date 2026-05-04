@@ -2586,7 +2586,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                                   padding: "8px 10px",
                                   borderRadius: 8,
                                   border: "1px solid var(--ink-20)",
-                                  background: "transparent",
+                                  background: "var(--cream-2)",
+                                  color: "var(--ink)",
                                   fontSize: 12,
                                 }}
                               >
