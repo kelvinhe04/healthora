@@ -20,6 +20,7 @@ export interface ProductVariant {
   stock: number;
   sku?: string;
   color?: string;
+  imageUrl?: string;
   isDefault?: boolean;
 }
 

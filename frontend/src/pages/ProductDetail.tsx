@@ -53,13 +53,20 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   const liveRating = liveReviews && liveReviews.length > 0
     ? Math.round(liveReviews.reduce((s, r) => s + r.rating, 0) / liveReviews.length * 10) / 10
     : 0;
-  const gallery = product.images?.length
+  const baseGallery = product.images?.length
     ? product.images.slice(0, 4)
     : Array.from({ length: 4 }, (_, i) => ({
         url: i === 0 ? product.imageUrl || '' : product.imageUrl || '',
         alt: `${product.name} ${i + 1}`,
         isPrimary: i === 0,
       })).filter((img) => img.url);
+  const variantImageUrl = selectedVariant?.imageUrl;
+  const gallery = variantImageUrl
+    ? [
+        { url: variantImageUrl, alt: `${product.name} · ${selectedVariant!.label}`, isPrimary: true },
+        ...baseGallery.slice(1),
+      ]
+    : baseGallery;
   const activeImage = gallery[activeImageIndex]?.url || product.imageUrl;
   const hasRealImages = Boolean(activeImage);
   const hasText = (value?: string) => Boolean(value?.trim());
@@ -115,6 +122,10 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   const effectivePrice = selectedVariant?.price ?? product.price;
   const effectivePriceBefore = selectedVariant?.priceBefore ?? product.priceBefore;
   const effectiveStock = selectedVariant?.stock ?? product.stock;
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [selectedVariant?.id]);
 
   const handleAdd = () => {
     onAdd(product, qty, selectedVariant ?? undefined);

@@ -54,6 +54,7 @@ const ProductSchema = new Schema(
         stock: { type: Number, required: true },
         sku: String,
         color: String,
+        imageUrl: String,
         isDefault: { type: Boolean, default: false },
       },
     ],

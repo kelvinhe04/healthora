@@ -2064,10 +2064,15 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.02 85)',
     swatchColor: 'oklch(0.86 0.03 85)',
     label: 'Dove\nBody Wash',
+    variants: [
+      { id: '22oz', label: '22 oz', type: 'size', price: 10.97, stock: 83, isDefault: true },
+      { id: '34oz', label: '34 oz', type: 'size', price: 14.97, stock: 62 },
+      { id: '56oz', label: '56 oz', type: 'size', price: 18.97, stock: 38 },
+    ],
   },
   {
     id: 'native-coconut-vanilla-deodorant',
-    name: 'Coconut & Vanilla Deodorant',
+    name: 'Natural Deodorant',
     brand: 'Native',
     category: 'Cuidado personal',
     need: 'Piel seca',
@@ -2095,7 +2100,14 @@ const PRODUCTS = [
     stock: 48,
     color: 'oklch(0.94 0.03 95)',
     swatchColor: 'oklch(0.72 0.07 95)',
-    label: 'Native\nDeo',
+    label: 'Native\nDeodorant',
+    variants: [
+      { id: 'coconut-vanilla', label: 'Coconut & Vanilla', type: 'scent', price: 13.97, stock: 48, isDefault: true },
+      { id: 'lavender-rose', label: 'Lavender & Rose', type: 'scent', price: 13.97, stock: 42 },
+      { id: 'eucalyptus-mint', label: 'Eucalyptus & Mint', type: 'scent', price: 13.97, stock: 38 },
+      { id: 'cucumber-mint', label: 'Cucumber & Mint', type: 'scent', price: 13.97, stock: 35 },
+      { id: 'charcoal', label: 'Charcoal', type: 'scent', price: 13.97, stock: 28 },
+    ],
   },
   {
     id: 'colgate-total-clean-mint-toothpaste',
@@ -2403,7 +2415,7 @@ const PRODUCTS = [
   },
   {
     id: 'nars-radiant-creamy-concealer',
-    name: 'Radiant Creamy Concealer - Vanilla',
+    name: 'Radiant Creamy Concealer',
     brand: 'NARS',
     category: 'Maquillaje',
     need: 'Piel seca',
@@ -3162,7 +3174,7 @@ const PRODUCTS = [
   },
   {
     id: 'dr-teals-lavender-epsom-salt',
-    name: 'Pure Epsom Salt Soaking Solution Lavender',
+    name: 'Pure Epsom Salt Soaking Solution',
     brand: "Dr Teal's",
     category: 'Cuidado personal',
     need: 'Piel seca',
@@ -3190,7 +3202,14 @@ const PRODUCTS = [
     stock: 84,
     color: 'oklch(0.93 0.04 300)',
     swatchColor: 'oklch(0.68 0.08 300)',
-    label: 'Dr Teal\'s\nLavender',
+    label: 'Dr Teal\'s\nEpsom Salt',
+    variants: [
+      { id: 'lavender', label: 'Lavender', type: 'scent', price: 7.00, stock: 84, isDefault: true },
+      { id: 'eucalyptus-spearmint', label: 'Eucalyptus & Spearmint', type: 'scent', price: 7.00, stock: 72 },
+      { id: 'pink-himalayan', label: 'Pink Himalayan', type: 'scent', price: 7.49, stock: 65 },
+      { id: 'coconut-oil', label: 'Coconut Oil', type: 'scent', price: 7.49, stock: 58 },
+      { id: 'charcoal', label: 'Charcoal', type: 'scent', price: 7.49, stock: 45 },
+    ],
   },
   {
     id: 'dr-bronners-peppermint-pure-castile-soap',
@@ -3223,6 +3242,12 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.03 160)',
     swatchColor: 'oklch(0.54 0.06 165)',
     label: 'Dr Bronner\'s\nPeppermint',
+    variants: [
+      { id: '8oz', label: '8 fl oz', type: 'size', price: 9.00, stock: 65 },
+      { id: '16oz', label: '16 fl oz', type: 'size', price: 18.00, stock: 50, isDefault: true },
+      { id: '32oz', label: '32 fl oz', type: 'size', price: 27.00, stock: 35 },
+      { id: '64oz', label: '64 fl oz', type: 'size', price: 47.00, stock: 22 },
+    ],
   },
   {
     id: 'tree-hut-moroccan-rose-shea-sugar-scrub',
@@ -3353,7 +3378,7 @@ const PRODUCTS = [
   },
   {
     id: 'rare-beauty-soft-pinch-liquid-blush',
-    name: 'Soft Pinch Liquid Blush - Virtue',
+    name: 'Soft Pinch Liquid Blush',
     brand: 'Rare Beauty',
     category: 'Maquillaje',
     need: 'Piel seca',
@@ -3395,7 +3420,7 @@ const PRODUCTS = [
   },
   {
     id: 'nyx-fat-oil-lip-drip',
-    name: 'Fat Oil Lip Drip - Follow Back',
+    name: 'Fat Oil Lip Drip',
     brand: 'NYX Professional Makeup',
     category: 'Maquillaje',
     need: 'Piel seca',
@@ -3469,7 +3494,7 @@ const PRODUCTS = [
   },
   {
     id: 'nyx-butter-gloss',
-    name: 'Butter Gloss Non-Sticky Lip Gloss - Peaches and Cream',
+    name: 'Butter Gloss Non-Sticky Lip Gloss',
     brand: 'NYX Professional Makeup',
     category: 'Maquillaje',
     need: 'Piel seca',
@@ -3510,7 +3535,7 @@ const PRODUCTS = [
   },
   {
     id: 'old-spice-fiji-deodorant-stick',
-    name: 'Fiji Deodorant Stick',
+    name: 'Original Deodorant Stick',
     brand: 'Old Spice',
     category: 'Cuidado personal',
     need: 'Piel seca',
@@ -3538,11 +3563,18 @@ const PRODUCTS = [
     stock: 86,
     color: 'oklch(0.92 0.03 210)',
     swatchColor: 'oklch(0.56 0.08 220)',
-    label: 'Old Spice\nFiji',
+    label: 'Old Spice\nDeodorant',
+    variants: [
+      { id: 'fiji', label: 'Fiji', type: 'scent', price: 7.99, stock: 86, isDefault: true },
+      { id: 'swagger', label: 'Swagger', type: 'scent', price: 7.99, stock: 72 },
+      { id: 'pure-sport', label: 'Pure Sport', type: 'scent', price: 7.99, stock: 65 },
+      { id: 'timber', label: 'Timber', type: 'scent', price: 7.99, stock: 55 },
+      { id: 'original', label: 'Original', type: 'scent', price: 7.99, stock: 48 },
+    ],
   },
   {
     id: 'secret-clinical-strength-clean-lavender',
-    name: 'Clinical Strength Antiperspirant Clean Lavender',
+    name: 'Clinical Strength Invisible Solid Antiperspirant',
     brand: 'Secret',
     category: 'Cuidado personal',
     need: 'Piel seca',
@@ -3571,6 +3603,12 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.03 320)',
     swatchColor: 'oklch(0.66 0.10 320)',
     label: 'Secret\nClinical',
+    variants: [
+      { id: 'clean-lavender', label: 'Clean Lavender', type: 'scent', price: 13.49, stock: 58, isDefault: true },
+      { id: 'simply-pure', label: 'Simply Pure', type: 'scent', price: 13.49, stock: 45 },
+      { id: 'completely-clean', label: 'Completely Clean', type: 'scent', price: 13.49, stock: 38 },
+      { id: 'waterlily', label: 'Waterlily', type: 'scent', price: 13.49, stock: 30 },
+    ],
   },
   {
     id: 'degree-men-ultraclear-black-white',
@@ -3603,6 +3641,12 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.02 240)',
     swatchColor: 'oklch(0.48 0.05 240)',
     label: 'Degree\nUltraClear',
+    variants: [
+      { id: 'fresh', label: 'Fresh', type: 'scent', price: 8.99, stock: 72, isDefault: true },
+      { id: 'cool-rush', label: 'Cool Rush', type: 'scent', price: 8.99, stock: 58 },
+      { id: 'arctic-edge', label: 'Arctic Edge', type: 'scent', price: 8.99, stock: 45 },
+      { id: 'clean', label: 'Clean', type: 'scent', price: 8.99, stock: 38 },
+    ],
   },
   {
     id: 'dove-sensitive-beauty-bar',
@@ -5293,7 +5337,7 @@ const PRODUCTS = [
   },
   {
     id: 'charlotte-tilbury-pillow-talk-lipstick',
-    name: 'Matte Revolution Lipstick Pillow Talk',
+    name: 'Matte Revolution Lipstick',
     brand: 'Charlotte Tilbury',
     category: 'Maquillaje',
     need: 'Piel seca',
@@ -5322,7 +5366,7 @@ const PRODUCTS = [
     stock: 61,
     color: 'oklch(0.92 0.05 5)',
     swatchColor: 'oklch(0.70 0.12 5)',
-    label: 'Pillow Talk\nLipstick',
+    label: 'Matte Rev.\nLipstick',
     variants: [
       { id: 'pillow-talk', label: 'Pillow Talk', type: 'color', price: 41.00, stock: 38, color: '#D4907A', isDefault: true },
       { id: 'walk-of-no-shame', label: 'Walk of No Shame', type: 'color', price: 41.00, stock: 30, color: '#B5122B' },
@@ -5398,6 +5442,11 @@ const PRODUCTS = [
     color: 'oklch(0.91 0.04 15)',
     swatchColor: 'oklch(0.62 0.10 15)',
     label: 'Lash\nParadise',
+    variants: [
+      { id: 'blackest-black', label: 'Blackest Black', type: 'color', price: 12.99, stock: 96, color: '#0A0A0A', isDefault: true },
+      { id: 'brownish-black', label: 'Brownish Black', type: 'color', price: 12.99, stock: 45, color: '#2A1508' },
+      { id: 'midnight-blue', label: 'Midnight Blue', type: 'color', price: 12.99, stock: 32, color: '#0A0A40' },
+    ],
   },
   {
     id: 'tarte-shape-tape-concealer',
