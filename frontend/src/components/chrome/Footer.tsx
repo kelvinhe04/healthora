@@ -30,9 +30,9 @@ const letterVariants: Variants = {
     y: 0,
     transition: {
       type: 'spring',
-      stiffness: 45,
-      damping: 22,
-      mass: 0.8,
+      stiffness: 75,
+      damping: 24,
+      mass: 0.7,
     },
   },
 };
@@ -44,8 +44,8 @@ const wordVariants: Variants = {
     y: 0,
     transition: {
       type: 'spring',
-      stiffness: 40,
-      damping: 20,
+      stiffness: 70,
+      damping: 22,
     },
   },
 };
@@ -58,8 +58,8 @@ const iconVariants: Variants = {
     scale: 1,
     transition: {
       type: 'spring',
-      stiffness: 50,
-      damping: 18,
+      stiffness: 80,
+      damping: 20,
     },
   },
 };
@@ -71,8 +71,8 @@ const linkVariants: Variants = {
     y: 0,
     transition: {
       type: 'spring',
-      stiffness: 45,
-      damping: 20,
+      stiffness: 75,
+      damping: 22,
     },
   },
 };
@@ -84,8 +84,8 @@ const inputVariants: Variants = {
     x: 0,
     transition: {
       type: 'spring',
-      stiffness: 40,
-      damping: 18,
+      stiffness: 70,
+      damping: 20,
     },
   },
 };
@@ -97,8 +97,8 @@ const buttonVariants: Variants = {
     x: 0,
     transition: {
       type: 'spring',
-      stiffness: 40,
-      damping: 18,
+      stiffness: 70,
+      damping: 20,
     },
   },
 };
@@ -110,9 +110,9 @@ const bottomVariants: Variants = {
     y: 0,
     transition: {
       type: 'spring',
-      stiffness: 20,
-      damping: 30,
-      mass: 1.2,
+      stiffness: 40,
+      damping: 28,
+      mass: 1.0,
     },
   },
 };
@@ -323,15 +323,15 @@ export function Footer({ onNav }: FooterProps) {
         <div>
           <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 48, letterSpacing: '-0.03em', lineHeight: 0.95, marginBottom: 20 }}>
             {healthora.map((letter, i) => (
-              <AnimatedLetter key={i} delay={i * 0.08} isAnimating={isAnimating}>{letter}</AnimatedLetter>
+              <AnimatedLetter key={i} delay={i * 0.05} isAnimating={isAnimating}>{letter}</AnimatedLetter>
             ))}
           </div>
           <p style={{ fontSize: 14, lineHeight: 1.55, opacity: 0.72, maxWidth: 260, fontFamily: '"Geist", sans-serif' }}>
-            <AnimatedWord delay={0.7} isAnimating={isAnimating}>{description}</AnimatedWord>
+            <AnimatedWord delay={0.45} isAnimating={isAnimating}>{description}</AnimatedWord>
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 22 }}>
             {socials.map((social, i) => (
-              <AnimatedIcon key={social.id} delay={0.9 + i * 0.1} isAnimating={isAnimating}>
+              <AnimatedIcon key={social.id} delay={0.58 + i * 0.07} isAnimating={isAnimating}>
                 <a
                   href="#"
                   onClick={(e) => e.preventDefault()}
@@ -358,7 +358,7 @@ export function Footer({ onNav }: FooterProps) {
               variants={wordVariants}
               initial="hidden"
               animate={isAnimating ? 'visible' : 'hidden'}
-              transition={{ delay: 1.3 + colIndex * 0.12 }}
+              transition={{ delay: 0.85 + colIndex * 0.08 }}
               style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6, marginBottom: 20 }}
             >
               {col.title}
@@ -367,7 +367,7 @@ export function Footer({ onNav }: FooterProps) {
               {col.items.map((item, itemIndex) => (
                 <AnimatedLink 
                   key={item} 
-                  delay={1.4 + colIndex * 0.12 + itemIndex * 0.06} 
+                  delay={0.92 + colIndex * 0.08 + itemIndex * 0.04}
                   isAnimating={isAnimating}
                   onClick={() => col.isCategory && onNav?.('catalog', { category: formatCategoryName(item) })}
                   
@@ -384,7 +384,7 @@ export function Footer({ onNav }: FooterProps) {
             variants={wordVariants}
             initial="hidden"
             animate={isAnimating ? 'visible' : 'hidden'}
-            transition={{ delay: 2.0 }}
+            transition={{ delay: 1.3 }}
             style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6, marginBottom: 20 }}
           >
             Newsletter
@@ -393,13 +393,13 @@ export function Footer({ onNav }: FooterProps) {
             variants={wordVariants}
             initial="hidden"
             animate={isAnimating ? 'visible' : 'hidden'}
-            transition={{ delay: 2.1 }}
+            transition={{ delay: 1.4 }}
             style={{ fontSize: 14, lineHeight: 1.55, opacity: 0.88, marginBottom: 18, fontFamily: '"Geist", sans-serif' }}
           >
             Recibe ofertas, lanzamientos y consejos de bienestar.
           </motion.p>
           <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: 'rgba(0,0,0,0.22)', borderRadius: 999, padding: 4, alignItems: 'center', overflow: 'hidden', gap: 4, width: 'fit-content', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <AnimatedInput delay={2.2} isAnimating={isAnimating} style={{ width: 160, minWidth: 0 }}>
+            <AnimatedInput delay={1.5} isAnimating={isAnimating} style={{ width: 160, minWidth: 0 }}>
               <input
                 className="newsletter-input"
                 type="email"
@@ -417,7 +417,7 @@ export function Footer({ onNav }: FooterProps) {
                 style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--cream)', WebkitTextFillColor: 'var(--cream)', caretColor: 'var(--cream)', padding: '10px 12px', fontSize: 13, fontFamily: '"Geist", sans-serif', opacity: status === 'loading' ? 0.7 : 1 }}
               />
             </AnimatedInput>
-            <RevealButton delay={2.4} isAnimating={isAnimating}>
+            <RevealButton delay={1.6} isAnimating={isAnimating}>
               <AnimatedButton
                 type="submit"
                 variant="lime"
@@ -438,7 +438,7 @@ export function Footer({ onNav }: FooterProps) {
       <motion.div
         initial={{ opacity: 0, y: 80 }}
         animate={isAnimating ? 'visible' : 'hidden'}
-        transition={{ duration: 0.8, delay: 2.8 }}
+        transition={{ duration: 0.6, delay: 1.9 }}
         variants={bottomVariants}
         style={{ borderTop: '1px solid rgba(0,0,0,0.12)', paddingTop: 24, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 0, justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.55 }}
       >

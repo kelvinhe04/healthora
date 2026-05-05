@@ -134,6 +134,7 @@ function getEmailAssetBaseUrl(): string {
 
 function toAbsoluteAssetUrl(url: string): string {
   if (/^https?:\/\//i.test(url)) return url;
+  if (/^data:/i.test(url)) return url;
   return `${getEmailAssetBaseUrl()}/${url.replace(/^\/+/, '')}`;
 }
 
@@ -146,8 +147,14 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, '&#39;');
 }
 
-function getProductImageUrl(item: OrderItem): string {
-  if (item.imageUrl) return toAbsoluteAssetUrl(item.imageUrl);
+function getProductImageUrl(item: OrderItem, cidMap?: Map<string, string>): string {
+  if (item.imageUrl) {
+    if (/^data:/i.test(item.imageUrl)) {
+      const cid = cidMap?.get(item.productId);
+      return cid ? `cid:${cid}` : '';
+    }
+    return toAbsoluteAssetUrl(item.imageUrl);
+  }
   if (item.category) {
     const folder = CATEGORY_FOLDER_BY_ID[item.category] || item.category;
     return toAbsoluteAssetUrl(`/products/${folder}/${item.productId}-1.jpg`);
@@ -169,7 +176,7 @@ function formatDate(date: Date): string {
   }).format(new Date(date));
 }
 
-function buildProductRows(items: OrderItem[]): string {
+function buildProductRows(items: OrderItem[], cidMap?: Map<string, string>): string {
   return items
     .map((item) => {
       const productName = escapeHtml(item.productName);
@@ -180,7 +187,7 @@ function buildProductRows(items: OrderItem[]): string {
             <tr>
               <td width="76" style="vertical-align: middle;">
                 <img
-                  src="${getProductImageUrl(item)}"
+                  src="${getProductImageUrl(item, cidMap)}"
                   alt="${productName}"
                   width="76"
                   height="76"
@@ -272,6 +279,22 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
     return;
   }
 
+  // Build CID map for base64 product images so they embed correctly in all email clients
+  const cidMap = new Map<string, string>();
+  const attachments: Array<{ cid: string; filename: string; content: Buffer; contentType: string }> = [];
+  for (const item of items) {
+    if (item.imageUrl && /^data:/i.test(item.imageUrl)) {
+      const match = item.imageUrl.match(/^data:([^;]+);base64,(.+)$/);
+      if (match) {
+        const [, contentType, b64] = match;
+        const ext = contentType.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg';
+        const cid = `product-img-${item.productId}`;
+        cidMap.set(item.productId, cid);
+        attachments.push({ cid, filename: `${item.productId}.${ext}`, content: Buffer.from(b64, 'base64'), contentType });
+      }
+    }
+  }
+
   const safeCustomerName = escapeHtml(customerName);
   const safeOrderNumber = escapeHtml(orderId.slice(-8).toUpperCase());
   const ordersUrl = `${getFrontendUrl()}/?view=orders`;
@@ -340,7 +363,7 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
             <td style="padding: 18px 38px 20px 38px;">
               <p style="margin: 0 0 12px 0; font-size: 12px; color: #11845b; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">Productos adquiridos</p>
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border: 1px solid #dfe8e1; border-radius: 18px; overflow: hidden;">
-                ${buildProductRows(items)}
+                ${buildProductRows(items, cidMap)}
               </table>
             </td>
           </tr>
@@ -477,6 +500,7 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
       to: customerEmail,
       subject: `Tu pedido #${orderId.slice(-8).toUpperCase()} ha sido confirmado - Healthora`,
       html,
+      attachments: attachments.length > 0 ? attachments : undefined,
     });
 
     console.log('[EMAIL] Order confirmation sent to:', customerEmail, 'MessageId:', info.messageId);

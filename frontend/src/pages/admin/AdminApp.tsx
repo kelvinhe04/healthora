@@ -1639,18 +1639,6 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     },
   });
 
-  const [showBackToTop, setShowBackToTop] = useState(false);
-  useEffect(() => {
-    if (page !== "products" && page !== "orders") {
-      setShowBackToTop(false);
-      return;
-    }
-    const onScroll = () => setShowBackToTop(window.scrollY > 400);
-    onScroll();
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [page]);
-
   const orders = ordersQuery.data || [];
   const products = productsQuery.data || [];
   const users = usersQuery.data || [];
@@ -4526,57 +4514,6 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
           </>
         )}
       </div>
-      {showBackToTop && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          aria-label="Volver arriba"
-          style={{
-            position: "fixed",
-            right: 28,
-            bottom: 28,
-            width: 52,
-            height: 52,
-            borderRadius: 999,
-            border: "1px solid rgba(255,255,255,0.12)",
-            background: "var(--green)",
-            color: "var(--lime)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            boxShadow: "0 18px 40px -18px rgba(0,0,0,0.35)",
-            zIndex: 80,
-            transition: "transform 180ms ease, opacity 180ms ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-2px) scale(1.04)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0) scale(1)";
-          }}
-        >
-          <span
-            style={{
-              transform: "rotate(-90deg)",
-              display: "inline-flex",
-            }}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M5 12h14" />
-              <path d="m13 6 6 6-6 6" />
-            </svg>
-          </span>
-        </button>
-      )}
     </div>
   );
 }
