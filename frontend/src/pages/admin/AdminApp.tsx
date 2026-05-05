@@ -2,11 +2,13 @@ import {
   type ChangeEvent,
   type CSSProperties,
   type DragEvent,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useBreakpoint } from "../../hooks/useBreakpoint";
 import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -131,6 +133,20 @@ const fulfillmentStatusOptions: (FulfillmentStatus | "")[] = [
   "shipped",
   "delivered",
 ];
+
+const fulfillmentStatusSequence: FulfillmentStatus[] = [
+  "unfulfilled",
+  "processing",
+  "shipped",
+  "delivered",
+];
+
+function getNextFulfillmentStatus(current: FulfillmentStatus | undefined): FulfillmentStatus | null {
+  const idx = fulfillmentStatusSequence.indexOf(current || "unfulfilled");
+  return idx >= 0 && idx < fulfillmentStatusSequence.length - 1
+    ? fulfillmentStatusSequence[idx + 1]
+    : null;
+}
 const fulfillmentStatusLabels: Record<FulfillmentStatus | "", string> = {
   "": "Todos",
   unfulfilled: "Pendiente",
@@ -1346,7 +1362,13 @@ function AdminPanel({
   const isTablet = bp === 'tablet';
   const isSmall = isMobile || isTablet;
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [page, setPage] = useState<AdminPage>("dashboard");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [page, setPage] = useState<AdminPage>(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const urlPage = sp.get("section") as AdminPage | null;
+    if (urlPage && ["dashboard","orders","products","users","sales","earnings"].includes(urlPage)) return urlPage;
+    return (localStorage.getItem("healthora_admin_page") as AdminPage) || "dashboard";
+  });
 
   useEffect(() => {
     initAdminSession();
@@ -1361,6 +1383,12 @@ function AdminPanel({
     if (typeof window !== "undefined" && page !== "dashboard") {
       localStorage.setItem("healthora_admin_page", page);
     }
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (page === "dashboard") next.delete("section");
+      else next.set("section", page);
+      return next;
+    }, { replace: true });
   }, [page]);
 const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const [usersLoading, setUsersLoading] = useState(true);
@@ -1378,11 +1406,34 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     Record<string, FulfillmentStatus>
   >({});
 
-  // Products state
-  const [productModal, setProductModal] = useState<{
+  // Products state — URL-synced modal
+  const [productModal, setProductModalState] = useState<{
     mode: "add" | "edit";
     product?: Product;
   } | null>(null);
+
+  const openProductModal = useCallback((modal: { mode: "add" | "edit"; product?: Product } | null) => {
+    setProductModalState(modal);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (!modal) {
+        next.delete("modal");
+        next.delete("productId");
+      } else {
+        next.set("section", "products");
+        next.set("modal", modal.mode);
+        if (modal.mode === "edit" && modal.product?._id) {
+          next.set("productId", modal.product._id);
+        } else {
+          next.delete("productId");
+        }
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // Alias so existing call sites don't need renaming
+  const setProductModal = openProductModal;
   const [productSuccess, setProductSuccess] = useState<{
     kicker: string;
     title: string;
@@ -1432,12 +1483,33 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const productsQuery = useQuery({
     queryKey: ["admin-products"],
     queryFn: async () => api.admin.products.list(await getAdminToken()),
-    enabled: page === "products",
+    enabled: page === "products" || searchParams.get("modal") === "edit",
   });
   const productsCountQuery = useQuery({
     queryKey: ["admin-products-count"],
     queryFn: async () => api.admin.products.count(await getAdminToken()),
   });
+
+  // Open modal from URL on deep-link (e.g. ?section=products&modal=edit&productId=xxx)
+  const urlModalHandledRef = useRef(false);
+  useEffect(() => {
+    if (urlModalHandledRef.current) return;
+    const urlModal = searchParams.get("modal");
+    if (!urlModal) return;
+    if (urlModal === "add") {
+      urlModalHandledRef.current = true;
+      setProductModalState({ mode: "add" });
+    } else if (urlModal === "edit") {
+      const productId = searchParams.get("productId");
+      if (!productId) return;
+      if (!productsQuery.data) return; // wait for data
+      const product = (productsQuery.data as Product[]).find((p) => p._id === productId);
+      if (product) {
+        urlModalHandledRef.current = true;
+        setProductModalState({ mode: "edit", product });
+      }
+    }
+  }, [searchParams, productsQuery.data]);
   const usersQuery = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () =>
@@ -2533,11 +2605,12 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                           ) && (
                             <>
                               <select
-                                value={
-                                  orderStatusDrafts[order._id] ||
-                                  order.fulfillmentStatus ||
-                                  "unfulfilled"
-                                }
+                                value={(() => {
+                                  const draft = orderStatusDrafts[order._id];
+                                  const current = order.fulfillmentStatus || "unfulfilled";
+                                  const next = getNextFulfillmentStatus(order.fulfillmentStatus);
+                                  return draft && draft === next ? draft : current;
+                                })()}
                                 onChange={(e) => {
                                   const nextStatus = e.target
                                     .value as FulfillmentStatus;
@@ -2555,13 +2628,16 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                                   fontSize: 12,
                                 }}
                               >
-                                {fulfillmentStatusOptions
-                                  .filter(Boolean)
-                                  .map((s) => (
+                                {(() => {
+                                  const current = order.fulfillmentStatus || "unfulfilled";
+                                  const next = getNextFulfillmentStatus(order.fulfillmentStatus);
+                                  const opts: FulfillmentStatus[] = next ? [current as FulfillmentStatus, next] : [current as FulfillmentStatus];
+                                  return opts.map((s) => (
                                     <option key={s} value={s}>
                                       {fulfillmentStatusLabels[s]}
                                     </option>
-                                  ))}
+                                  ));
+                                })()}
                               </select>
                               {orderStatusDrafts[order._id] &&
                                 orderStatusDrafts[order._id] !==

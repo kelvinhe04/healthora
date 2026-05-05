@@ -248,24 +248,43 @@ function buildFulfillmentSteps(currentStatus: FulfillmentStatus): string {
     `;
   }
 
+  // Build timeline row: circle + connector line + circle ...
+  // Each step cell contains the circle; between steps we insert a connector cell.
+  const cellsHtml = steps
+    .map((step, index) => {
+      const isActive = index <= currentIndex;
+      const isLast = index === steps.length - 1;
+      const lineActive = index < currentIndex; // connector after this step is active if next step is also done
+
+      const stepCell = `
+        <td align="center" style="vertical-align: top; width: 30px;">
+          <table cellpadding="0" cellspacing="0" border="0" align="center">
+            <tr>
+              <td width="30" height="30" align="center" style="width: 30px; height: 30px; border-radius: 999px; background-color: ${isActive ? '#213a27' : '#dfe8e1'}; color: ${isActive ? '#c8ee2e' : '#7b8d81'}; font-size: 13px; line-height: 30px; font-weight: 800;">${index + 1}</td>
+            </tr>
+            <tr>
+              <td align="center" style="padding-top: 6px; font-size: 11px; line-height: 14px; color: ${isActive ? '#213a27' : '#7b8d81'}; font-weight: 700; white-space: nowrap;">${step.label}</td>
+            </tr>
+          </table>
+        </td>`;
+
+      const connectorCell = isLast ? '' : `
+        <td style="vertical-align: top; padding-top: 15px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="height: 2px; background-color: ${lineActive ? '#213a27' : '#dfe8e1'}; font-size: 0; line-height: 0;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>`;
+
+      return stepCell + connectorCell;
+    })
+    .join('');
+
   return `
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr>
-        ${steps
-          .map((step, index) => {
-            const isActive = index <= currentIndex;
-            return `
-              <td align="center" width="25%" style="vertical-align: top;">
-                <table cellpadding="0" cellspacing="0" border="0" align="center">
-                  <tr>
-                    <td width="30" height="30" align="center" style="width: 30px; height: 30px; border-radius: 999px; background-color: ${isActive ? '#213a27' : '#dfe8e1'}; color: ${isActive ? '#c8ee2e' : '#7b8d81'}; font-size: 14px; line-height: 30px; font-weight: 800;">${index + 1}</td>
-                  </tr>
-                </table>
-                <p style="margin: 8px 0 0 0; font-size: 12px; line-height: 16px; color: ${isActive ? '#213a27' : '#7b8d81'}; font-weight: 700;">${step.label}</p>
-              </td>
-            `;
-          })
-          .join('')}
+        ${cellsHtml}
       </tr>
     </table>
   `;
