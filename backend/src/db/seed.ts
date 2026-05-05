@@ -49,6 +49,11 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.03 75)',
     swatchColor: 'oklch(0.75 0.14 65)',
     label: 'Nature Made\nD3 5000\n90 Ct',
+    variants: [
+      { id: '90ct', label: '90 cápsulas', type: 'count', price: 11.99, stock: 85, isDefault: true },
+      { id: '180ct', label: '180 cápsulas', type: 'count', price: 19.99, stock: 45 },
+      { id: '360ct', label: '360 cápsulas', type: 'count', price: 29.99, stock: 20 },
+    ],
   },
   {
     id: 'centrum-women-multivitamin',
@@ -82,6 +87,11 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.03 20)',
     swatchColor: 'oklch(0.73 0.15 20)',
     label: 'Centrum\nWomen\n200 Ct',
+    variants: [
+      { id: '100ct', label: '100 tabletas', type: 'count', price: 12.99, stock: 55 },
+      { id: '200ct', label: '200 tabletas', type: 'count', price: 20.73, stock: 64, isDefault: true },
+      { id: '300ct', label: '300 tabletas', type: 'count', price: 28.99, stock: 28 },
+    ],
   },
   {
     id: 'natures-way-alive-womens-ultra',
@@ -115,6 +125,11 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.05 135)',
     swatchColor: 'oklch(0.58 0.14 140)',
     label: 'Alive!\nWomen\n60 Ct',
+    variants: [
+      { id: '30ct', label: '30 tabletas', type: 'count', price: 14.99, stock: 45 },
+      { id: '60ct', label: '60 tabletas', type: 'count', price: 23.40, stock: 41, isDefault: true },
+      { id: '90ct', label: '90 tabletas', type: 'count', price: 32.99, stock: 22 },
+    ],
   },
   {
     id: 'now-foods-methyl-b12-1000-mcg',
@@ -148,6 +163,11 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.02 220)',
     swatchColor: 'oklch(0.60 0.10 235)',
     label: 'NOW\nB-12\n100 Ct',
+    variants: [
+      { id: '50ct', label: '50 pastillas', type: 'count', price: 8.99, stock: 55 },
+      { id: '100ct', label: '100 pastillas', type: 'count', price: 12.99, stock: 67, isDefault: true },
+      { id: '200ct', label: '200 pastillas', type: 'count', price: 21.99, stock: 32 },
+    ],
   },
   {
     id: 'garden-of-life-vitamin-code-women',
@@ -214,6 +234,10 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.04 18)',
     swatchColor: 'oklch(0.73 0.13 18)',
     label: 'Nature Made\nFor Her\n90 Ct',
+    variants: [
+      { id: '90ct', label: '90 gummies', type: 'count', price: 18.49, stock: 63, isDefault: true },
+      { id: '150ct', label: '150 gummies', type: 'count', price: 27.99, stock: 32 },
+    ],
   },
   {
     id: 'nature-made-advanced-multivitamin-gummies-for-her-50',
@@ -565,6 +589,11 @@ const PRODUCTS = [
     color: 'oklch(0.88 0.04 75)',
     swatchColor: 'oklch(0.70 0.14 65)',
     label: 'Ultimate\nOmega',
+    variants: [
+      { id: '60ct', label: '60 cápsulas', type: 'count', price: 29.99, stock: 35 },
+      { id: '120ct', label: '120 cápsulas', type: 'count', price: 45.99, stock: 28, isDefault: true },
+      { id: '180ct', label: '180 cápsulas', type: 'count', price: 62.99, stock: 15 },
+    ],
   },
   {
     id: 'vital-proteins-collagen-peptides',
@@ -584,6 +613,12 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.02 85)',
     swatchColor: 'oklch(0.84 0.04 85)',
     label: 'Vital\nCollagen',
+    variants: [
+      { id: '7oz-unflavored', label: '7 oz · Sin sabor', type: 'size', price: 23.99, stock: 35 },
+      { id: '10oz-unflavored', label: '10 oz · Sin sabor', type: 'size', price: 36.99, stock: 40, isDefault: true },
+      { id: '10oz-vanilla', label: '10 oz · Vainilla', type: 'size', price: 38.99, stock: 28 },
+      { id: '20oz-unflavored', label: '20 oz · Sin sabor', type: 'size', price: 65.99, stock: 18 },
+    ],
   },
   {
     id: 'sports-research-creatine-monohydrate',
@@ -603,6 +638,10 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.04 115)',
     swatchColor: 'oklch(0.60 0.14 115)',
     label: 'Sports Research\nCreatine',
+    variants: [
+      { id: '500g', label: '500 g', type: 'weight', price: 23.99, stock: 45, isDefault: true },
+      { id: '1kg', label: '1 kg', type: 'weight', price: 39.99, stock: 25 },
+    ],
   },
   {
     id: 'garden-of-life-once-daily-womens-probiotic',
@@ -641,6 +680,13 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.04 80)',
     swatchColor: 'oklch(0.72 0.15 75)',
     label: 'Nuun Sport\nHydration',
+    variants: [
+      { id: 'strawberry-lemonade', label: 'Strawberry Lemonade', type: 'flavor', price: 9.99, stock: 55, isDefault: true },
+      { id: 'citrus-fruit', label: 'Citrus Fruit', type: 'flavor', price: 9.99, stock: 45 },
+      { id: 'tri-berry', label: 'Tri-Berry', type: 'flavor', price: 9.99, stock: 40 },
+      { id: 'watermelon', label: 'Watermelon', type: 'flavor', price: 9.99, stock: 35 },
+      { id: 'grape', label: 'Grape', type: 'flavor', price: 9.99, stock: 30 },
+    ],
   },
   {
     id: 'olly-goodbye-stress',
@@ -698,6 +744,11 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.05 285)',
     swatchColor: 'oklch(0.56 0.14 285)',
     label: 'OLLY\nSleep',
+    variants: [
+      { id: 'blackberry-zen-50', label: 'Blackberry Zen 50 ct', type: 'count', price: 12.99, stock: 55, isDefault: true },
+      { id: 'blackberry-zen-100', label: 'Blackberry Zen 100 ct', type: 'count', price: 21.99, stock: 35 },
+      { id: 'tropical-mango-50', label: 'Tropical Mango 50 ct', type: 'flavor', price: 12.99, stock: 40 },
+    ],
   },
   {
     id: 'olly-laser-focus',
@@ -888,6 +939,13 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.15 80)',
     swatchColor: 'oklch(0.70 0.20 80)',
     label: 'LMNT\nCitrus',
+    variants: [
+      { id: 'citrus-salt', label: 'Citrus Salt', type: 'flavor', price: 34.99, stock: 45, isDefault: true },
+      { id: 'orange-salt', label: 'Orange Salt', type: 'flavor', price: 34.99, stock: 38 },
+      { id: 'raspberry-salt', label: 'Raspberry Salt', type: 'flavor', price: 34.99, stock: 35 },
+      { id: 'mango-chili', label: 'Mango Chili', type: 'flavor', price: 34.99, stock: 28 },
+      { id: 'watermelon-salt', label: 'Watermelon Salt', type: 'flavor', price: 34.99, stock: 30 },
+    ],
   },
   {
     id: 'orgain-organic-protein-superfoods-powder',
@@ -1023,6 +1081,10 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.02 200)',
     swatchColor: 'oklch(0.80 0.06 210)',
     label: 'HA 2%\n+ B5',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 7.90, stock: 55, isDefault: true },
+      { id: '60ml', label: '60 ml', type: 'size', price: 13.90, stock: 38 },
+    ],
   },
 
   // HIDRATANTES
@@ -1044,6 +1106,11 @@ const PRODUCTS = [
     color: 'oklch(0.96 0.01 85)',
     swatchColor: 'oklch(0.92 0.015 85)',
     label: 'CeraVe\nCream',
+    variants: [
+      { id: '8oz', label: '8 oz (227 g)', type: 'size', price: 13.99, stock: 55 },
+      { id: '16oz', label: '16 oz (453 g)', type: 'size', price: 19.99, stock: 48, isDefault: true },
+      { id: '19oz', label: '19 oz Tarro', type: 'size', price: 22.99, stock: 32 },
+    ],
   },
   {
     id: 'cerave-pm-facial-moisturizing-lotion',
@@ -1082,6 +1149,10 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.02 200)',
     swatchColor: 'oklch(0.70 0.08 210)',
     label: 'Toleriane\nRepair',
+    variants: [
+      { id: '40ml', label: '40 ml', type: 'size', price: 16.99, stock: 38 },
+      { id: '75ml', label: '75 ml', type: 'size', price: 22.99, stock: 32, isDefault: true },
+    ],
   },
   {
     id: 'neutrogena-hydro-boost-water-gel',
@@ -1101,6 +1172,10 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.03 185)',
     swatchColor: 'oklch(0.75 0.08 195)',
     label: 'Hydro\nBoost',
+    variants: [
+      { id: '1-7oz', label: '1.7 oz (50 ml)', type: 'size', price: 17.99, stock: 45, isDefault: true },
+      { id: '3oz', label: '3 oz (88 ml)', type: 'size', price: 25.99, stock: 32 },
+    ],
   },
   {
     id: 'cetaphil-moisturizing-cream',
@@ -1120,6 +1195,11 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.02 70)',
     swatchColor: 'oklch(0.86 0.04 70)',
     label: 'Cetaphil\nCream',
+    variants: [
+      { id: '8oz', label: '8 oz (227 g)', type: 'size', price: 10.99, stock: 50 },
+      { id: '16oz', label: '16 oz (453 g)', type: 'size', price: 16.99, stock: 42, isDefault: true },
+      { id: '20oz', label: '20 oz (567 g)', type: 'size', price: 20.99, stock: 28 },
+    ],
   },
   {
     id: 'the-ordinary-natural-moisturizing-factors-ha',
@@ -1139,6 +1219,10 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.012 85)',
     swatchColor: 'oklch(0.85 0.02 85)',
     label: 'The Ordinary\nNMF + HA',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 5.90, stock: 55 },
+      { id: '100ml', label: '100 ml', type: 'size', price: 9.90, stock: 45, isDefault: true },
+    ],
   },
   {
     id: 'paulas-choice-omega-complex-moisturizer',
@@ -1543,6 +1627,13 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.04 55)',
     swatchColor: 'oklch(0.55 0.12 55)',
     label: 'ON\nWhey',
+    variants: [
+      { id: 'double-rich-chocolate', label: 'Double Rich Chocolate', type: 'flavor', price: 34.99, stock: 40, isDefault: true },
+      { id: 'vanilla-ice-cream', label: 'Vanilla Ice Cream', type: 'flavor', price: 34.99, stock: 35 },
+      { id: 'strawberry-banana', label: 'Strawberry Banana', type: 'flavor', price: 34.99, stock: 30 },
+      { id: 'rocky-road', label: 'Rocky Road', type: 'flavor', price: 34.99, stock: 22 },
+      { id: 'white-chocolate-raspberry', label: 'White Choc Raspberry', type: 'flavor', price: 34.99, stock: 20 },
+    ],
   },
   {
     id: 'optimum-nutrition-amino-energy',
@@ -1581,6 +1672,13 @@ const PRODUCTS = [
     color: 'oklch(0.88 0.05 35)',
     swatchColor: 'oklch(0.50 0.12 35)',
     label: 'BSN\nSYNTHA-6',
+    variants: [
+      { id: 'chocolate-milkshake', label: 'Chocolate Milkshake', type: 'flavor', price: 34.99, stock: 38, isDefault: true },
+      { id: 'vanilla-ice-cream', label: 'Vanilla Ice Cream', type: 'flavor', price: 34.99, stock: 30 },
+      { id: 'strawberry-milkshake', label: 'Strawberry Milkshake', type: 'flavor', price: 34.99, stock: 25 },
+      { id: 'choc-peanut-butter', label: 'Choc Peanut Butter', type: 'flavor', price: 34.99, stock: 20 },
+      { id: 'banana', label: 'Banana', type: 'flavor', price: 34.99, stock: 15 },
+    ],
   },
   {
     id: 'cellucor-c4-original-pre-workout',
@@ -1600,6 +1698,13 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.05 65)',
     swatchColor: 'oklch(0.65 0.13 60)',
     label: 'C4\nOriginal',
+    variants: [
+      { id: 'fruit-punch', label: 'Fruit Punch', type: 'flavor', price: 29.99, stock: 42, isDefault: true },
+      { id: 'watermelon', label: 'Watermelon', type: 'flavor', price: 29.99, stock: 38 },
+      { id: 'orange-burst', label: 'Orange Burst', type: 'flavor', price: 29.99, stock: 30 },
+      { id: 'pink-lemonade', label: 'Pink Lemonade', type: 'flavor', price: 29.99, stock: 28 },
+      { id: 'blue-razz', label: 'Blue Razz', type: 'flavor', price: 29.99, stock: 25 },
+    ],
   },
   {
     id: 'muscle-milk-genuine-protein-shake',
@@ -2108,6 +2213,12 @@ const PRODUCTS = [
     color: 'oklch(0.86 0.02 250)',
     swatchColor: 'oklch(0.38 0.05 250)',
     label: 'Dior\nSauvage',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 59.99, stock: 25 },
+      { id: '60ml', label: '60 ml', type: 'size', price: 89.99, stock: 30 },
+      { id: '100ml', label: '100 ml', type: 'size', price: 130.97, stock: 19, isDefault: true },
+      { id: '200ml', label: '200 ml', type: 'size', price: 185.00, stock: 8 },
+    ],
   },
   {
     id: 'versace-bright-crystal-eau-de-toilette',
@@ -2127,6 +2238,12 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.04 5)',
     swatchColor: 'oklch(0.73 0.12 10)',
     label: 'Versace\nBright Crystal',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 39.99, stock: 30 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 55.99, stock: 35 },
+      { id: '90ml', label: '90 ml', type: 'size', price: 79.99, stock: 22, isDefault: true },
+      { id: '200ml', label: '200 ml', type: 'size', price: 115.00, stock: 10 },
+    ],
   },
   {
     id: 'victorias-secret-bombshell-eau-de-parfum',
@@ -2146,6 +2263,11 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.05 345)',
     swatchColor: 'oklch(0.68 0.15 345)',
     label: 'Bombshell\nEDP',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 35.99, stock: 35 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 55.99, stock: 28, isDefault: true },
+      { id: '100ml', label: '100 ml', type: 'size', price: 79.99, stock: 15 },
+    ],
   },
   {
     id: 'sol-de-janeiro-cheirosa-62-mist',
@@ -2165,6 +2287,10 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.05 80)',
     swatchColor: 'oklch(0.72 0.14 75)',
     label: 'Cheirosa\n62',
+    variants: [
+      { id: '90ml', label: '90 ml Mist', type: 'size', price: 20.00, stock: 45, isDefault: true },
+      { id: '240ml', label: '240 ml Mist', type: 'size', price: 38.00, stock: 30 },
+    ],
   },
   {
     id: 'ariana-grande-cloud-eau-de-parfum',
@@ -2184,6 +2310,11 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.02 235)',
     swatchColor: 'oklch(0.74 0.06 235)',
     label: 'Cloud\nEDP',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 40.00, stock: 30 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 60.00, stock: 35, isDefault: true },
+      { id: '100ml', label: '100 ml', type: 'size', price: 85.00, stock: 18 },
+    ],
   },
 
   // MAQUILLAJE
@@ -2219,6 +2350,12 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.03 20)',
     swatchColor: 'oklch(0.63 0.09 20)',
     label: 'Sky High\nMascara',
+    variants: [
+      { id: 'very-black', label: 'Very Black', type: 'color', price: 13.99, stock: 45, color: '#0A0A0A', isDefault: true },
+      { id: 'black', label: 'Black', type: 'color', price: 13.99, stock: 30, color: '#1A1A1A' },
+      { id: 'brownish-black', label: 'Brownish Black', type: 'color', price: 13.99, stock: 20, color: '#2D1B0E' },
+      { id: 'cosmic-black', label: 'Cosmic Black', type: 'color', price: 13.99, stock: 15, color: '#0A0015' },
+    ],
   },
   {
     id: 'elf-halo-glow-liquid-filter',
@@ -2253,6 +2390,16 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.02 70)',
     swatchColor: 'oklch(0.80 0.05 70)',
     label: 'Halo Glow\nFilter',
+    variants: [
+      { id: '1-fair', label: '1 Fair', type: 'color', price: 14.96, stock: 30, color: '#F2D8C0' },
+      { id: '2-fair-light', label: '2 Fair/Light', type: 'color', price: 14.96, stock: 35, color: '#ECCBB0' },
+      { id: '3-light', label: '3 Light', type: 'color', price: 14.96, stock: 40, color: '#E0B890', isDefault: true },
+      { id: '4-light-medium', label: '4 Light/Med', type: 'color', price: 14.96, stock: 38, color: '#D4A878' },
+      { id: '5-medium', label: '5 Medium', type: 'color', price: 14.96, stock: 32, color: '#C89058' },
+      { id: '6-medium-tan', label: '6 Med/Tan', type: 'color', price: 14.96, stock: 25, color: '#B87840' },
+      { id: '7-tan', label: '7 Tan', type: 'color', price: 14.96, stock: 20, color: '#A06030' },
+      { id: '8-deep', label: '8 Rich/Deep', type: 'color', price: 14.96, stock: 15, color: '#7A4020' },
+    ],
   },
   {
     id: 'nars-radiant-creamy-concealer',
@@ -2287,6 +2434,14 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.03 55)',
     swatchColor: 'oklch(0.72 0.09 55)',
     label: 'NARS\nConcealer',
+    variants: [
+      { id: 'vanilla', label: 'Vanilla', type: 'color', price: 31.00, stock: 30, color: '#F2E0C8' },
+      { id: 'chantilly', label: 'Chantilly', type: 'color', price: 31.00, stock: 35, color: '#ECCEB0', isDefault: true },
+      { id: 'biscuit', label: 'Biscuit', type: 'color', price: 31.00, stock: 30, color: '#E0B890' },
+      { id: 'custard', label: 'Custard', type: 'color', price: 31.00, stock: 25, color: '#D4A070' },
+      { id: 'caramel', label: 'Caramel', type: 'color', price: 31.00, stock: 20, color: '#BC8550' },
+      { id: 'walnut', label: 'Walnut', type: 'color', price: 31.00, stock: 15, color: '#8C5830' },
+    ],
   },
   {
     id: 'too-faced-better-than-sex-mascara',
@@ -2320,6 +2475,11 @@ const PRODUCTS = [
     color: 'oklch(0.91 0.04 350)',
     swatchColor: 'oklch(0.61 0.12 350)',
     label: 'Better Than\nSex',
+    variants: [
+      { id: 'black', label: 'Black', type: 'color', price: 27.00, stock: 50, color: '#0A0A0A', isDefault: true },
+      { id: 'black-velvet', label: 'Black Velvet', type: 'color', price: 27.00, stock: 28, color: '#0D0D1A' },
+      { id: 'better-than-sex-nude', label: 'Pinky Nude', type: 'color', price: 27.00, stock: 20, color: '#C4856C' },
+    ],
   },
   {
     id: 'fenty-beauty-gloss-bomb-fenty-glow',
@@ -2353,6 +2513,13 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.04 15)',
     swatchColor: 'oklch(0.72 0.12 15)',
     label: 'Gloss Bomb\nFenty',
+    variants: [
+      { id: 'fenty-glow', label: 'Fenty Glow', type: 'color', price: 22.00, stock: 40, color: '#E0A888', isDefault: true },
+      { id: 'hot-chocolit', label: 'Hot Chocolit', type: 'color', price: 22.00, stock: 30, color: '#7A4030' },
+      { id: 'glass-slipper', label: 'Glass Slipper', type: 'color', price: 22.00, stock: 35, color: '#EDE8E4' },
+      { id: 'fussy', label: 'Fu$$y', type: 'color', price: 22.00, stock: 28, color: '#D4807A' },
+      { id: 'honey-nut', label: 'Honey Nut', type: 'color', price: 22.00, stock: 22, color: '#C88C4A' },
+    ],
   },
   {
     id: 'olly-womens-multi',
@@ -2523,6 +2690,11 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.05 30)',
     swatchColor: 'oklch(0.56 0.14 30)',
     label: 'Paula\'s Choice\n2% BHA',
+    variants: [
+      { id: '30ml', label: '30 ml Travel', type: 'size', price: 14.99, stock: 45 },
+      { id: '118ml', label: '118 ml', type: 'size', price: 36.99, stock: 32, isDefault: true },
+      { id: '237ml', label: '237 ml', type: 'size', price: 54.99, stock: 18 },
+    ],
   },
   {
     id: 'the-ordinary-niacinamide-10-zinc-1',
@@ -2542,6 +2714,10 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.02 210)',
     swatchColor: 'oklch(0.79 0.06 215)',
     label: 'Niacinamide\n+ Zinc',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 5.90, stock: 60, isDefault: true },
+      { id: '60ml', label: '60 ml', type: 'size', price: 10.90, stock: 45 },
+    ],
   },
   {
     id: 'cerave-renewing-sa-cleanser',
@@ -2804,6 +2980,13 @@ const PRODUCTS = [
     color: 'oklch(0.89 0.05 250)',
     swatchColor: 'oklch(0.52 0.12 250)',
     label: 'XTEND\nBCAA',
+    variants: [
+      { id: 'blue-raspberry', label: 'Blue Raspberry', type: 'flavor', price: 29.99, stock: 40, isDefault: true },
+      { id: 'watermelon', label: 'Watermelon', type: 'flavor', price: 29.99, stock: 35 },
+      { id: 'mango-madness', label: 'Mango Madness', type: 'flavor', price: 29.99, stock: 28 },
+      { id: 'blood-orange', label: 'Italian Blood Orange', type: 'flavor', price: 29.99, stock: 22 },
+      { id: 'freedom-ice', label: 'Freedom Ice', type: 'flavor', price: 29.99, stock: 18 },
+    ],
   },
   {
     id: 'premier-protein-chocolate-shake',
@@ -2842,6 +3025,13 @@ const PRODUCTS = [
     color: 'oklch(0.89 0.04 60)',
     swatchColor: 'oklch(0.54 0.10 60)',
     label: 'Legion\nWhey+',
+    variants: [
+      { id: 'dutch-chocolate', label: 'Dutch Chocolate', type: 'flavor', price: 59.99, stock: 32, isDefault: true },
+      { id: 'vanilla-bean', label: 'Vanilla Bean', type: 'flavor', price: 59.99, stock: 28 },
+      { id: 'strawberry-banana', label: 'Strawberry Banana', type: 'flavor', price: 59.99, stock: 22 },
+      { id: 'cookies-and-cream', label: 'Cookies & Cream', type: 'flavor', price: 59.99, stock: 18 },
+      { id: 'french-vanilla', label: 'French Vanilla', type: 'flavor', price: 59.99, stock: 15 },
+    ],
   },
   {
     id: 'ascent-native-fuel-whey-protein',
@@ -3084,6 +3274,11 @@ const PRODUCTS = [
     color: 'oklch(0.86 0.03 65)',
     swatchColor: 'oklch(0.50 0.08 65)',
     label: 'Eilish\nEDP',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 38.00, stock: 28 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 55.00, stock: 32, isDefault: true },
+      { id: '100ml', label: '100 ml', type: 'size', price: 80.00, stock: 15 },
+    ],
   },
   {
     id: 'glossier-you-eau-de-parfum',
@@ -3103,6 +3298,10 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.02 10)',
     swatchColor: 'oklch(0.82 0.05 10)',
     label: 'Glossier\nYou',
+    variants: [
+      { id: '5ml', label: '5 ml Rollerball', type: 'size', price: 22.00, stock: 55 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 65.00, stock: 25, isDefault: true },
+    ],
   },
   {
     id: 'valentino-donna-born-in-roma-eau-de-parfum',
@@ -3122,6 +3321,11 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.04 330)',
     swatchColor: 'oklch(0.56 0.10 330)',
     label: 'Valentino\nRoma',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 52.00, stock: 22 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 78.00, stock: 28, isDefault: true },
+      { id: '100ml', label: '100 ml', type: 'size', price: 115.00, stock: 14 },
+    ],
   },
   {
     id: 'ysl-libre-eau-de-parfum',
@@ -3141,6 +3345,11 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.03 75)',
     swatchColor: 'oklch(0.78 0.08 75)',
     label: 'YSL\nLibre',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 58.00, stock: 22 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 85.00, stock: 28, isDefault: true },
+      { id: '90ml', label: '90 ml', type: 'size', price: 128.00, stock: 12 },
+    ],
   },
   {
     id: 'rare-beauty-soft-pinch-liquid-blush',
@@ -3175,6 +3384,14 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.05 5)',
     swatchColor: 'oklch(0.72 0.12 5)',
     label: 'Rare Beauty\nBlush',
+    variants: [
+      { id: 'hope', label: 'Hope', type: 'color', price: 23.00, stock: 40, color: '#E8A5A5', isDefault: true },
+      { id: 'joy', label: 'Joy', type: 'color', price: 23.00, stock: 32, color: '#C96B4A' },
+      { id: 'bliss', label: 'Bliss', type: 'color', price: 23.00, stock: 35, color: '#D4899E' },
+      { id: 'luck', label: 'Luck', type: 'color', price: 23.00, stock: 28, color: '#E07F8C' },
+      { id: 'encourage', label: 'Encourage', type: 'color', price: 23.00, stock: 25, color: '#E09870' },
+      { id: 'nearly-neutral', label: 'Nearly Neutral', type: 'color', price: 23.00, stock: 20, color: '#CBA898' },
+    ],
   },
   {
     id: 'nyx-fat-oil-lip-drip',
@@ -3208,6 +3425,13 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.05 20)',
     swatchColor: 'oklch(0.74 0.14 20)',
     label: 'NYX\nFat Oil',
+    variants: [
+      { id: 'glazen-eye', label: 'Glazen Eye', type: 'color', price: 11.00, stock: 40, color: '#F2E8E4', isDefault: true },
+      { id: 'mood-frosting', label: 'Mood Frosting', type: 'color', price: 11.00, stock: 32, color: '#F0B0C8' },
+      { id: 'thats-cheeky', label: "That's Cheeky", type: 'color', price: 11.00, stock: 35, color: '#E87060' },
+      { id: 'missed-call', label: 'Missed Call', type: 'color', price: 11.00, stock: 28, color: '#A05878' },
+      { id: 'on-a-mission', label: 'On A Mission', type: 'color', price: 11.00, stock: 22, color: '#C02038' },
+    ],
   },
   {
     id: 'elf-power-grip-primer',
@@ -3275,6 +3499,14 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.04 5)',
     swatchColor: 'oklch(0.70 0.10 5)',
     label: 'NYX\nButter Gloss',
+    variants: [
+      { id: 'praline', label: 'Praline', type: 'color', price: 8.00, stock: 40, color: '#C8956A', isDefault: true },
+      { id: 'creme-brulee', label: 'Crème Brûlée', type: 'color', price: 8.00, stock: 35, color: '#E0B888' },
+      { id: 'angel-food-cake', label: 'Angel Food Cake', type: 'color', price: 8.00, stock: 32, color: '#E8A0A8' },
+      { id: 'sugar-cookie', label: 'Sugar Cookie', type: 'color', price: 8.00, stock: 28, color: '#F0D0C0' },
+      { id: 'cherry-cheesecake', label: 'Cherry Cheesecake', type: 'color', price: 8.00, stock: 22, color: '#8C3050' },
+      { id: 'éclair', label: 'Éclair', type: 'color', price: 8.00, stock: 20, color: '#6A3020' },
+    ],
   },
   {
     id: 'old-spice-fiji-deodorant-stick',
@@ -4286,6 +4518,13 @@ const PRODUCTS = [
     color: 'oklch(0.89 0.05 65)',
     swatchColor: 'oklch(0.52 0.12 65)',
     label: 'Dymatize\nISO100',
+    variants: [
+      { id: 'gourmet-chocolate', label: 'Gourmet Chocolate', type: 'flavor', price: 59.99, stock: 35, isDefault: true },
+      { id: 'dunkin-cappuccino', label: 'Dunkin Cappuccino', type: 'flavor', price: 59.99, stock: 28 },
+      { id: 'fruity-pebbles', label: 'Fruity Pebbles', type: 'flavor', price: 59.99, stock: 25 },
+      { id: 'gourmet-vanilla', label: 'Gourmet Vanilla', type: 'flavor', price: 59.99, stock: 30 },
+      { id: 'birthday-cake', label: 'Birthday Cake', type: 'flavor', price: 59.99, stock: 20 },
+    ],
   },
   {
     id: 'ghost-legend-pre-workout',
@@ -4305,6 +4544,13 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.05 330)',
     swatchColor: 'oklch(0.56 0.14 330)',
     label: 'GHOST\nLegend',
+    variants: [
+      { id: 'sour-patch-redberry', label: 'Sour Patch Redberry', type: 'flavor', price: 44.99, stock: 35, isDefault: true },
+      { id: 'warheads-watermelon', label: 'Warheads Watermelon', type: 'flavor', price: 44.99, stock: 30 },
+      { id: 'swedish-fish', label: 'Swedish Fish', type: 'flavor', price: 44.99, stock: 28 },
+      { id: 'peach', label: 'Peach', type: 'flavor', price: 44.99, stock: 22 },
+      { id: 'lemon-crush', label: 'Original Lemon Crush', type: 'flavor', price: 44.99, stock: 20 },
+    ],
   },
   {
     id: 'alani-nu-pre-workout-breezeberry',
@@ -4324,6 +4570,13 @@ const PRODUCTS = [
     color: 'oklch(0.91 0.05 295)',
     swatchColor: 'oklch(0.60 0.13 295)',
     label: 'Alani Nu\nPre',
+    variants: [
+      { id: 'breezeberry', label: 'Breezeberry', type: 'flavor', price: 39.99, stock: 38, isDefault: true },
+      { id: 'cosmic-stardust', label: 'Cosmic Stardust', type: 'flavor', price: 39.99, stock: 30 },
+      { id: 'rainbow-candy', label: 'Rainbow Candy', type: 'flavor', price: 39.99, stock: 28 },
+      { id: 'carnival-grape', label: 'Carnival Candy Grape', type: 'flavor', price: 39.99, stock: 22 },
+      { id: 'hawaiian-shaved-ice', label: 'Hawaiian Shaved Ice', type: 'flavor', price: 39.99, stock: 20 },
+    ],
   },
   {
     id: 'myprotein-impact-whey-protein',
@@ -4343,6 +4596,13 @@ const PRODUCTS = [
     color: 'oklch(0.89 0.04 45)',
     swatchColor: 'oklch(0.48 0.09 45)',
     label: 'Myprotein\nImpact',
+    variants: [
+      { id: 'chocolate-brownie', label: 'Chocolate Brownie', type: 'flavor', price: 29.99, stock: 38, isDefault: true },
+      { id: 'vanilla-creme', label: 'Vanilla Crème', type: 'flavor', price: 29.99, stock: 32 },
+      { id: 'strawberry-cream', label: 'Strawberry Cream', type: 'flavor', price: 29.99, stock: 28 },
+      { id: 'cookies-and-cream', label: 'Cookies & Cream', type: 'flavor', price: 29.99, stock: 25 },
+      { id: 'unflavored', label: 'Natural/Unflavored', type: 'flavor', price: 27.99, stock: 20 },
+    ],
   },
   {
     id: 'gnc-pro-performance-creatine-monohydrate',
@@ -4381,6 +4641,12 @@ const PRODUCTS = [
     color: 'oklch(0.88 0.04 80)',
     swatchColor: 'oklch(0.48 0.08 80)',
     label: 'ON\nSerious Mass',
+    variants: [
+      { id: 'chocolate', label: 'Chocolate', type: 'flavor', price: 54.99, stock: 30, isDefault: true },
+      { id: 'vanilla', label: 'Vanilla', type: 'flavor', price: 54.99, stock: 25 },
+      { id: 'strawberry', label: 'Strawberry', type: 'flavor', price: 54.99, stock: 20 },
+      { id: 'banana', label: 'Banana', type: 'flavor', price: 54.99, stock: 15 },
+    ],
   },
   {
     id: 'cellucor-c4-ripped-pre-workout',
@@ -4495,6 +4761,11 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.04 25)',
     swatchColor: 'oklch(0.68 0.11 25)',
     label: 'Prada\nParadoxe',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 62.00, stock: 22 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 88.00, stock: 28, isDefault: true },
+      { id: '90ml', label: '90 ml', type: 'size', price: 130.00, stock: 12 },
+    ],
   },
   {
     id: 'carolina-herrera-good-girl-eau-de-parfum',
@@ -4514,6 +4785,11 @@ const PRODUCTS = [
     color: 'oklch(0.89 0.04 260)',
     swatchColor: 'oklch(0.45 0.08 260)',
     label: 'Good Girl\nEDP',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 58.00, stock: 22 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 85.00, stock: 28, isDefault: true },
+      { id: '80ml', label: '80 ml', type: 'size', price: 118.00, stock: 14 },
+    ],
   },
   {
     id: 'dolce-gabbana-light-blue-eau-de-toilette',
@@ -4533,6 +4809,11 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.02 220)',
     swatchColor: 'oklch(0.76 0.06 220)',
     label: 'Light Blue\nEDT',
+    variants: [
+      { id: '25ml', label: '25 ml', type: 'size', price: 38.00, stock: 35 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 68.00, stock: 30, isDefault: true },
+      { id: '100ml', label: '100 ml', type: 'size', price: 99.99, stock: 16 },
+    ],
   },
   {
     id: 'giorgio-armani-acqua-di-gio-profondo',
@@ -4552,6 +4833,11 @@ const PRODUCTS = [
     color: 'oklch(0.87 0.03 230)',
     swatchColor: 'oklch(0.42 0.07 230)',
     label: 'Armani\nProfondo',
+    variants: [
+      { id: '40ml', label: '40 ml', type: 'size', price: 62.00, stock: 22 },
+      { id: '75ml', label: '75 ml', type: 'size', price: 98.00, stock: 28, isDefault: true },
+      { id: '125ml', label: '125 ml', type: 'size', price: 138.00, stock: 12 },
+    ],
   },
   {
     id: 'jean-paul-gaultier-le-male-le-parfum',
@@ -4571,6 +4857,11 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.03 245)',
     swatchColor: 'oklch(0.50 0.07 245)',
     label: 'Le Male\nParfum',
+    variants: [
+      { id: '40ml', label: '40 ml', type: 'size', price: 58.00, stock: 22 },
+      { id: '75ml', label: '75 ml', type: 'size', price: 88.00, stock: 28, isDefault: true },
+      { id: '125ml', label: '125 ml', type: 'size', price: 118.00, stock: 12 },
+    ],
   },
   {
     id: 'maison-margiela-replica-by-the-fireplace',
@@ -4590,6 +4881,11 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.04 55)',
     swatchColor: 'oklch(0.58 0.10 55)',
     label: 'Replica\nFireplace',
+    variants: [
+      { id: '10ml', label: '10 ml Travel', type: 'size', price: 28.00, stock: 50 },
+      { id: '30ml', label: '30 ml', type: 'size', price: 65.00, stock: 28 },
+      { id: '100ml', label: '100 ml', type: 'size', price: 175.00, stock: 14, isDefault: true },
+    ],
   },
   {
     id: 'kayali-vanilla-28-eau-de-parfum',
@@ -4609,6 +4905,11 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.04 45)',
     swatchColor: 'oklch(0.72 0.12 45)',
     label: 'KAYALI\nVanilla 28',
+    variants: [
+      { id: '10ml', label: '10 ml Travel', type: 'size', price: 32.00, stock: 55 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 99.00, stock: 28, isDefault: true },
+      { id: '100ml', label: '100 ml', type: 'size', price: 165.00, stock: 12 },
+    ],
   },
   {
     id: 'burberry-her-eau-de-parfum',
@@ -4628,6 +4929,11 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.05 355)',
     swatchColor: 'oklch(0.72 0.14 350)',
     label: 'Burberry\nHer',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 50.00, stock: 25 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 72.00, stock: 28, isDefault: true },
+      { id: '100ml', label: '100 ml', type: 'size', price: 102.00, stock: 15 },
+    ],
   },
   {
     id: 'tom-ford-ombre-leather-eau-de-parfum',
@@ -4647,6 +4953,10 @@ const PRODUCTS = [
     color: 'oklch(0.84 0.03 40)',
     swatchColor: 'oklch(0.34 0.07 40)',
     label: 'Tom Ford\nOmbre Leather',
+    variants: [
+      { id: '50ml', label: '50 ml', type: 'size', price: 175.00, stock: 18, isDefault: true },
+      { id: '100ml', label: '100 ml', type: 'size', price: 265.00, stock: 8 },
+    ],
   },
   {
     id: 'ysl-black-opium-eau-de-parfum',
@@ -4666,6 +4976,11 @@ const PRODUCTS = [
     color: 'oklch(0.88 0.03 300)',
     swatchColor: 'oklch(0.40 0.08 300)',
     label: 'YSL\nBlack Opium',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 52.00, stock: 28 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 78.00, stock: 30, isDefault: true },
+      { id: '90ml', label: '90 ml', type: 'size', price: 115.00, stock: 12 },
+    ],
   },
   {
     id: 'versace-eros-eau-de-toilette',
@@ -4685,6 +5000,12 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.04 185)',
     swatchColor: 'oklch(0.54 0.09 190)',
     label: 'Versace\nEros',
+    variants: [
+      { id: '30ml', label: '30 ml', type: 'size', price: 40.00, stock: 28 },
+      { id: '50ml', label: '50 ml', type: 'size', price: 62.00, stock: 32, isDefault: true },
+      { id: '100ml', label: '100 ml', type: 'size', price: 92.00, stock: 18 },
+      { id: '200ml', label: '200 ml', type: 'size', price: 135.00, stock: 8 },
+    ],
   },
   {
     id: 'charlotte-tilbury-airbrush-flawless-foundation',
@@ -4720,6 +5041,14 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.03 60)',
     swatchColor: 'oklch(0.78 0.08 60)',
     label: 'CT\nFoundation',
+    variants: [
+      { id: '1-fair', label: '1 Fair', type: 'color', price: 49.00, stock: 22, color: '#F0D8C0' },
+      { id: '3-light', label: '3 Light', type: 'color', price: 49.00, stock: 28, color: '#E4C4A0', isDefault: true },
+      { id: '7-medium', label: '7 Medium', type: 'color', price: 49.00, stock: 25, color: '#D0A870' },
+      { id: '12-medium-tan', label: '12 Med/Tan', type: 'color', price: 49.00, stock: 20, color: '#B88050' },
+      { id: '16-warm-tan', label: '16 Warm Tan', type: 'color', price: 49.00, stock: 15, color: '#9A6035' },
+      { id: '20-deep', label: '20 Deep', type: 'color', price: 49.00, stock: 10, color: '#7A4020' },
+    ],
   },
   {
     id: 'estee-lauder-double-wear-foundation',
@@ -4755,6 +5084,14 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.03 55)',
     swatchColor: 'oklch(0.74 0.09 55)',
     label: 'Double Wear\nFoundation',
+    variants: [
+      { id: '1n1-ivory', label: '1N1 Ivory', type: 'color', price: 53.00, stock: 20, color: '#F2DCC0' },
+      { id: '2n1-desert-beige', label: '2N1 Desert Beige', type: 'color', price: 53.00, stock: 28, color: '#E4C4A0', isDefault: true },
+      { id: '3n1-ivory-beige', label: '3N1 Ivory Beige', type: 'color', price: 53.00, stock: 25, color: '#D4A878' },
+      { id: '4n2-spiced-sand', label: '4N2 Spiced Sand', type: 'color', price: 53.00, stock: 20, color: '#C08850' },
+      { id: '5w2-rich-caramel', label: '5W2 Rich Caramel', type: 'color', price: 53.00, stock: 15, color: '#A06030' },
+      { id: '7n1-soft-mocha', label: '7N1 Soft Mocha', type: 'color', price: 53.00, stock: 10, color: '#7A4020' },
+    ],
   },
   {
     id: 'huda-beauty-easy-bake-loose-powder',
@@ -4789,6 +5126,13 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.02 70)',
     swatchColor: 'oklch(0.84 0.05 70)',
     label: 'Huda\nEasy Bake',
+    variants: [
+      { id: 'sugar-cookie', label: 'Sugar Cookie', type: 'color', price: 35.00, stock: 30, color: '#F5DEC8', isDefault: true },
+      { id: 'banana', label: 'Banana', type: 'color', price: 35.00, stock: 28, color: '#F5E5A0' },
+      { id: 'honey', label: 'Honey', type: 'color', price: 35.00, stock: 25, color: '#E8C070' },
+      { id: 'gingerbread', label: 'Gingerbread', type: 'color', price: 35.00, stock: 20, color: '#C89050' },
+      { id: 'cinnamon', label: 'Cinnamon', type: 'color', price: 35.00, stock: 15, color: '#A06830' },
+    ],
   },
   {
     id: 'fenty-beauty-pro-filtr-soft-matte-foundation',
@@ -4824,6 +5168,14 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.03 50)',
     swatchColor: 'oklch(0.74 0.08 50)',
     label: "Fenty\nPro Filt'r",
+    variants: [
+      { id: '100w', label: '100W', type: 'color', price: 40.00, stock: 20, color: '#F5E0C0' },
+      { id: '130n', label: '130N', type: 'color', price: 40.00, stock: 28, color: '#ECCAB8', isDefault: true },
+      { id: '210n', label: '210N', type: 'color', price: 40.00, stock: 28, color: '#DAA880' },
+      { id: '330w', label: '330W', type: 'color', price: 40.00, stock: 25, color: '#C0885A' },
+      { id: '420w', label: '420W', type: 'color', price: 40.00, stock: 20, color: '#A06835' },
+      { id: '490n', label: '490N', type: 'color', price: 40.00, stock: 15, color: '#7A4520' },
+    ],
   },
   {
     id: 'anastasia-beverly-hills-brow-wiz',
@@ -4857,6 +5209,14 @@ const PRODUCTS = [
     color: 'oklch(0.86 0.03 60)',
     swatchColor: 'oklch(0.46 0.07 60)',
     label: 'ABH\nBrow Wiz',
+    variants: [
+      { id: 'blonde', label: 'Blonde', type: 'color', price: 25.00, stock: 25, color: '#C8A060' },
+      { id: 'taupe', label: 'Taupe', type: 'color', price: 25.00, stock: 22, color: '#9E8070' },
+      { id: 'soft-brown', label: 'Soft Brown', type: 'color', price: 25.00, stock: 30, color: '#8B5E3C', isDefault: true },
+      { id: 'medium-brown', label: 'Medium Brown', type: 'color', price: 25.00, stock: 28, color: '#6B3A20' },
+      { id: 'dark-brown', label: 'Dark Brown', type: 'color', price: 25.00, stock: 24, color: '#4A2510' },
+      { id: 'ebony', label: 'Ebony', type: 'color', price: 25.00, stock: 18, color: '#2A1508' },
+    ],
   },
   {
     id: 'benefit-hoola-matte-bronzer',
@@ -4891,6 +5251,12 @@ const PRODUCTS = [
     color: 'oklch(0.88 0.04 55)',
     swatchColor: 'oklch(0.56 0.10 55)',
     label: 'Benefit\nHoola',
+    variants: [
+      { id: 'hoola-light', label: 'Hoola Light', type: 'color', price: 38.00, stock: 25, color: '#D4A070' },
+      { id: 'hoola', label: 'Hoola', type: 'color', price: 38.00, stock: 32, color: '#C08050', isDefault: true },
+      { id: 'hoola-medium', label: 'Hoola Medium', type: 'color', price: 38.00, stock: 22, color: '#A06830' },
+      { id: 'hoola-toasted', label: 'Hoola Toasted', type: 'color', price: 38.00, stock: 15, color: '#8A5025' },
+    ],
   },
   {
     id: 'urban-decay-all-nighter-setting-spray',
@@ -4957,6 +5323,13 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.05 5)',
     swatchColor: 'oklch(0.70 0.12 5)',
     label: 'Pillow Talk\nLipstick',
+    variants: [
+      { id: 'pillow-talk', label: 'Pillow Talk', type: 'color', price: 41.00, stock: 38, color: '#D4907A', isDefault: true },
+      { id: 'walk-of-no-shame', label: 'Walk of No Shame', type: 'color', price: 41.00, stock: 30, color: '#B5122B' },
+      { id: 'supermodel', label: 'Supermodel', type: 'color', price: 41.00, stock: 28, color: '#C4796A' },
+      { id: 'chloe', label: 'Chloé', type: 'color', price: 41.00, stock: 22, color: '#D4956F' },
+      { id: 'so-marilyn', label: 'So Marilyn', type: 'color', price: 41.00, stock: 20, color: '#C81830' },
+    ],
   },
   {
     id: 'maybelline-fit-me-matte-poreless-foundation',
@@ -5059,6 +5432,14 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.03 55)',
     swatchColor: 'oklch(0.72 0.08 55)',
     label: 'Tarte\nShape Tape',
+    variants: [
+      { id: '12s-light-sand', label: '12S Light Sand', type: 'color', price: 32.00, stock: 25, color: '#F0D8B8' },
+      { id: '16n-fair-light', label: '16N Fair Light', type: 'color', price: 32.00, stock: 30, color: '#ECCAB0' },
+      { id: '22b-light-med', label: '22B Light Med', type: 'color', price: 32.00, stock: 30, color: '#E0B890', isDefault: true },
+      { id: '27s-sand', label: '27S Med Sand', type: 'color', price: 32.00, stock: 25, color: '#D4A870' },
+      { id: '35n-medium', label: '35N Medium', type: 'color', price: 32.00, stock: 20, color: '#C49050' },
+      { id: '53g-rich', label: '53G Rich', type: 'color', price: 32.00, stock: 14, color: '#8C5830' },
+    ],
   },
 ].map((product) => ({
   ...product,

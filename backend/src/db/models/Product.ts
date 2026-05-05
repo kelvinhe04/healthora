@@ -44,6 +44,19 @@ const ProductSchema = new Schema(
         content: { type: String, required: true },
       },
     ],
+    variants: [
+      {
+        id: { type: String, required: true },
+        label: { type: String, required: true },
+        type: { type: String, enum: ['size', 'color', 'weight', 'count', 'flavor', 'scent'], required: true },
+        price: { type: Number, required: true },
+        priceBefore: Number,
+        stock: { type: Number, required: true },
+        sku: String,
+        color: String,
+        isDefault: { type: Boolean, default: false },
+      },
+    ],
     active: { type: Boolean, default: true },
   },
   { timestamps: true }

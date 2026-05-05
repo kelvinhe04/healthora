@@ -31,7 +31,7 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const drawerPad = isMobile ? '16px' : '28px';
-  const subtotal = items.reduce((s, it) => s + it.product.price * it.qty, 0);
+  const subtotal = items.reduce((s, it) => s + (it.variant?.price ?? it.product.price) * it.qty, 0);
   const shipping = subtotal > 50 || subtotal === 0 ? 0 : 6.90;
   const tax = subtotal * 0.07;
   const total = subtotal + shipping + tax;
@@ -93,8 +93,10 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
                   Vaciar carrito
                 </button>
               </div>
-              {items.map((it) => (
-                <div key={it.product.id} style={{ display: 'flex', gap: 14, padding: '18px 0', borderBottom: '1px solid var(--ink-06)' }}>
+              {items.map((it) => {
+                const effectivePrice = it.variant?.price ?? it.product.price;
+                return (
+                <div key={it.product.id + (it.variant?.id ?? '')} style={{ display: 'flex', gap: 14, padding: '18px 0', borderBottom: '1px solid var(--ink-06)' }}>
                   <div style={{ width: 80, height: 90, background: 'white', borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--ink-06)', overflow: 'hidden' }}>
                     <div style={{ transform: 'scale(1.18)' }}>
                       <ProductImage product={it.product} size="xs" />
@@ -102,19 +104,27 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{it.product.brand}</div>
-                    <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 500, marginBottom: 8, lineHeight: 1.3 }}>{it.product.name}</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--ink-20)', borderRadius: 999 }}>
-                        <button onClick={() => update(it.product.id, it.qty - 1)} style={qtyBtn}><Icon name="minus" size={12} /></button>
-                        <span style={{ fontSize: 13, minWidth: 24, textAlign: 'center' }}>{it.qty}</span>
-                        <button onClick={() => update(it.product.id, it.qty + 1)} style={qtyBtn}><Icon name="plus" size={12} /></button>
+                    <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 500, lineHeight: 1.3 }}>{it.product.name}</div>
+                    {it.variant && (
+                      <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', letterSpacing: '0.06em', marginTop: 3, marginBottom: 6 }}>
+                        {it.variant.type === 'color' && it.variant.color && (
+                          <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: it.variant.color, border: '1px solid var(--ink-10)', marginRight: 5, verticalAlign: 'middle' }} />
+                        )}
+                        {it.variant.label.toUpperCase()}
                       </div>
-                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20 }}>${(it.product.price * it.qty).toFixed(2)}</div>
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: it.variant ? 0 : 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--ink-20)', borderRadius: 999 }}>
+                        <button onClick={() => update(it.product.id, it.qty - 1, it.variant?.id)} style={qtyBtn}><Icon name="minus" size={12} /></button>
+                        <span style={{ fontSize: 13, minWidth: 24, textAlign: 'center' }}>{it.qty}</span>
+                        <button onClick={() => update(it.product.id, it.qty + 1, it.variant?.id)} style={qtyBtn}><Icon name="plus" size={12} /></button>
+                      </div>
+                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20 }}>${(effectivePrice * it.qty).toFixed(2)}</div>
                     </div>
                   </div>
-                  <button onClick={() => remove(it.product.id)} style={{ ...iconBtn, alignSelf: 'start' }} aria-label="Eliminar"><Icon name="x" size={16} /></button>
+                  <button onClick={() => remove(it.product.id, it.variant?.id)} style={{ ...iconBtn, alignSelf: 'start' }} aria-label="Eliminar"><Icon name="x" size={16} /></button>
                 </div>
-              ))}
+              );})}
 
               {/* Club Healthora */}
               <div style={{ padding: '16px 0 8px' }}>

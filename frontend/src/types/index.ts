@@ -11,6 +11,18 @@ export type OrderStatus =
   | 'cancelled'
   | 'refunded';
 
+export interface ProductVariant {
+  id: string;
+  label: string;
+  type: 'size' | 'color' | 'weight' | 'count' | 'flavor' | 'scent';
+  price: number;
+  priceBefore?: number;
+  stock: number;
+  sku?: string;
+  color?: string;
+  isDefault?: boolean;
+}
+
 export interface Product {
   _id: string;
   id: string;
@@ -51,6 +63,7 @@ export interface Product {
     label: string;
     content: string;
   }[];
+  variants?: ProductVariant[];
   active: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -67,6 +80,7 @@ export interface Category {
 export interface CartItem {
   product: Product;
   qty: number;
+  variant?: ProductVariant;
 }
 
 export interface OrderAddress {

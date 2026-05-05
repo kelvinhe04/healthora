@@ -240,14 +240,14 @@ function AppInner() {
       <Header onNav={nav} onOpenCart={() => setCartOpen(true)} />
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={() => { setCheckoutItems(null); setCartOpen(false); nav('checkout'); }} onOpenSamplePicker={() => { setCartOpen(false); nav('sample-picker'); }} />
       <div style={{ minHeight: 'calc(100vh - 200px)' }}>
-        {view === 'landing' && <Landing onNav={nav} onOpenProduct={openProduct} onAdd={(p, qty = 1) => { add(p, qty); setCheckoutItems(null); setCartOpen(true); }} />}
+        {view === 'landing' && <Landing onNav={nav} onOpenProduct={openProduct} onAdd={(p, qty = 1, v) => { add(p, qty, v); setCheckoutItems(null); setCartOpen(true); }} />}
         {view === 'catalog' && <Catalog initialFilter={catalogFilter} onFilterChange={syncCatalogFilter} onOpenProduct={openProduct} onAdd={(p) => { add(p, 1); setCheckoutItems(null); setCartOpen(true); }} />}
         {view === 'product' && activeProduct && (
           <ProductDetail
             product={activeProduct}
-            onAdd={(p, qty) => { add(p, qty); setCheckoutItems(null); setCartOpen(true); }}
-            onBuyNow={(p, qty) => {
-              setCheckoutItems([{ product: p, qty }]);
+            onAdd={(p, qty, v) => { add(p, qty, v); setCheckoutItems(null); setCartOpen(true); }}
+            onBuyNow={(p, qty, v) => {
+              setCheckoutItems([{ product: p, qty, variant: v }]);
               setCartOpen(false);
               nav('checkout');
             }}

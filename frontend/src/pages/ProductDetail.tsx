@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
-import type { Product } from '../types';
+import type { Product, ProductVariant } from '../types';
 import { ProductImage } from '../components/shared/ProductImage';
 import { ProductCard } from '../components/shared/ProductCard';
 import { Stars } from '../components/shared/Stars';
@@ -13,11 +13,20 @@ import { ReviewSection } from '../components/shared/ReviewSection';
 
 interface ProductDetailProps {
   product: Product;
-  onAdd: (p: Product, qty: number) => void;
-  onBuyNow: (p: Product, qty: number) => void;
+  onAdd: (p: Product, qty: number, variant?: ProductVariant) => void;
+  onBuyNow: (p: Product, qty: number, variant?: ProductVariant) => void;
   onOpenProduct: (p: Product) => void;
   onBack: () => void;
 }
+
+const VARIANT_TYPE_LABEL: Record<string, string> = {
+  size: 'TAMAÑO',
+  color: 'COLOR',
+  weight: 'PESO',
+  count: 'PRESENTACIÓN',
+  flavor: 'SABOR',
+  scent: 'FRAGANCIA',
+};
 
 const qtyBtn: CSSProperties = { width: 36, height: 36, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' };
 
@@ -32,6 +41,11 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [isZoomingOut, setIsZoomingOut] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(() => {
+    const variants = product.variants;
+    if (!variants?.length) return null;
+    return variants.find((v) => v.isDefault) ?? variants[0];
+  });
   const { data: allProducts = [] } = useProducts();
   const related = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
   const { data: liveReviews } = useReviews(product.id);
@@ -94,10 +108,16 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
     setActiveImageIndex(0);
     setIsZoomed(false);
     setIsZoomingOut(false);
+    const variants = product.variants;
+    setSelectedVariant(variants?.length ? (variants.find((v) => v.isDefault) ?? variants[0]) : null);
   }, [product.id]);
 
+  const effectivePrice = selectedVariant?.price ?? product.price;
+  const effectivePriceBefore = selectedVariant?.priceBefore ?? product.priceBefore;
+  const effectiveStock = selectedVariant?.stock ?? product.stock;
+
   const handleAdd = () => {
-    onAdd(product, qty);
+    onAdd(product, qty, selectedVariant ?? undefined);
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
   };
@@ -190,7 +210,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
             ) : (
               <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-40)', letterSpacing: '0.06em' }}>SIN RESEÑAS AÚN</span>
             )}
-            {product.stock === 0 ? (
+            {effectiveStock === 0 ? (
               <span style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'oklch(0.5 0.15 30)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 6, height: 6, background: 'oklch(0.5 0.15 30)', borderRadius: 999 }} />
                 AGOTADO
@@ -198,32 +218,93 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
             ) : (
               <span style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 6, height: 6, background: 'var(--green)', borderRadius: 999 }} />
-                EN STOCK · {product.stock} unidades
+                EN STOCK · {effectiveStock} unidades
               </span>
             )}
           </div>
 
-          <p style={{ fontSize: 17, lineHeight: 1.55, color: 'var(--ink-80)', marginBottom: 32, maxWidth: 480 }}>{product.short}</p>
+          <p style={{ fontSize: 17, lineHeight: 1.55, color: 'var(--ink-80)', marginBottom: product.variants?.length ? 20 : 32, maxWidth: 480 }}>{product.short}</p>
+
+          {product.variants && product.variants.length > 0 && (() => {
+            const variantType = product.variants![0].type;
+            const isColor = variantType === 'color';
+            return (
+              <div style={{ marginBottom: 28 }}>
+                <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 10 }}>
+                  {VARIANT_TYPE_LABEL[variantType] ?? variantType.toUpperCase()}
+                  {selectedVariant && <span style={{ color: 'var(--ink)' }}> · {selectedVariant.label.toUpperCase()}</span>}
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {product.variants!.map((v) => (
+                    isColor ? (
+                      <button
+                        key={v.id}
+                        onClick={() => { setSelectedVariant(v); setQty(1); }}
+                        title={v.label}
+                        disabled={v.stock === 0}
+                        style={{
+                          width: 34,
+                          height: 34,
+                          borderRadius: '50%',
+                          background: v.color ?? '#ccc',
+                          border: selectedVariant?.id === v.id ? '2.5px solid var(--ink)' : '2px solid transparent',
+                          outline: selectedVariant?.id === v.id ? '2px solid var(--ink)' : '2px solid var(--ink-10)',
+                          outlineOffset: 2,
+                          cursor: v.stock === 0 ? 'not-allowed' : 'pointer',
+                          opacity: v.stock === 0 ? 0.35 : 1,
+                          transition: 'all 0.15s ease',
+                          position: 'relative',
+                          flexShrink: 0,
+                        }}
+                      />
+                    ) : (
+                      <button
+                        key={v.id}
+                        onClick={() => { setSelectedVariant(v); setQty(1); }}
+                        disabled={v.stock === 0}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: 999,
+                          border: selectedVariant?.id === v.id ? '2px solid var(--ink)' : '1px solid var(--ink-20)',
+                          background: selectedVariant?.id === v.id ? 'var(--ink)' : 'transparent',
+                          color: selectedVariant?.id === v.id ? 'var(--cream)' : v.stock === 0 ? 'var(--ink-40)' : 'var(--ink)',
+                          cursor: v.stock === 0 ? 'not-allowed' : 'pointer',
+                          opacity: v.stock === 0 ? 0.5 : 1,
+                          fontSize: 13,
+                          fontFamily: '"Geist", sans-serif',
+                          transition: 'all 0.15s ease',
+                          whiteSpace: 'nowrap',
+                          textDecoration: v.stock === 0 ? 'line-through' : 'none',
+                        }}
+                      >
+                        {v.label}
+                      </button>
+                    )
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 28, paddingBottom: 28, borderBottom: '1px solid var(--ink-06)' }}>
-            <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 48, color: 'var(--ink)', lineHeight: 1 }}>${product.price.toFixed(2)}</span>
-            {product.priceBefore && (
+            <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 48, color: 'var(--ink)', lineHeight: 1 }}>${effectivePrice.toFixed(2)}</span>
+            {effectivePriceBefore && (
               <>
-                <span style={{ fontSize: 20, color: 'var(--ink-40)', textDecoration: 'line-through' }}>${product.priceBefore.toFixed(2)}</span>
-                <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', background: 'var(--coral)', color: 'white', padding: '4px 8px', borderRadius: 999, fontWeight: 600 }}>AHORRA ${(product.priceBefore - product.price).toFixed(2)}</span>
+                <span style={{ fontSize: 20, color: 'var(--ink-40)', textDecoration: 'line-through' }}>${effectivePriceBefore.toFixed(2)}</span>
+                <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', background: 'var(--coral)', color: 'white', padding: '4px 8px', borderRadius: 999, fontWeight: 600 }}>AHORRA ${(effectivePriceBefore - effectivePrice).toFixed(2)}</span>
               </>
             )}
           </div>
 
           <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--ink-20)', borderRadius: 999, padding: 4, opacity: product.stock === 0 ? 0.4 : 1 }}>
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={qtyBtn} disabled={product.stock === 0 || qty <= 1}><Icon name="minus" size={14} /></button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--ink-20)', borderRadius: 999, padding: 4, opacity: effectiveStock === 0 ? 0.4 : 1 }}>
+              <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={qtyBtn} disabled={effectiveStock === 0 || qty <= 1}><Icon name="minus" size={14} /></button>
               <span style={{ width: 40, textAlign: 'center', fontFamily: '"Geist", sans-serif', fontSize: 15 }}>{qty}</span>
-              <button onClick={() => setQty((q) => Math.min(product.stock, q + 1))} style={qtyBtn} disabled={product.stock === 0 || qty >= product.stock}><Icon name="plus" size={14} /></button>
+              <button onClick={() => setQty((q) => Math.min(effectiveStock, q + 1))} style={qtyBtn} disabled={effectiveStock === 0 || qty >= effectiveStock}><Icon name="plus" size={14} /></button>
             </div>
-            <AnimatedButton variant="primary" size="lg" onClick={handleAdd} disabled={product.stock === 0} style={{ flex: 1 }} text={product.stock === 0 ? 'Sin stock' : added ? '✓ Agregado al carrito' : `Agregar al carrito · $${(product.price * qty).toFixed(2)}`} />
+            <AnimatedButton variant="primary" size="lg" onClick={handleAdd} disabled={effectiveStock === 0} style={{ flex: 1 }} text={effectiveStock === 0 ? 'Sin stock' : added ? '✓ Agregado al carrito' : `Agregar al carrito · $${(effectivePrice * qty).toFixed(2)}`} />
           </div>
-          <AnimatedButton variant="outline" full onClick={() => onBuyNow(product, qty)} disabled={product.stock === 0} text="Comprar ahora con un clic" />
+          <AnimatedButton variant="outline" full onClick={() => onBuyNow(product, qty, selectedVariant ?? undefined)} disabled={effectiveStock === 0} text="Comprar ahora con un clic" />
 
           <div style={{ marginTop: 24, background: 'var(--cream-2)', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid var(--ink-06)' }}>
             {[{ icon: 'truck', t: 'Envío gratis en órdenes sobre $50' }, { icon: 'shield', t: 'Pago seguro con Stripe · 3D Secure' }, { icon: 'check', t: 'Productos verificados por farmacéuticos' }].map((row) => (

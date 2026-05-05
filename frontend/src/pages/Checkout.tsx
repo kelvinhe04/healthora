@@ -172,7 +172,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     };
   }, [appliedPromoCode, getToken, isSignedIn]);
 
-  const subtotal = roundMoney(items.reduce((s, it) => s + it.product.price * it.qty, 0));
+  const subtotal = roundMoney(items.reduce((s, it) => s + (it.variant?.price ?? it.product.price) * it.qty, 0));
   const appliedPromo = appliedPromoCode ? getPromotion(appliedPromoCode, items) : null;
   const discountAmount = appliedPromo?.discountAmount ?? 0;
   const discountedSubtotal = roundMoney(Math.max(0, subtotal - discountAmount));

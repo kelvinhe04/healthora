@@ -1,8 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CartItem, Product } from '../types';
+import type { CartItem, Product, ProductVariant } from '../types';
 
 const GUEST_OWNER = '__guest__';
+
+const itemKey = (productId: string, variantId?: string) =>
+  variantId ? `${productId}:${variantId}` : productId;
+
+const matchItem = (i: CartItem, productId: string, variantId?: string) =>
+  i.product.id === productId && i.variant?.id === variantId;
+
+const itemPrice = (i: CartItem) => i.variant?.price ?? i.product.price;
+const itemStock = (i: CartItem) => i.variant?.stock ?? i.product.stock;
 
 interface CartState {
   ownerId: string;
@@ -11,9 +20,9 @@ interface CartState {
   freeSample: Product | null;
   bindOwner: (ownerId: string | null | undefined) => void;
   replaceItems: (items: CartItem[]) => void;
-  add: (product: Product, qty?: number) => void;
-  update: (productId: string, qty: number) => void;
-  remove: (productId: string) => void;
+  add: (product: Product, qty?: number, variant?: ProductVariant) => void;
+  update: (productId: string, qty: number, variantId?: string) => void;
+  remove: (productId: string, variantId?: string) => void;
   clear: () => void;
   count: () => number;
   subtotal: () => number;
@@ -45,39 +54,41 @@ export const useCartStore = create<CartState>()(
           items,
           cartsByOwner: { ...s.cartsByOwner, [s.ownerId]: items },
         })),
-      add: (product, qty = 1) =>
+      add: (product, qty = 1, variant) =>
         set((s) => {
-          if (product.stock === 0) return s;
+          const effectiveStock = variant?.stock ?? product.stock;
+          if (effectiveStock === 0) return s;
           const ownerItems = s.cartsByOwner[s.ownerId] || [];
-          const existing = ownerItems.find((i) => i.product.id === product.id);
+          const existing = ownerItems.find((i) => matchItem(i, product.id, variant?.id));
           const currentQty = existing?.qty ?? 0;
-          const allowed = Math.min(qty, product.stock - currentQty);
+          const allowed = Math.min(qty, effectiveStock - currentQty);
           if (allowed <= 0) return s;
           const nextItems = existing
-            ? ownerItems.map((i) => i.product.id === product.id ? { ...i, qty: currentQty + allowed } : i)
-            : [...ownerItems, { product, qty: allowed }];
+            ? ownerItems.map((i) => matchItem(i, product.id, variant?.id) ? { ...i, qty: currentQty + allowed } : i)
+            : [...ownerItems, { product, qty: allowed, variant }];
 
           return {
             items: nextItems,
             cartsByOwner: { ...s.cartsByOwner, [s.ownerId]: nextItems },
           };
         }),
-      update: (productId, qty) =>
+      update: (productId, qty, variantId) =>
         set((s) => {
           const ownerItems = s.cartsByOwner[s.ownerId] || [];
-          const stock = ownerItems.find((i) => i.product.id === productId)?.product.stock ?? Infinity;
+          const existing = ownerItems.find((i) => matchItem(i, productId, variantId));
+          const stock = existing ? itemStock(existing) : Infinity;
           const nextItems = qty <= 0
-            ? ownerItems.filter((i) => i.product.id !== productId)
-            : ownerItems.map((i) => i.product.id === productId ? { ...i, qty: Math.min(qty, stock) } : i);
+            ? ownerItems.filter((i) => !matchItem(i, productId, variantId))
+            : ownerItems.map((i) => matchItem(i, productId, variantId) ? { ...i, qty: Math.min(qty, stock) } : i);
 
           return {
             items: nextItems,
             cartsByOwner: { ...s.cartsByOwner, [s.ownerId]: nextItems },
           };
         }),
-      remove: (productId) =>
+      remove: (productId, variantId) =>
         set((s) => {
-          const nextItems = (s.cartsByOwner[s.ownerId] || []).filter((i) => i.product.id !== productId);
+          const nextItems = (s.cartsByOwner[s.ownerId] || []).filter((i) => !matchItem(i, productId, variantId));
 
           return {
             items: nextItems,
@@ -91,9 +102,11 @@ export const useCartStore = create<CartState>()(
           freeSample: null,
         })),
       count: () => get().items.reduce((n, i) => n + i.qty, 0),
-      subtotal: () => get().items.reduce((n, i) => n + i.product.price * i.qty, 0),
+      subtotal: () => get().items.reduce((n, i) => n + itemPrice(i) * i.qty, 0),
       setFreeSample: (p) => set({ freeSample: p }),
     }),
     { name: 'healthora-cart' }
   )
 );
+
+export { itemKey };
