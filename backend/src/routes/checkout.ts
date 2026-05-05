@@ -10,6 +10,7 @@ type CheckoutBody = {
   items: { productId: string; qty: number }[];
   address: { name: string; phone: string; address: string; city: string; postal: string };
   promoCode?: string;
+  freeSampleId?: string;
 };
 
 function roundMoney(value: number): number {
@@ -20,13 +21,19 @@ export const checkoutRouter = new Hono<AppEnv>()
   .use('*', clerkAuth)
   .post('/session', async (c) => {
     const body = await c.req.json<CheckoutBody>();
-    const { items, address, promoCode } = body;
+    const { items, address, promoCode, freeSampleId } = body;
     const user = c.get('user');
 
     const productIds = items.map((i) => i.productId);
     const products = await Product.find({ id: { $in: productIds }, active: true }).lean();
     if (products.length !== items.length) {
       return c.json({ error: 'One or more products not found' }, 400);
+    }
+
+    // Validate free sample product exists if provided
+    let freeSampleProduct = null;
+    if (freeSampleId) {
+      freeSampleProduct = await Product.findOne({ id: freeSampleId, active: true }).lean();
     }
 
     const lineItems = items.map((item) => {
@@ -107,7 +114,10 @@ export const checkoutRouter = new Hono<AppEnv>()
           customerId: user.clerkId,
           customerName: user.name || '',
           customerEmail: user.email || '',
-          cartItems: JSON.stringify(items),
+          cartItems: JSON.stringify([
+            ...items,
+            ...(freeSampleProduct ? [{ productId: freeSampleProduct.id, qty: 1, isSample: true }] : []),
+          ]),
           address: JSON.stringify(address),
           discountCode: promotion?.code || '',
           discountAmount: String(discountAmount),

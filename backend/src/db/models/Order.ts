@@ -13,6 +13,7 @@ const OrderSchema = new Schema(
         price: Number,
         imageUrl: String,
         category: String,
+        isSample: { type: Boolean, default: false },
       },
     ],
     subtotal: Number,

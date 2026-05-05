@@ -184,15 +184,19 @@ function OrderDetail({
                 <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 500, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {item.productName}
                 </div>
-                {item.qty > 1 && (
+                {(item.isSample || item.price === 0) ? (
+                  <div style={{ display: 'inline-block', marginTop: 4, fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.08em', color: 'var(--green)', background: 'color-mix(in oklab, var(--green) 10%, white)', border: '1px solid color-mix(in oklab, var(--green) 25%, white)', borderRadius: 999, padding: '2px 8px' }}>
+                    MUESTRA GRATIS · CLUB HEALTHORA
+                  </div>
+                ) : item.qty > 1 && (
                   <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginTop: 3 }}>
                     {item.qty} unidades · ${item.price.toFixed(2)} c/u
                   </div>
                 )}
               </div>
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20, letterSpacing: '-0.02em' }}>
-                  ${(item.price * item.qty).toFixed(2)}
+                <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20, letterSpacing: '-0.02em', color: (item.isSample || item.price === 0) ? 'var(--green)' : 'var(--ink)' }}>
+                  {(item.isSample || item.price === 0) ? 'GRATIS' : `$${(item.price * item.qty).toFixed(2)}`}
                 </div>
                 {item.qty > 1 && (
                   <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>×{item.qty}</div>

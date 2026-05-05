@@ -12,6 +12,7 @@ import { Checkout } from './pages/Checkout';
 import { Success } from './pages/Success';
 import { Club } from './pages/Club';
 import { Orders } from './pages/Orders';
+import { SamplePicker } from './pages/SamplePicker';
 import { AdminApp } from './pages/admin/AdminApp';
 import { SSOCallbackPage } from './components/SSOCallback';
 import { CustomCursor } from './components/shared/CustomCursor';
@@ -21,7 +22,7 @@ import { useSearchParams, useLocation } from 'react-router-dom';
 import { api } from './lib/api';
 import { useProduct } from './hooks/useProducts';
 
-type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club' | 'orders';
+type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club' | 'orders' | 'sample-picker';
 type CatalogFilter = { category?: string; need?: string; search?: string; page?: number; brand?: string; brands?: string[] };
 const CATALOG_BRANDS_STORAGE_KEY = 'healthora_catalog_brands';
 
@@ -237,7 +238,7 @@ function AppInner() {
       <CustomCursor />
       <Topbar />
       <Header onNav={nav} onOpenCart={() => setCartOpen(true)} />
-      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={() => { setCheckoutItems(null); setCartOpen(false); nav('checkout'); }} />
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} onCheckout={() => { setCheckoutItems(null); setCartOpen(false); nav('checkout'); }} onOpenSamplePicker={() => { setCartOpen(false); nav('sample-picker'); }} />
       <div style={{ minHeight: 'calc(100vh - 200px)' }}>
         {view === 'landing' && <Landing onNav={nav} onOpenProduct={openProduct} onAdd={(p, qty = 1) => { add(p, qty); setCheckoutItems(null); setCartOpen(true); }} />}
         {view === 'catalog' && <Catalog initialFilter={catalogFilter} onFilterChange={syncCatalogFilter} onOpenProduct={openProduct} onAdd={(p) => { add(p, 1); setCheckoutItems(null); setCartOpen(true); }} />}
@@ -258,6 +259,7 @@ function AppInner() {
         {view === 'success' && <Success onBack={() => nav('landing')} />}
         {view === 'club' && <Club onNav={nav} />}
         {view === 'orders' && <Orders onBack={() => nav('catalog')} />}
+        {view === 'sample-picker' && <SamplePicker onBack={() => { nav('catalog'); setCartOpen(true); }} onConfirm={() => { nav('catalog'); setCartOpen(true); }} />}
       </div>
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}

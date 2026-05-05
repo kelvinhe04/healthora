@@ -45,6 +45,7 @@ type OrderItem = {
   price: number;
   imageUrl?: string;
   category?: string;
+  isSample?: boolean;
 };
 
 type Address = {
@@ -189,10 +190,11 @@ function buildProductRows(items: OrderItem[]): string {
               <td style="padding-left: 16px; vertical-align: middle;">
                 <p style="margin: 0; font-size: 15px; line-height: 21px; font-weight: 700; color: #213a27;">${productName}</p>
                 <p style="margin: 6px 0 0 0; font-size: 13px; color: #64756a;">Cantidad: ${item.qty}</p>
+                ${(item.isSample || item.price === 0) ? '<p style="margin: 6px 0 0 0; display: inline-block; font-size: 10px; font-weight: 800; color: #11845b; background-color: #e8f5ee; border: 1px solid #b2dcc4; border-radius: 999px; padding: 2px 10px; letter-spacing: 1px; text-transform: uppercase;">MUESTRA GRATIS · CLUB HEALTHORA</p>' : ''}
               </td>
               <td align="right" width="100" style="vertical-align: middle;">
-                <p style="margin: 0; font-size: 16px; font-weight: 800; color: #11845b;">${formatPrice(item.price * item.qty)}</p>
-                <p style="margin: 3px 0 0 0; font-size: 12px; color: #8a9a90;">${formatPrice(item.price)} c/u</p>
+                <p style="margin: 0; font-size: 16px; font-weight: 800; color: #11845b;">${(item.isSample || item.price === 0) ? 'GRATIS' : formatPrice(item.price * item.qty)}</p>
+                ${!(item.isSample || item.price === 0) ? `<p style="margin: 3px 0 0 0; font-size: 12px; color: #8a9a90;">${formatPrice(item.price)} c/u</p>` : ''}
               </td>
             </tr>
           </table>
@@ -209,7 +211,10 @@ function buildCompactProductList(items: OrderItem[]): string {
       const productName = escapeHtml(item.productName);
       return `
         <tr>
-          <td style="padding: 13px 0; border-bottom: 1px solid #e8efe9; font-size: 14px; line-height: 20px; color: #213a27; font-weight: 700;">${productName}</td>
+          <td style="padding: 13px 0; border-bottom: 1px solid #e8efe9; font-size: 14px; line-height: 20px; color: #213a27; font-weight: 700;">
+            ${productName}
+            ${(item.isSample || item.price === 0) ? '<span style="margin-left: 6px; font-size: 9px; font-weight: 800; color: #11845b; background-color: #e8f5ee; border-radius: 999px; padding: 2px 7px; letter-spacing: 1px; text-transform: uppercase; vertical-align: middle;">GRATIS</span>' : ''}
+          </td>
           <td align="right" style="padding: 13px 0; border-bottom: 1px solid #e8efe9; font-size: 13px; line-height: 20px; color: #64756a;">x${item.qty}</td>
         </tr>
       `;

@@ -88,6 +88,7 @@ export interface OrderLineItem {
   qty: number;
   price: number;
   imageUrl?: string;
+  isSample?: boolean;
 }
 
 export interface Order {

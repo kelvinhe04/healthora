@@ -40,6 +40,7 @@ type CheckoutAddress = {
 type CheckoutCartItem = {
   productId: string;
   qty: number;
+  isSample?: boolean;
 };
 
 async function createOrderFromPaidSession(stripeSessionId: string, clerkId: string) {
@@ -58,9 +59,9 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
   const lineItems = cartItems.map((item) => {
     const product = products.find((entry) => entry.id === item.productId);
     if (!product) throw new Error(`Product not found for ${item.productId}`);
-    if (product.stock < item.qty) throw new Error(`Insufficient stock for ${product.name}`);
+    if (!item.isSample && product.stock < item.qty) throw new Error(`Insufficient stock for ${product.name}`);
     const primaryImage = product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || product.imageUrl || '';
-    return { productId: product.id, productName: product.name, qty: item.qty, price: product.price, imageUrl: primaryImage, category: product.category };
+    return { productId: product.id, productName: product.name, qty: item.qty, price: item.isSample ? 0 : product.price, imageUrl: primaryImage, category: product.category, isSample: item.isSample ?? false };
   });
 
   const subtotal = lineItems.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -93,7 +94,9 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
   });
 
   for (const item of lineItems) {
-    await Product.findOneAndUpdate({ id: item.productId }, { $inc: { stock: -item.qty } });
+    if (!item.isSample) {
+      await Product.findOneAndUpdate({ id: item.productId }, { $inc: { stock: -item.qty } });
+    }
   }
 
   const customerEmail = metadata.customerEmail || session.customer_email;

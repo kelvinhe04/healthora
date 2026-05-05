@@ -220,6 +220,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
           items: items.map((it) => ({ productId: it.product.id, qty: it.qty })),
           address,
           promoCode: appliedPromo?.code,
+          freeSampleId: freeSample?.id,
         },
         token!
       );

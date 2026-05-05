@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { ModalOverlay } from '../components/shared/ModalOverlay';
@@ -6,12 +6,12 @@ import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 import { useBreakpoint } from '../hooks/useBreakpoint';
-import { useProducts } from '../hooks/useProducts';
 
 interface CartDrawerProps {
   open: boolean;
   onClose: () => void;
   onCheckout: () => void;
+  onOpenSamplePicker: () => void;
 }
 
 function Row({ k, v }: { k: ReactNode; v: ReactNode }) {
@@ -25,10 +25,9 @@ function Row({ k, v }: { k: ReactNode; v: ReactNode }) {
 const iconBtn = { background: 'transparent', border: 'none', cursor: 'pointer', padding: 6, color: 'var(--ink)', display: 'flex' } as const;
 const qtyBtn = { width: 28, height: 28, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' } as const;
 
-export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
+export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: CartDrawerProps) {
   const { items, update, remove, clear, freeSample, setFreeSample } = useCartStore();
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
-  const [samplePickerOpen, setSamplePickerOpen] = useState(false);
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const drawerPad = isMobile ? '16px' : '28px';
@@ -37,15 +36,6 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
   const tax = subtotal * 0.07;
   const total = subtotal + shipping + tax;
   const qualifiesForSample = subtotal >= 200;
-
-  const { data: allProducts } = useProducts({ inStock: true });
-  const sampleProducts = useMemo(() => {
-    if (!allProducts) return [];
-    return allProducts
-      .filter((p) => p.price <= 25)
-      .sort((a, b) => a.price - b.price)
-      .slice(0, 8);
-  }, [allProducts]);
 
   useEffect(() => {
     if (!open) setConfirmClearOpen(false);
@@ -153,7 +143,7 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
                           <div style={{ fontSize: 13, fontFamily: '"Geist", sans-serif', fontWeight: 500, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{freeSample.name}</div>
                         </div>
                         <button
-                          onClick={() => setSamplePickerOpen(true)}
+                          onClick={() => { onClose(); onOpenSamplePicker(); }}
                           style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--green)', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '0.06em', flexShrink: 0, textDecoration: 'underline' }}
                         >
                           CAMBIAR
@@ -165,7 +155,7 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
                           ¡Elige <strong>1 muestra gratis</strong>!
                         </div>
                         <button
-                          onClick={() => setSamplePickerOpen(true)}
+                          onClick={() => { onClose(); onOpenSamplePicker(); }}
                           style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'white', background: 'var(--green)', border: 'none', cursor: 'pointer', letterSpacing: '0.06em', padding: '8px 14px', borderRadius: 999, flexShrink: 0, fontWeight: 700 }}
                         >
                           ELEGIR →
@@ -196,58 +186,6 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
             </div>
           </>
         )}
-
-        {/* Sample picker modal */}
-        <ModalOverlay open={samplePickerOpen} onClose={() => setSamplePickerOpen(false)} zIndex={5} absolute>
-          <div style={{ width: '100%', background: 'var(--cream)', borderRadius: 24, border: '1px solid var(--ink-06)', boxShadow: '0 28px 80px -36px rgba(0,0,0,0.32)', overflow: 'hidden', maxHeight: 'calc(100% - 48px)', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '22px 24px 18px', borderBottom: '1px solid var(--ink-06)', flexShrink: 0 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--green)', marginBottom: 8 }}>Club Healthora</div>
-                  <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, letterSpacing: '-0.02em', lineHeight: 1, color: 'var(--ink)' }}>
-                    Tu muestra <em style={{ color: 'var(--green)' }}>gratis</em>
-                  </div>
-                  <p style={{ margin: '10px 0 0', fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', lineHeight: 1.5 }}>
-                    Elige 1 producto sin costo adicional.
-                  </p>
-                </div>
-                <button onClick={() => setSamplePickerOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--ink-60)', display: 'flex' }}>
-                  <Icon name="x" size={18} />
-                </button>
-              </div>
-            </div>
-            <div style={{ overflow: 'auto', padding: 16, flex: 1 }}>
-              {sampleProducts.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: 40, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.1em' }}>CARGANDO MUESTRAS...</div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-                  {sampleProducts.map((p) => {
-                    const selected = freeSample?.id === p.id;
-                    return (
-                      <button
-                        key={p.id}
-                        onClick={() => { setFreeSample(p); setSamplePickerOpen(false); }}
-                        style={{ background: selected ? 'color-mix(in srgb, var(--green) 10%, var(--cream))' : 'var(--cream-2)', border: selected ? '2px solid var(--green)' : '1px solid var(--ink-06)', borderRadius: 14, padding: 12, cursor: 'pointer', textAlign: 'left', transition: 'all 150ms' }}
-                      >
-                        <div style={{ width: '100%', aspectRatio: '1', background: p.color || 'white', borderRadius: 10, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-                          <ProductImage product={p} size="sm" />
-                        </div>
-                        <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{p.brand}</div>
-                        <div style={{ fontSize: 12, fontFamily: '"Geist", sans-serif', fontWeight: 500, lineHeight: 1.3 }}>{p.name}</div>
-                        <div style={{ fontSize: 11, fontFamily: '"Instrument Serif", serif', color: 'var(--ink-60)', marginTop: 4 }}>${p.price.toFixed(2)}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-            {freeSample && (
-              <div style={{ padding: '14px 20px', borderTop: '1px solid var(--ink-06)', flexShrink: 0, background: 'var(--cream-2)' }}>
-                <AnimatedButton variant="primary" full onClick={() => setSamplePickerOpen(false)} text="Confirmar selección" />
-              </div>
-            )}
-          </div>
-        </ModalOverlay>
 
         {/* Confirm clear modal */}
         <ModalOverlay open={confirmClearOpen} onClose={() => setConfirmClearOpen(false)} zIndex={3} overlayColor="rgba(17, 24, 20, 0.28)" absolute>

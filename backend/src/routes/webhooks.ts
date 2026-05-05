@@ -17,6 +17,7 @@ type CheckoutAddress = {
 type CheckoutCartItem = {
   productId: string;
   qty: number;
+  isSample?: boolean;
 };
 
 export const webhooksRouter = new Hono().post('/stripe', async (c) => {
@@ -54,15 +55,18 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
         if (products.length !== cartItems.length) {
           console.error('[WEBHOOK] Missing products while creating paid order for session', session.id);
         } else {
+          console.log('[WEBHOOK] cartItems from metadata:', JSON.stringify(cartItems));
           const lineItems = cartItems.map((item) => {
             const product = products.find((entry) => entry.id === item.productId);
             if (!product) throw new Error(`Product not found for ${item.productId}`);
-            if (product.stock < item.qty) throw new Error(`Insufficient stock for ${product.name}`);
+            if (!item.isSample && product.stock < item.qty) throw new Error(`Insufficient stock for ${product.name}`);
             const primaryImage = product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || product.imageUrl || '';
-            return { productId: product.id, productName: product.name, qty: item.qty, price: product.price, imageUrl: primaryImage, category: product.category };
+            return { productId: product.id, productName: product.name, qty: item.qty, price: item.isSample ? 0 : product.price, imageUrl: primaryImage, category: product.category, isSample: item.isSample ?? false };
           });
+          console.log('[WEBHOOK] lineItems prices:', lineItems.map((i) => `${i.productName}: $${i.price} isSample=${i.isSample}`));
 
           const subtotal = lineItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+          console.log('[WEBHOOK] subtotal:', subtotal);
           const discountCode = metadata.discountCode || undefined;
           const discountAmount = Number(metadata.discountAmount || 0);
           const tax = Number(metadata.tax || 0);

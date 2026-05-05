@@ -98,6 +98,7 @@ export const api = {
         items: { productId: string; qty: number }[];
         address: object;
         promoCode?: string;
+        freeSampleId?: string;
       },
       token: string,
     ) =>
