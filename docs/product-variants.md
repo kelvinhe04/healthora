@@ -157,15 +157,61 @@ Swatches con color hex real basado en los tonos reales del producto.
 | ON Serious Mass | Chocolate · Vanilla · Strawberry · Banana |
 | Legion Whey+ | Dutch Chocolate · Vanilla Bean · Strawberry Banana · Cookies & Cream · French Vanilla |
 
-### Vitaminas — 5 productos (type: `count`)
+### Vitaminas — 16 productos (type: `count` / `flavor`)
 
-| Producto | Presentaciones |
+**Con variantes de sabor (type: `flavor`):**
+
+| Producto | Sabores |
 |---|---|
-| Nature Made Vitamin D3 5000 IU | 90 ct · 180 ct · 360 ct |
-| Centrum Women Multivitamin | 100 ct · 200 ct · 300 ct |
-| NOW Foods Methyl B-12 | 50 ct · 100 ct · 200 ct |
-| Nature's Way Alive! Women's Ultra | 30 ct · 60 ct · 90 ct |
-| Nature Made Advanced Multivitamin Gummies For Her | 90 ct · 150 ct |
+| Emergen-C 1000mg Vitamin C Powder | Orange · Pink Lemonade · Raspberry · Strawberry Kiwi · Tangerine · Tropical (sin stock) |
+
+> Todos los sabores comparten la imagen base del producto (Super Orange). Las imágenes locales están en `frontend/public/products/vitaminas/emergen-c-super-orange-{1-4}.jpg`.
+
+**Con variantes de cantidad (type: `count`):**
+
+Todos los títulos fueron actualizados para remover el conteo fijo (ej. "90 Ct") ya que el conteo pasó a ser una variante seleccionable. Cada variante tiene `imageUrl` con imagen real del CDN de iHerb o NatureMade.
+
+**Calidad de imágenes:**
+- iHerb Cloudinary CDN: todas las URLs usan `f_auto,q_auto:good,w_800/` → 800×800 px
+- NatureMade Shopify CDN: todas las URLs usan sufijo `_1500x.png` → 1500×1500 px
+
+**Productos con múltiples variantes + imágenes por variante:**
+
+| Producto | Presentaciones | Fuente imágenes |
+|---|---|---|
+| Nature Made Vitamin D3 5000 IU Softgels | 90 ct · 180 ct · 360 ct | iHerb CDN / NatureMade |
+| Centrum Women Multivitamin Tablets | 100 ct · 200 ct · 300 ct | iHerb CDN |
+| Nature's Way Alive! Women's Ultra Multivitamin | 60 ct · 150 ct | iHerb CDN |
+| NOW Foods Methyl B-12 1000 mcg Lozenges | 60 ct · 100 ct · 250 ct | iHerb CDN |
+| Garden of Life Vitamin Code Women | 120 ct · 240 ct | iHerb CDN |
+| Nature Made Advanced Multivitamin Gummies For Her | 90 ct · 150 ct | NatureMade CDN |
+| Nature Made Multivitamin For Her Gummies | 70 ct · 150 ct | NatureMade CDN |
+| Nature Made Multi For Her + Omega-3 Gummies | 80 ct · 150 ct | NatureMade CDN |
+| Nature Made Vitamin D3 2000 IU Softgels | 90 ct · 250 ct | iHerb CDN |
+| Nature's Bounty Biotin 10000 mcg Rapid Release Softgels | 90 ct · 120 ct · 180 ct | iHerb CDN |
+
+**Productos de presentación única (solo imagen de producto agregada):**
+
+| Producto | Presentación | Fuente imagen |
+|---|---|---|
+| Nature Made Vitamin D3 + K2 Softgels | 30 ct | NatureMade CDN |
+| Nature Made Extra Strength Vitamin C 500 mg Gummies | 60 ct | NatureMade CDN |
+| Nature Made Advanced Multivitamin Gummies For Her 50+ | 84 ct | NatureMade CDN |
+| Vitafusion Men's Multivitamin Gummy | 120 ct | iHerb CDN |
+| Nature's Bounty Super B-Complex with Folic Acid + Vitamin C | 150 ct | iHerb CDN |
+| Vitafusion Power Plus Men's Multivitamin Gummy | 90 ct | vitafusion.com Shopify CDN |
+
+> **Correcciones aplicadas:**
+> - Alive! Women's Ultra: seed tenía 30/60/90 ct → corregido a 60/150 ct (tamaños reales del producto)
+> - NOW Methyl B-12: seed tenía 50/100/200 ct → corregido a 60/100/250 ct (tamaños reales del producto)
+> - D3 5000 IU 360ct: imagen mostraba botella 90ct → reemplazada con imagen hi-res Amazon (`B0828JGTXB`)
+> - Centrum Women 300ct: imagen duplicada de 200ct → reemplazada con imagen oficial Centrum
+> - Advanced For Her 150ct: sin imagen propia (solo en Costco/Sam's Club); usa `product.imageUrl` como fallback
+> - Vitafusion Power Plus Men: imageUrl agregado desde Shopify CDN de vitafusion.com
+> - 8 descripciones cortas de productos con variantes: eliminado el conteo hardcodeado del texto
+
+**Nota sobre `imageUrl` en variantes:**
+Cuando el usuario selecciona una variante, `ProductDetail.tsx` reemplaza la imagen principal del gallery con `selectedVariant.imageUrl`. Si la variante no tiene `imageUrl`, se mantiene la imagen base del producto.
 
 ### Suplementos — 6 productos (type: `size` / `flavor` / `count` / `weight`)
 
@@ -206,9 +252,10 @@ bun run seed
 
 ## Pendiente / Lo que falta
 
-- **Reseed** — correr el comando de arriba para que los datos lleguen a MongoDB
+- **Reseed** — correr `bun run seed` desde `/backend` para aplicar todos los cambios a MongoDB
 - **ProductCard** — actualmente agrega sin variante; podría mostrar "Elige una opción →" si el producto tiene variantes
 - **OrderLineItem** — la variante no se persiste en el pedido (solo en carrito/checkout); agregar `variantLabel?` al tipo y al backend de órdenes
 - **Admin panel** — sin UI para crear o editar variantes
 - **Cuidado personal** — deodorants (Old Spice, Native, Secret, Degree) con fragancias; body washes con tamaños; Dr. Teal's con fragancias
 - **Más maquillaje** — `urban-decay-all-nighter-setting-spray`, `loreal-lash-paradise-mascara`, `maybelline-fit-me-foundation` (shades), `elf-power-grip-primer`
+- **Vitaminas** — Advanced For Her 150ct sin imagen de variante propia (imagen real solo en Costco/Sam's Club; usa product-level imageUrl como fallback)

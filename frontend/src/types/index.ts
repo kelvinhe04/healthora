@@ -21,6 +21,7 @@ export interface ProductVariant {
   sku?: string;
   color?: string;
   imageUrl?: string;
+  images?: string[];
   isDefault?: boolean;
 }
 

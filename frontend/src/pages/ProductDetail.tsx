@@ -60,12 +60,12 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
         alt: `${product.name} ${i + 1}`,
         isPrimary: i === 0,
       })).filter((img) => img.url);
+  const variantImages = selectedVariant?.images;
   const variantImageUrl = selectedVariant?.imageUrl;
-  const gallery = variantImageUrl
-    ? [
-        { url: variantImageUrl, alt: `${product.name} · ${selectedVariant!.label}`, isPrimary: true },
-        ...baseGallery.slice(1),
-      ]
+  const gallery = variantImages && variantImages.length > 0
+    ? variantImages.map((url, i) => ({ url, alt: `${product.name} · ${selectedVariant!.label} ${i + 1}`, isPrimary: i === 0 }))
+    : variantImageUrl
+    ? [{ url: variantImageUrl, alt: `${product.name} · ${selectedVariant!.label}`, isPrimary: true }, ...baseGallery.slice(1)]
     : baseGallery;
   const activeImage = gallery[activeImageIndex]?.url || product.imageUrl;
   const hasRealImages = Boolean(activeImage);

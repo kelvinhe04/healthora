@@ -55,6 +55,7 @@ const ProductSchema = new Schema(
         sku: String,
         color: String,
         imageUrl: String,
+        images: [String],
         isDefault: { type: Boolean, default: false },
       },
     ],
