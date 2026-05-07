@@ -24,7 +24,8 @@ function tintOf(color: string, amount: number) {
 
 export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt }: ProductImageProps) {
   const s = sizes[size];
-  const src = imageUrl || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url;
+  const defaultVariant = product.variants?.find((v) => v.isDefault) ?? product.variants?.[0];
+  const src = imageUrl || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || defaultVariant?.images?.[0] || defaultVariant?.imageUrl;
   if (src) {
     const imagePadding = size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
     return (

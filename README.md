@@ -283,9 +283,59 @@ stripe listen --forward-to http://localhost:3001/webhooks/stripe
 
 ## Imágenes y Seed
 
-- Convención de archivos: `frontend/public/products/<categoria>/<product-id>-1.jpg` … `-4.jpg`
+### Convención de Archivos
+
+- **Productos sin variantes**: `frontend/public/products/<categoria>/<product-id>-1.jpg` … `-4.jpg`
+- **Productos con variantes de cantidad/sabor**: `frontend/public/products/<categoria>/<product-id>-<variant-label>-1.jpg` … `-4.jpg`
+  - Ej: `olly-womens-multi-90ct-1.jpg`, `olly-womens-multi-130ct-1.jpg`
+
+### Seeding y Actualización
+
 - El seed lee los productos desde `src/db/seed.ts` y hace upsert en MongoDB.
 - Si se re-ejecuta `bun run seed`, actualiza sin duplicar (usa `updateOne` con `upsert: true`).
+
+### Resolución de Imágenes en Variantes
+
+Cuando un producto tiene variantes (ej: tamaños, conteos, sabores), la prioridad de resolución es:
+
+1. **ProductCard (imagen primaria)**: `defaultVariant.images[0]` → `defaultVariant.imageUrl` → `product.imageUrl` → `product.images[0]`
+2. **ProductCard (imagen hover)**: `product.images[1]` (solo del nivel producto, no de variantes)
+3. **ProductImage (fallback general)**: Mismo orden que ProductCard
+
+**Patrón de variante con images array:**
+```javascript
+variants: [
+  {
+    id: 'olly-90ct',
+    label: '90 Ct',
+    type: 'count',
+    images: ['/products/vitaminas/olly-womens-multi-90ct-1.jpg', /* ... */],
+    isDefault: true
+  }
+]
+```
+
+### Scripts de Actualización Directa
+
+Si el seed no actualiza correctamente la BD (timeout o conflictos), usar:
+```bash
+cd backend && bun run fixOllyImage  # Actualiza OLLY imageUrl sin full seed
+```
+
+Patrón general en `src/scripts/fixProductName.ts`:
+```typescript
+const result = await Product.updateOne(
+  { id: 'product-id' },
+  { $set: { imageUrl: 'new-path', /* otros campos */ } }
+);
+```
+
+### Productos Actualizados (Mayo 2026)
+
+| Producto | Cambios | Imágenes |
+|---|---|---|
+| SmartyPants Women's Multi | 90 Ct → 120 Ct, $38.32 | product.images (4 reales) |
+| OLLY Women's Multi | Agregadas variantes: 90 Ct ($11.47, default), 130 Ct ($14.97) | variant.images (4 c/u) |
 
 ---
 

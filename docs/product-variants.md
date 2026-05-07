@@ -169,16 +169,18 @@ Swatches con color hex real basado en los tonos reales del producto.
 
 **Con variantes de cantidad (type: `count`):**
 
-Todos los títulos fueron actualizados para remover el conteo fijo (ej. "90 Ct") ya que el conteo pasó a ser una variante seleccionable. Cada variante tiene `imageUrl` con imagen real del CDN de iHerb o NatureMade.
+Todos los títulos fueron actualizados para remover el conteo fijo (ej. "90 Ct") ya que el conteo pasó a ser una variante seleccionable. Cada variante tiene precio específico y stock independiente.
 
 **Calidad de imágenes:**
 - iHerb Cloudinary CDN: todas las URLs usan `f_auto,q_auto:good,w_800/` → 800×800 px
 - NatureMade Shopify CDN: todas las URLs usan sufijo `_1500x.png` → 1500×1500 px
+- Amazon CDN: imágenes de productos con múltiples presentaciones
 
 **Productos con múltiples variantes + imágenes por variante:**
 
 | Producto | Presentaciones | Fuente imágenes |
 |---|---|---|
+| OLLY Women's Multi Gummies | 90 ct · 130 ct | Amazon CDN |
 | Nature Made Vitamin D3 5000 IU Softgels | 90 ct · 180 ct · 360 ct | iHerb CDN / NatureMade |
 | Centrum Women Multivitamin Tablets | 100 ct · 200 ct · 300 ct | iHerb CDN |
 | Nature's Way Alive! Women's Ultra Multivitamin | 60 ct · 150 ct | iHerb CDN |
@@ -194,6 +196,7 @@ Todos los títulos fueron actualizados para remover el conteo fijo (ej. "90 Ct")
 
 | Producto | Presentación | Fuente imagen |
 |---|---|---|
+| SmartyPants Organic Women's Multi Omegas | 120 ct (Raspberries, Lemon-Lime, Grape mix) | iHerb CDN |
 | Nature Made Vitamin D3 + K2 Softgels | 30 ct | NatureMade CDN |
 | Nature Made Extra Strength Vitamin C 500 mg Gummies | 60 ct | NatureMade CDN |
 | Nature Made Advanced Multivitamin Gummies For Her 50+ | 84 ct | NatureMade CDN |
@@ -202,6 +205,8 @@ Todos los títulos fueron actualizados para remover el conteo fijo (ej. "90 Ct")
 | Vitafusion Power Plus Men's Multivitamin Gummy | 90 ct | vitafusion.com Shopify CDN |
 
 > **Correcciones aplicadas:**
+> - OLLY Women's Multi Gummies: agregadas variantes de cantidad (90 ct @ $11.47 y 130 ct @ $14.97); nombre actualizado sin hardcoded count; stock diferenciado por variante
+> - SmartyPants Women's Multi Omegas: actualizado de 90 Ct a 120 Ct; nombre incluye sabores (Raspberries, Lemon-Lime, Grape); precio ajustado a $38.32 (iHerb); porciones: 30 (120÷4)
 > - Alive! Women's Ultra: seed tenía 30/60/90 ct → corregido a 60/150 ct (tamaños reales del producto)
 > - NOW Methyl B-12: seed tenía 50/100/200 ct → corregido a 60/100/250 ct (tamaños reales del producto)
 > - D3 5000 IU 360ct: imagen mostraba botella 90ct → reemplazada con imagen hi-res Amazon (`B0828JGTXB`)
