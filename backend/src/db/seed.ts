@@ -278,8 +278,14 @@ const PRODUCTS = [
     label: 'Nature Made\n50+',
     imageUrl: 'https://www.naturemade.com/cdn/shop/files/NMHL000548PK002111ADVMULTIFORHER50_5A009500ccfrontnf_1500x.png?v=1736794769',
     variants: [
-      { id: '84ct-pack1', label: '84 Count (Pack of 1)', type: 'count', price: 11.68, priceBefore: 19.99, stock: 38, isDefault: true, imageUrl: '/products/vitaminas/nature-made-advanced-multivitamin-gummies-for-her-50-pack1-1.jpg' },
-      { id: '84ct-pack2', label: '84 Count (Pack of 2)', type: 'count', price: 19.65, priceBefore: 39.98, stock: 25, imageUrl: '/products/vitaminas/nature-made-advanced-multivitamin-gummies-for-her-50-pack2-1.jpg' },
+      { id: '84ct-pack1', label: '84 Count (Pack of 1)', type: 'count', price: 11.68, priceBefore: 19.99, stock: 38, isDefault: true, imageUrl: '/products/vitaminas/nature-made-advanced-multivitamin-gummies-for-her-50-pack1-1.jpg', images: [
+        '/products/vitaminas/nature-made-advanced-multivitamin-gummies-for-her-50-pack1-1.jpg',
+        '/products/vitaminas/nature-made-advanced-multivitamin-gummies-for-her-50-pack1-2.jpg',
+      ] },
+      { id: '84ct-pack2', label: '84 Count (Pack of 2)', type: 'count', price: 19.65, priceBefore: 39.98, stock: 25, imageUrl: '/products/vitaminas/nature-made-advanced-multivitamin-gummies-for-her-50-pack2-1.jpg', images: [
+        '/products/vitaminas/nature-made-advanced-multivitamin-gummies-for-her-50-pack2-1.jpg',
+        '/products/vitaminas/nature-made-advanced-multivitamin-gummies-for-her-50-pack2-2.jpg',
+      ] },
     ],
   },
   {
