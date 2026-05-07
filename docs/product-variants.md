@@ -176,11 +176,17 @@ Todos los títulos fueron actualizados para remover el conteo fijo (ej. "90 Ct")
 - NatureMade Shopify CDN: todas las URLs usan sufijo `_1500x.png` → 1500×1500 px
 - Amazon CDN: imágenes de productos con múltiples presentaciones
 
-**Productos con múltiples variantes + imágenes por variante:**
+**Productos con múltiples variantes + imágenes por variante (cada variante tiene `images: [...]`):**
+
+| Producto | Presentaciones | # Imágenes | Estado |
+|---|---|---|---|
+| OLLY Women's Multi Gummies | 90 ct · 130 ct | 4 c/variante | Reales (Amazon) |
+| Nature's Bounty Biotin 10000 mcg | 120 (Pack 1, default) · 180 · 250 · 120 (Pack 2) · 120 (Pack 6) | 4 c/variante | 120-Pack1: reales; otras: placeholders |
+
+**Productos con variantes sin arrays de imágenes (solo `imageUrl` por variante):**
 
 | Producto | Presentaciones | Fuente imágenes |
 |---|---|---|
-| OLLY Women's Multi Gummies | 90 ct · 130 ct | Amazon CDN |
 | Nature Made Vitamin D3 5000 IU Softgels | 90 ct · 180 ct · 360 ct | iHerb CDN / NatureMade |
 | Centrum Women Multivitamin Tablets | 100 ct · 200 ct · 300 ct | iHerb CDN |
 | Nature's Way Alive! Women's Ultra Multivitamin | 60 ct · 150 ct | iHerb CDN |
@@ -190,7 +196,6 @@ Todos los títulos fueron actualizados para remover el conteo fijo (ej. "90 Ct")
 | Nature Made Multivitamin For Her Gummies | 70 ct · 150 ct | NatureMade CDN |
 | Nature Made Multi For Her + Omega-3 Gummies | 80 ct · 150 ct | NatureMade CDN |
 | Nature Made Vitamin D3 2000 IU Softgels | 90 ct · 250 ct | iHerb CDN |
-| Nature's Bounty Biotin 10000 mcg Rapid Release Softgels | 90 ct · 120 ct · 180 ct | iHerb CDN |
 
 **Productos de presentación única (solo imagen de producto agregada):**
 
@@ -207,6 +212,7 @@ Todos los títulos fueron actualizados para remover el conteo fijo (ej. "90 Ct")
 > **Correcciones aplicadas:**
 > - OLLY Women's Multi Gummies: agregadas variantes de cantidad (90 ct @ $11.47 y 130 ct @ $14.97); nombre actualizado sin hardcoded count; stock diferenciado por variante
 > - SmartyPants Women's Multi Omegas: actualizado de 90 Ct a 120 Ct; nombre incluye sabores (Raspberries, Lemon-Lime, Grape); precio ajustado a $38.32 (iHerb); porciones: 30 (120÷4)
+> - Nature's Bounty Biotin 10000 mcg: 5 variantes (120 Pack 1 default @ $8.88, 180 @ $15.43, 250 @ $18.49, 120 Pack 2 @ $17.76, 120 Pack 6 @ $53.28); cada variante tiene 4 imágenes; 120-pack1 con imágenes reales; otras con placeholders para reemplazar después
 > - Alive! Women's Ultra: seed tenía 30/60/90 ct → corregido a 60/150 ct (tamaños reales del producto)
 > - NOW Methyl B-12: seed tenía 50/100/200 ct → corregido a 60/100/250 ct (tamaños reales del producto)
 > - D3 5000 IU 360ct: imagen mostraba botella 90ct → reemplazada con imagen hi-res Amazon (`B0828JGTXB`)
@@ -217,6 +223,48 @@ Todos los títulos fueron actualizados para remover el conteo fijo (ej. "90 Ct")
 
 **Nota sobre `imageUrl` en variantes:**
 Cuando el usuario selecciona una variante, `ProductDetail.tsx` reemplaza la imagen principal del gallery con `selectedVariant.imageUrl`. Si la variante no tiene `imageUrl`, se mantiene la imagen base del producto.
+
+**Ejemplo: Nature's Bounty Biotin 10000 mcg (5 variantes con images array):**
+```javascript
+{
+  id: 'natures-bounty-biotin-10000-mcg-120-rapid-release-softgels',
+  name: 'Biotin 10000 mcg Rapid Release Softgels',
+  price: 18.49,
+  imageUrl: '/products/vitaminas/natures-bounty-biotin-10000-mcg-120-pack1-1.jpg',
+  variants: [
+    {
+      id: '120ct-pack1',
+      label: '120 Count (Pack of 1)',
+      type: 'count',
+      price: 8.88,
+      stock: 45,
+      isDefault: true,
+      imageUrl: '/products/vitaminas/natures-bounty-biotin-10000-mcg-120-pack1-1.jpg',
+      images: [
+        '/products/vitaminas/natures-bounty-biotin-10000-mcg-120-pack1-1.jpg',
+        '/products/vitaminas/natures-bounty-biotin-10000-mcg-120-pack1-2.jpg',
+        '/products/vitaminas/natures-bounty-biotin-10000-mcg-120-pack1-3.jpg',
+        '/products/vitaminas/natures-bounty-biotin-10000-mcg-120-pack1-4.jpg'
+      ]
+    },
+    {
+      id: '180ct-pack1',
+      label: '180 Count (Pack of 1)',
+      type: 'count',
+      price: 15.43,
+      stock: 35,
+      imageUrl: '/products/vitaminas/natures-bounty-biotin-10000-mcg-180-pack1-1.jpg',
+      images: [/* 4 placeholders para reemplazar */]
+    },
+    // ... más variantes con mismo patrón
+  ]
+}
+```
+
+**Convención de nombres para variantes con múltiples imágenes:**
+- `{product-id}-{variant-label}-{1-4}.jpg`
+- Ej: `natures-bounty-biotin-10000-mcg-120-pack1-1.jpg`, `natures-bounty-biotin-10000-mcg-250-pack1-3.jpg`
+- Cada variante tiene 4 imágenes (para consistencia con OLLY y otros productos)
 
 ### Suplementos — 6 productos (type: `size` / `flavor` / `count` / `weight`)
 
@@ -255,6 +303,56 @@ bun run seed
 
 ---
 
+---
+
+## Estructura de Productos con Múltiples Imágenes por Variante
+
+**Problema:** Cuando un producto tiene variantes (ej: tamaños, sabores, cantidad) y cada variante tiene múltiples imágenes (ej: 4 vistas diferentes), necesitamos:
+1. Array `images: [...]` en cada variante (para gallery en ProductDetail)
+2. `imageUrl` como fallback en cada variante (para productCard)
+3. Nomenclatura clara que evite confusión entre variantes
+
+**Solución implementada en Nature's Bounty Biotin:**
+
+Convención: `{product-id}-{variant-label}-{1-4}.jpg`
+
+```
+frontend/public/products/vitaminas/
+├── natures-bounty-biotin-10000-mcg-120-pack1-1.jpg (real)
+├── natures-bounty-biotin-10000-mcg-120-pack1-2.jpg (real)
+├── natures-bounty-biotin-10000-mcg-120-pack1-3.jpg (real)
+├── natures-bounty-biotin-10000-mcg-120-pack1-4.jpg (real)
+├── natures-bounty-biotin-10000-mcg-180-pack1-1.jpg (placeholder)
+├── natures-bounty-biotin-10000-mcg-180-pack1-2.jpg (placeholder)
+├── ... 16 total
+```
+
+Cada variante en seed.ts especifica su array `images`:
+```typescript
+{
+  id: '120ct-pack1',
+  label: '120 Count (Pack of 1)',
+  type: 'count',
+  price: 8.88,
+  stock: 45,
+  isDefault: true,
+  imageUrl: '/products/vitaminas/natures-bounty-biotin-10000-mcg-120-pack1-1.jpg',
+  images: [
+    '/products/vitaminas/natures-bounty-biotin-10000-mcg-120-pack1-1.jpg',
+    '/products/vitaminas/natures-bounty-biotin-10000-mcg-120-pack1-2.jpg',
+    '/products/vitaminas/natures-bounty-biotin-10000-mcg-120-pack1-3.jpg',
+    '/products/vitaminas/natures-bounty-biotin-10000-mcg-120-pack1-4.jpg'
+  ]
+}
+```
+
+**En ProductDetail.tsx:**
+- Al seleccionar una variante, reemplaza el gallery completo con `selectedVariant.images`
+- Si la variante no tiene `images`, usa `product.images` como fallback
+- ProductCard muestra `selectedVariant.images[0]` como imagen principal
+
+---
+
 ## Pendiente / Lo que falta
 
 - **Reseed** — correr `bun run seed` desde `/backend` para aplicar todos los cambios a MongoDB
@@ -264,3 +362,4 @@ bun run seed
 - **Cuidado personal** — deodorants (Old Spice, Native, Secret, Degree) con fragancias; body washes con tamaños; Dr. Teal's con fragancias
 - **Más maquillaje** — `urban-decay-all-nighter-setting-spray`, `loreal-lash-paradise-mascara`, `maybelline-fit-me-foundation` (shades), `elf-power-grip-primer`
 - **Vitaminas** — Advanced For Her 150ct sin imagen de variante propia (imagen real solo en Costco/Sam's Club; usa product-level imageUrl como fallback)
+- **Nature's Bounty Biotin** — reemplazar 16 imágenes placeholder (180, 250, 120 Pack 2, 120 Pack 6) con imágenes reales de Amazon/proveedores

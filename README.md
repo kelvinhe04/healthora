@@ -336,6 +336,7 @@ const result = await Product.updateOne(
 |---|---|---|
 | SmartyPants Women's Multi | 90 Ct → 120 Ct, $38.32 | product.images (4 reales) |
 | OLLY Women's Multi | Agregadas variantes: 90 Ct ($11.47, default), 130 Ct ($14.97) | variant.images (4 c/u) |
+| Nature's Bounty Biotin 10000 mcg | 5 variantes de cantidad/pack: 120 (Pack of 1, default), 180, 250, 120 (Pack de 2), 120 (Pack de 6) | 120-pack1: images reales (4); otros: placeholders (4 c/u) |
 
 ---
 
