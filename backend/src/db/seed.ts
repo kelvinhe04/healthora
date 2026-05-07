@@ -243,13 +243,14 @@ const PRODUCTS = [
       { id: '150ct', label: '150 gummies', type: 'count', price: 27.99, stock: 32 },
     ],
   },
-  {
+{
     id: 'nature-made-advanced-multivitamin-gummies-for-her-50',
     name: 'Advanced Multivitamin Gummies For Her 50+',
     brand: 'Nature Made',
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
-    price: 19.99,
+    price: 11.68,
+    priceBefore: 19.99,
     rating: 4.7,
     reviews: 524,
     short: 'Formula 50+ en gomitas para soporte diario y energia en presentacion de 84 gummies.',
@@ -276,6 +277,10 @@ const PRODUCTS = [
     swatchColor: 'oklch(0.74 0.11 40)',
     label: 'Nature Made\n50+',
     imageUrl: 'https://www.naturemade.com/cdn/shop/files/NMHL000548PK002111ADVMULTIFORHER50_5A009500ccfrontnf_1500x.png?v=1736794769',
+    variants: [
+      { id: '84ct-pack1', label: '84 Count (Pack of 1)', type: 'count', price: 11.68, priceBefore: 19.99, stock: 38, isDefault: true, imageUrl: '/products/vitaminas/nature-made-advanced-multivitamin-gummies-for-her-50-pack1-1.jpg' },
+      { id: '84ct-pack2', label: '84 Count (Pack of 2)', type: 'count', price: 19.65, priceBefore: 39.98, stock: 25, imageUrl: '/products/vitaminas/nature-made-advanced-multivitamin-gummies-for-her-50-pack2-1.jpg' },
+    ],
   },
   {
     id: 'nature-made-multivitamin-for-her-gummies',
