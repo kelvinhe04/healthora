@@ -132,11 +132,11 @@ const PRODUCTS = [
   },
   {
     id: 'now-foods-methyl-b12-1000-mcg',
-    name: 'Methyl B-12 1000 mcg Lozenges',
+    name: 'Methyl B-12 Sublingual Lozenges',
     brand: 'NOW Foods',
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
-    price: 12.99,
+    price: 8.81,
     rating: 4.6,
     reviews: 890,
     short: 'Vitamina B12 sublingual para energia y metabolismo.',
@@ -163,9 +163,11 @@ const PRODUCTS = [
     swatchColor: 'oklch(0.60 0.10 235)',
     label: 'NOW\nB-12',
     variants: [
-      { id: '60ct', label: '60 pastillas', type: 'count', price: 8.99, stock: 55, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/now/now00496/u/66.jpg' },
-      { id: '100ct', label: '100 pastillas', type: 'count', price: 12.99, stock: 67, isDefault: true, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/now/now00495/u/69.jpg' },
-      { id: '250ct', label: '250 pastillas', type: 'count', price: 21.99, stock: 32, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/now/now00467/u/24.jpg' },
+      { id: '60ct-5000', label: '60 Count (5000 mcg)', type: 'count', price: 17.33, stock: 55, imageUrl: '/products/vitaminas/methyl-b-12-sublintual-lozenges/60ct-5000-1.jpg', images: ['/products/vitaminas/methyl-b-12-sublintual-lozenges/60ct-5000-1.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/60ct-5000-2.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/shared-3.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/shared-4.jpg'] },
+      { id: '60ct-10000', label: '60 Count (10000 mcg)', type: 'count', price: 23.25, stock: 55, imageUrl: '/products/vitaminas/methyl-b-12-sublintual-lozenges/60ct-10000-1.jpg', images: ['/products/vitaminas/methyl-b-12-sublintual-lozenges/60ct-10000-1.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/60ct-10000-2.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/shared-3.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/shared-4.jpg'] },
+      { id: '100ct', label: '100 Count (1000 mcg)', type: 'count', price: 8.81, stock: 67, isDefault: true, imageUrl: '/products/vitaminas/methyl-b-12-sublintual-lozenges/100ct-1.jpg', images: ['/products/vitaminas/methyl-b-12-sublintual-lozenges/100ct-1.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/100ct-2.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/shared-3.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/shared-4.jpg'] },
+      { id: '120ct', label: '120 Count (5000 mcg)', type: 'count', price: 30.53, stock: 32, imageUrl: '/products/vitaminas/methyl-b-12-sublintual-lozenges/120ct-1.jpg', images: ['/products/vitaminas/methyl-b-12-sublintual-lozenges/120ct-1.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/120ct-2.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/shared-3.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/shared-4.jpg'] },
+      { id: '250ct', label: '250 Count (1000 mcg)', type: 'count', price: 18.87, stock: 32, imageUrl: '/products/vitaminas/methyl-b-12-sublintual-lozenges/250ct-1.jpg', images: ['/products/vitaminas/methyl-b-12-sublintual-lozenges/250ct-1.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/250ct-2.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/shared-3.jpg', '/products/vitaminas/methyl-b-12-sublintual-lozenges/shared-4.jpg'] },
     ],
   },
   {
