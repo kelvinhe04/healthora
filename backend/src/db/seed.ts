@@ -227,7 +227,7 @@ const PRODUCTS = [
   },
   {
     id: 'nature-made-advanced-multivitamin-gummies-for-her',
-    name: 'Advanced Multivitamin Gummies For Her',
+    name: 'Advanced Multivitamin Gummies For Her · 90 gummies',
     brand: 'Nature Made',
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
@@ -258,10 +258,6 @@ const PRODUCTS = [
     swatchColor: 'oklch(0.73 0.13 18)',
     label: 'Nature Made\nFor Her',
     imageUrl: 'https://www.naturemade.com/cdn/shop/files/NMHL000378PK002122ADVANCEDMULTIFORHERGUMMIES_5A009500ccfrontnf_1_1500x.png?v=1757008094',
-    variants: [
-      { id: '90ct', label: '90 gummies', type: 'count', price: 18.49, stock: 63, isDefault: true, imageUrl: 'https://www.naturemade.com/cdn/shop/files/NMHL000378PK002122ADVANCEDMULTIFORHERGUMMIES_5A009500ccfrontnf_1_1500x.png?v=1757008094' },
-      { id: '150ct', label: '150 gummies', type: 'count', price: 27.99, stock: 32 },
-    ],
   },
 {
     id: 'nature-made-advanced-multivitamin-gummies-for-her-50',
@@ -418,9 +414,16 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.03 72)',
     swatchColor: 'oklch(0.73 0.14 68)',
     label: 'Nature Made\nD3 2000',
+    imageUrl: '/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/90ct-1.jpg',
+    images: [
+      { url: '/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/90ct-1.jpg', alt: 'Vitamin D3 2000 IU - 90 softgels', isPrimary: true },
+      { url: '/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/90ct-2.jpg', alt: 'Vitamin D3 2000 IU vista 2' },
+      { url: '/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/90ct-3.jpg', alt: 'Vitamin D3 2000 IU vista 3' },
+      { url: '/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/shared-4.jpg', alt: 'Vitamin D3 2000 IU vista 4' },
+    ],
     variants: [
-      { id: '90ct', label: '90 softgels', type: 'count', price: 10.99, stock: 92, isDefault: true, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/ndm/ndm02585/u/59.jpg' },
-      { id: '250ct', label: '250 softgels', type: 'count', price: 18.99, stock: 45, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/ndm/ndm02678/u/51.jpg' },
+      { id: '90ct', label: '90 softgels', type: 'count', price: 10.99, stock: 92, isDefault: true, images: ['/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/90ct-1.jpg', '/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/90ct-2.jpg', '/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/90ct-3.jpg', '/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/shared-4.jpg'] },
+      { id: '250ct', label: '250 softgels', type: 'count', price: 18.99, stock: 45, images: ['/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/250ct-1.jpg', '/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/250ct-2.jpg', '/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/250ct-3.jpg', '/products/vitaminas/nature-made-vitamin-d3-2000-iu-softgels/shared-4.jpg'] },
     ],
   },
   {
