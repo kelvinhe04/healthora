@@ -462,11 +462,11 @@ const PRODUCTS = [
   },
   {
     id: 'nature-made-extra-strength-vitamin-c-500-mg-gummies',
-    name: 'Extra Strength Vitamin C 500 mg Gummies - 60 Gummies',
+    name: 'Extra Strength Vitamin C 500 mg Gummies',
     brand: 'Nature Made',
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
-    price: 14.49,
+    price: 11.49,
     rating: 4.7,
     reviews: 633,
     short: 'Vitamina C en gomitas para soporte inmune diario en presentacion de 60 gummies.',
@@ -492,7 +492,17 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.05 55)',
     swatchColor: 'oklch(0.79 0.16 55)',
     label: 'Vitamin C\n500 mg',
-    imageUrl: 'https://www.naturemade.com/cdn/shop/products/NM4030PK000935VITCGUMMIES_5A009400ccfront_1500x.png?v=1679684003',
+    imageUrl: '/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/pack1-1.jpg',
+    images: [
+      { url: '/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/pack1-1.jpg', alt: 'Extra Strength Vitamin C 500 mg - 60 Gummies Pack of 1', isPrimary: true },
+      { url: '/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/shared-2.jpg', alt: 'Extra Strength Vitamin C 500 mg vista 2' },
+      { url: '/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/shared-3.jpg', alt: 'Extra Strength Vitamin C 500 mg vista 3' },
+      { url: '/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/shared-4.jpg', alt: 'Extra Strength Vitamin C 500 mg vista 4' },
+    ],
+    variants: [
+      { id: 'pack1', label: '60 Count (Pack of 1)', type: 'count', price: 11.49, priceBefore: 14.79, stock: 84, isDefault: true, images: ['/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/pack1-1.jpg', '/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/shared-2.jpg', '/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/shared-3.jpg', '/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/shared-4.jpg'] },
+      { id: 'pack2', label: '60 Count (Pack of 2)', type: 'count', price: 25.30, stock: 40, images: ['/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/pack2-1.jpg', '/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/shared-2.jpg', '/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/shared-3.jpg', '/products/vitaminas/nature-made-extra-strength-vitamin-c-500-mg-gummies/shared-4.jpg'] },
+    ],
   },
   {
     id: 'vitafusion-mens-multivitamin-gummy-120-gummies-vf11121',
