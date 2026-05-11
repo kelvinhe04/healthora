@@ -129,9 +129,16 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.05 135)',
     swatchColor: 'oklch(0.58 0.14 140)',
     label: 'Alive!\nWomen\nUltra',
+    imageUrl: '/products/vitaminas/natures-way-alive-womens-ultra/60ct-1.jpg',
+    images: [
+      { url: '/products/vitaminas/natures-way-alive-womens-ultra/60ct-1.jpg', alt: "Alive! Women's Ultra - 60 tabletas", isPrimary: true },
+      { url: '/products/vitaminas/natures-way-alive-womens-ultra/shared-2.jpg', alt: "Alive! Women's Ultra vista 2" },
+      { url: '/products/vitaminas/natures-way-alive-womens-ultra/shared-3.jpg', alt: "Alive! Women's Ultra vista 3" },
+      { url: '/products/vitaminas/natures-way-alive-womens-ultra/shared-4.jpg', alt: "Alive! Women's Ultra vista 4" },
+    ],
     variants: [
-      { id: '60ct', label: '60 tabletas', type: 'count', price: 23.40, stock: 41, isDefault: true, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/nwy/nwy15686/u/185.jpg' },
-      { id: '150ct', label: '150 tabletas', type: 'count', price: 38.99, stock: 22, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/nwy/nwy13718/u/24.jpg' },
+      { id: '60ct', label: '60 tabletas', type: 'count', price: 23.40, stock: 41, isDefault: true, images: ['/products/vitaminas/natures-way-alive-womens-ultra/60ct-1.jpg', '/products/vitaminas/natures-way-alive-womens-ultra/shared-2.jpg', '/products/vitaminas/natures-way-alive-womens-ultra/shared-3.jpg', '/products/vitaminas/natures-way-alive-womens-ultra/shared-4.jpg'] },
+      { id: '150ct', label: '150 tabletas', type: 'count', price: 38.99, stock: 22, images: ['/products/vitaminas/natures-way-alive-womens-ultra/150ct-1.jpg', '/products/vitaminas/natures-way-alive-womens-ultra/shared-2.jpg', '/products/vitaminas/natures-way-alive-womens-ultra/shared-3.jpg', '/products/vitaminas/natures-way-alive-womens-ultra/shared-4.jpg'] },
     ],
   },
   {
