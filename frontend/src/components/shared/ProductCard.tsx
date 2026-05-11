@@ -80,8 +80,8 @@ export function ProductCard({ product, onClick, onAdd }: ProductCardProps) {
     ? Math.round(liveReviews.reduce((s, r) => s + r.rating, 0) / liveReviews.length * 10) / 10
     : 0;
   const defaultVariant = product.variants?.find((v) => v.isDefault) ?? product.variants?.[0];
-  const primaryImage = defaultVariant?.images?.[0] || defaultVariant?.imageUrl || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url;
-  const secondaryImage = defaultVariant?.images?.[1] || product.images?.find((img) => img.url && img.url !== primaryImage)?.url;
+  const primaryImage = defaultVariant?.images?.[0] || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url;
+  const secondaryImage = defaultVariant?.images?.[1] || product.images?.find((img, i) => img.url && img.url !== primaryImage && i !== 0)?.url || product.images?.[1]?.url;
 
   return (
     <div

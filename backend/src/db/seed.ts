@@ -19,7 +19,7 @@ const PRODUCTS = [
   // VITAMINAS
   {
     id: 'nature-made-vitamin-d3-5000-iu',
-    name: 'Vitamin D3 5000 IU Softgels',
+    name: 'Vitamin D3 5000 IU Softgels · 90 cápsulas',
     brand: 'Nature Made',
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
@@ -49,10 +49,10 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.03 75)',
     swatchColor: 'oklch(0.75 0.14 65)',
     label: 'Nature Made\nD3 5000',
-    variants: [
-      { id: '90ct', label: '90 cápsulas', type: 'count', price: 11.99, stock: 85, isDefault: true, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/ndm/ndm02621/u/36.jpg' },
-      { id: '180ct', label: '180 cápsulas', type: 'count', price: 19.99, stock: 45, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/ndm/ndm02778/u/10.jpg' },
-      { id: '360ct', label: '360 cápsulas', type: 'count', price: 29.99, stock: 20, imageUrl: 'https://m.media-amazon.com/images/I/71-reERuuGL._AC_SL1500_.jpg' },
+    imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/ndm/ndm02621/u/36.jpg',
+    images: [
+      { url: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/ndm/ndm02621/u/36.jpg', alt: 'Vitamin D3 5000 IU Softgels - Vista frontal', isPrimary: true },
+      { url: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/ndm/ndm02778/u/10.jpg', alt: 'Vitamin D3 5000 IU Softgels - Vista lateral' },
     ],
   },
   {
@@ -61,7 +61,7 @@ const PRODUCTS = [
     brand: 'Centrum',
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
-    price: 20.73,
+    price: 13.21,
     rating: 4.7,
     reviews: 1250,
     short: 'Multivitaminico diario completo para mujeres adultas.',
@@ -87,10 +87,14 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.03 20)',
     swatchColor: 'oklch(0.73 0.15 20)',
     label: 'Centrum\nWomen',
+    imageUrl: '/products/vitaminas/centrum-women-multivitamin/65-count-1.jpg',
+    images: [
+      { url: '/products/vitaminas/centrum-women-multivitamin/65-count-1.jpg', alt: 'Women Multivitamin Tablets - 65 count', isPrimary: true },
+      { url: '/products/vitaminas/centrum-women-multivitamin/65-count-2.jpg', alt: 'Women Multivitamin Tablets - 65 count vista 2' },
+    ],
     variants: [
-      { id: '100ct', label: '100 tabletas', type: 'count', price: 12.99, stock: 55, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/cem/cem75565/u/20.jpg' },
-      { id: '200ct', label: '200 tabletas', type: 'count', price: 20.73, stock: 64, isDefault: true, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/cem/cem75592/u/81.jpg' },
-      { id: '300ct', label: '300 tabletas', type: 'count', price: 28.99, stock: 28, imageUrl: 'https://i-cf65.ch-static.com/content/dam/cf-consumer-healthcare/bp-wellness-centrum/en_US/sliced-images/global/products/NewLook-Centrum-Women.jpg' },
+      { id: '65ct', label: '65 count', type: 'count', price: 13.21, stock: 40, isDefault: true, images: ['/products/vitaminas/centrum-women-multivitamin/65-count-1.jpg', '/products/vitaminas/centrum-women-multivitamin/65-count-2.jpg', '/products/vitaminas/centrum-women-multivitamin/65-count-3.jpg', '/products/vitaminas/centrum-women-multivitamin/shared-4.jpg'] },
+      { id: '120ct', label: '120 count', type: 'count', price: 20.73, stock: 25, images: ['/products/vitaminas/centrum-women-multivitamin/120-count-1.jpg', '/products/vitaminas/centrum-women-multivitamin/120-count-2.jpg', '/products/vitaminas/centrum-women-multivitamin/120-count-3.jpg', '/products/vitaminas/centrum-women-multivitamin/shared-4.jpg'] },
     ],
   },
   {
@@ -441,7 +445,7 @@ const PRODUCTS = [
   },
   {
     id: 'nature-made-extra-strength-vitamin-c-500-mg-gummies',
-    name: 'Extra Strength Vitamin C 500 mg Gummies',
+    name: 'Extra Strength Vitamin C 500 mg Gummies - 60 Gummies',
     brand: 'Nature Made',
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
@@ -5577,7 +5581,7 @@ async function seed() {
   await connectDB();
   await Product.deleteMany({});
   await Category.deleteMany({});
-  await Product.insertMany(PRODUCTS);
+  await Product.insertMany(PRODUCTS.map((p, i) => ({ ...p, sortOrder: i })));
   await Category.insertMany(CATEGORIES);
   console.log(`Seeded ${PRODUCTS.length} products and ${CATEGORIES.length} categories`);
   process.exit(0);
