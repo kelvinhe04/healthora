@@ -213,9 +213,16 @@ const PRODUCTS = [
     color: 'oklch(0.89 0.04 150)',
     swatchColor: 'oklch(0.50 0.11 155)',
     label: 'Vitamin Code\nWomen',
+    imageUrl: '/products/vitaminas/garden-of-life-vitamin-code-women/120ct-1.jpg',
+    images: [
+      { url: '/products/vitaminas/garden-of-life-vitamin-code-women/120ct-1.jpg', alt: 'Vitamin Code Women - 120 cápsulas', isPrimary: true },
+      { url: '/products/vitaminas/garden-of-life-vitamin-code-women/120ct-2.jpg', alt: 'Vitamin Code Women vista 2' },
+      { url: '/products/vitaminas/garden-of-life-vitamin-code-women/120ct-3.jpg', alt: 'Vitamin Code Women vista 3' },
+      { url: '/products/vitaminas/garden-of-life-vitamin-code-women/shared-4.jpg', alt: 'Vitamin Code Women vista 4' },
+    ],
     variants: [
-      { id: '120ct', label: '120 cápsulas', type: 'count', price: 40.54, stock: 29, isDefault: true, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/gol/gol11366/u/80.jpg' },
-      { id: '240ct', label: '240 cápsulas', type: 'count', price: 69.99, stock: 14, imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/gol/gol11417/u/107.jpg' },
+      { id: '120ct', label: '120 cápsulas', type: 'count', price: 40.54, stock: 29, isDefault: true, images: ['/products/vitaminas/garden-of-life-vitamin-code-women/120ct-1.jpg', '/products/vitaminas/garden-of-life-vitamin-code-women/120ct-2.jpg', '/products/vitaminas/garden-of-life-vitamin-code-women/120ct-3.jpg', '/products/vitaminas/garden-of-life-vitamin-code-women/shared-4.jpg'] },
+      { id: '240ct', label: '240 cápsulas', type: 'count', price: 71.70, stock: 14, images: ['/products/vitaminas/garden-of-life-vitamin-code-women/240ct-1.jpg', '/products/vitaminas/garden-of-life-vitamin-code-women/240ct-2.jpg', '/products/vitaminas/garden-of-life-vitamin-code-women/240ct-3.jpg', '/products/vitaminas/garden-of-life-vitamin-code-women/shared-4.jpg'] },
     ],
   },
   {
