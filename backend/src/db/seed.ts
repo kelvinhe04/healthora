@@ -19,7 +19,7 @@ const PRODUCTS = [
   // VITAMINAS
   {
     id: 'nature-made-vitamin-d3-5000-iu',
-    name: 'Vitamin D3 5000 IU Softgels · 90 cápsulas',
+    name: 'Vitamin D3 5000 IU Softgels · 90 softgels',
     brand: 'Nature Made',
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
@@ -428,7 +428,7 @@ const PRODUCTS = [
   },
   {
     id: 'nature-made-vitamin-d3-k2-softgels',
-    name: 'Vitamin D3 + K2 Softgels',
+    name: 'Vitamin D3 + K2 Softgels · 30 softgels',
     brand: 'Nature Made',
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
@@ -506,14 +506,14 @@ const PRODUCTS = [
   },
   {
     id: 'vitafusion-mens-multivitamin-gummy-120-gummies-vf11121',
-    name: "Men's Multivitamin Gummy",
+    name: "Men's Multivitamin Gummy · Berry Flavored",
     brand: 'Vitafusion',
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 13.99,
     rating: 4.6,
     reviews: 1182,
-    short: 'Gomitas multivitaminicas para hombres con sabor agradable en presentacion de 120 gummies.',
+    short: 'Gomitas multivitaminicas para hombres con sabor agradable.',
     benefits: [
       'Fórmula diseñada para los requerimientos específicos del hombre adulto, sin hierro añadido',
       'Vitaminas B6 y B12 para el metabolismo energético, la función nerviosa y la reducción de la fatiga',
@@ -536,7 +536,15 @@ const PRODUCTS = [
     color: 'oklch(0.91 0.04 230)',
     swatchColor: 'oklch(0.62 0.11 230)',
     label: 'Vitafusion\nMen',
-    imageUrl: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:good,w_800/images/vfu/vfu02270/u/59.jpg',
+    imageUrl: '/products/vitaminas/vitafusion-mens-multivitamin-gummy-120-gummies-vf11121/120-gummies-1.jpg',
+    images: [
+      { url: '/products/vitaminas/vitafusion-mens-multivitamin-gummy-120-gummies-vf11121/120-gummies-1.jpg', alt: "Men's Multivitamin Gummy - 120 gummies", isPrimary: true },
+      { url: '/products/vitaminas/vitafusion-mens-multivitamin-gummy-120-gummies-vf11121/shared-2.jpg', alt: "Men's Multivitamin Gummy - 120 gummies vista 2" },
+    ],
+    variants: [
+      { id: '120ct', label: '120 gummies', type: 'count', price: 13.99, stock: 76, isDefault: true, images: ['/products/vitaminas/vitafusion-mens-multivitamin-gummy-120-gummies-vf11121/120-gummies-1.jpg', '/products/vitaminas/vitafusion-mens-multivitamin-gummy-120-gummies-vf11121/shared-2.jpg', '/products/vitaminas/vitafusion-mens-multivitamin-gummy-120-gummies-vf11121/shared-3.jpg', '/products/vitaminas/vitafusion-mens-multivitamin-gummy-120-gummies-vf11121/shared-4.jpg'] },
+      { id: '150ct', label: '150 count', type: 'count', price: 15.39, stock: 30, images: ['/products/vitaminas/vitafusion-mens-multivitamin-gummy-120-gummies-vf11121/150-count-1.jpg', '/products/vitaminas/vitafusion-mens-multivitamin-gummy-120-gummies-vf11121/shared-2.jpg', '/products/vitaminas/vitafusion-mens-multivitamin-gummy-120-gummies-vf11121/shared-3.jpg', '/products/vitaminas/vitafusion-mens-multivitamin-gummy-120-gummies-vf11121/shared-4.jpg'] },
+    ],
   },
   {
     id: 'vitafusion-power-plus-mens-multivitamin-gummy-90-gummies-vf11150',

@@ -72,7 +72,7 @@ app.post('/test-email', async (c) => {
   return c.json({ success: true, message: 'Email sent to ' + email });
 });
 
-const port = Number(process.env.PORT) || 3001;
+const port = Number(process.env.PORT) || 3002;
 
 Bun.serve({
   fetch: app.fetch,
