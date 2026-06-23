@@ -55,3 +55,6 @@ backend/src/scripts/
 
 # Misc local files
 *.local
+
+# Office temp files
+~$*
