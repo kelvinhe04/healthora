@@ -22,6 +22,7 @@ export interface ProductVariant {
   color?: string;
   imageUrl?: string;
   images?: string[];
+  imagesBySize?: Record<string, string[]>;
   isDefault?: boolean;
 }
 

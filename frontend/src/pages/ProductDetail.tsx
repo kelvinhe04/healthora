@@ -42,9 +42,15 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   const [isZoomed, setIsZoomed] = useState(false);
   const [isZoomingOut, setIsZoomingOut] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(() => {
+    const scents = product.variants?.filter((v) => v.type === 'scent');
+    if (scents?.length) return scents.find((v) => v.isDefault) ?? scents[0];
     const variants = product.variants;
     if (!variants?.length) return null;
     return variants.find((v) => v.isDefault) ?? variants[0];
+  });
+  const [selectedSize, setSelectedSize] = useState<ProductVariant | null>(() => {
+    const sizes = product.variants?.filter((v) => v.type === 'size') ?? [];
+    return sizes.find((v) => v.isDefault) ?? sizes[0] ?? null;
   });
   const { data: allProducts = [] } = useProducts();
   const related = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
@@ -60,7 +66,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
         alt: `${product.name} ${i + 1}`,
         isPrimary: i === 0,
       })).filter((img) => img.url);
-  const variantImages = selectedVariant?.images;
+  const variantImages = (selectedVariant?.imagesBySize && selectedSize ? selectedVariant.imagesBySize[selectedSize.id] : null) ?? selectedVariant?.images;
   const variantImageUrl = selectedVariant?.imageUrl;
   const gallery = variantImages && variantImages.length > 0
     ? variantImages.map((url, i) => ({ url, alt: `${product.name} · ${selectedVariant!.label} ${i + 1}`, isPrimary: i === 0 }))
@@ -109,23 +115,34 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isZoomed]);
 
+  const scentVariants = product.variants?.filter((v) => v.type === 'scent') ?? [];
+  const sizeVariants = product.variants?.filter((v) => v.type === 'size') ?? [];
+  const hasTwoDimensions = scentVariants.length > 0 && sizeVariants.length > 0;
+
   useEffect(() => {
     setQty(1);
     setTab(detailTabs[0]?.id || '');
     setActiveImageIndex(0);
     setIsZoomed(false);
     setIsZoomingOut(false);
-    const variants = product.variants;
-    setSelectedVariant(variants?.length ? (variants.find((v) => v.isDefault) ?? variants[0]) : null);
+    const scents = product.variants?.filter((v) => v.type === 'scent');
+    const sizes = product.variants?.filter((v) => v.type === 'size') ?? [];
+    if (scents?.length) {
+      setSelectedVariant(scents.find((v) => v.isDefault) ?? scents[0]);
+    } else {
+      const variants = product.variants;
+      setSelectedVariant(variants?.length ? (variants.find((v) => v.isDefault) ?? variants[0]) : null);
+    }
+    setSelectedSize(sizes.find((v) => v.isDefault) ?? sizes[0] ?? null);
   }, [product.id]);
 
-  const effectivePrice = selectedVariant?.price ?? product.price;
+  const effectivePrice = (selectedVariant?.price ?? product.price) + (hasTwoDimensions ? (selectedSize?.price ?? 0) : 0);
   const effectivePriceBefore = selectedVariant?.priceBefore ?? product.priceBefore;
   const effectiveStock = selectedVariant?.stock ?? product.stock;
 
   useEffect(() => {
     setActiveImageIndex(0);
-  }, [selectedVariant?.id]);
+  }, [selectedVariant?.id, selectedSize?.id]);
 
   const handleAdd = () => {
     onAdd(product, qty, selectedVariant ?? undefined);
@@ -210,7 +227,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
 
         <div style={{ paddingTop: 8 }}>
           <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 12 }}>{product.brand} · {product.category}</div>
-          <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 42 : isTablet ? 52 : 64, lineHeight: 0.98, letterSpacing: '-0.035em', margin: '0 0 20px', color: 'var(--ink)', fontWeight: 400 }}>{product.name}{selectedVariant ? ` · ${selectedVariant.label}` : ''}</h1>
+          <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 42 : isTablet ? 52 : 64, lineHeight: 0.98, letterSpacing: '-0.035em', margin: '0 0 20px', color: 'var(--ink)', fontWeight: 400 }}>{product.name}{selectedVariant ? ` · ${selectedVariant.label}` : ''}{hasTwoDimensions && selectedSize ? ` · ${selectedSize.label}` : ''}</h1>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
             {liveCount > 0 ? (
@@ -237,6 +254,53 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
           <p style={{ fontSize: 17, lineHeight: 1.55, color: 'var(--ink-80)', marginBottom: product.variants?.length ? 20 : 32, maxWidth: 480 }}>{product.short}</p>
 
           {product.variants && product.variants.length > 0 && (() => {
+            const pillBtn = (v: ProductVariant, selected: boolean, onClick: () => void) => (
+              <button
+                key={v.id}
+                onClick={onClick}
+                disabled={v.stock === 0}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 999,
+                  border: selected ? '2px solid var(--ink)' : '1px solid var(--ink-20)',
+                  background: selected ? 'var(--ink)' : 'transparent',
+                  color: selected ? 'var(--cream)' : v.stock === 0 ? 'var(--ink-40)' : 'var(--ink)',
+                  cursor: v.stock === 0 ? 'not-allowed' : 'pointer',
+                  opacity: v.stock === 0 ? 0.5 : 1,
+                  fontSize: 13,
+                  fontFamily: '"Geist", sans-serif',
+                  transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap',
+                  textDecoration: v.stock === 0 ? 'line-through' : 'none',
+                }}
+              >
+                {v.label}
+              </button>
+            );
+
+            if (hasTwoDimensions) {
+              return (
+                <div style={{ marginBottom: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <div>
+                    <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 10 }}>
+                      FRAGANCIA{selectedVariant && <span style={{ color: 'var(--ink)' }}> · {selectedVariant.label.toUpperCase()}</span>}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {scentVariants.map((v) => pillBtn(v, selectedVariant?.id === v.id, () => { setSelectedVariant(v); setQty(1); }))}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 10 }}>
+                      TAMAÑO{selectedSize && <span style={{ color: 'var(--ink)' }}> · {selectedSize.label.toUpperCase()}</span>}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {sizeVariants.map((v) => pillBtn(v, selectedSize?.id === v.id, () => setSelectedSize(v)))}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
             const variantType = product.variants![0].type;
             const isColor = variantType === 'color';
             return (
@@ -269,27 +333,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                         }}
                       />
                     ) : (
-                      <button
-                        key={v.id}
-                        onClick={() => { setSelectedVariant(v); setQty(1); }}
-                        disabled={v.stock === 0}
-                        style={{
-                          padding: '8px 16px',
-                          borderRadius: 999,
-                          border: selectedVariant?.id === v.id ? '2px solid var(--ink)' : '1px solid var(--ink-20)',
-                          background: selectedVariant?.id === v.id ? 'var(--ink)' : 'transparent',
-                          color: selectedVariant?.id === v.id ? 'var(--cream)' : v.stock === 0 ? 'var(--ink-40)' : 'var(--ink)',
-                          cursor: v.stock === 0 ? 'not-allowed' : 'pointer',
-                          opacity: v.stock === 0 ? 0.5 : 1,
-                          fontSize: 13,
-                          fontFamily: '"Geist", sans-serif',
-                          transition: 'all 0.15s ease',
-                          whiteSpace: 'nowrap',
-                          textDecoration: v.stock === 0 ? 'line-through' : 'none',
-                        }}
-                      >
-                        {v.label}
-                      </button>
+                      pillBtn(v, selectedVariant?.id === v.id, () => { setSelectedVariant(v); setQty(1); })
                     )
                   ))}
                 </div>
