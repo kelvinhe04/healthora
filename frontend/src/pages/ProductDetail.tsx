@@ -325,6 +325,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                           border: selectedVariant?.id === v.id ? '2.5px solid var(--ink)' : '2px solid transparent',
                           outline: selectedVariant?.id === v.id ? '2px solid var(--ink)' : '2px solid var(--ink-10)',
                           outlineOffset: 2,
+                          boxShadow: 'inset 0 0 0 1.5px rgba(0,0,0,0.18)',
                           cursor: v.stock === 0 ? 'not-allowed' : 'pointer',
                           opacity: v.stock === 0 ? 0.35 : 1,
                           transition: 'all 0.15s ease',
