@@ -1504,7 +1504,7 @@ const PRODUCTS = [
   // CUIDADO DEL BEBE
   {
     id: 'aquaphor-baby-healing-ointment',
-    name: 'Aquaphor Baby Healing Ointment Advanced Therapy Skin Protectant Jar - 14 oz',
+    name: 'Aquaphor Baby Healing Ointment Advanced Therapy Skin Protectant',
     brand: 'Aquaphor',
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
@@ -1544,6 +1544,17 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.02 85)',
     swatchColor: 'oklch(0.86 0.04 85)',
     label: 'Aquaphor\nBaby',
+    imageUrl: '/products/cuidado-bebe/aquaphor-baby-healing-ointment/14oz-jar-1.jpg',
+    images: [
+      { url: '/products/cuidado-bebe/aquaphor-baby-healing-ointment/14oz-jar-1.jpg', alt: 'Aquaphor Baby Healing Ointment Jar - 14 oz', isPrimary: true },
+      { url: '/products/cuidado-bebe/aquaphor-baby-healing-ointment/14oz-jar-2.jpg', alt: 'Aquaphor Baby Healing Ointment Jar - 14 oz vista 2' },
+      { url: '/products/cuidado-bebe/aquaphor-baby-healing-ointment/14oz-jar-3.jpg', alt: 'Aquaphor Baby Healing Ointment Jar - 14 oz vista 3' },
+      { url: '/products/cuidado-bebe/aquaphor-baby-healing-ointment/14oz-jar-4.jpg', alt: 'Aquaphor Baby Healing Ointment Jar - 14 oz vista 4' },
+    ],
+    variants: [
+      { id: '14oz-jar', label: '14 oz Jar', type: 'size', price: 21.64, stock: 47, isDefault: true, imageUrl: '/products/cuidado-bebe/aquaphor-baby-healing-ointment/14oz-jar-1.jpg', images: ['/products/cuidado-bebe/aquaphor-baby-healing-ointment/14oz-jar-1.jpg', '/products/cuidado-bebe/aquaphor-baby-healing-ointment/14oz-jar-2.jpg', '/products/cuidado-bebe/aquaphor-baby-healing-ointment/14oz-jar-3.jpg', '/products/cuidado-bebe/aquaphor-baby-healing-ointment/14oz-jar-4.jpg'] },
+      { id: '7oz-tube', label: '7 oz Tube', type: 'size', price: 19.11, stock: 35, imageUrl: '/products/cuidado-bebe/aquaphor-baby-healing-ointment/7oz-tube-1.jpg', images: ['/products/cuidado-bebe/aquaphor-baby-healing-ointment/7oz-tube-1.jpg', '/products/cuidado-bebe/aquaphor-baby-healing-ointment/7oz-tube-2.jpg', '/products/cuidado-bebe/aquaphor-baby-healing-ointment/7oz-tube-3.jpg', '/products/cuidado-bebe/aquaphor-baby-healing-ointment/7oz-tube-4.jpg'] },
+    ],
   },
   {
     id: 'aveeno-baby-daily-moisture-lotion',
@@ -1584,7 +1595,7 @@ const PRODUCTS = [
   },
   {
     id: 'cetaphil-baby-daily-lotion',
-    name: 'Cetaphil Baby Daily Lotion with Calendula - 13.5 fl oz',
+    name: 'Cetaphil Baby Daily Lotion with Calendula',
     brand: 'Cetaphil Baby',
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
@@ -1618,10 +1629,21 @@ const PRODUCTS = [
     color: 'oklch(0.96 0.01 90)',
     swatchColor: 'oklch(0.90 0.02 90)',
     label: 'Cetaphil\nBaby',
+    imageUrl: '/products/cuidado-bebe/cetaphil-baby-daily-lotion/13.5oz-1.jpg',
+    images: [
+      { url: '/products/cuidado-bebe/cetaphil-baby-daily-lotion/13.5oz-1.jpg', alt: 'Cetaphil Baby Daily Lotion - 13.5 fl oz', isPrimary: true },
+      { url: '/products/cuidado-bebe/cetaphil-baby-daily-lotion/13.5oz-2.jpg', alt: 'Cetaphil Baby Daily Lotion - 13.5 fl oz vista 2' },
+      { url: '/products/cuidado-bebe/cetaphil-baby-daily-lotion/13.5oz-3.jpg', alt: 'Cetaphil Baby Daily Lotion - 13.5 fl oz vista 3' },
+      { url: '/products/cuidado-bebe/cetaphil-baby-daily-lotion/13.5oz-4.jpg', alt: 'Cetaphil Baby Daily Lotion - 13.5 fl oz vista 4' },
+    ],
+    variants: [
+      { id: '13.5oz', label: '13.5 fl oz', type: 'size', price: 13.72, stock: 51, isDefault: true, imageUrl: '/products/cuidado-bebe/cetaphil-baby-daily-lotion/13.5oz-1.jpg', images: ['/products/cuidado-bebe/cetaphil-baby-daily-lotion/13.5oz-1.jpg', '/products/cuidado-bebe/cetaphil-baby-daily-lotion/13.5oz-2.jpg', '/products/cuidado-bebe/cetaphil-baby-daily-lotion/13.5oz-3.jpg', '/products/cuidado-bebe/cetaphil-baby-daily-lotion/13.5oz-4.jpg'] },
+      { id: '6.7oz', label: '6.7 fl oz', type: 'size', price: 9.97, stock: 38, imageUrl: '/products/cuidado-bebe/cetaphil-baby-daily-lotion/6.7oz-1.jpg', images: ['/products/cuidado-bebe/cetaphil-baby-daily-lotion/6.7oz-1.jpg', '/products/cuidado-bebe/cetaphil-baby-daily-lotion/6.7oz-2.jpg', '/products/cuidado-bebe/cetaphil-baby-daily-lotion/6.7oz-3.jpg', '/products/cuidado-bebe/cetaphil-baby-daily-lotion/6.7oz-4.jpg'] },
+    ],
   },
   {
     id: 'cerave-baby-moisturizing-cream',
-    name: 'CeraVe Baby Moisturizing Cream - 5 oz',
+    name: 'CeraVe Baby Moisturizing Cream',
     brand: 'CeraVe Baby',
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
@@ -1655,6 +1677,17 @@ const PRODUCTS = [
     color: 'oklch(0.96 0.01 95)',
     swatchColor: 'oklch(0.91 0.02 95)',
     label: 'CeraVe\nBaby',
+    imageUrl: '/products/cuidado-bebe/cerave-baby-moisturizing-cream/5oz-1.jpg',
+    images: [
+      { url: '/products/cuidado-bebe/cerave-baby-moisturizing-cream/5oz-1.jpg', alt: 'CeraVe Baby Moisturizing Cream - 5 oz', isPrimary: true },
+      { url: '/products/cuidado-bebe/cerave-baby-moisturizing-cream/5oz-2.jpg', alt: 'CeraVe Baby Moisturizing Cream - 5 oz vista 2' },
+      { url: '/products/cuidado-bebe/cerave-baby-moisturizing-cream/5oz-3.jpg', alt: 'CeraVe Baby Moisturizing Cream - 5 oz vista 3' },
+      { url: '/products/cuidado-bebe/cerave-baby-moisturizing-cream/5oz-4.jpg', alt: 'CeraVe Baby Moisturizing Cream - 5 oz vista 4' },
+    ],
+    variants: [
+      { id: '5oz', label: '5 oz', type: 'size', price: 12.49, stock: 54, isDefault: true, imageUrl: '/products/cuidado-bebe/cerave-baby-moisturizing-cream/5oz-1.jpg', images: ['/products/cuidado-bebe/cerave-baby-moisturizing-cream/5oz-1.jpg', '/products/cuidado-bebe/cerave-baby-moisturizing-cream/5oz-2.jpg', '/products/cuidado-bebe/cerave-baby-moisturizing-cream/5oz-3.jpg', '/products/cuidado-bebe/cerave-baby-moisturizing-cream/5oz-4.jpg'] },
+      { id: '8oz', label: '8 oz', type: 'size', price: 9.99, stock: 40, imageUrl: '/products/cuidado-bebe/cerave-baby-moisturizing-cream/8oz-1.jpg', images: ['/products/cuidado-bebe/cerave-baby-moisturizing-cream/8oz-1.jpg', '/products/cuidado-bebe/cerave-baby-moisturizing-cream/8oz-2.jpg', '/products/cuidado-bebe/cerave-baby-moisturizing-cream/8oz-3.jpg', '/products/cuidado-bebe/cerave-baby-moisturizing-cream/8oz-4.jpg'] },
+    ],
   },
   {
     id: 'desitin-maximum-strength-diaper-rash',
@@ -2971,7 +3004,7 @@ const PRODUCTS = [
   },
   {
     id: 'boudreauxs-maximum-strength-butt-paste',
-    name: "Boudreaux's Butt Paste Maximum Strength Diaper Rash Paste - 4 oz Tube",
+    name: "Boudreaux's Butt Paste Maximum Strength Diaper Rash Paste",
     brand: "Boudreaux's",
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
@@ -3005,6 +3038,17 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.03 15)',
     swatchColor: 'oklch(0.82 0.08 15)',
     label: 'Boudreaux\'s\nPaste',
+    imageUrl: '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/4oz-tube-1.jpg',
+    images: [
+      { url: '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/4oz-tube-1.jpg', alt: "Boudreaux's Butt Paste Maximum Strength - 4 oz Tube", isPrimary: true },
+      { url: '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/4oz-tube-2.jpg', alt: "Boudreaux's Butt Paste Maximum Strength - 4 oz vista 2" },
+      { url: '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/4oz-tube-3.jpg', alt: "Boudreaux's Butt Paste Maximum Strength - 4 oz vista 3" },
+      { url: '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/4oz-tube-4.jpg', alt: "Boudreaux's Butt Paste Maximum Strength - 4 oz vista 4" },
+    ],
+    variants: [
+      { id: '4oz-tube', label: '4 oz Tube', type: 'size', price: 9.00, stock: 84, isDefault: true, imageUrl: '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/4oz-tube-1.jpg', images: ['/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/4oz-tube-1.jpg', '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/4oz-tube-2.jpg', '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/4oz-tube-3.jpg', '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/4oz-tube-4.jpg'] },
+      { id: '14oz-jar', label: '14 oz Jar', type: 'size', price: 8.72, stock: 42, imageUrl: '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/14oz-jar-1.jpg', images: ['/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/14oz-jar-1.jpg', '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/14oz-jar-2.jpg', '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/14oz-jar-3.jpg', '/products/cuidado-bebe/boudreauxs-maximum-strength-butt-paste/14oz-jar-4.jpg'] },
+    ],
   },
   {
     id: 'aveeno-baby-eczema-therapy-nighttime-balm',
