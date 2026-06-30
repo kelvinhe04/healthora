@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://healthora-backend.koyeb.app/$1" }
+  ]
+}
