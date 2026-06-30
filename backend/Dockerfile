@@ -2,10 +2,10 @@ FROM oven/bun:1
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
+COPY backend/package.json backend/bun.lock ./
 RUN bun install --frozen-lockfile
 
-COPY src ./src
+COPY backend/src ./src
 
 ENV PORT=3001
 EXPOSE 3001
