@@ -14,7 +14,7 @@ interface CartDrawerProps {
   onOpenSamplePicker: () => void;
 }
 
-function Row({ k, v }: { k: ReactNode; v: ReactNode }) {
+function _Row({ k, v }: { k: ReactNode; v: ReactNode }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink-80)' }}>
       <span>{k}</span><span>{v}</span>
