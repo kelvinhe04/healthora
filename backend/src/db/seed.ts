@@ -4677,7 +4677,7 @@ const PRODUCTS = [
   },
   {
     id: 'johnsons-head-to-toe-wash-shampoo',
-    name: "Johnson's Tear-Free Head-To-Toe Baby Body Wash & Shampoo - 27.1 fl oz",
+    name: "Johnson's Tear-Free Head-To-Toe Baby Body Wash & Shampoo",
     brand: "Johnson's",
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
@@ -4711,6 +4711,18 @@ const PRODUCTS = [
     color: 'oklch(0.96 0.01 85)',
     swatchColor: 'oklch(0.88 0.03 85)',
     label: 'Johnsons\nHead-To-Toe',
+    imageUrl: '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/27.1oz-1.jpg',
+    images: [
+      { url: '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/27.1oz-1.jpg', alt: "Johnson's Head-To-Toe Wash & Shampoo - 27.1 fl oz", isPrimary: true },
+      { url: '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/27.1oz-2.jpg', alt: "Johnson's Head-To-Toe Wash & Shampoo - 27.1 fl oz vista 2" },
+      { url: '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/27.1oz-3.jpg', alt: "Johnson's Head-To-Toe Wash & Shampoo - 27.1 fl oz vista 3" },
+      { url: '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/27.1oz-4.jpg', alt: "Johnson's Head-To-Toe Wash & Shampoo - 27.1 fl oz vista 4" },
+    ],
+    variants: [
+      { id: '13.6oz', label: '13.6 fl oz', type: 'size', price: 4.78, stock: 60, imageUrl: '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/13.6oz-1.jpg', images: ['/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/13.6oz-1.jpg', '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/13.6oz-2.jpg', '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/13.6oz-3.jpg', '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/13.6oz-4.jpg'] },
+      { id: '27.1oz', label: '27.1 fl oz', type: 'size', price: 7.68, stock: 79, isDefault: true, imageUrl: '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/27.1oz-1.jpg', images: ['/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/27.1oz-1.jpg', '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/27.1oz-2.jpg', '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/27.1oz-3.jpg', '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/27.1oz-4.jpg'] },
+      { id: '33.8oz', label: '33.8 fl oz', type: 'size', price: 9.58, stock: 42, imageUrl: '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/33.8oz-1.jpg', images: ['/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/33.8oz-1.jpg', '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/33.8oz-2.jpg', '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/33.8oz-3.jpg', '/products/cuidado-bebe/johnsons-head-to-toe-wash-shampoo/33.8oz-4.jpg'] },
+    ],
   },
   {
     id: 'johnsons-cotton-touch-lotion',
@@ -4751,7 +4763,7 @@ const PRODUCTS = [
   },
   {
     id: 'babyganics-mineral-baby-sunscreen-spf-50',
-    name: 'Babyganics Mineral-Based Baby Sunscreen Spray SPF 50 - 6 fl oz',
+    name: 'Babyganics Mineral-Based Baby Sunscreen Spray SPF 50',
     brand: 'Babyganics',
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
@@ -4785,6 +4797,17 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.03 75)',
     swatchColor: 'oklch(0.78 0.10 75)',
     label: 'Babyganics\nSPF 50+',
+    imageUrl: '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50-1.jpg',
+    images: [
+      { url: '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50-1.jpg', alt: 'Babyganics Mineral Sunscreen Spray SPF 50 - 6 fl oz', isPrimary: true },
+      { url: '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50-2.jpg', alt: 'Babyganics Mineral Sunscreen Spray SPF 50 - 6 fl oz vista 2' },
+      { url: '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50-3.jpg', alt: 'Babyganics Mineral Sunscreen Spray SPF 50 - 6 fl oz vista 3' },
+      { url: '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50-4.jpg', alt: 'Babyganics Mineral Sunscreen Spray SPF 50 - 6 fl oz vista 4' },
+    ],
+    variants: [
+      { id: '6oz', label: '6 fl oz', type: 'size', price: 10.99, stock: 68, isDefault: true, imageUrl: '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50-1.jpg', images: ['/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50-1.jpg', '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50-2.jpg', '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50-3.jpg', '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50-4.jpg'] },
+      { id: '8oz', label: '8 fl oz', type: 'size', price: 14.29, stock: 54, imageUrl: '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50/8oz-1.jpg', images: ['/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50/8oz-1.jpg', '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50/8oz-2.jpg', '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50/8oz-3.jpg', '/products/cuidado-bebe/babyganics-mineral-baby-sunscreen-spf-50/8oz-4.jpg'] },
+    ],
   },
   {
     id: 'frida-baby-nosefrida-snotsucker',
@@ -4831,7 +4854,7 @@ const PRODUCTS = [
   },
   {
     id: 'dr-browns-options-plus-bottle-set',
-    name: "Dr. Brown's Natural Flow Anti-Colic Options+ First Year Transitions Baby Bottle Gift Set, Pink",
+    name: "Dr. Brown's Natural Flow Anti-Colic Options+ First Year Transitions Baby Bottle Gift Set",
     brand: "Dr. Brown's",
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
@@ -4871,6 +4894,17 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.02 200)',
     swatchColor: 'oklch(0.82 0.04 205)',
     label: 'Dr Browns\nOptions+',
+    imageUrl: '/products/cuidado-bebe/dr-browns-options-plus-bottle-set-1.jpg',
+    images: [
+      { url: '/products/cuidado-bebe/dr-browns-options-plus-bottle-set-1.jpg', alt: "Dr. Brown's Options+ Baby Bottle Gift Set - Pink", isPrimary: true },
+      { url: '/products/cuidado-bebe/dr-browns-options-plus-bottle-set-2.jpg', alt: "Dr. Brown's Options+ Baby Bottle Gift Set - Pink vista 2" },
+      { url: '/products/cuidado-bebe/dr-browns-options-plus-bottle-set-3.jpg', alt: "Dr. Brown's Options+ Baby Bottle Gift Set - Pink vista 3" },
+      { url: '/products/cuidado-bebe/dr-browns-options-plus-bottle-set-4.jpg', alt: "Dr. Brown's Options+ Baby Bottle Gift Set - Pink vista 4" },
+    ],
+    variants: [
+      { id: 'pink', label: 'Pink', type: 'color', color: '#f2a6c0', price: 24.99, stock: 41, isDefault: true, imageUrl: '/products/cuidado-bebe/dr-browns-options-plus-bottle-set-1.jpg', images: ['/products/cuidado-bebe/dr-browns-options-plus-bottle-set-1.jpg', '/products/cuidado-bebe/dr-browns-options-plus-bottle-set-2.jpg', '/products/cuidado-bebe/dr-browns-options-plus-bottle-set-3.jpg', '/products/cuidado-bebe/dr-browns-options-plus-bottle-set-4.jpg'] },
+      { id: 'gray', label: 'Gray', type: 'color', color: '#8e8e93', price: 20.48, stock: 33, imageUrl: '/products/cuidado-bebe/dr-browns-options-plus-bottle-set/gray/1.jpg', images: ['/products/cuidado-bebe/dr-browns-options-plus-bottle-set/gray/1.jpg', '/products/cuidado-bebe/dr-browns-options-plus-bottle-set/gray/2.jpg', '/products/cuidado-bebe/dr-browns-options-plus-bottle-set/gray/3.jpg', '/products/cuidado-bebe/dr-browns-options-plus-bottle-set/gray/4.jpg'] },
+    ],
   },
   {
     id: 'philips-avent-natural-baby-bottle',
