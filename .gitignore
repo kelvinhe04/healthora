@@ -38,6 +38,11 @@ Thumbs.db
 # Claude project instructions
 CLAUDE.md
 
+# Playwright
+**/playwright-report/
+**/test-results/
+**/blob-report/
+
 # Local tooling / agent state
 .agents/
 .claude/
