@@ -10,6 +10,7 @@ import { Icon } from '../components/shared/Icon';
 import { useProducts } from '../hooks/useProducts';
 import { useReviews } from '../hooks/useReviews';
 import { ReviewSection } from '../components/shared/ReviewSection';
+import { PRIMARY_VARIANT_TYPES, pickDefaultPrimary, sizesFor, pickDefaultSize } from '../lib/productVariants';
 
 interface ProductDetailProps {
   product: Product;
@@ -41,17 +42,8 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [isZoomingOut, setIsZoomingOut] = useState(false);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(() => {
-    const scents = product.variants?.filter((v) => v.type === 'scent');
-    if (scents?.length) return scents.find((v) => v.isDefault) ?? scents[0];
-    const variants = product.variants;
-    if (!variants?.length) return null;
-    return variants.find((v) => v.isDefault) ?? variants[0];
-  });
-  const [selectedSize, setSelectedSize] = useState<ProductVariant | null>(() => {
-    const sizes = product.variants?.filter((v) => v.type === 'size') ?? [];
-    return sizes.find((v) => v.isDefault) ?? sizes[0] ?? null;
-  });
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(() => pickDefaultPrimary(product.variants));
+  const [selectedSize, setSelectedSize] = useState<ProductVariant | null>(() => pickDefaultSize(product.variants, pickDefaultPrimary(product.variants)));
   const { data: allProducts = [] } = useProducts();
   const related = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
   const { data: liveReviews } = useReviews(product.id);
@@ -115,9 +107,10 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isZoomed]);
 
-  const scentVariants = product.variants?.filter((v) => v.type === 'scent') ?? [];
+  const primaryVariants = product.variants?.filter((v) => PRIMARY_VARIANT_TYPES.includes(v.type)) ?? [];
   const sizeVariants = product.variants?.filter((v) => v.type === 'size') ?? [];
-  const hasTwoDimensions = scentVariants.length > 0 && sizeVariants.length > 0;
+  const hasTwoDimensions = primaryVariants.length > 0 && sizeVariants.length > 0;
+  const availableSizeVariants = sizesFor(product.variants, selectedVariant);
 
   useEffect(() => {
     setQty(1);
@@ -125,27 +118,28 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
     setActiveImageIndex(0);
     setIsZoomed(false);
     setIsZoomingOut(false);
-    const scents = product.variants?.filter((v) => v.type === 'scent');
-    const sizes = product.variants?.filter((v) => v.type === 'size') ?? [];
-    if (scents?.length) {
-      setSelectedVariant(scents.find((v) => v.isDefault) ?? scents[0]);
-    } else {
-      const variants = product.variants;
-      setSelectedVariant(variants?.length ? (variants.find((v) => v.isDefault) ?? variants[0]) : null);
-    }
-    setSelectedSize(sizes.find((v) => v.isDefault) ?? sizes[0] ?? null);
+    const primary = pickDefaultPrimary(product.variants);
+    setSelectedVariant(primary);
+    setSelectedSize(pickDefaultSize(product.variants, primary));
   }, [product.id]);
 
   const effectivePrice = (selectedVariant?.price ?? product.price) + (hasTwoDimensions ? (selectedSize?.price ?? 0) : 0);
   const effectivePriceBefore = selectedVariant?.priceBefore ?? product.priceBefore;
-  const effectiveStock = selectedVariant?.stock ?? product.stock;
+  const effectiveStock = hasTwoDimensions ? (selectedSize?.stock ?? selectedVariant?.stock ?? product.stock) : (selectedVariant?.stock ?? product.stock);
+  // For a flavor+size combo, cart/checkout need a single variant carrying the combined price,
+  // stock and a unique id (so different sizes of the same flavor don't collapse into one cart line).
+  const cartVariant: ProductVariant | undefined = selectedVariant
+    ? hasTwoDimensions && selectedSize
+      ? { ...selectedVariant, id: `${selectedVariant.id}:${selectedSize.id}`, label: `${selectedVariant.label} · ${selectedSize.label}`, price: effectivePrice, stock: effectiveStock }
+      : selectedVariant
+    : undefined;
 
   useEffect(() => {
     setActiveImageIndex(0);
   }, [selectedVariant?.id, selectedSize?.id]);
 
   const handleAdd = () => {
-    onAdd(product, qty, selectedVariant ?? undefined);
+    onAdd(product, qty, cartVariant);
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
   };
@@ -279,14 +273,19 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
             );
 
             if (hasTwoDimensions) {
+              const primaryLabel = VARIANT_TYPE_LABEL[primaryVariants[0]?.type] ?? primaryVariants[0]?.type.toUpperCase();
               return (
                 <div style={{ marginBottom: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
                   <div>
                     <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 10 }}>
-                      FRAGANCIA{selectedVariant && <span style={{ color: 'var(--ink)' }}> · {selectedVariant.label.toUpperCase()}</span>}
+                      {primaryLabel}{selectedVariant && <span style={{ color: 'var(--ink)' }}> · {selectedVariant.label.toUpperCase()}</span>}
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      {scentVariants.map((v) => pillBtn(v, selectedVariant?.id === v.id, () => { setSelectedVariant(v); setQty(1); }))}
+                      {primaryVariants.map((v) => pillBtn(v, selectedVariant?.id === v.id, () => {
+                        setSelectedVariant(v);
+                        setSelectedSize(pickDefaultSize(product.variants, v));
+                        setQty(1);
+                      }))}
                     </div>
                   </div>
                   <div>
@@ -294,7 +293,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                       TAMAÑO{selectedSize && <span style={{ color: 'var(--ink)' }}> · {selectedSize.label.toUpperCase()}</span>}
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      {sizeVariants.map((v) => pillBtn(v, selectedSize?.id === v.id, () => setSelectedSize(v)))}
+                      {availableSizeVariants.map((v) => pillBtn(v, selectedSize?.id === v.id, () => setSelectedSize(v)))}
                     </div>
                   </div>
                 </div>
@@ -360,7 +359,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
             </div>
             <AnimatedButton variant="primary" size="lg" onClick={handleAdd} disabled={effectiveStock === 0} style={{ flex: 1 }} text={effectiveStock === 0 ? 'Sin stock' : added ? '✓ Agregado al carrito' : `Agregar al carrito · $${(effectivePrice * qty).toFixed(2)}`} />
           </div>
-          <AnimatedButton variant="outline" full onClick={() => onBuyNow(product, qty, selectedVariant ?? undefined)} disabled={effectiveStock === 0} text="Comprar ahora con un clic" />
+          <AnimatedButton variant="outline" full onClick={() => onBuyNow(product, qty, cartVariant)} disabled={effectiveStock === 0} text="Comprar ahora con un clic" />
 
           <div style={{ marginTop: 24, background: 'var(--cream-2)', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid var(--ink-06)' }}>
             {[{ icon: 'truck', t: 'Envío gratis en órdenes sobre $50' }, { icon: 'shield', t: 'Pago seguro con Stripe · 3D Secure' }, { icon: 'check', t: 'Productos verificados por farmacéuticos' }].map((row) => (

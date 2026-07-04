@@ -6,6 +6,7 @@ import { Stars } from './Stars';
 import { Icon } from './Icon';
 import { useReviews } from '../../hooks/useReviews';
 import { useThemeStore } from '../../store/themeStore';
+import { pickDefaultCombo, getEffectivePrice, getEffectivePriceBefore } from '../../lib/productVariants';
 
 // ─── Shared shimmer helper ────────────────────────────────────────────────────
 function ShimmerBox({ style }: { style?: CSSProperties }) {
@@ -79,11 +80,11 @@ export function ProductCard({ product, onClick, onAdd }: ProductCardProps) {
   const liveRating = liveReviews && liveReviews.length > 0
     ? Math.round(liveReviews.reduce((s, r) => s + r.rating, 0) / liveReviews.length * 10) / 10
     : 0;
-  const defaultVariant = product.variants?.find((v) => v.isDefault) ?? product.variants?.[0];
-  const primaryImage = defaultVariant?.images?.[0] || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url;
-  const secondaryImage = defaultVariant?.images?.[1] || product.images?.find((img, i) => img.url && img.url !== primaryImage && i !== 0)?.url || product.images?.[1]?.url;
-  const effectivePrice = defaultVariant?.price ?? product.price;
-  const effectivePriceBefore = defaultVariant?.priceBefore ?? product.priceBefore;
+  const { variant: defaultVariant, size: defaultSize } = pickDefaultCombo(product);
+  const primaryImage = (defaultVariant?.imagesBySize && defaultSize ? defaultVariant.imagesBySize[defaultSize.id]?.[0] : null) || defaultVariant?.images?.[0] || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url;
+  const secondaryImage = (defaultVariant?.imagesBySize && defaultSize ? defaultVariant.imagesBySize[defaultSize.id]?.[1] : null) || defaultVariant?.images?.[1] || product.images?.find((img, i) => img.url && img.url !== primaryImage && i !== 0)?.url || product.images?.[1]?.url;
+  const effectivePrice = getEffectivePrice(product);
+  const effectivePriceBefore = getEffectivePriceBefore(product);
 
   return (
     <div

@@ -24,6 +24,8 @@ export interface ProductVariant {
   images?: string[];
   imagesBySize?: Record<string, string[]>;
   isDefault?: boolean;
+  /** For a `size` variant paired with a `flavor`/`scent` variant: restricts this size to the given primary variant ids. Omit to make it available for all. */
+  availableFor?: string[];
 }
 
 export interface Product {
