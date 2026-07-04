@@ -99,7 +99,7 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
                 <div key={it.product.id + (it.variant?.id ?? '')} style={{ display: 'flex', gap: 14, padding: '18px 0', borderBottom: '1px solid var(--ink-06)' }}>
                   <div style={{ width: 80, height: 90, background: 'white', borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--ink-06)', overflow: 'hidden' }}>
                     <div style={{ transform: 'scale(1.18)' }}>
-                      <ProductImage product={it.product} size="xs" />
+                      <ProductImage product={it.product} size="xs" imageUrl={it.variant?.images?.[0] ?? it.variant?.imageUrl} />
                     </div>
                   </div>
                   <div style={{ flex: 1 }}>

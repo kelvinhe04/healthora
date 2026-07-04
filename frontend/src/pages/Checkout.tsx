@@ -366,16 +366,16 @@ export function Checkout({ items, onBack }: CheckoutProps) {
           <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 14 }}>Resumen de orden</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 28, marginBottom: 18 }}>
             {items.map((it) => (
-              <div key={it.product.id} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <div key={it.product.id + (it.variant?.id ?? '')} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <div style={{ width: 50, height: 56, background: it.product.color, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
-                  <ProductImage product={it.product} size="xs" />
+                  <ProductImage product={it.product} size="xs" imageUrl={it.variant?.images?.[0] ?? it.variant?.imageUrl} />
                   <span style={{ position: 'absolute', top: -5, right: -4, width: 15, height: 15, borderRadius: 999, background: 'oklch(0.1 0.01 155)', color: '#fff', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"JetBrains Mono", monospace', fontWeight: 700 }}>{it.qty}</span>
                 </div>
                 <div style={{ flex: 1, fontSize: 13, fontFamily: '"Geist", sans-serif' }}>
                   <div style={{ fontWeight: 500, lineHeight: 1.3 }}>{it.product.name}</div>
-                  <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>{it.product.brand}</div>
+                  <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>{it.variant ? it.variant.label : it.product.brand}</div>
                 </div>
-                <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 16 }}>${(it.product.price * it.qty).toFixed(2)}</div>
+                <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 16 }}>${((it.variant?.price ?? it.product.price) * it.qty).toFixed(2)}</div>
               </div>
             ))}
             {freeSample && (
