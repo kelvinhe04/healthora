@@ -602,7 +602,7 @@ function ProductModal({
     (key: keyof ProductForm) =>
     (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
-  const setSelect =
+  const _setSelect =
     (key: keyof ProductForm) => (e: ChangeEvent<HTMLSelectElement>) =>
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const setChk =
@@ -1679,7 +1679,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     onError: (e: Error) => setDeleteError(e.message),
   });
 
-  const roleMutation = useMutation({
+  const _roleMutation = useMutation({
     mutationFn: async ({
       id,
       role,
@@ -2809,6 +2809,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                   variant="primary"
                   onClick={() => {
                     const nextStatus = confirmOrderStatus;
+                    if (!nextStatus) return;
                     orderStatusesMutation.mutate(
                       { id: nextStatus.id, fulfillmentStatus: nextStatus.to },
                       {
@@ -3548,7 +3549,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                     }}
                   >
                     <AnimatedButton variant="outline" onClick={() => { setConfirmDeleteId(null); setDeleteError(null); }} text="Cancelar" />
-                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); productDeleteMutation.mutate(confirmDeleteId); }} disabled={productDeleteMutation.isPending} text={productDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
+                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); productDeleteMutation.mutate(confirmDeleteId!); }} disabled={productDeleteMutation.isPending} text={productDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
                   </div>
                 </div>
             </ModalOverlay>

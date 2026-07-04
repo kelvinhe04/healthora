@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://excessive-lara-personal-api-school-2d60e8b3.koyeb.app/$1" }
+  ]
+}

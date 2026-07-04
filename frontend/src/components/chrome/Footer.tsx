@@ -165,7 +165,7 @@ function AnimatedIcon({ children, delay, isAnimating }: { children: React.ReactN
   return <AnimatedItem delay={delay} isAnimating={isAnimating} variants={iconVariants}>{children}</AnimatedItem>;
 }
 
-function AnimatedLink({ children, delay, isAnimating, onClick, onMouseEnter, onMouseLeave, style }: { children: React.ReactNode; delay: number; isAnimating: boolean; onClick?: () => void; onMouseEnter?: (e: React.MouseEvent<HTMLLIElement>) => void; onMouseLeave?: (e: React.MouseEvent<HTMLLIElement>) => void; style?: React.CSSProperties }) {
+function AnimatedLink({ children, delay, isAnimating, onClick, onMouseEnter: _onMouseEnter, onMouseLeave: _onMouseLeave, style }: { children: React.ReactNode; delay: number; isAnimating: boolean; onClick?: () => void; onMouseEnter?: (e: React.MouseEvent<HTMLLIElement>) => void; onMouseLeave?: (e: React.MouseEvent<HTMLLIElement>) => void; style?: React.CSSProperties }) {
   return (
     <AnimatedItem delay={delay} isAnimating={isAnimating} variants={linkVariants} onClick={onClick} style={style}>
       <li 
