@@ -52,6 +52,8 @@ En pausa hasta que variantes/UI se estabilicen: HU-063 (Zod — toca schemas de 
 
 ## Backlog de contenido (no bloquea ninguna HU de sistema)
 
+**Issue #99 — Completar variantes de producto en categorías restantes del catálogo** · Rama `feat/variantes-contenido-categorias` · Kelvin
+
 Completar variantes reales en el seed por categoría (independiente de HU-005/035, que ya funcionan con lo que existe):
 
 | Categoría | Cobertura actual (productos con variantes / 20) |
