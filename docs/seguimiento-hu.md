@@ -16,14 +16,14 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 
 | HU | Título | Rama / PR | Responsable | Notas |
 |---|---|---|---|---|
+| HU-005 | Selector de variantes en la ficha | `feat/product-variants` / PR #98 | Kelvin | Selector completo (tamaño/sabor/conteo/color), precio e imagen reactivos. Falta reseed de categorías restantes (contenido, no bloquea — ver Backlog de contenido). |
+| HU-035 | Variante seleccionada persistida en el carrito | `feat/product-variants` / PR #98 | Kelvin | `cartStore`/`CartDrawer` soportan `productId+variantId`. Bug de imagen (no reflejaba la variante en carrito/checkout) corregido en el mismo PR. |
 
 ## En curso
 
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
-| HU-005 | Selector de variantes en la ficha | `feat/product-variants` | Kelvin | Selector completo (tamaño/sabor/conteo/color), precio e imagen reactivos. Falta reseed de categorías restantes (contenido, no bloquea). |
-| HU-035 | Variante seleccionada persistida en el carrito | `feat/product-variants` | Kelvin | `cartStore`/`CartDrawer` soportan `productId+variantId`. Bug de imagen (CartDrawer no pasaba la variante a `ProductImage`) corregido; mismo fix aplicado en `Checkout.tsx` (también corregía precio/label por línea que ignoraban la variante). |
-| HU-033 | Precio por variante aplicado en checkout | `feat/product-variants` | Kelvin | Parcial: cálculo de subtotal en frontend correcto; falta validar precio de variante en backend al confirmar la orden. |
+| HU-033 | Precio por variante aplicado en checkout | por crear | Kelvin | Parcial ya en `main`: cálculo de subtotal en frontend correcto; falta validar precio de variante en backend al confirmar la orden. |
 
 ## Pendientes — continuación directa de variantes (Kelvin, ramas nuevas tras el merge)
 
