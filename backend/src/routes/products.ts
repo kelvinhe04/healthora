@@ -16,7 +16,7 @@ export const productsRouter = new Hono()
     if (query.sort === 'price_asc') q = q.sort({ price: 1 });
     else if (query.sort === 'price_desc') q = q.sort({ price: -1 });
     else if (query.sort === 'rating') q = q.sort({ rating: -1 });
-    else q = q.sort({ createdAt: -1 });
+    else q = q.sort({ sortOrder: 1 });
 
     return c.json(await q.lean());
   })

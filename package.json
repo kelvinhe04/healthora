@@ -2,11 +2,14 @@
   "name": "healthora",
   "private": true,
   "scripts": {
-    "dev": "bun scripts/dev.mjs",
-    "dev:backend": "bun --cwd=backend run dev",
-    "dev:frontend": "bun --cwd=frontend run dev"
+    "dev": "node ./dev.js",
+    "dev:backend": "cd backend && bun run dev",
+    "dev:frontend": "cd frontend && bun run dev"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "docx": "^9.7.1"
   }
 }

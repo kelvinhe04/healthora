@@ -6,6 +6,7 @@ import { Stars } from './Stars';
 import { Icon } from './Icon';
 import { useReviews } from '../../hooks/useReviews';
 import { useThemeStore } from '../../store/themeStore';
+import { pickDefaultCombo, getEffectivePrice, getEffectivePriceBefore } from '../../lib/productVariants';
 
 // ─── Shared shimmer helper ────────────────────────────────────────────────────
 function ShimmerBox({ style }: { style?: CSSProperties }) {
@@ -79,8 +80,11 @@ export function ProductCard({ product, onClick, onAdd }: ProductCardProps) {
   const liveRating = liveReviews && liveReviews.length > 0
     ? Math.round(liveReviews.reduce((s, r) => s + r.rating, 0) / liveReviews.length * 10) / 10
     : 0;
-  const primaryImage = product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url;
-  const secondaryImage = product.images?.find((img) => img.url && img.url !== primaryImage)?.url;
+  const { variant: defaultVariant, size: defaultSize } = pickDefaultCombo(product);
+  const primaryImage = (defaultVariant?.imagesBySize && defaultSize ? defaultVariant.imagesBySize[defaultSize.id]?.[0] : null) || defaultVariant?.images?.[0] || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url;
+  const secondaryImage = (defaultVariant?.imagesBySize && defaultSize ? defaultVariant.imagesBySize[defaultSize.id]?.[1] : null) || defaultVariant?.images?.[1] || product.images?.find((img, i) => img.url && img.url !== primaryImage && i !== 0)?.url || product.images?.[1]?.url;
+  const effectivePrice = getEffectivePrice(product);
+  const effectivePriceBefore = getEffectivePriceBefore(product);
 
   return (
     <div
@@ -118,8 +122,8 @@ export function ProductCard({ product, onClick, onAdd }: ProductCardProps) {
           <span style={{ position: 'absolute', top: 12, left: 12, background: product.tag === 'Nuevo' ? 'var(--lime)' : 'oklch(0.18 0.03 155)', color: product.tag === 'Nuevo' ? 'oklch(0.18 0.03 155)' : 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{product.tag}</span>
         ) : null}
         
-        {product.stock > 0 && product.priceBefore && (
-          <span style={{ position: 'absolute', top: 12, right: 12, background: 'var(--coral)', color: 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, fontWeight: 600 }}>−{Math.round((1 - product.price / product.priceBefore) * 100)}%</span>
+        {product.stock > 0 && effectivePriceBefore && (
+          <span style={{ position: 'absolute', top: 12, right: 12, background: 'var(--coral)', color: 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, fontWeight: 600 }}>−{Math.round((1 - effectivePrice / effectivePriceBefore) * 100)}%</span>
         )}
         
         {/* Add to cart button */}
@@ -147,8 +151,8 @@ export function ProductCard({ product, onClick, onAdd }: ProductCardProps) {
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-          <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 22, color: 'var(--ink)' }}>${product.price.toFixed(2)}</span>
-          {product.priceBefore && <span style={{ fontSize: 13, color: 'var(--ink-40)', textDecoration: 'line-through' }}>${product.priceBefore.toFixed(2)}</span>}
+          <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 22, color: 'var(--ink)' }}>${effectivePrice.toFixed(2)}</span>
+          {effectivePriceBefore && <span style={{ fontSize: 13, color: 'var(--ink-40)', textDecoration: 'line-through' }}>${effectivePriceBefore.toFixed(2)}</span>}
         </div>
       </div>
     </div>

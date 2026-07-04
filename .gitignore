@@ -1,5 +1,6 @@
 # Dependencies
 **/node_modules/
+pnpm-lock.yaml
 
 # Build outputs
 **/dist/
@@ -34,6 +35,14 @@ Thumbs.db
 *.sln
 *.sw?
 
+# Claude project instructions
+CLAUDE.md
+
+# Playwright
+**/playwright-report/
+**/test-results/
+**/blob-report/
+
 # Local tooling / agent state
 .agents/
 .claude/
@@ -51,3 +60,6 @@ backend/src/scripts/
 
 # Misc local files
 *.local
+
+# Office temp files
+~$*

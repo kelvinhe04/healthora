@@ -326,9 +326,9 @@ export function Footer({ onNav }: FooterProps) {
               <AnimatedLetter key={i} delay={i * 0.05} isAnimating={isAnimating}>{letter}</AnimatedLetter>
             ))}
           </div>
-          <p style={{ fontSize: 14, lineHeight: 1.55, opacity: 0.72, maxWidth: 260, fontFamily: '"Geist", sans-serif' }}>
+          <div style={{ fontSize: 14, lineHeight: 1.55, opacity: 0.72, maxWidth: 260, fontFamily: '"Geist", sans-serif' }}>
             <AnimatedWord delay={0.45} isAnimating={isAnimating}>{description}</AnimatedWord>
-          </p>
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 22 }}>
             {socials.map((social, i) => (
               <AnimatedIcon key={social.id} delay={0.58 + i * 0.07} isAnimating={isAnimating}>

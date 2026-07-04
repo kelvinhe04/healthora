@@ -40,6 +40,15 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
   const { data: allProducts = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [] } = useCategories();
 
+  const shuffledAll = useMemo(() => {
+    const arr = allProducts.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }, [allProducts]);
+
   // Show skeleton on every mount (navigation) — not just cold loads.
   const [isMounting, setIsMounting] = useState(!catalogInitialLoadDone);
   useEffect(() => {
@@ -76,7 +85,7 @@ export function Catalog({ initialFilter, onFilterChange, onOpenProduct, onAdd }:
   const visibleBrands = showAllBrands ? filteredBrands : filteredBrands.slice(0, 8);
 
   const filtered = useMemo(() => {
-    let list = allProducts.slice();
+    let list = (cat === 'Todos' && sort === 'featured') ? shuffledAll.slice() : allProducts.slice();
     if (cat !== 'Todos') list = list.filter((p) => p.category === cat);
     if (need) list = list.filter((p) => p.need === need);
     if (search.trim()) {

@@ -11,6 +11,23 @@ export type OrderStatus =
   | 'cancelled'
   | 'refunded';
 
+export interface ProductVariant {
+  id: string;
+  label: string;
+  type: 'size' | 'color' | 'weight' | 'count' | 'flavor' | 'scent';
+  price: number;
+  priceBefore?: number;
+  stock: number;
+  sku?: string;
+  color?: string;
+  imageUrl?: string;
+  images?: string[];
+  imagesBySize?: Record<string, string[]>;
+  isDefault?: boolean;
+  /** For a `size` variant paired with a `flavor`/`scent` variant: restricts this size to the given primary variant ids. Omit to make it available for all. */
+  availableFor?: string[];
+}
+
 export interface Product {
   _id: string;
   id: string;
@@ -51,6 +68,7 @@ export interface Product {
     label: string;
     content: string;
   }[];
+  variants?: ProductVariant[];
   active: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -67,6 +85,7 @@ export interface Category {
 export interface CartItem {
   product: Product;
   qty: number;
+  variant?: ProductVariant;
 }
 
 export interface OrderAddress {
