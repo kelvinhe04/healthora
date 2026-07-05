@@ -2957,7 +2957,7 @@ const PRODUCTS = [
   },
   {
     id: 'advil-ibuprofen-200-mg',
-    name: 'Ibuprofen 200 mg Coated Caplets, 100 Count',
+    name: 'Ibuprofen 200 mg Coated Caplets',
     brand: 'Advil',
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
@@ -2983,6 +2983,12 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.02 200)',
     swatchColor: 'oklch(0.60 0.10 235)',
     label: 'Advil\n200 mg',
+    // Tamaños reales de Amazon (B001EP8TS6 / B07BNLR6SL / B07BRD9KP5), cada uno con foto real de esa caja.
+    variants: [
+      { id: '100ct', label: '100 Count (Pack of 1)', type: 'size', price: 10.48, stock: 124, isDefault: true, imageUrl: '/products/medicamentos/advil-ibuprofen-200-mg/100ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/advil-ibuprofen-200-mg/100ct/${n}.jpg`) },
+      { id: '200ct', label: '200 Count (Pack of 1)', type: 'size', price: 18.97, priceBefore: 22.49, stock: 85, imageUrl: '/products/medicamentos/advil-ibuprofen-200-mg/200ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/advil-ibuprofen-200-mg/200ct/${n}.jpg`) },
+      { id: '300ct', label: '300 Count (Pack of 1)', type: 'size', price: 26.97, priceBefore: 31.99, stock: 62, imageUrl: '/products/medicamentos/advil-ibuprofen-200-mg/300ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/advil-ibuprofen-200-mg/300ct/${n}.jpg`) },
+    ],
   },
   {
     id: 'zyrtec-allergy-tablets',
@@ -2990,7 +2996,7 @@ const PRODUCTS = [
     brand: 'Zyrtec',
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
-    price: 22.65,
+    price: 14.97,
     rating: 4.8,
     reviews: 980,
     short: 'Cetirizina para sintomas comunes de alergia, con 24 horas de alivio continuo.',
@@ -3012,20 +3018,21 @@ const PRODUCTS = [
     color: 'oklch(0.91 0.03 200)',
     swatchColor: 'oklch(0.55 0.08 235)',
     label: 'Zyrtec\n24H',
-    // Tamaños reales de Amazon (B08QKRMC7L y variante ASIN por conteo), cada uno con foto real de esa caja.
+    // Tamaños reales de Amazon (B08QKRMC7L / B004GEHS08 / B00FUVZ8GO), cada uno con foto real de esa caja.
     variants: [
-      { id: '33ct', label: '33 Tablets', type: 'size', price: 19.60, priceBefore: 22.70, stock: 40, isDefault: true, imageUrl: '/products/medicamentos/zyrtec-allergy-tablets/33ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/zyrtec-allergy-tablets/33ct/${n}.jpg`) },
-      { id: '45ct', label: '45 Tablets', type: 'size', price: 26.73, priceBefore: 27.99, stock: 26, imageUrl: '/products/medicamentos/zyrtec-allergy-tablets/45ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/zyrtec-allergy-tablets/45ct/${n}.jpg`) },
+      { id: '33ct', label: '33 Tablets', type: 'size', price: 14.97, priceBefore: 17.49, stock: 40, isDefault: true, imageUrl: '/products/medicamentos/zyrtec-allergy-tablets/33ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/zyrtec-allergy-tablets/33ct/${n}.jpg`) },
+      { id: '45ct', label: '45 Tablets', type: 'size', price: 19.60, priceBefore: 22.70, stock: 26, imageUrl: '/products/medicamentos/zyrtec-allergy-tablets/45ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/zyrtec-allergy-tablets/45ct/${n}.jpg`) },
+      { id: '90ct', label: '90 Tablets', type: 'size', price: 26.73, priceBefore: 27.99, stock: 18, imageUrl: '/products/medicamentos/zyrtec-allergy-tablets/90ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/zyrtec-allergy-tablets/90ct/${n}.jpg`) },
     ],
   },
   {
     id: 'mucinex-dm-12hr-maximum-strength',
-    name: 'DM 12Hr Maximum Strength Tablets, 48 Count',
+    name: 'DM 12Hr Maximum Strength Tablets',
     brand: 'Mucinex',
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
-    price: 47.99,
-    rating: 4.8,
+    price: 14.47,
+    rating: 4.4,
     reviews: 740,
     short: 'Tableta bicapa de 12 horas que afloja el moco y controla la tos.',
     benefits: [
@@ -3047,6 +3054,12 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.04 130)',
     swatchColor: 'oklch(0.58 0.10 140)',
     label: 'Mucinex\nDM',
+    // Tamaños reales de Amazon (B00FUDBER6 / B00FUDBM0A / B001ET8TUG), cada uno con foto real de esa caja.
+    variants: [
+      { id: '14ct', label: '14 Tablets', type: 'size', price: 14.47, stock: 52, isDefault: true, imageUrl: '/products/medicamentos/mucinex-dm-12hr-maximum-strength/14ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/mucinex-dm-12hr-maximum-strength/14ct/${n}.jpg`) },
+      { id: '28ct', label: '28 Tablets', type: 'size', price: 25.49, priceBefore: 29.99, stock: 38, imageUrl: '/products/medicamentos/mucinex-dm-12hr-maximum-strength/28ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/mucinex-dm-12hr-maximum-strength/28ct/${n}.jpg`) },
+      { id: '42ct', label: '42 Tablets', type: 'size', price: 47.99, priceBefore: 54.99, stock: 24, imageUrl: '/products/medicamentos/mucinex-dm-12hr-maximum-strength/42ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/mucinex-dm-12hr-maximum-strength/42ct/${n}.jpg`) },
+    ],
   },
   {
     id: 'pepto-bismol-original-liquid',
@@ -3084,11 +3097,11 @@ const PRODUCTS = [
   },
   {
     id: 'excedrin-extra-strength-caplets',
-    name: 'Extra Strength Caplets, 100 Count',
+    name: 'Extra Strength Headache Caplets',
     brand: 'Excedrin',
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
-    price: 12.99,
+    price: 10.47,
     rating: 4.7,
     reviews: 2104,
     short: 'Triple accion contra dolor de cabeza: acetaminofen, aspirina y cafeina.',
@@ -3110,14 +3123,20 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.03 45)',
     swatchColor: 'oklch(0.72 0.14 45)',
     label: 'Excedrin\nExtra',
+    // Tamaños reales de Amazon (B000GCFA6E / B000GCM83M / B000GCFAJQ), cada uno con foto real de esa caja.
+    variants: [
+      { id: '24ct',  label: '24 Caplets',  type: 'size', price: 10.47, stock: 74, isDefault: true, imageUrl: '/products/medicamentos/excedrin-extra-strength-caplets/24ct/1.jpg',  images: [1, 2, 3, 4].map((n) => `/products/medicamentos/excedrin-extra-strength-caplets/24ct/${n}.jpg`) },
+      { id: '100ct', label: '100 Caplets', type: 'size', price: 15.97, priceBefore: 19.99, stock: 48, imageUrl: '/products/medicamentos/excedrin-extra-strength-caplets/100ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/excedrin-extra-strength-caplets/100ct/${n}.jpg`) },
+      { id: '200ct', label: '200 Caplets', type: 'size', price: 19.97, priceBefore: 24.99, stock: 26, imageUrl: '/products/medicamentos/excedrin-extra-strength-caplets/200ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/excedrin-extra-strength-caplets/200ct/${n}.jpg`) },
+    ],
   },
   {
     id: 'gas-x-extra-strength-softgels',
-    name: 'Extra Strength Softgels, 50 Count',
+    name: 'Extra Strength Softgels',
     brand: 'Gas-X',
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
-    price: 14.74,
+    price: 10.97,
     rating: 4.7,
     reviews: 1180,
     short: 'Softgels con simeticona 125 mg para alivio rapido de gases y distension.',
@@ -3139,10 +3158,14 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.03 55)',
     swatchColor: 'oklch(0.73 0.15 55)',
     label: 'Gas-X\nExtra',
+    variants: [
+      { id: '50ct',  label: '50 SoftGels',  type: 'size', price: 10.97, stock: 88, isDefault: true, imageUrl: '/products/medicamentos/gas-x-extra-strength-softgels/50ct/1.jpg',  images: [1, 2, 3, 4].map((n) => `/products/medicamentos/gas-x-extra-strength-softgels/50ct/${n}.jpg`) },
+      { id: '100ct', label: '100 SoftGels', type: 'size', price: 18.97, priceBefore: 22.99, stock: 55, imageUrl: '/products/medicamentos/gas-x-extra-strength-softgels/100ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/gas-x-extra-strength-softgels/100ct/${n}.jpg`) },
+    ],
   },
   {
     id: 'gas-x-maximum-strength-softgels',
-    name: 'Maximum Strength Softgels, 30 Count',
+    name: 'Maximum Strength Softgels',
     brand: 'Gas-X',
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
@@ -3168,6 +3191,10 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.03 65)',
     swatchColor: 'oklch(0.74 0.14 65)',
     label: 'Gas-X\nMax',
+    variants: [
+      { id: '30ct', label: '30 SoftGels', type: 'size', price: 10.48, stock: 62, isDefault: true, imageUrl: '/products/medicamentos/gas-x-maximum-strength-softgels/30ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/gas-x-maximum-strength-softgels/30ct/${n}.jpg`) },
+      { id: '60ct', label: '60 SoftGels', type: 'size', price: 17.97, priceBefore: 20.99, stock: 35, imageUrl: '/products/medicamentos/gas-x-maximum-strength-softgels/60ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/gas-x-maximum-strength-softgels/60ct/${n}.jpg`) },
+    ],
   },
   {
     id: 'tums-extra-strength-750',
@@ -3240,7 +3267,7 @@ const PRODUCTS = [
   },
   {
     id: 'theraflu-nighttime-severe-cold-relief-honey-lemon-hot-liquid-powder',
-    name: 'Nighttime Severe Cold Relief Honey Lemon, 6 Packets',
+    name: 'Nighttime Severe Cold Relief Honey Lemon',
     brand: 'Theraflu',
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
@@ -3266,14 +3293,18 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.04 75)',
     swatchColor: 'oklch(0.78 0.16 75)',
     label: 'Theraflu\nNight',
+    variants: [
+      { id: '6pk',  label: '6 Packets',  type: 'size', price: 8.48,  stock: 57, isDefault: true, imageUrl: '/products/medicamentos/theraflu-nighttime-severe-cold-relief-honey-lemon-hot-liquid-powder/6pk/1.jpg',  images: [1, 2, 3, 4].map((n) => `/products/medicamentos/theraflu-nighttime-severe-cold-relief-honey-lemon-hot-liquid-powder/6pk/${n}.jpg`) },
+      { id: '12pk', label: '12 Packets', type: 'size', price: 14.98, priceBefore: 17.99, stock: 33, imageUrl: '/products/medicamentos/theraflu-nighttime-severe-cold-relief-honey-lemon-hot-liquid-powder/12pk/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/theraflu-nighttime-severe-cold-relief-honey-lemon-hot-liquid-powder/12pk/${n}.jpg`) },
+    ],
   },
   {
     id: 'nexium-24hr-clearminis',
-    name: '24HR ClearMinis, 42 Count',
+    name: '24HR ClearMinis Delayed-Release Capsules',
     brand: 'Nexium 24HR',
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
-    price: 25.28,
+    price: 11.69,
     rating: 4.7,
     reviews: 532,
     short: 'Capsula mini de esomeprazol que bloquea el acido 24 horas para acidez frecuente.',
@@ -3295,6 +3326,10 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.03 305)',
     swatchColor: 'oklch(0.66 0.10 305)',
     label: 'Nexium\n24HR',
+    variants: [
+      { id: '14ct', label: '14 Capsules', type: 'size', price: 11.69, stock: 39, isDefault: true, imageUrl: '/products/medicamentos/nexium-24hr-clearminis/14ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/nexium-24hr-clearminis/14ct/${n}.jpg`) },
+      { id: '42ct', label: '42 Capsules', type: 'size', price: 25.28, priceBefore: 29.99, stock: 22, imageUrl: '/products/medicamentos/nexium-24hr-clearminis/42ct/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/nexium-24hr-clearminis/42ct/${n}.jpg`) },
+    ],
   },
   {
     id: 'salonpas-pain-relieving-patch',
@@ -3332,11 +3367,11 @@ const PRODUCTS = [
   },
   {
     id: 'flonase-allergy-relief-nasal-spray',
-    name: 'Allergy Relief Nasal Spray, 144 Sprays',
+    name: 'Allergy Relief Nasal Spray',
     brand: 'Flonase',
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
-    price: 29.99,
+    price: 14.99,
     rating: 4.7,
     reviews: 1748,
     short: 'Corticoide nasal de 24 horas que bloquea 6 sustancias inflamatorias de la alergia.',
@@ -3349,7 +3384,7 @@ const PRODUCTS = [
     usage: 'Adultos de 12 años o mas: primera semana, 2 aspersiones en cada fosa nasal una vez al dia; despues reducir a 1-2 aspersiones diarias segun sintomas. Agitar suavemente antes de usar y cebar la bomba si es la primera vez. No exceder 2 aspersiones por fosa al dia.',
     ingredients: 'Ingrediente activo (por aspersion): Propionato de fluticasona 50 mcg (glucocorticoide). Ingredientes inactivos: celulosa microcristalina dispersable, dextrosa, alcohol feniletilico, polisorbato 80 y agua purificada.',
     warnings: 'El alivio completo puede tardar varios dias de uso constante. No usar si hay lesiones o cirugia nasal reciente sin consultar. Posible sangrado nasal leve o irritacion; suspender si es persistente. En uso prolongado durante meses conviene revision medica.',
-    nutritionFacts: 'Ingrediente activo (por aspersion medida): Propionato de fluticasona 50 mcg (corticosteroide nasal). Dosis adulto: 2 aspersiones por fosa al dia la primera semana, luego 1-2 diarias. Frasco: 144 aspersiones medidas.',
+    nutritionFacts: 'Ingrediente activo (por aspersion medida): Propionato de fluticasona 50 mcg (corticosteroide nasal). Dosis adulto: 2 aspersiones por fosa al dia la primera semana, luego 1-2 diarias.',
     faq: [
       { q: 'Cuanto tarda en hacer efecto?', a: 'Algunas personas notan mejoria a las 12 horas, pero el efecto maximo llega tras 3-4 dias de uso diario constante: es un tratamiento preventivo, no de rescate.' },
       { q: 'Es seguro usarlo toda la temporada de alergias?', a: 'Si, esta aprobado para uso diario durante hasta 6 meses al año en adultos; si necesitas mas tiempo, consulta a tu medico.' },
@@ -3358,14 +3393,19 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.03 190)',
     swatchColor: 'oklch(0.68 0.09 190)',
     label: 'Flonase\nSpray',
+    // Tamaños reales de Amazon (B00L9FQVBS / B00L9FQW1U), cada uno con foto real de ese frasco.
+    variants: [
+      { id: '72spr',  label: '72 Sprays',  type: 'size', price: 14.99, priceBefore: 19.99, stock: 68, isDefault: true, imageUrl: '/products/medicamentos/flonase-allergy-relief-nasal-spray/72spr/1.jpg',  images: [1, 2, 3, 4].map((n) => `/products/medicamentos/flonase-allergy-relief-nasal-spray/72spr/${n}.jpg`) },
+      { id: '144spr', label: '144 Sprays', type: 'size', price: 29.99, priceBefore: 34.99, stock: 42, imageUrl: '/products/medicamentos/flonase-allergy-relief-nasal-spray/144spr/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/flonase-allergy-relief-nasal-spray/144spr/${n}.jpg`) },
+    ],
   },
   {
     id: 'robitussin-maximum-strength-cough-chest-congestion-dm',
-    name: 'Maximum Strength Cough + Chest Congestion DM, 8 Fl Oz',
+    name: 'Maximum Strength Cough + Chest Congestion DM',
     brand: 'Robitussin',
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
-    price: 12.97,
+    price: 8.48,
     rating: 4.6,
     reviews: 802,
     short: 'Jarabe de maxima potencia que controla la tos y afloja la congestion del pecho.',
@@ -3378,7 +3418,7 @@ const PRODUCTS = [
     usage: 'Adultos y niños de 12 años o mas: tomar 20 mL con el vasito dosificador cada 4 horas. No tomar mas de 6 dosis en 24 horas. No usar en menores de 12 años.',
     ingredients: 'Ingredientes activos (por 20 mL): Dextromethorphan HBr 20 mg (antitusivo) y Guaifenesina 400 mg (expectorante). Ingredientes inactivos: acido citrico, sabor, glicerina, sacarina sodica, sorbitol y agua purificada.',
     warnings: 'No usar si esta tomando o tomo un inhibidor de la MAO en los ultimos 14 dias. Consultar a un medico si la tos dura mas de 7 dias o viene con fiebre persistente. No combinar con otros medicamentos para la tos con dextrometorfano.',
-    nutritionFacts: 'Ingredientes activos (por dosis de 20 mL): Dextromethorphan HBr 20 mg, Guaifenesina 400 mg. Dosis adulto: 20 mL cada 4 horas, maximo 6 dosis en 24 horas. Frasco de 8 fl oz (236 mL).',
+    nutritionFacts: 'Ingredientes activos (por dosis de 20 mL): Dextromethorphan HBr 20 mg, Guaifenesina 400 mg. Dosis adulto: 20 mL cada 4 horas, maximo 6 dosis en 24 horas.',
     faq: [
       { q: 'Que significa la sigla DM?', a: 'Indica que contiene dextrometorfano, el supresor de tos; distingue esta formula de las versiones solo expectorantes de Robitussin.' },
       { q: 'Puedo tomarlo para la tos nocturna?', a: 'Si, no contiene estimulantes; cada dosis controla la tos unas 4 horas, util para conciliar el sueño, aunque existe una version nocturna especifica con antihistaminico.' },
@@ -3387,6 +3427,10 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.03 255)',
     swatchColor: 'oklch(0.55 0.09 255)',
     label: 'Robitussin\nDM',
+    variants: [
+      { id: '4oz', label: '4 Fl Oz', type: 'size', price: 8.48,  stock: 59, isDefault: true, imageUrl: '/products/medicamentos/robitussin-maximum-strength-cough-chest-congestion-dm/4oz/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/robitussin-maximum-strength-cough-chest-congestion-dm/4oz/${n}.jpg`) },
+      { id: '8oz', label: '8 Fl Oz', type: 'size', price: 12.97, priceBefore: 15.99, stock: 34, imageUrl: '/products/medicamentos/robitussin-maximum-strength-cough-chest-congestion-dm/8oz/1.jpg',  images: [1, 2, 3, 4].map((n) => `/products/medicamentos/robitussin-maximum-strength-cough-chest-congestion-dm/8oz/${n}.jpg`) },
+    ],
   },
   {
     id: 'benadryl-itch-stopping-gel',
@@ -4912,7 +4956,7 @@ const PRODUCTS = [
   },
   {
     id: 'voltaren-arthritis-pain-gel',
-    name: 'Voltaren Arthritis Pain Gel, 50 g Tube',
+    name: 'Arthritis Pain Gel',
     brand: 'Voltaren',
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
@@ -4929,7 +4973,7 @@ const PRODUCTS = [
     usage: 'Adultos: usar la tarjeta dosificadora incluida. Aplicar 2 g (2.25 pulgadas) en zonas superiores (manos, muñecas, codos) o 4 g (4.5 pulgadas) en zonas inferiores (rodillas, tobillos, pies), 4 veces al dia. Masajear suavemente hasta absorber.',
     ingredients: 'Ingrediente activo: Diclofenaco sodico 1% (antiinflamatorio no esteroideo topico). Ingredientes inactivos: carbomero, cocoyl caprylocaprate, alcohol isopropilico, aceite mineral, agua purificada y propilenglicol.',
     warnings: 'Es un AINE: no usar junto con otros AINEs orales sin consejo medico. No aplicar sobre piel lesionada ni cubrir con vendajes oclusivos. El alivio completo puede tardar hasta 7 dias de uso constante. Evitar en las ultimas 20 semanas de embarazo.',
-    nutritionFacts: 'Ingrediente activo: Diclofenaco sodico 1% (AINE topico). Dosis: 2 g por articulacion superior o 4 g por articulacion inferior, 4 veces al dia usando la tarjeta dosificadora. Tubo de 50 g.',
+    nutritionFacts: 'Ingrediente activo: Diclofenaco sodico 1% (AINE topico). Dosis: 2 g por articulacion superior o 4 g por articulacion inferior, 4 veces al dia usando la tarjeta dosificadora.',
     faq: [
       { q: 'En cuanto tiempo notare mejoria?', a: 'Algunas personas sienten alivio en pocos dias, pero el efecto antiinflamatorio completo sobre la articulacion se alcanza tras unos 7 dias de aplicacion constante.' },
       { q: 'Sirve para golpes o dolor muscular?', a: 'Esta indicado especificamente para dolor articular por osteoartritis; para contusiones o dolor muscular generalizado existen otros topicos mas apropiados.' },
@@ -4938,6 +4982,10 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.03 190)',
     swatchColor: 'oklch(0.68 0.07 195)',
     label: 'Voltaren\nGel',
+    variants: [
+      { id: '3.5oz', label: '3.5 oz Tube',    type: 'size', price: 11.98, stock: 49, isDefault: true, imageUrl: '/products/medicamentos/voltaren-arthritis-pain-gel/3.5oz/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/medicamentos/voltaren-arthritis-pain-gel/3.5oz/${n}.jpg`) },
+      { id: 'twin',  label: 'Twin Pack (2x)', type: 'size', price: 21.97, priceBefore: 27.99, stock: 28, imageUrl: '/products/medicamentos/voltaren-arthritis-pain-gel/twin/1.jpg',  images: [1, 2, 3, 4].map((n) => `/products/medicamentos/voltaren-arthritis-pain-gel/twin/${n}.jpg`) },
+    ],
   },
   {
     id: 'claritin-24-hour-allergy',
