@@ -19,6 +19,7 @@ import { sendOrderConfirmationEmail } from './lib/email';
 import { recalculateBestsellers, recalculateNew } from './lib/bestsellers';
 import { reviewsRouter } from './routes/reviews';
 import { newsletterRouter } from './routes/newsletter';
+import { ipRateLimit } from './middleware/rateLimit';
 
 await connectDB();
 await recalculateBestsellers();
@@ -27,6 +28,7 @@ await recalculateNew();
 const app = new Hono();
 
 app.use('*', cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }));
+app.use('*', ipRateLimit);
 
 app.route('/products', productsRouter);
 app.route('/categories', categoriesRouter);

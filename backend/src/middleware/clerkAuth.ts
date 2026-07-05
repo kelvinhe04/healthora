@@ -3,6 +3,7 @@ import { createMiddleware } from 'hono/factory';
 import { clerk } from '../lib/clerk';
 import { User } from '../db/models/User';
 import type { AppEnv } from '../types/hono';
+import { userRateLimit } from './rateLimit';
 
 const AUTHORIZED_PARTIES = ['http://localhost:5173', 'http://localhost:5175', 'http://localhost:3001'];
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || process.env.CLERK_ADMIN_EMAILS || '')
@@ -84,6 +85,9 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
       imageUrl: clerkUser.imageUrl,
       _id: user._id,
     });
+
+    const rateLimitedResponse = await userRateLimit(c, async () => undefined);
+    if (rateLimitedResponse) return rateLimitedResponse;
 
     await next();
   } catch (error) {
