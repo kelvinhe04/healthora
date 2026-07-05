@@ -3684,12 +3684,11 @@ const PRODUCTS = [
   },
   {
     id: 'versace-bright-crystal-eau-de-toilette',
-    name: 'Bright Crystal Eau de Toilette, 3 Fl Oz',
+    name: 'Bright Crystal Eau de Toilette',
     brand: 'Versace',
     category: 'Fragancias',
     need: 'Piel seca',
     price: 64.98,
-    priceBefore: 128.00,
     rating: 4.7,
     reviews: 720,
     short: 'Floral frutal luminoso con granada, yuzu y peonia en el icono rosado de Versace.',
@@ -3702,7 +3701,7 @@ const PRODUCTS = [
     usage: 'Rociar sobre cuello y muñecas despues del baño, con la piel hidratada para mayor duracion. Reaplicar a media tarde si se desea.',
     ingredients: 'Notas de salida: granada, yuzu, acorde helado. Corazon: peonia, magnolia, flor de loto. Fondo: almizcle, madera de caoba, ambar vegetal.',
     warnings: 'Inflamable: mantener lejos del fuego. Evitar el contacto con los ojos. No aplicar sobre piel irritada.',
-    nutritionFacts: 'Concentracion: Eau de Toilette. Familia: floral frutal. Perfil: granada/yuzu → peonia/magnolia → almizcle/ambar. Frasco: 3 fl oz (90 mL) con cristal rosado grabado Medusa.',
+    nutritionFacts: 'Concentracion: Eau de Toilette. Familia: floral frutal. Perfil: granada/yuzu → peonia/magnolia → almizcle/ambar. Cristal rosado grabado Medusa. Tamaños: 1, 1.7, 3 y 6.7 fl oz.',
     faq: [
       { q: 'Dura poco como dicen?', a: 'Como EDT floral ligero proyecta suave y dura 4-6 horas en piel; aplicarlo sobre piel hidratada o la ropa extiende su presencia.' },
       { q: 'Que diferencia hay con Bright Crystal Absolu?', a: 'El Absolu es la version eau de parfum: mismas notas pero mas concentradas, con mayor duracion y estela.' },
@@ -3711,15 +3710,21 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.04 5)',
     swatchColor: 'oklch(0.73 0.12 10)',
     label: 'Versace\nBright Crystal',
+    // Tamaños reales (Ulta VP12312, SKUs por talla), cada uno con foto real de esa presentacion.
+    variants: [
+      { id: '1oz', label: '1 Fl Oz (30 ml)', type: 'size', price: 34.00, priceBefore: 38.00, stock: 22, imageUrl: '/products/fragancias/versace-bright-crystal-eau-de-toilette/1oz/1.jpg', images: ['/products/fragancias/versace-bright-crystal-eau-de-toilette/1oz/1.jpg'] },
+      { id: '1-7oz', label: '1.7 Fl Oz (50 ml)', type: 'size', price: 54.00, stock: 26, imageUrl: '/products/fragancias/versace-bright-crystal-eau-de-toilette/1-7oz/1.jpg', images: [1, 2].map((n) => `/products/fragancias/versace-bright-crystal-eau-de-toilette/1-7oz/${n}.jpg`) },
+      { id: '3oz', label: '3 Fl Oz (90 ml)', type: 'size', price: 64.98, priceBefore: 128.00, stock: 28, isDefault: true, imageUrl: '/products/fragancias/versace-bright-crystal-eau-de-toilette/3oz/1.jpg', images: [1, 2].map((n) => `/products/fragancias/versace-bright-crystal-eau-de-toilette/3oz/${n}.jpg`) },
+      { id: '6-7oz', label: '6.7 Fl Oz (200 ml)', type: 'size', price: 92.00, priceBefore: 105.00, stock: 12, imageUrl: '/products/fragancias/versace-bright-crystal-eau-de-toilette/6-7oz/1.jpg', images: ['/products/fragancias/versace-bright-crystal-eau-de-toilette/6-7oz/1.jpg'] },
+    ],
   },
   {
     id: 'victorias-secret-bombshell-eau-de-parfum',
-    name: 'Bombshell Eau de Parfum, 3 Fl Oz',
+    name: 'Bombshell Eau de Parfum',
     brand: "Victoria's Secret",
     category: 'Fragancias',
     need: 'Piel seca',
     price: 52.99,
-    priceBefore: 59.96,
     rating: 4.6,
     reviews: 640,
     short: 'El frutal floral #1 de Victoria\'s Secret: peonia, maracuya y orquidea vainilla.',
@@ -3732,7 +3737,7 @@ const PRODUCTS = [
     usage: 'Aplicar en puntos de pulso (cuello, muñecas, detras de las orejas). Su estela moderada permite reaplicar durante el dia.',
     ingredients: 'Notas de salida: fruta de la pasion purpura. Corazon: peonia Shangri-La. Fondo: orquidea de vainilla y almizcle.',
     warnings: 'Inflamable. Solo uso externo. Evitar contacto con ojos y no aplicar sobre piel lesionada.',
-    nutritionFacts: 'Concentracion: Eau de Parfum. Familia: floral frutal. Perfil: maracuya purpura → peonia Shangri-La → orquidea vainilla. Frasco facetado icónico de 3 fl oz (100 mL).',
+    nutritionFacts: 'Concentracion: Eau de Parfum. Familia: floral frutal. Perfil: maracuya purpura → peonia Shangri-La → orquidea vainilla. Frasco facetado icónico. Tamaños: 1.7 y 3.4 fl oz.',
     faq: [
       { q: 'Es igual al body mist Bombshell?', a: 'No: el eau de parfum es mucho mas concentrado y duradero; el mist es una version ligera para refrescar despues del baño.' },
       { q: 'Para que ocasiones funciona mejor?', a: 'Su perfil frutal floral limpio brilla de dia: oficina, citas casuales y primavera-verano.' },
@@ -3741,6 +3746,11 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.05 345)',
     swatchColor: 'oklch(0.68 0.15 345)',
     label: 'Bombshell\nEDP',
+    // Tamaños reales de Victoria's Secret (1.7 y 3.4 fl oz), cada uno con foto real de esa presentacion.
+    variants: [
+      { id: '1-7oz', label: '1.7 Fl Oz (50 ml)', type: 'size', price: 38.00, stock: 24, imageUrl: '/products/fragancias/victorias-secret-bombshell-eau-de-parfum/1-7oz/1.jpg', images: ['/products/fragancias/victorias-secret-bombshell-eau-de-parfum/1-7oz/1.jpg'] },
+      { id: '3-4oz', label: '3.4 Fl Oz (100 ml)', type: 'size', price: 52.99, priceBefore: 59.96, stock: 21, isDefault: true, imageUrl: '/products/fragancias/victorias-secret-bombshell-eau-de-parfum/3-4oz/1.jpg', images: [1, 2].map((n) => `/products/fragancias/victorias-secret-bombshell-eau-de-parfum/3-4oz/${n}.jpg`) },
+    ],
   },
   {
     id: 'sol-de-janeiro-cheirosa-62-mist',
@@ -3761,7 +3771,7 @@ const PRODUCTS = [
     usage: 'Rociar generosamente sobre cuerpo o cabello a 15-20 cm de distancia. Reaplicar cuando se desee; esta diseñado para layering con las cremas de la marca.',
     ingredients: 'Notas de salida: pistacho. Corazon: caramelo salado. Fondo: vainilla y sandalo. Base: alcohol, agua, fragancia.',
     warnings: 'Inflamable: no aplicar cerca de llamas ni fumar durante su uso. Evitar contacto con los ojos.',
-    nutritionFacts: 'Tipo: hair & body fragrance mist (concentracion ligera). Familia: gourmand calido. Perfil: pistacho → caramelo salado → vainilla. Tamaños: 3 fl oz y 8.1 fl oz.',
+    nutritionFacts: 'Tipo: hair & body fragrance mist (concentracion ligera). Familia: gourmand calido. Perfil: pistacho → caramelo salado → vainilla. Tamaños: 3 fl oz y 8.1 fl oz. Tambien disponible en Cheirosa 40, 59, 68 y 71.',
     faq: [
       { q: 'Cuanto dura comparado con un perfume?', a: 'Como mist ligero dura 2-4 horas; la gracia es reaplicarlo y combinarlo con el Bum Bum Cream del mismo aroma para fijarlo mas tiempo.' },
       { q: 'Se puede usar en el cabello sin resecarlo?', a: 'Si, esta formulado para cuerpo y cabello; rociar a distancia para una nube ligera y evitar saturar puntas secas.' },
@@ -3770,10 +3780,56 @@ const PRODUCTS = [
     color: 'oklch(0.94 0.05 80)',
     swatchColor: 'oklch(0.72 0.14 75)',
     label: 'Cheirosa\n62',
-    // Tamaños reales de Amazon (B09X3HB2BR y variante ASIN por tamaño), cada uno con foto real de esa botella.
+    // Fragancias reales de la linea (dimension primaria, Ulta pimprod2043067/2043077/2053923/2049679/2043065) +
+    // tamaños reales de Amazon (B09X3HB2BR y variante ASIN por tamaño, dimension secundaria compartida por todas).
     variants: [
-      { id: '3oz', label: '3 Fl Oz (90 ml)', type: 'size', price: 26.00, stock: 45, imageUrl: '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/3oz/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/fragancias/sol-de-janeiro-cheirosa-62-mist/3oz/${n}.jpg`) },
-      { id: '8-1oz', label: '8.1 Fl Oz (240 ml)', type: 'size', price: 39.00, stock: 30, isDefault: true, imageUrl: '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/8-1oz/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/fragancias/sol-de-janeiro-cheirosa-62-mist/8-1oz/${n}.jpg`) },
+      {
+        id: '62', label: 'Cheirosa 62 (Pistacho)', type: 'scent', price: 0, stock: 45, isDefault: true,
+        imageUrl: '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/3oz/1.jpg',
+        images: [1, 2, 3, 4].map((n) => `/products/fragancias/sol-de-janeiro-cheirosa-62-mist/3oz/${n}.jpg`),
+        imagesBySize: {
+          '3oz': [1, 2, 3, 4].map((n) => `/products/fragancias/sol-de-janeiro-cheirosa-62-mist/3oz/${n}.jpg`),
+          '8-1oz': [1, 2, 3, 4].map((n) => `/products/fragancias/sol-de-janeiro-cheirosa-62-mist/8-1oz/${n}.jpg`),
+        },
+      },
+      {
+        id: '40', label: 'Cheirosa 40 (Bom Dia Bright)', type: 'scent', price: 0, stock: 32,
+        imageUrl: '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/40/1.jpg',
+        images: [1, 2, 3, 4].map((n) => `/products/fragancias/sol-de-janeiro-cheirosa-62-mist/40/${n}.jpg`),
+        imagesBySize: {
+          '3oz': ['/products/fragancias/sol-de-janeiro-cheirosa-62-mist/40/3oz.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/40/2.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/40/3.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/40/4.jpg'],
+          '8-1oz': ['/products/fragancias/sol-de-janeiro-cheirosa-62-mist/40/8-1oz.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/40/2.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/40/3.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/40/4.jpg'],
+        },
+      },
+      {
+        id: '59', label: 'Cheirosa 59 (Delícia Drench)', type: 'scent', price: 0, stock: 28,
+        imageUrl: '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/59/1.jpg',
+        images: [1, 2, 3, 4].map((n) => `/products/fragancias/sol-de-janeiro-cheirosa-62-mist/59/${n}.jpg`),
+        imagesBySize: {
+          '3oz': ['/products/fragancias/sol-de-janeiro-cheirosa-62-mist/59/3oz.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/59/2.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/59/3.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/59/4.jpg'],
+          '8-1oz': ['/products/fragancias/sol-de-janeiro-cheirosa-62-mist/59/8-1oz.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/59/2.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/59/3.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/59/4.jpg'],
+        },
+      },
+      {
+        id: '68', label: 'Cheirosa 68 (Beija Flor)', type: 'scent', price: 0, stock: 30,
+        imageUrl: '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/68/1.jpg',
+        images: [1, 2, 3, 4].map((n) => `/products/fragancias/sol-de-janeiro-cheirosa-62-mist/68/${n}.jpg`),
+        imagesBySize: {
+          '3oz': ['/products/fragancias/sol-de-janeiro-cheirosa-62-mist/68/3oz.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/68/2.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/68/3.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/68/4.jpg'],
+          '8-1oz': ['/products/fragancias/sol-de-janeiro-cheirosa-62-mist/68/8-1oz.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/68/2.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/68/3.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/68/4.jpg'],
+        },
+      },
+      {
+        id: '71', label: 'Cheirosa 71 (Vainilla Macadamia)', type: 'scent', price: 0, stock: 26,
+        imageUrl: '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/71/1.jpg',
+        images: [1, 2, 3, 4].map((n) => `/products/fragancias/sol-de-janeiro-cheirosa-62-mist/71/${n}.jpg`),
+        imagesBySize: {
+          '3oz': ['/products/fragancias/sol-de-janeiro-cheirosa-62-mist/71/3oz.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/71/2.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/71/3.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/71/4.jpg'],
+          '8-1oz': ['/products/fragancias/sol-de-janeiro-cheirosa-62-mist/71/8-1oz.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/71/2.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/71/3.jpg', '/products/fragancias/sol-de-janeiro-cheirosa-62-mist/71/4.jpg'],
+        },
+      },
+      { id: '3oz', label: '3 Fl Oz (90 ml)', type: 'size', price: 26.00, stock: 45 },
+      { id: '8-1oz', label: '8.1 Fl Oz (240 ml)', type: 'size', price: 39.00, stock: 30, isDefault: true },
     ],
   },
   {
@@ -5263,13 +5319,13 @@ const PRODUCTS = [
   },
   {
     id: 'glossier-you-eau-de-parfum',
-    name: 'Glossier You Eau de Parfum, 1.69 Fl Oz',
+    name: 'Glossier You Eau de Parfum',
     brand: 'Glossier',
     category: 'Fragancias',
     need: 'Piel seca',
-    price: 80.00,
-    rating: 4.6,
-    reviews: 510,
+    price: 82.00,
+    rating: 4.5,
+    reviews: 300,
     short: 'El "skin scent" viral: iris, ambrette y ambrox que huelen a tu piel mejorada.',
     benefits: [
       'Diseñado para fundirse con tu quimica: huele diferente en cada persona',
@@ -5280,7 +5336,7 @@ const PRODUCTS = [
     usage: 'Rociar sobre cuello y muñecas directamente en piel; su gracia es reaccionar con la quimica personal, evitar aplicarlo solo en ropa.',
     ingredients: 'Notas de salida: pimienta rosa, iris. Corazon: ambrette almizclada. Fondo: ambrox, almizcle.',
     warnings: 'Inflamable. Solo uso externo. Evitar contacto con ojos.',
-    nutritionFacts: 'Concentracion: Eau de Parfum. Familia: almizcle ambarado "skin scent". Perfil: pimienta rosa/iris → ambrette → ambrox. Frasco: 1.69 fl oz (50 mL) con tapon esferico rosa.',
+    nutritionFacts: 'Concentracion: Eau de Parfum. Familia: almizcle ambarado "skin scent". Perfil: pimienta rosa/iris → ambrette → ambrox. Frasco con tapon esferico rosa. Tamaños: 0.27, 1.7 y 3.4 fl oz.',
     faq: [
       { q: 'Por que dicen que huele distinto en cada persona?', a: 'Su base de ambrette y ambrox amplifica el olor natural de la piel en lugar de cubrirlo, por eso el resultado varia con la quimica de cada quien.' },
       { q: 'Proyecta poco?', a: 'Es intimo por diseño: quien te abraza lo nota, una habitacion entera no. Para mas presencia existe la version You Doux mas dulce.' },
@@ -5289,6 +5345,12 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.02 10)',
     swatchColor: 'oklch(0.82 0.05 10)',
     label: 'Glossier\nYou',
+    // Tamaños reales de Amazon (familia B0CQPMGQHZ/B0DNCMDLSY/B0GFGL26JD), cada uno con foto real de esa presentacion.
+    variants: [
+      { id: '0-27oz', label: '0.27 Fl Oz Rollerball (8 ml)', type: 'size', price: 32.00, stock: 30, imageUrl: '/products/fragancias/glossier-you-eau-de-parfum/0-27oz/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/fragancias/glossier-you-eau-de-parfum/0-27oz/${n}.jpg`) },
+      { id: '1-7oz', label: '1.7 Fl Oz (50 ml)', type: 'size', price: 82.00, stock: 27, isDefault: true, imageUrl: '/products/fragancias/glossier-you-eau-de-parfum/1-7oz/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/fragancias/glossier-you-eau-de-parfum/1-7oz/${n}.jpg`) },
+      { id: '3-4oz', label: '3.4 Fl Oz XL (100 ml)', type: 'size', price: 116.00, stock: 14, imageUrl: '/products/fragancias/glossier-you-eau-de-parfum/3-4oz/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/fragancias/glossier-you-eau-de-parfum/3-4oz/${n}.jpg`) },
+    ],
   },
   {
     id: 'valentino-donna-born-in-roma-eau-de-parfum',
@@ -7670,12 +7732,11 @@ const PRODUCTS = [
   },
   {
     id: 'carolina-herrera-good-girl-eau-de-parfum',
-    name: 'Good Girl Eau de Parfum, 2.7 Fl Oz',
+    name: 'Good Girl Eau de Parfum',
     brand: 'Carolina Herrera',
     category: 'Fragancias',
     need: 'Piel seca',
     price: 99.45,
-    priceBefore: 109.97,
     rating: 4.7,
     reviews: 1120,
     short: 'El icónico tacon azul: nardo luminoso sobre cacao y haba tonka oscuros.',
@@ -7688,7 +7749,7 @@ const PRODUCTS = [
     usage: 'Rociar en puntos de pulso con moderacion: 1-2 atomizaciones bastan por su gran proyeccion. Ideal para noche.',
     ingredients: 'Notas de salida: almendra, cafe. Corazon: nardo, jazmin sambac. Fondo: cacao, haba tonka, sandalo.',
     warnings: 'Mantener lejos del fuego. Solo uso externo. Su estela intensa puede resultar fuerte en espacios cerrados.',
-    nutritionFacts: 'Concentracion: Eau de Parfum. Familia: oriental floral. Perfil: almendra/cafe → nardo/jazmin → cacao/tonka. Frasco stiletto 2.7 fl oz (80 mL).',
+    nutritionFacts: 'Concentracion: Eau de Parfum. Familia: oriental floral. Perfil: almendra/cafe → nardo/jazmin → cacao/tonka. Frasco stiletto icónico. Tamaños: 1, 1.7, 2.7 y 5 fl oz.',
     faq: [
       { q: 'Es demasiado fuerte para el dia?', a: 'En dosis de 1 atomizacion funciona de dia en clima frio; su terreno natural son las noches y eventos, donde la estela dulce-oscura brilla.' },
       { q: 'Como se sostiene el frasco tacon?', a: 'Viene con base incluida en la caja; el stiletto se apoya inclinado y es uno de los frascos mas coleccionados del mostrador.' },
@@ -7697,10 +7758,17 @@ const PRODUCTS = [
     color: 'oklch(0.89 0.04 260)',
     swatchColor: 'oklch(0.45 0.08 260)',
     label: 'Good Girl\nEDP',
+    // Tamaños reales de Ulta (xlsImpprod16461053, SKUs por talla), cada uno con foto real de esa presentacion.
+    variants: [
+      { id: '1oz', label: '1 Fl Oz (30 ml)', type: 'size', price: 96.00, stock: 20, imageUrl: '/products/fragancias/carolina-herrera-good-girl-eau-de-parfum/1oz/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/fragancias/carolina-herrera-good-girl-eau-de-parfum/1oz/${n}.jpg`) },
+      { id: '1-7oz', label: '1.7 Fl Oz (50 ml)', type: 'size', price: 137.00, stock: 26, imageUrl: '/products/fragancias/carolina-herrera-good-girl-eau-de-parfum/1-7oz/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/fragancias/carolina-herrera-good-girl-eau-de-parfum/1-7oz/${n}.jpg`) },
+      { id: '2-7oz', label: '2.7 Fl Oz (80 ml)', type: 'size', price: 99.45, priceBefore: 109.97, stock: 22, isDefault: true, imageUrl: '/products/fragancias/carolina-herrera-good-girl-eau-de-parfum/2-7oz/1.jpg', images: [1, 2].map((n) => `/products/fragancias/carolina-herrera-good-girl-eau-de-parfum/2-7oz/${n}.jpg`) },
+      { id: '5oz', label: '5 Fl Oz (150 ml)', type: 'size', price: 194.00, stock: 8, imageUrl: '/products/fragancias/carolina-herrera-good-girl-eau-de-parfum/5oz/1.jpg', images: [1, 2, 3, 4].map((n) => `/products/fragancias/carolina-herrera-good-girl-eau-de-parfum/5oz/${n}.jpg`) },
+    ],
   },
   {
     id: 'dolce-gabbana-light-blue-eau-de-toilette',
-    name: 'Light Blue Eau de Toilette, 3.3 Fl Oz',
+    name: 'Light Blue Eau de Toilette',
     brand: 'Dolce & Gabbana',
     category: 'Fragancias',
     need: 'Piel seca',
@@ -7717,7 +7785,7 @@ const PRODUCTS = [
     usage: 'Aplicar en cuello y muñecas. Ideal para clima calido; reaplicar a media tarde por su proyeccion ligera.',
     ingredients: 'Notas de salida: manzana granny smith, limon siciliano, campanilla. Corazon: jazmin, rosa blanca, bambu. Fondo: cedro, ambar, almizcle.',
     warnings: 'Solo uso externo. Inflamable: mantener lejos del fuego. Evitar contacto con los ojos.',
-    nutritionFacts: 'Concentracion: Eau de Toilette. Familia: citrica floral fresca. Perfil: manzana/limon → jazmin/rosa → cedro/ambar. Frasco: 3.3 fl oz (100 mL) grabado con la costa Amalfitana.',
+    nutritionFacts: 'Concentracion: Eau de Toilette. Familia: citrica floral fresca. Perfil: manzana/limon → jazmin/rosa → cedro/ambar. Tamaños: 1.6, 3.3 y 6.7 fl oz.',
     faq: [
       { q: 'Por que se asocia tanto al verano?', a: 'Su acorde de manzana y limon siciliano recrea directamente la frescura del Mediterraneo, por eso se percibe como fragancia veraniega por excelencia.' },
       { q: 'Dura todo el dia?', a: 'Como EDT fresco su duracion es moderada (4-6 horas); reaplicar despues de varias horas mantiene el efecto citrico vivo.' },
@@ -7726,6 +7794,12 @@ const PRODUCTS = [
     color: 'oklch(0.95 0.02 220)',
     swatchColor: 'oklch(0.76 0.06 220)',
     label: 'Light Blue\nEDT',
+    // Tamaños reales de Ulta (pimprod2051153, SKUs por talla), cada uno con foto real de esa presentacion.
+    variants: [
+      { id: '1-6oz', label: '1.6 Fl Oz (50 ml)', type: 'size', price: 116.00, stock: 20, imageUrl: '/products/fragancias/dolce-gabbana-light-blue-eau-de-toilette/1-6oz/1.jpg', images: [1, 2].map((n) => `/products/fragancias/dolce-gabbana-light-blue-eau-de-toilette/1-6oz/${n}.jpg`) },
+      { id: '3-3oz', label: '3.3 Fl Oz (100 ml)', type: 'size', price: 148.00, stock: 26, isDefault: true, imageUrl: '/products/fragancias/dolce-gabbana-light-blue-eau-de-toilette/3-3oz/1.jpg', images: [1, 2].map((n) => `/products/fragancias/dolce-gabbana-light-blue-eau-de-toilette/3-3oz/${n}.jpg`) },
+      { id: '6-7oz', label: '6.7 Fl Oz (200 ml)', type: 'size', price: 198.00, stock: 12, imageUrl: '/products/fragancias/dolce-gabbana-light-blue-eau-de-toilette/6-7oz/1.jpg', images: [1, 2].map((n) => `/products/fragancias/dolce-gabbana-light-blue-eau-de-toilette/6-7oz/${n}.jpg`) },
+    ],
   },
   {
     id: 'giorgio-armani-acqua-di-gio-profondo',
