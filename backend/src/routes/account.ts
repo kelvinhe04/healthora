@@ -1,9 +1,15 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { clerkAuth } from '../middleware/clerkAuth';
 import type { AppEnv } from '../types/hono';
 import { User } from '../db/models/User';
+import { parseJson, savedAddressSchema } from '../lib/validation';
 
-type Address = { label?: string; name: string; phone: string; address: string; city: string; postal: string; isDefault: boolean };
+const addressesPayloadSchema = z.object({
+  addresses: z.array(savedAddressSchema).max(20).default([]),
+});
+
+type Address = z.infer<typeof savedAddressSchema>;
 
 function normalizeAddresses(addresses: Address[]) {
   const sanitized = addresses
@@ -35,8 +41,10 @@ export const accountRouter = new Hono<AppEnv>()
     return c.json(currentUser?.addresses || []);
   })
   .put('/addresses', async (c) => {
-    const body = await c.req.json<{ addresses?: Address[] }>();
-    const addresses = normalizeAddresses(Array.isArray(body.addresses) ? body.addresses : []);
+    const parsed = await parseJson(c, addressesPayloadSchema);
+    if (!parsed.success) return parsed.response;
+
+    const addresses = normalizeAddresses(parsed.data.addresses);
 
     const updatedUser = await User.findOneAndUpdate(
       { clerkId: c.get('user').clerkId },

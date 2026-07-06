@@ -1,10 +1,12 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { clerkAuth } from '../middleware/clerkAuth';
 import type { AppEnv } from '../types/hono';
 import { Product } from '../db/models/Product';
 import { Order } from '../db/models/Order';
 import { stripe } from '../lib/stripe';
 import { getPromotion } from '../lib/promotions';
+import { addressSchema, cartItemSchema, optionalTextField, parseJson, productIdSchema } from '../lib/validation';
 
 type CheckoutBody = {
   items: { productId: string; qty: number }[];
@@ -13,6 +15,13 @@ type CheckoutBody = {
   freeSampleId?: string;
 };
 
+const checkoutSchema = z.object({
+  items: z.array(cartItemSchema).min(1).max(100),
+  address: addressSchema,
+  promoCode: optionalTextField(40).transform((code) => code?.toUpperCase()),
+  freeSampleId: productIdSchema.optional(),
+});
+
 function roundMoney(value: number): number {
   return Math.round(value * 100) / 100;
 }
@@ -20,7 +29,10 @@ function roundMoney(value: number): number {
 export const checkoutRouter = new Hono<AppEnv>()
   .use('*', clerkAuth)
   .post('/session', async (c) => {
-    const body = await c.req.json<CheckoutBody>();
+    const parsed = await parseJson(c, checkoutSchema);
+    if (!parsed.success) return parsed.response;
+
+    const body = parsed.data as CheckoutBody;
     const { items, address, promoCode, freeSampleId } = body;
     const user = c.get('user');
 

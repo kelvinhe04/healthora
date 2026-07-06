@@ -3,7 +3,7 @@ import { requireAdmin } from "../../middleware/requireAdmin";
 import { Order } from "../../db/models/Order";
 import { Product } from "../../db/models/Product";
 
-function buildRollingDays(totalDays) {
+function buildRollingDays(totalDays: number) {
   const today = new Date();
   const endExclusive = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + 1));
   const start = new Date(endExclusive);

@@ -1,8 +1,14 @@
-import { Hono } from "hono";
-import { clerkAuth } from "../middleware/clerkAuth";
-import type { AppEnv, CartItem, CartRequestBody, CartResponseItem } from "../types/hono";
-import { User } from "../db/models/User";
-import { Product } from "../db/models/Product";
+import { Hono } from 'hono';
+import { z } from 'zod';
+import { clerkAuth } from '../middleware/clerkAuth';
+import type { AppEnv, CartItem, CartResponseItem } from '../types/hono';
+import { User } from '../db/models/User';
+import { Product } from '../db/models/Product';
+import { cartItemSchema, parseJson } from '../lib/validation';
+
+const cartSchema = z.object({
+  items: z.array(cartItemSchema).max(100).default([]),
+});
 
 async function buildCartResponse(clerkId: string): Promise<CartResponseItem[]> {
   const user = await User.findOne({ clerkId }).lean();
@@ -30,16 +36,11 @@ export const cartRouter = new Hono<AppEnv>()
   .get("/", async (c) => {
     return c.json(await buildCartResponse(c.get("user").clerkId));
   })
-  .put("/", async (c) => {
-    const body = await c.req.json<CartRequestBody>();
-    const items = Array.isArray(body.items) ? body.items : [];
+  .put('/', async (c) => {
+    const parsed = await parseJson(c, cartSchema);
+    if (!parsed.success) return parsed.response;
 
-    const sanitizedItems: CartItem[] = items
-      .map((item) => ({
-        productId: item.productId,
-        qty: Math.max(0, Math.floor(item.qty)),
-      }))
-      .filter((item) => item.qty > 0);
+    const sanitizedItems = parsed.data.items;
 
     const uniqueProductIds = [
       ...new Set(sanitizedItems.map((item) => item.productId)),

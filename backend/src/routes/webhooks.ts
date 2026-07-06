@@ -1,10 +1,12 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { stripe } from '../lib/stripe';
 import { Order } from '../db/models/Order';
 import { Product } from '../db/models/Product';
 import { normalizeOrder } from '../lib/orderStatus';
 import { sendOrderConfirmationEmail } from '../lib/email';
 import { recalculateBestsellers } from '../lib/bestsellers';
+import { addressSchema, cartItemSchema, emailField, moneyFromInput, optionalTextField, textField } from '../lib/validation';
 
 type CheckoutAddress = {
   name: string;
@@ -19,6 +21,30 @@ type CheckoutCartItem = {
   qty: number;
   isSample?: boolean;
 };
+
+const webhookCartItemSchema = cartItemSchema.extend({
+  isSample: z.coerce.boolean().optional(),
+});
+
+const webhookMetadataSchema = z.object({
+  customerId: textField(180),
+  customerName: optionalTextField(160),
+  customerEmail: emailField().optional(),
+  cartItems: textField(20000),
+  address: textField(5000),
+  discountCode: optionalTextField(80),
+  discountAmount: moneyFromInput().default(0),
+  tax: moneyFromInput().default(0),
+  shipping: moneyFromInput().default(0),
+});
+
+function parseJsonMetadata<T>(value: string, schema: z.ZodType<T>) {
+  try {
+    return schema.safeParse(JSON.parse(value));
+  } catch {
+    return schema.safeParse(null);
+  }
+}
 
 export const webhooksRouter = new Hono().post('/stripe', async (c) => {
   console.log('[WEBHOOK] Received request');
@@ -43,11 +69,26 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
     const existingOrder = await Order.findOne({ stripeSessionId: session.id }).lean();
     if (!existingOrder) {
       try {
-        const metadata = session.metadata || {};
-        const cartItems = JSON.parse(metadata.cartItems || '[]') as CheckoutCartItem[];
-        const address = JSON.parse(metadata.address || '{}') as CheckoutAddress;
+        const parsedMetadata = webhookMetadataSchema.safeParse(session.metadata || {});
+        if (!parsedMetadata.success) {
+          return c.json({ error: 'Invalid checkout metadata', details: parsedMetadata.error.issues }, 400);
+        }
 
-        const customerEmail = metadata.customerEmail || session.customer_email;
+        const metadata = parsedMetadata.data;
+        const parsedCartItems = parseJsonMetadata(metadata.cartItems, z.array(webhookCartItemSchema).min(1).max(100));
+        if (!parsedCartItems.success) {
+          return c.json({ error: 'Invalid checkout cart metadata', details: parsedCartItems.error.issues }, 400);
+        }
+
+        const parsedAddress = parseJsonMetadata(metadata.address, addressSchema);
+        if (!parsedAddress.success) {
+          return c.json({ error: 'Invalid checkout address metadata', details: parsedAddress.error.issues }, 400);
+        }
+
+        const cartItems = parsedCartItems.data as CheckoutCartItem[];
+        const address = parsedAddress.data as CheckoutAddress;
+        const sessionEmail = typeof session.customer_email === 'string' ? session.customer_email : undefined;
+        const customerEmail = metadata.customerEmail || sessionEmail;
         console.log('[WEBHOOK] Customer email:', customerEmail);
 
         const productIds = cartItems.map((item) => item.productId);
@@ -68,9 +109,9 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
           const subtotal = lineItems.reduce((sum, item) => sum + item.price * item.qty, 0);
           console.log('[WEBHOOK] subtotal:', subtotal);
           const discountCode = metadata.discountCode || undefined;
-          const discountAmount = Number(metadata.discountAmount || 0);
-          const tax = Number(metadata.tax || 0);
-          const shipping = Number(metadata.shipping || 0);
+          const discountAmount = metadata.discountAmount;
+          const tax = metadata.tax;
+          const shipping = metadata.shipping;
           const total = Math.round((subtotal - discountAmount + tax + shipping) * 100) / 100;
 
           const order = await Order.create({
@@ -88,30 +129,32 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
             fulfillmentStatus: 'unfulfilled',
             status: 'paid',
             stripeSessionId: session.id,
-            stripePaymentIntentId: session.payment_intent,
+            stripePaymentIntentId: typeof session.payment_intent === 'string' ? session.payment_intent : undefined,
             address,
           });
 
           console.log('[WEBHOOK] Order created:', order._id, 'Email:', customerEmail);
 
-          try {
-            await sendOrderConfirmationEmail({
-              customerName: metadata.customerName,
-              customerEmail: customerEmail,
-              orderId: order._id.toString(),
-              items: lineItems,
-              subtotal,
-              discountCode,
-              discountAmount,
-              tax,
-              shipping,
-              total,
-              address,
-              createdAt: order.createdAt,
-            });
-            console.log('[WEBHOOK] Email sent successfully');
-          } catch (emailError) {
-            console.error('[WEBHOOK] Email error:', emailError);
+          if (customerEmail) {
+            try {
+              await sendOrderConfirmationEmail({
+                customerName: metadata.customerName || 'cliente',
+                customerEmail: customerEmail,
+                orderId: order._id.toString(),
+                items: lineItems,
+                subtotal,
+                discountCode,
+                discountAmount,
+                tax,
+                shipping,
+                total,
+                address,
+                createdAt: order.createdAt,
+              });
+              console.log('[WEBHOOK] Email sent successfully');
+            } catch (emailError) {
+              console.error('[WEBHOOK] Email error:', emailError);
+            }
           }
 
           for (const item of lineItems) {

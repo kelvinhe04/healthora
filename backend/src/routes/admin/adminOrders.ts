@@ -1,14 +1,38 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { requireAdmin } from '../../middleware/requireAdmin';
 import type { AppEnv } from '../../types/hono';
 import { Order } from '../../db/models/Order';
 import { sendOrderStatusUpdateEmail } from '../../lib/email';
 import { combineOrderStatus, normalizeOrder } from '../../lib/orderStatus';
+import { objectIdSchema, parseJson, parseParams, parseQuery } from '../../lib/validation';
+
+const paymentStatusSchema = z.enum(['pending_payment', 'paid', 'cancelled', 'refunded']);
+const fulfillmentStatusSchema = z.enum(['unfulfilled', 'processing', 'shipped', 'delivered', 'cancelled']);
+
+const adminOrdersQuerySchema = z.object({
+  paymentStatus: paymentStatusSchema.optional(),
+  fulfillmentStatus: fulfillmentStatusSchema.optional(),
+});
+
+const adminOrderStatusSchema = z.object({
+  paymentStatus: paymentStatusSchema.optional(),
+  fulfillmentStatus: fulfillmentStatusSchema.optional(),
+}).refine((body) => body.paymentStatus || body.fulfillmentStatus, {
+  message: 'Debe enviar al menos un estado',
+});
+
+const orderIdParamsSchema = z.object({
+  id: objectIdSchema,
+});
 
 export const adminOrdersRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
   .get('/', async (c) => {
-    const query = c.req.query();
+    const parsedQuery = parseQuery(c, adminOrdersQuerySchema);
+    if (!parsedQuery.success) return parsedQuery.response;
+
+    const query = parsedQuery.data;
     const filter: Record<string, unknown> = {};
 
     if (query.paymentStatus) {
@@ -44,8 +68,14 @@ export const adminOrdersRouter = new Hono<AppEnv>()
     return c.json(orders.map((order) => normalizeOrder(order)));
   })
   .patch('/:id/statuses', async (c) => {
-    const body = await c.req.json<{ paymentStatus?: string; fulfillmentStatus?: string }>();
-    const currentOrder = await Order.findById(c.req.param('id')).lean();
+    const parsedParams = parseParams(c, orderIdParamsSchema);
+    if (!parsedParams.success) return parsedParams.response;
+
+    const parsedBody = await parseJson(c, adminOrderStatusSchema);
+    if (!parsedBody.success) return parsedBody.response;
+
+    const body = parsedBody.data;
+    const currentOrder = await Order.findById(parsedParams.data.id).lean();
     const normalizedCurrent = currentOrder ? normalizeOrder(currentOrder) : null;
     if (!normalizedCurrent?._id) {
       return c.json({ error: 'Not found' }, 404);
@@ -56,7 +86,7 @@ export const adminOrdersRouter = new Hono<AppEnv>()
     const status = combineOrderStatus(paymentStatus, fulfillmentStatus);
 
     const order = await Order.findByIdAndUpdate(
-      c.req.param('id'),
+      parsedParams.data.id,
       { paymentStatus, fulfillmentStatus, status },
       { returnDocument: 'after' }
     ).lean();
