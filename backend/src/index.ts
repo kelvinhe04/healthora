@@ -14,6 +14,7 @@ import { adminProductsRouter } from './routes/admin/adminProducts';
 import { adminUsersRouter } from './routes/admin/adminUsers';
 import { adminSalesRouter } from './routes/admin/adminSales';
 import { adminEarningsRouter } from './routes/admin/adminEarnings';
+import { adminPerformanceRouter } from './routes/admin/adminPerformance';
 import { accountRouter } from './routes/account';
 import { sendOrderConfirmationEmail } from './lib/email';
 import { recalculateBestsellers, recalculateNew } from './lib/bestsellers';
@@ -21,6 +22,7 @@ import { reviewsRouter } from './routes/reviews';
 import { newsletterRouter } from './routes/newsletter';
 import { emailField, parseJson, textField } from './lib/validation';
 import { z } from 'zod';
+import { performanceMetrics } from './middleware/performanceMetrics';
 
 const testEmailSchema = z.object({
   email: emailField(),
@@ -33,6 +35,7 @@ await recalculateNew();
 
 const app = new Hono();
 
+app.use('*', performanceMetrics);
 app.use('*', cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }));
 
 app.route('/products', productsRouter);
@@ -51,6 +54,7 @@ app.route('/admin/products', adminProductsRouter);
 app.route('/admin/users', adminUsersRouter);
 app.route('/admin/sales', adminSalesRouter);
 app.route('/admin/earnings', adminEarningsRouter);
+app.route('/admin/performance', adminPerformanceRouter);
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 

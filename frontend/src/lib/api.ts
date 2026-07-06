@@ -196,5 +196,11 @@ export const api = {
       request<unknown>("/admin/sales", undefined, token),
     earnings: (token: string) =>
       request<unknown>("/admin/earnings", undefined, token),
+    performance: (token: string, minutes?: number) =>
+      request<unknown>(
+        `/admin/performance${minutes ? `?minutes=${minutes}` : ""}`,
+        undefined,
+        token,
+      ),
   },
 };
