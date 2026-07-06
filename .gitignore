@@ -8,6 +8,8 @@ pnpm-lock.yaml
 **/coverage/
 **/.turbo/
 **/.cache/
+**/.output/
+frontend/src/routeTree.gen.ts
 
 # Environment and secrets
 **/.env

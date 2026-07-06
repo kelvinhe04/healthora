@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParamsCompat as useSearchParams } from "../../hooks/useSearchParamsCompat";
 import { useBreakpoint } from "../../hooks/useBreakpoint";
 import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

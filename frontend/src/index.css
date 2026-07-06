@@ -13,7 +13,7 @@
 }
 
 /* ─── Light theme (default) ─────────────────────────────────────────────────── */
-/* Variables are defined in index.html :root block to avoid FOUC.               */
+/* Variables are defined in routes/__root.tsx :root block to avoid FOUC.        */
 /* We only override them here for dark mode.                                    */
 
 /* ─── Dark theme overrides ──────────────────────────────────────────────────── */

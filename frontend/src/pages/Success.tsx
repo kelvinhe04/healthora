@@ -1,4 +1,3 @@
-import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
@@ -8,13 +7,11 @@ import { api } from '../lib/api';
 import { useEffect, useRef } from 'react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
-interface SuccessProps { onBack: () => void; }
+interface SuccessProps { onBack: () => void; sessionId: string; }
 
-export function Success({ onBack }: SuccessProps) {
+export function Success({ onBack, sessionId }: SuccessProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('session_id') || '';
   const { getToken, isSignedIn } = useAuth();
   const { data: order, isLoading } = useOrderBySession(sessionId);
   const clearCart = useCartStore((s) => s.clear);

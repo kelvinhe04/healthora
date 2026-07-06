@@ -1,0 +1,147 @@
+import { useEffect, useRef, useState } from 'react';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
+import { useAuth, useUser } from '@clerk/clerk-react';
+import { Topbar } from '../components/chrome/Topbar';
+import { Header } from '../components/chrome/Header';
+import { Footer } from '../components/chrome/Footer';
+import { CartDrawer } from '../pages/CartDrawer';
+import { CustomCursor } from '../components/shared/CustomCursor';
+import { useCartStore } from '../store/cartStore';
+import { useUiStore } from '../store/uiStore';
+import { useThemeStore, applyTheme } from '../store/themeStore';
+import { api } from '../lib/api';
+import { useStorefrontNav } from '../hooks/useStorefrontNav';
+
+export const Route = createFileRoute('/_storefront')({
+  component: StorefrontLayout,
+});
+
+function StorefrontLayout() {
+  const { nav } = useStorefrontNav();
+  const cartOpen = useUiStore((s) => s.cartOpen);
+  const setCartOpen = useUiStore((s) => s.setCartOpen);
+  const setCheckoutItems = useUiStore((s) => s.setCheckoutItems);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const { bindOwner, items, replaceItems } = useCartStore();
+  const lastLoadedOwnerRef = useRef<string | null>(null);
+  const skipNextCartSaveRef = useRef(false);
+
+  const theme = useThemeStore((s) => s.theme);
+  useEffect(() => { applyTheme(theme); }, [theme]);
+
+  useEffect(() => {
+    const onScroll = () => setShowBackToTop(window.scrollY > 500);
+    onScroll();
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    bindOwner(user?.id ?? null);
+  }, [bindOwner, user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      lastLoadedOwnerRef.current = null;
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadRemoteCart = async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const remoteItems = await api.cart.get(token);
+        if (cancelled) return;
+        skipNextCartSaveRef.current = true;
+        replaceItems(remoteItems);
+        lastLoadedOwnerRef.current = user.id;
+      } catch (error) {
+        console.error('Failed to load remote cart', error);
+      }
+    };
+
+    void loadRemoteCart();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [getToken, replaceItems, user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || lastLoadedOwnerRef.current !== user.id) return;
+    if (skipNextCartSaveRef.current) {
+      skipNextCartSaveRef.current = false;
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const token = await getToken();
+          if (!token) return;
+          await api.cart.save(
+            items.map((item) => ({ productId: item.product.id, qty: item.qty })),
+            token
+          );
+        } catch (error) {
+          console.error('Failed to save remote cart', error);
+        }
+      })();
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [getToken, items, user?.id]);
+
+  return (
+    <>
+      <CustomCursor />
+      <Topbar />
+      <Header onNav={nav} onOpenCart={() => setCartOpen(true)} />
+      <CartDrawer
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        onCheckout={() => { setCheckoutItems(null); setCartOpen(false); nav('checkout'); }}
+        onOpenSamplePicker={() => { setCartOpen(false); nav('sample-picker'); }}
+      />
+      <div style={{ minHeight: 'calc(100vh - 200px)' }}>
+        <Outlet />
+      </div>
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        aria-label="Volver arriba"
+        style={{
+          position: 'fixed', right: 28, bottom: 28, width: 52, height: 52,
+          borderRadius: 999, border: '1px solid rgba(255,255,255,0.12)',
+          background: 'var(--green)', color: 'var(--lime)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', boxShadow: '0 18px 40px -18px rgba(0,0,0,0.35)',
+          zIndex: 80,
+          opacity: showBackToTop ? 1 : 0,
+          transform: showBackToTop ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.92)',
+          pointerEvents: showBackToTop ? 'auto' : 'none',
+          transition: 'opacity 280ms ease, transform 280ms cubic-bezier(0.34,1.56,0.64,1)',
+        }}
+        onMouseEnter={(e) => { if (showBackToTop) e.currentTarget.style.transform = 'translateY(-2px) scale(1.04)'; }}
+        onMouseLeave={(e) => { if (showBackToTop) e.currentTarget.style.transform = 'translateY(0) scale(1)'; }}
+      >
+        <span style={{ transform: 'rotate(-90deg)', display: 'inline-flex' }}>
+          <BackToTopIcon />
+        </span>
+      </button>
+      <Footer onNav={(view, filter) => nav(view, filter)} />
+    </>
+  );
+}
+
+function BackToTopIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+      <path d="m13 6 6 6-6 6" />
+    </svg>
+  );
+}
