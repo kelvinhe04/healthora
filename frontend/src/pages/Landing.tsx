@@ -7,7 +7,7 @@ import { useGSAP } from '@gsap/react';
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 
 gsap.registerPlugin(ScrollTrigger);
-import type { Product, Category } from '../types';
+import type { Product, Category, ProductVariant } from '../types';
 import { ProductCard, ProductCardSkeleton } from '../components/shared/ProductCard';
 import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
@@ -153,7 +153,7 @@ const NEEDS = [
 interface LandingProps {
   onNav: (view: View, filter?: Record<string, string>) => void;
   onOpenProduct: (p: Product) => void;
-  onAdd: (p: Product, qty?: number) => void;
+  onAdd: (p: Product, qty?: number, variant?: ProductVariant) => void;
 }
 
 const headKicker: CSSProperties = { fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 10 };
