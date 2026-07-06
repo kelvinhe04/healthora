@@ -13,7 +13,8 @@
     "hono": "^4.12.15",
     "mongoose": "^9.5.0",
     "nodemailer": "^8.0.7",
-    "stripe": "^22.0.2"
+    "stripe": "^22.0.2",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "bun-types": "^1.0.0"

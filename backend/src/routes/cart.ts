@@ -1,8 +1,14 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { clerkAuth } from '../middleware/clerkAuth';
 import type { AppEnv } from '../types/hono';
 import { User } from '../db/models/User';
 import { Product } from '../db/models/Product';
+import { cartItemSchema, parseJson } from '../lib/validation';
+
+const cartSchema = z.object({
+  items: z.array(cartItemSchema).max(100).default([]),
+});
 
 async function buildCartResponse(clerkId: string) {
   const user = await User.findOne({ clerkId }).lean();
@@ -26,12 +32,10 @@ export const cartRouter = new Hono<AppEnv>()
     return c.json(await buildCartResponse(c.get('user').clerkId));
   })
   .put('/', async (c) => {
-    const body = await c.req.json<{ items?: { productId: string; qty: number }[] }>();
-    const items = Array.isArray(body.items) ? body.items : [];
+    const parsed = await parseJson(c, cartSchema);
+    if (!parsed.success) return parsed.response;
 
-    const sanitizedItems = items
-      .map((item) => ({ productId: item.productId, qty: Math.max(0, Math.floor(item.qty)) }))
-      .filter((item) => item.qty > 0);
+    const sanitizedItems = parsed.data.items;
 
     const uniqueProductIds = [...new Set(sanitizedItems.map((item) => item.productId))];
     const existingProducts = await Product.find({ id: { $in: uniqueProductIds }, active: true }).select('id').lean();

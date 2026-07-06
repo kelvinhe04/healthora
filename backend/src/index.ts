@@ -19,6 +19,13 @@ import { sendOrderConfirmationEmail } from './lib/email';
 import { recalculateBestsellers, recalculateNew } from './lib/bestsellers';
 import { reviewsRouter } from './routes/reviews';
 import { newsletterRouter } from './routes/newsletter';
+import { emailField, parseJson, textField } from './lib/validation';
+import { z } from 'zod';
+
+const testEmailSchema = z.object({
+  email: emailField(),
+  name: textField(120).optional(),
+});
 
 await connectDB();
 await recalculateBestsellers();
@@ -48,7 +55,10 @@ app.route('/admin/earnings', adminEarningsRouter);
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
 app.post('/test-email', async (c) => {
-  const { email, name } = await c.req.json();
+  const parsed = await parseJson(c, testEmailSchema);
+  if (!parsed.success) return parsed.response;
+
+  const { email, name } = parsed.data;
   await sendOrderConfirmationEmail({
     customerName: name || 'Test User',
     customerEmail: email,
