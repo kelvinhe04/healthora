@@ -21,13 +21,14 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU-099 | Completar variantes de producto en categorías restantes del catálogo | `feat/variantes-contenido-categorias` / PR #100 | Kelvin | Variantes (con imágenes) puestas en todos los productos del catálogo que las necesitaban. Maquillaje llega a 20/20; el resto de productos por debajo de ese número son de presentación única y no requieren selector de variante. |
 | HU-063 | Validación y saneamiento de inputs con Zod | `HU-063-validacion-y-saneamiento-inputs-zod` / PR #101 | Roy | Zod implementado en rutas de backend: productos, carrito, checkout, órdenes, reseñas, webhooks, admin. |
 | HU-085 | Búsqueda simple de productos | `feat/hu-085-busqueda` / PR #102 | EiJassiel | Búsqueda por nombre, marca, categoría, descripción corta y necesidad con escapeRegex. Incluye validación Zod. |
+| HU-091 | Migración del frontend a TanStack Start (SSR) | `feat/hu-091-tanstack-start` / PR #103 | Kelvin | Migrado a TanStack Router/Start en modo SPA (sin servidor). Rutas de archivo reales con URLs limpias reemplazan el switch de vistas por `?view=...`. Build y Playwright verificados. |
 
 ## En curso
 
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
 | HU-033 | Precio por variante aplicado en checkout | por crear | Kelvin | Parcial ya en `main`: cálculo de subtotal en frontend correcto; falta validar precio de variante en backend al confirmar la orden. |
-| HU-091 | Migración del frontend a TanStack Start (SSR) | `feat/hu-091-tanstack-start` / PR #103 | Kelvin | Migrado a TanStack Router/Start en modo SPA (sin servidor) para no romper el deploy ni tener que migrar Clerk a su paquete SSR. Rutas de archivo reales con URLs limpias reemplazan el switch de vistas por `?view=...`. Build y Playwright verificados en local; falta confirmar preview deploy de Vercel. |
+
 
 ## Pendientes — continuación directa de variantes (Kelvin, ramas nuevas tras el merge)
 
