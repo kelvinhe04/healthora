@@ -59,7 +59,7 @@ Completar variantes reales en el seed por categoría (independiente de HU-005/03
 | Categoría | Cobertura actual (productos con variantes / 20) |
 |---|---|
 | Fragancias | 20/20 |
-| Maquillaje | 17/20 |
+| Maquillaje | 20/20 — completa |
 | Vitaminas | 13/20 |
 | Suplementos | 12/20 |
 | Cuidado personal | 12/20 |
