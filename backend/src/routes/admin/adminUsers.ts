@@ -6,6 +6,7 @@ import { User } from '../../db/models/User';
 import { Order } from '../../db/models/Order';
 import { clerk } from '../../lib/clerk';
 import { objectIdSchema, parseJson, parseParams } from '../../lib/validation';
+import { recordSecurityEvent } from '../../lib/securityAudit';
 
 const userIdParamsSchema = z.object({
   id: objectIdSchema,
@@ -63,6 +64,7 @@ export const adminUsersRouter = new Hono<AppEnv>()
     const user = await User.findById(parsedParams.data.id);
     if (!user) return c.json({ error: 'Not found' }, 404);
 
+    const previousRole = user.role;
     user.role = parsedBody.data.role;
     await user.save();
 
@@ -74,6 +76,21 @@ export const adminUsersRouter = new Hono<AppEnv>()
     } catch (error) {
       console.error('[ADMIN] Failed to sync Clerk role:', error);
     }
+
+    recordSecurityEvent(c, {
+      actor: c.get('user'),
+      action: 'user.role_changed',
+      resource: `PATCH /admin/users/${parsedParams.data.id}/role`,
+      target: {
+        clerkId: user.clerkId,
+        userId: user._id,
+        email: user.email,
+      },
+      metadata: {
+        previousRole,
+        nextRole: parsedBody.data.role,
+      },
+    });
 
     return c.json({ ok: true });
   })
