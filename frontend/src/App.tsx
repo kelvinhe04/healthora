@@ -18,8 +18,10 @@ import { SSOCallbackPage } from "./components/SSOCallback";
 import { CustomCursor } from "./components/shared/CustomCursor";
 import { useCartStore } from "./store/cartStore";
 import { useThemeStore, applyTheme } from "./store/themeStore";
-import { useSearchParams, useLocation } from "react-router-dom";
+import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
 import { api } from "./lib/api";
+import { ErrorBoundary } from "./components/shared/ErrorBoundary";
+import { ErrorPage } from "./pages/ErrorPage";
 import { useProduct } from "./hooks/useProducts";
 
 type View =
@@ -32,6 +34,22 @@ type View =
   | "club"
   | "orders"
   | "sample-picker";
+
+const VALID_VIEWS = new Set<View>([
+  "landing",
+  "catalog",
+  "product",
+  "checkout",
+  "success",
+  "admin",
+  "club",
+  "orders",
+  "sample-picker",
+]);
+
+function isKnownPathname(pathname: string) {
+  return pathname === "/" || pathname === "";
+}
 type CatalogFilter = {
   category?: string;
   need?: string;
@@ -122,9 +140,20 @@ function buildSearchParams(
       };
 }
 
+function toAppPath(view: View, filter?: CatalogFilter, productId?: string) {
+  const params = buildSearchParams(view, filter, productId);
+  const qs = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value) qs.set(key, String(value));
+  }
+  const search = qs.toString();
+  return search ? `/?${search}` : "/";
+}
+
 function AppInner() {
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isSSOCallback = location.pathname === "/sso-callback";
   const initialView =
     (searchParams.get("view") as View) ||
@@ -150,9 +179,12 @@ function AppInner() {
   const lastLoadedOwnerRef = useRef<string | null>(null);
   const skipNextCartSaveRef = useRef(false);
   const { add, items, bindOwner, replaceItems } = useCartStore();
-  const { data: productFromUrl, isLoading: isProductLoading } = useProduct(
-    view === "product" ? productIdFromUrl : "",
-  );
+  const {
+    data: productFromUrl,
+    isLoading: isProductLoading,
+    isError: isProductError,
+    error: productError,
+  } = useProduct(view === "product" ? productIdFromUrl : "");
   const activeProduct =
     selectedProduct &&
     (!productIdFromUrl || selectedProduct.id === productIdFromUrl)
@@ -252,23 +284,38 @@ function AppInner() {
     noScroll?: boolean,
     productId?: string,
   ) => {
-    const nextFilter = filter ? normalizeCatalogFilter(filter) : catalogFilter;
+    const nextFilter =
+      filter !== undefined
+        ? normalizeCatalogFilter(filter)
+        : v === "landing"
+          ? {}
+          : catalogFilter;
     setView(v);
-    if (filter) setCatalogFilter(nextFilter);
+    if (filter !== undefined || v === "landing") setCatalogFilter(nextFilter);
     if (v === "catalog") rememberCatalogBrands(nextFilter);
     if (v === "landing") sessionStorage.removeItem(CATALOG_BRANDS_STORAGE_KEY);
     if (v !== "checkout") setCheckoutItems(null);
-    setSearchParams(buildSearchParams(v, nextFilter, productId));
+    if (v !== "product") setSelectedProduct(null);
+    navigate(toAppPath(v, nextFilter, productId));
     if (!noScroll) window.scrollTo(0, 0);
+  };
+
+  const exitToHome = () => {
+    setSelectedProduct(null);
+    setCatalogFilter({});
+    nav("landing", {}, true);
+  };
+
+  const exitToCatalog = () => {
+    setSelectedProduct(null);
+    nav("catalog", {}, true);
   };
 
   const syncCatalogFilter = (filter: CatalogFilter) => {
     const nextFilter = normalizeCatalogFilter(filter);
     setCatalogFilter(nextFilter);
     rememberCatalogBrands(nextFilter);
-    setSearchParams(buildSearchParams("catalog", nextFilter), {
-      replace: true,
-    });
+    navigate(toAppPath("catalog", nextFilter), { replace: true });
   };
 
   const openProduct = (p: Product) => {
@@ -276,11 +323,76 @@ function AppInner() {
     nav("product", undefined, undefined, p.id);
   };
 
-  useEffect(() => {
-    if (view !== "product") return;
-    if (activeProduct || isProductLoading) return;
-    nav("catalog", catalogFilter, true);
-  }, [activeProduct, catalogFilter, isProductLoading, view]);
+  const viewParam = searchParams.get("view");
+  const invalidView = !!viewParam && !VALID_VIEWS.has(viewParam as View);
+  const invalidPath = !isKnownPathname(location.pathname);
+  const productMissing =
+    view === "product" &&
+    !!productIdFromUrl &&
+    !isProductLoading &&
+    !activeProduct &&
+    isProductError &&
+    productError?.message === "Not found";
+  const productServerError =
+    view === "product" &&
+    !!productIdFromUrl &&
+    !isProductLoading &&
+    !activeProduct &&
+    isProductError &&
+    productError?.message !== "Not found";
+  const showNotFound = invalidView || invalidPath || productMissing;
+
+  const renderNotFound = () => {
+    if (productMissing) {
+      return (
+        <ErrorPage
+          code={404}
+          title={
+            <>
+              Producto no <em style={{ color: "var(--green)" }}>encontrado</em>
+            </>
+          }
+          message="Este producto no existe o ya no está disponible en el catálogo."
+          onHome={exitToHome}
+          onCatalog={exitToCatalog}
+        />
+      );
+    }
+
+    return (
+      <ErrorPage
+        code={404}
+        title={
+          <>
+            Página no <em style={{ color: "var(--green)" }}>encontrada</em>
+          </>
+        }
+        message={
+          invalidPath
+            ? "La ruta que intentaste abrir no existe en Healthora."
+            : "La sección que buscas no está disponible."
+        }
+        onHome={exitToHome}
+        onCatalog={exitToCatalog}
+      />
+    );
+  };
+
+  const renderProductServerError = () => (
+    <ErrorPage
+      code={500}
+      title={
+        <>
+          No pudimos cargar el{" "}
+          <em style={{ color: "var(--coral)" }}>producto</em>
+        </>
+      }
+      message="Hubo un problema al consultar este producto. Intenta de nuevo en unos segundos."
+      onHome={exitToHome}
+      onCatalog={exitToCatalog}
+      onRetry={() => window.location.reload()}
+    />
+  );
 
   if (isSSOCallback) {
     return <SSOCallbackPage onSuccess={() => nav("landing")} />;
@@ -309,67 +421,77 @@ function AppInner() {
         }}
       />
       <div style={{ minHeight: "calc(100vh - 200px)" }}>
-        {view === "landing" && (
-          <Landing
-            onNav={nav}
-            onOpenProduct={openProduct}
-            onAdd={(p, qty = 1, v) => {
-              add(p, qty, v);
-              setCheckoutItems(null);
-              setCartOpen(true);
-            }}
-          />
-        )}
-        {view === "catalog" && (
-          <Catalog
-            initialFilter={catalogFilter}
-            onFilterChange={syncCatalogFilter}
-            onOpenProduct={openProduct}
-            onAdd={(p) => {
-              add(p, 1);
-              setCheckoutItems(null);
-              setCartOpen(true);
-            }}
-          />
-        )}
-        {view === "product" && activeProduct && (
-          <ProductDetail
-            product={activeProduct}
-            onAdd={(p, qty, v) => {
-              add(p, qty, v);
-              setCheckoutItems(null);
-              setCartOpen(true);
-            }}
-            onBuyNow={(p, qty, v) => {
-              setCheckoutItems([{ product: p, qty, variant: v }]);
-              setCartOpen(false);
-              nav("checkout");
-            }}
-            onOpenProduct={openProduct}
-            onBack={() => nav("catalog")}
-          />
-        )}
-        {view === "checkout" && (
-          <Checkout
-            items={checkoutItems ?? items}
-            onBack={() => nav("catalog")}
-          />
-        )}
-        {view === "success" && <Success onBack={() => nav("landing")} />}
-        {view === "club" && <Club onNav={nav} />}
-        {view === "orders" && <Orders onBack={() => nav("catalog")} />}
-        {view === "sample-picker" && (
-          <SamplePicker
-            onBack={() => {
-              nav("catalog");
-              setCartOpen(true);
-            }}
-            onConfirm={() => {
-              nav("catalog");
-              setCartOpen(true);
-            }}
-          />
-        )}
+        <ErrorBoundary>
+          {showNotFound ? (
+            renderNotFound()
+          ) : productServerError ? (
+            renderProductServerError()
+          ) : (
+            <>
+              {view === "landing" && (
+                <Landing
+                  onNav={nav}
+                  onOpenProduct={openProduct}
+                  onAdd={(p, qty = 1, v) => {
+                    add(p, qty, v);
+                    setCheckoutItems(null);
+                    setCartOpen(true);
+                  }}
+                />
+              )}
+              {view === "catalog" && (
+                <Catalog
+                  initialFilter={catalogFilter}
+                  onFilterChange={syncCatalogFilter}
+                  onOpenProduct={openProduct}
+                  onAdd={(p) => {
+                    add(p, 1);
+                    setCheckoutItems(null);
+                    setCartOpen(true);
+                  }}
+                />
+              )}
+              {view === "product" && activeProduct && (
+                <ProductDetail
+                  product={activeProduct}
+                  onAdd={(p, qty, v) => {
+                    add(p, qty, v);
+                    setCheckoutItems(null);
+                    setCartOpen(true);
+                  }}
+                  onBuyNow={(p, qty, v) => {
+                    setCheckoutItems([{ product: p, qty, variant: v }]);
+                    setCartOpen(false);
+                    nav("checkout");
+                  }}
+                  onOpenProduct={openProduct}
+                  onBack={() => nav("catalog")}
+                />
+              )}
+              {view === "checkout" && (
+                <Checkout
+                  items={checkoutItems ?? items}
+                  onBack={() => nav("catalog")}
+                />
+              )}
+              {view === "success" && <Success onBack={() => nav("landing")} />}
+              {view === "club" && <Club onNav={nav} />}
+              {view === "orders" && <Orders onBack={() => nav("catalog")} />}
+              {view === "sample-picker" && (
+                <SamplePicker
+                  onBack={() => {
+                    nav("catalog");
+                    setCartOpen(true);
+                  }}
+                  onConfirm={() => {
+                    nav("catalog");
+                    setCartOpen(true);
+                  }}
+                />
+              )}
+            </>
+          )}
+        </ErrorBoundary>
       </div>
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

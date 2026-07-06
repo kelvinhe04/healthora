@@ -47,6 +47,13 @@ app.route('/admin/earnings', adminEarningsRouter);
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
+app.notFound((c) => c.json({ error: 'Not found' }, 404));
+
+app.onError((err, c) => {
+  console.error('[API]', err);
+  return c.json({ error: 'Internal server error' }, 500);
+});
+
 app.post('/test-email', async (c) => {
   const { email, name } = await c.req.json();
   await sendOrderConfirmationEmail({
