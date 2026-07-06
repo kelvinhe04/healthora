@@ -155,6 +155,25 @@ export interface Review {
   updatedAt: string;
 }
 
+export interface ErrorReport {
+  _id: string;
+  source: 'backend' | 'frontend';
+  name?: string;
+  message: string;
+  stack?: string;
+  severity: 'error' | 'fatal';
+  route?: string;
+  method?: string;
+  statusCode?: number;
+  userId?: string;
+  userEmail?: string;
+  posthogDistinctId?: string;
+  posthogSessionId?: string;
+  userAgent?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ProductFilters {
   category?: string;
   need?: string;

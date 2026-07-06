@@ -40,6 +40,7 @@ import type {
   OrderLineItem,
   PaymentStatus,
   Product,
+  ErrorReport,
 } from "../../types";
 
 type AdminPage =
@@ -48,7 +49,8 @@ type AdminPage =
   | "products"
   | "users"
   | "sales"
-  | "earnings";
+  | "earnings"
+  | "errors";
 interface AdminAppProps {
   onGoToStore: () => void;
 }
@@ -124,6 +126,13 @@ type EarningsData = {
     net: number;
     orders: number;
   };
+};
+
+type ErrorReportsData = {
+  items: ErrorReport[];
+  total: number;
+  page: number;
+  limit: number;
 };
 
 const fulfillmentStatusOptions: (FulfillmentStatus | "")[] = [
@@ -1366,7 +1375,7 @@ function AdminPanel({
   const [page, setPage] = useState<AdminPage>(() => {
     const sp = new URLSearchParams(window.location.search);
     const urlPage = sp.get("section") as AdminPage | null;
-    if (urlPage && ["dashboard","orders","products","users","sales","earnings"].includes(urlPage)) return urlPage;
+    if (urlPage && ["dashboard","orders","products","users","sales","earnings","errors"].includes(urlPage)) return urlPage;
     return (localStorage.getItem("healthora_admin_page") as AdminPage) || "dashboard";
   });
 
@@ -1444,6 +1453,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const [productSearch, setProductSearch] = useState("");
   const [productsPage, setProductsPage] = useState(1);
   const [usersPage, setUsersPage] = useState(1);
+  const [errorSourceFilter, setErrorSourceFilter] = useState<"" | "backend" | "frontend">("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState<{
@@ -1527,6 +1537,12 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       api.admin.earnings(await getAdminToken()) as Promise<EarningsData>,
     enabled: page === "earnings",
   });
+  const errorReportsQuery = useQuery({
+    queryKey: ["admin-error-reports", errorSourceFilter],
+    queryFn: async () =>
+      api.admin.errorReports(await getAdminToken(), errorSourceFilter || undefined) as Promise<ErrorReportsData>,
+    enabled: page === "errors",
+  });
 
   const showOrdersSkeleton = useOnceLoading(
     "section_orders",
@@ -1547,6 +1563,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const showEarningsSkeleton = useOnceLoading(
     "section_earnings",
     earningsQuery.isLoading,
+  );
+  const showErrorsSkeleton = useOnceLoading(
+    "section_errors",
+    errorReportsQuery.isLoading,
   );
 
   const orderStatusesMutation = useMutation({
@@ -1720,6 +1740,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   );
   const sales = salesQuery.data;
   const earnings = earningsQuery.data;
+  const errorReports = errorReportsQuery.data;
   const dashboardData = dashboardQuery.data;
 
   const [dashboardReady, setDashboardReady] = useState(false);
@@ -4447,6 +4468,140 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
                 </Card>
               </div>
             </div>
+          </>
+        )}
+
+        {/* Error tracking */}
+        {page === "errors" && (
+          <>
+            <PageHeader
+              loading={showErrorsSkeleton}
+              kicker="Error tracking"
+              title={
+                <>
+                  Errores <em style={{ color: "var(--green)" }}>recientes</em>
+                </>
+              }
+              sub="Excepciones capturadas por PostHog y guardadas para revision operativa."
+              actions={
+                <select
+                  value={errorSourceFilter}
+                  onChange={(event) => setErrorSourceFilter(event.target.value as "" | "backend" | "frontend")}
+                  style={{
+                    border: "1px solid var(--ink-10)",
+                    borderRadius: 999,
+                    background: "var(--cream)",
+                    color: "var(--ink)",
+                    padding: "10px 14px",
+                    fontSize: 13,
+                  }}
+                >
+                  <option value="">Todos</option>
+                  <option value="backend">Backend</option>
+                  <option value="frontend">Frontend</option>
+                </select>
+              }
+            />
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 16,
+                marginBottom: 24,
+              }}
+            >
+              <KpiCard
+                mode="dark"
+                label="Errores"
+                value={errorReports?.total ?? "—"}
+                loading={showErrorsSkeleton}
+                animKey="errors_total"
+              />
+              <KpiCard
+                label="Backend"
+                value={errorReports?.items.filter((item) => item.source === "backend").length ?? "—"}
+                loading={showErrorsSkeleton}
+                animKey="errors_backend"
+              />
+              <KpiCard
+                label="Frontend"
+                value={errorReports?.items.filter((item) => item.source === "frontend").length ?? "—"}
+                loading={showErrorsSkeleton}
+                animKey="errors_frontend"
+              />
+            </div>
+
+            <Card
+              title="Excepciones capturadas"
+              sub="Ultimos eventos con ruta, usuario y stack disponible"
+              pad={0}
+              loading={showErrorsSkeleton}
+              skeletonContent={
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "120px 1fr 160px",
+                        gap: 16,
+                        padding: "16px 24px",
+                        borderBottom: "1px solid var(--ink-06)",
+                      }}
+                    >
+                      <Skeleton height={18} borderRadius={4} />
+                      <Skeleton height={18} borderRadius={4} />
+                      <Skeleton height={18} borderRadius={4} />
+                    </div>
+                  ))}
+                </div>
+              }
+            >
+              <div style={{ overflowX: "auto", width: "100%" }}>
+                <table style={{ ...tableStyle, minWidth: 840 }}>
+                  <thead>
+                    <tr>
+                      <th style={th}>Origen</th>
+                      <th style={th}>Error</th>
+                      <th style={th}>Ruta</th>
+                      <th style={th}>Usuario</th>
+                      <th style={th}>Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(errorReports?.items || []).map((item) => (
+                      <tr key={item._id} style={trStyle}>
+                        <td style={td}>
+                          <StatusPill status={item.source === "backend" ? "processing" : "paid"} />
+                        </td>
+                        <td style={{ ...td, maxWidth: 320 }}>
+                          <div style={{ fontWeight: 600 }}>{item.name || "Error"}</div>
+                          <div style={{ color: "var(--ink-60)", fontSize: 12, marginTop: 4, whiteSpace: "normal" }}>
+                            {item.message}
+                          </div>
+                        </td>
+                        <td style={{ ...td, fontFamily: '"JetBrains Mono", monospace', fontSize: 12 }}>
+                          {item.method ? `${item.method} ` : ""}
+                          {item.route || "—"}
+                        </td>
+                        <td style={td}>{item.userEmail || item.userId || "—"}</td>
+                        <td style={{ ...td, fontFamily: '"JetBrains Mono", monospace', fontSize: 12 }}>
+                          {new Date(item.createdAt).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                    {!errorReports?.items.length && (
+                      <tr>
+                        <td style={{ ...td, textAlign: "center", color: "var(--ink-60)" }} colSpan={5}>
+                          Sin errores registrados.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
           </>
         )}
 
