@@ -19,12 +19,15 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU-005 | Selector de variantes en la ficha | `feat/product-variants` / PR #98 | Kelvin | Selector completo (tamaño/sabor/conteo/color), precio e imagen reactivos. Falta reseed de categorías restantes (contenido, no bloquea — ver Backlog de contenido). |
 | HU-035 | Variante seleccionada persistida en el carrito | `feat/product-variants` / PR #98 | Kelvin | `cartStore`/`CartDrawer` soportan `productId+variantId`. Bug de imagen (no reflejaba la variante en carrito/checkout) corregido en el mismo PR. |
 | HU-099 | Completar variantes de producto en categorías restantes del catálogo | `feat/variantes-contenido-categorias` / PR #100 | Kelvin | Variantes (con imágenes) puestas en todos los productos del catálogo que las necesitaban. Maquillaje llega a 20/20; el resto de productos por debajo de ese número son de presentación única y no requieren selector de variante. |
+| HU-063 | Validación y saneamiento de inputs con Zod | `HU-063-validacion-y-saneamiento-inputs-zod` / PR #101 | Roy | Zod implementado en rutas de backend: productos, carrito, checkout, órdenes, reseñas, webhooks, admin. |
+| HU-085 | Búsqueda simple de productos | `feat/hu-085-busqueda` / PR #102 | EiJassiel | Búsqueda por nombre, marca, categoría, descripción corta y necesidad con escapeRegex. Incluye validación Zod. |
 
 ## En curso
 
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
 | HU-033 | Precio por variante aplicado en checkout | por crear | Kelvin | Parcial ya en `main`: cálculo de subtotal en frontend correcto; falta validar precio de variante en backend al confirmar la orden. |
+| HU-091 | Migración del frontend a TanStack Start (SSR) | `feat/hu-091-tanstack-start` / PR #103 | Kelvin | Migrado a TanStack Router/Start en modo SPA (sin servidor) para no romper el deploy ni tener que migrar Clerk a su paquete SSR. Rutas de archivo reales con URLs limpias reemplazan el switch de vistas por `?view=...`. Build y Playwright verificados en local; falta confirmar preview deploy de Vercel. |
 
 ## Pendientes — continuación directa de variantes (Kelvin, ramas nuevas tras el merge)
 
@@ -49,7 +52,7 @@ Ramas secuenciales desde `main` (una a la vez, todas tocan `backend/src/index.ts
 | 6 | HU-068 | APM y métricas de rendimiento |
 | 7 | HU-069 | Alertas y monitoreo de uptime |
 
-En pausa hasta que variantes/UI se estabilicen: HU-063 (Zod — toca schemas de producto/cart/checkout), HU-070/071/072 (tests), HU-080/081 (optimización de imágenes / HTTP cache — tocan `ProductCard`/`ProductImage`, zona con bug abierto de imagen de variante).
+En pausa hasta que variantes/UI se estabilicen: HU-070/071/072 (tests), HU-080/081 (optimización de imágenes / HTTP cache — tocan `ProductCard`/`ProductImage`, zona con bug abierto de imagen de variante).
 
 ---
 
