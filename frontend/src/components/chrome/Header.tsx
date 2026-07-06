@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParamsCompat as useSearchParams } from "../../hooks/useSearchParamsCompat";
 import { useCartStore } from "../../store/cartStore";
 import { useThemeStore } from "../../store/themeStore";
 import { Icon } from "../shared/Icon";
