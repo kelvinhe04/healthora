@@ -802,6 +802,8 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
 
   return (
     <header
+      role="banner"
+      aria-label="Navegación principal de Healthora"
       style={{
         background: "var(--cream)",
         borderBottom: "1px solid var(--ink-06)",

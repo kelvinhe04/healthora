@@ -22,6 +22,7 @@ import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
 import { api } from "./lib/api";
 import { ErrorBoundary } from "./components/shared/ErrorBoundary";
 import { ErrorPage } from "./pages/ErrorPage";
+import { SkipToContent } from "./components/shared/SkipToContent";
 import { useProduct } from "./hooks/useProducts";
 
 type View =
@@ -404,6 +405,7 @@ function AppInner() {
 
   return (
     <>
+      <SkipToContent />
       {/* <CustomCursor /> */}
       <Topbar />
       <Header onNav={nav} onOpenCart={() => setCartOpen(true)} />
@@ -420,7 +422,7 @@ function AppInner() {
           nav("sample-picker");
         }}
       />
-      <div style={{ minHeight: "calc(100vh - 200px)" }}>
+      <main id="main-content" style={{ minHeight: "calc(100vh - 200px)" }} tabIndex={-1}>
         <ErrorBoundary>
           {showNotFound ? (
             renderNotFound()
@@ -492,7 +494,7 @@ function AppInner() {
             </>
           )}
         </ErrorBoundary>
-      </div>
+      </main>
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         aria-label="Volver arriba"
