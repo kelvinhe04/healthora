@@ -21,6 +21,8 @@ import { reviewsRouter } from './routes/reviews';
 import { newsletterRouter } from './routes/newsletter';
 import { emailField, parseJson, textField } from './lib/validation';
 import { z } from 'zod';
+import { logger } from './lib/logger';
+import { requestLogger } from './middleware/requestLogger';
 
 const testEmailSchema = z.object({
   email: emailField(),
@@ -33,6 +35,7 @@ await recalculateNew();
 
 const app = new Hono();
 
+app.use('*', requestLogger);
 app.use('*', cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }));
 
 app.route('/products', productsRouter);
@@ -90,4 +93,4 @@ Bun.serve({
   maxRequestBodySize: 20 * 1024 * 1024,
 });
 
-console.log(`Healthora backend running on :${port}`);
+logger.info({ port }, 'Healthora backend running');
