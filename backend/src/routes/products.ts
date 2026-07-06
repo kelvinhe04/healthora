@@ -29,17 +29,25 @@ export const productsRouter = new Hono()
     if (query.brand) filter.brand = query.brand;
     if (query.inStock === '1') filter.stock = { $gt: 0 };
     if (query.priceMax !== undefined) filter.price = { $lte: query.priceMax };
-    if (query.search) filter.name = { $regex: escapeRegex(query.search), $options: 'i' };
-
+    if (query.search?.trim()) {
+      const term = query.search.trim();
+      filter.$or = [
+        { name: { $regex: escapeRegex(term), $options: 'i' } },
+        { brand: { $regex: escapeRegex(term), $options: 'i' } },
+        { category: { $regex: escapeRegex(term), $options: 'i' } },
+        { short: { $regex: escapeRegex(term), $options: 'i' } },
+        { need: { $regex: escapeRegex(term), $options: 'i' } },
+      ];
+    }
     let q = Product.find(filter);
-    if (query.sort === 'price_asc') q = q.sort({ price: 1 });
-    else if (query.sort === 'price_desc') q = q.sort({ price: -1 });
-    else if (query.sort === 'rating') q = q.sort({ rating: -1 });
+    if (query.sort === "price_asc") q = q.sort({ price: 1 });
+    else if (query.sort === "price_desc") q = q.sort({ price: -1 });
+    else if (query.sort === "rating") q = q.sort({ rating: -1 });
     else q = q.sort({ sortOrder: 1 });
 
     return c.json(await q.lean());
   })
-  .get('/count', async (c) => {
+  .get("/count", async (c) => {
     const count = await Product.countDocuments({ active: true });
     return c.json({ count });
   })

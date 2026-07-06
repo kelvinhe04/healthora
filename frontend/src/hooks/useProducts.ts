@@ -2,12 +2,16 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import type { ProductFilters } from '../types';
 
-export function useProducts(filters: ProductFilters = {}) {
+export function useProducts(
+  filters: ProductFilters = {},
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: ['products', filters],
     queryFn: () => api.products.list(filters),
     staleTime: 1000 * 60 * 10,
     placeholderData: (previousData) => previousData,
+    enabled: options?.enabled ?? true,
   });
 }
 
