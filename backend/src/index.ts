@@ -18,7 +18,9 @@ import { accountRouter } from './routes/account';
 import { sendOrderConfirmationEmail } from './lib/email';
 import { recalculateBestsellers, recalculateNew } from './lib/bestsellers';
 import { reviewsRouter } from './routes/reviews';
+import { swaggerUI } from '@hono/swagger-ui';
 import { newsletterRouter } from './routes/newsletter';
+import { openApiDocument } from './openapi';
 
 await connectDB();
 await recalculateBestsellers();
@@ -46,6 +48,9 @@ app.route('/admin/sales', adminSalesRouter);
 app.route('/admin/earnings', adminEarningsRouter);
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
+
+app.get('/openapi.json', (c) => c.json(openApiDocument));
+app.get('/docs', swaggerUI({ url: '/openapi.json' }));
 
 app.notFound((c) => c.json({ error: 'Not found' }, 404));
 
