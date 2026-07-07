@@ -18,6 +18,7 @@ jobs:
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
+      - run: bun test
       - run: bun build src/index.ts --outdir /tmp/healthora-api --target bun
 
   frontend:
