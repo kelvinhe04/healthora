@@ -49,7 +49,7 @@ export function ProductCardSkeleton() {
       }}
     >
       {/* Image area */}
-      <ShimmerBox style={{ height: 220, borderRadius: 0 }} />
+      <ShimmerBox style={{ height: 280, borderRadius: 0 }} />
 
       {/* Text content */}
       <div style={{ padding: '16px 16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -136,35 +136,6 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
           <span style={{ position: 'absolute', top: 12, right: 12, background: 'var(--coral)', color: 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, fontWeight: 600 }}>−{Math.round((1 - effectivePrice / effectivePriceBefore) * 100)}%</span>
         )}
 
-        {showWishlist && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleWishlist(product.id);
-            }}
-            aria-label={isWishlisted ? 'Quitar de wishlist' : 'Agregar a wishlist'}
-            aria-pressed={isWishlisted}
-            style={{
-              position: 'absolute',
-              top: 56,
-              left: 12,
-              width: 44,
-              height: 44,
-              borderRadius: 999,
-              border: isWishlisted ? '2px solid var(--coral)' : '1px solid var(--ink-12)',
-              background: isWishlisted ? 'color-mix(in oklab, var(--coral) 12%, white)' : 'rgba(255,255,255,0.92)',
-              color: isWishlisted ? 'var(--coral)' : 'var(--ink)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Icon name="heart" size={16} stroke={isWishlisted ? 'var(--coral)' : 'currentColor'} />
-          </button>
-        )}
-
         {showCompare && (
           <button
             type="button"
@@ -198,11 +169,41 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
           </button>
         )}
         
+        {showWishlist && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWishlist(product.id);
+            }}
+            aria-label={isWishlisted ? 'Quitar de wishlist' : 'Agregar a wishlist'}
+            aria-pressed={isWishlisted}
+            style={{
+              position: 'absolute',
+              bottom: 12,
+              left: 12,
+              width: 44,
+              height: 44,
+              borderRadius: 999,
+              border: isWishlisted ? '2px solid var(--coral)' : '1px solid var(--ink-12)',
+              background: isWishlisted ? 'color-mix(in oklab, var(--coral) 12%, white)' : 'rgba(255,255,255,0.92)',
+              color: isWishlisted ? 'var(--coral)' : 'var(--ink)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 2,
+            }}
+          >
+            <Icon name="heart" size={16} stroke={isWishlisted ? 'var(--coral)' : 'currentColor'} />
+          </button>
+        )}
+
         {/* Add to cart button */}
         {product.stock > 0 && (
           <button
             onClick={(e) => { e.stopPropagation(); onAdd(product); }}
-            style={{ position: 'absolute', bottom: 12, right: 12, width: 44, height: 44, borderRadius: 999, background: 'oklch(0.18 0.03 155)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hover ? 'scale(1.1) rotate(180deg)' : 'scale(0.85) rotate(0deg)', opacity: hover ? 1 : 0.8, transition: 'all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: hover ? '0 8px 20px rgba(0,0,0,0.15)' : 'none' }}
+            style={{ position: 'absolute', bottom: 12, right: 12, width: 44, height: 44, borderRadius: 999, background: 'oklch(0.18 0.03 155)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hover ? 'scale(1.1) rotate(180deg)' : 'scale(0.85) rotate(0deg)', opacity: hover ? 1 : 0.8, transition: 'all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: hover ? '0 8px 20px rgba(0,0,0,0.15)' : 'none', zIndex: 2 }}
             aria-label="Agregar al carrito"
           >
             <Icon name="plus" size={16} />
