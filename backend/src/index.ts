@@ -53,7 +53,13 @@ await recalculateNew();
 
 const app = new Hono();
 
-app.use('*', securityHeaders);
+app.use('*', async (c, next) => {
+  // Uploaded product images must be embeddable cross-origin (the frontend runs on a
+  // different port in dev, and on a different domain entirely in prod) - the global
+  // same-origin CORP from securityHeaders would otherwise silently block <img> tags.
+  if (c.req.path.startsWith('/uploads/')) return next();
+  return securityHeaders(c, next);
+});
 app.use('*', requestLogger);
 app.use('*', errorTracking);
 app.use('*', performanceMetrics);
