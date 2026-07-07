@@ -1,0 +1,173 @@
+import { type DragEvent, useRef, useState } from 'react';
+import { Icon } from '../../../components/shared/Icon';
+
+export function ImageDropZone({
+  value,
+  onChange,
+  label,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+}) {
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const processFile = (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => onChange(e.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const onDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <span
+        style={{
+          fontSize: 10,
+          fontFamily: '"JetBrains Mono", monospace',
+          textTransform: "uppercase",
+          letterSpacing: "0.12em",
+          color: "var(--ink-60)",
+          marginBottom: 6,
+        }}
+      >
+        {label}
+      </span>
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        onClick={() => !value && inputRef.current?.click()}
+        style={{
+          border: `2px dashed ${dragging ? "var(--green)" : value ? "var(--ink-12)" : "var(--ink-20)"}`,
+          borderRadius: 12,
+          height: 130,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: value ? "default" : "pointer",
+          background: dragging ? "oklch(0.97 0.02 140)" : "var(--cream-2)",
+          position: "relative",
+          overflow: "hidden",
+          transition: "border-color 120ms, background 120ms",
+        }}
+      >
+        {value ? (
+          <>
+            <img
+              src={value}
+              alt=""
+              style={{
+                maxWidth: "100%",
+                maxHeight: "100%",
+                objectFit: "contain",
+                padding: 10,
+              }}
+            />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange("");
+              }}
+              style={{
+                position: "absolute",
+                top: 6,
+                right: 6,
+                width: 22,
+                height: 22,
+                borderRadius: 999,
+                background: "var(--ink)",
+                color: "var(--cream)",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: 0.75,
+              }}
+            >
+              <Icon name="x" size={11} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                inputRef.current?.click();
+              }}
+              style={{
+                position: "absolute",
+                bottom: 6,
+                right: 6,
+                padding: "3px 8px",
+                borderRadius: 6,
+                background: "var(--ink)",
+                color: "var(--cream)",
+                border: "none",
+                cursor: "pointer",
+                fontSize: 10,
+                fontFamily: '"JetBrains Mono", monospace',
+                opacity: 0.7,
+              }}
+            >
+              cambiar
+            </button>
+          </>
+        ) : (
+          <div
+            style={{
+              textAlign: "center",
+              color: "var(--ink-40)",
+              pointerEvents: "none",
+            }}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ marginBottom: 8 }}
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <div
+              style={{
+                fontSize: 10,
+                fontFamily: '"JetBrains Mono", monospace',
+                letterSpacing: "0.08em",
+              }}
+            >
+              ARRASTRA O HAZ CLIC
+            </div>
+          </div>
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) processFile(f);
+            e.target.value = "";
+          }}
+        />
+      </div>
+    </div>
+  );
+}
