@@ -48,10 +48,10 @@ export const productsRouter = new Hono()
 
     const cacheKey = `catalog:products:${JSON.stringify(query)}`;
     const cached = await cacheGet<unknown[]>(cacheKey);
-    if (cached) return c.json(cached);
+    if (cached && cached.length > 0) return c.json(cached);
 
     const result = await q.lean();
-    await cacheSet(cacheKey, result);
+    if (result.length > 0) await cacheSet(cacheKey, result);
     return c.json(result);
   })
   .get("/count", async (c) => {
