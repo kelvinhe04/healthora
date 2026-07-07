@@ -562,6 +562,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     fulfillmentStatusLabels,
     displayedOrders,
     paginatedOrders,
+    orders,
     ordersPage,
     setOrdersPage,
     orderStatusDrafts,
