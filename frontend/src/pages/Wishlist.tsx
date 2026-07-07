@@ -48,7 +48,7 @@ export function WishlistPage({ onOpenProduct, onAdd, onBrowse }: WishlistSection
           {onBrowse && <AnimatedButton variant="primary" onClick={onBrowse} text="Explorar catálogo" />}
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: bp === 'mobile' ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isSmall ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 20 }}>
           {products.map((p) => (
             <ProductCard key={p.id} product={p} onClick={onOpenProduct} onAdd={onAdd} showWishlist={false} />
           ))}
