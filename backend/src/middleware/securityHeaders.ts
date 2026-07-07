@@ -1,0 +1,40 @@
+import { secureHeaders } from 'hono/secure-headers';
+
+export const securityHeaders = secureHeaders({
+  contentSecurityPolicy: {
+    defaultSrc: ["'self'"],
+    baseUri: ["'self'"],
+    connectSrc: [
+      "'self'",
+      'https://api.stripe.com',
+      'https://*.stripe.com',
+      'https://*.clerk.accounts.dev',
+      'https://*.clerk.com',
+      'https://*.posthog.com',
+      'https://*.i.posthog.com',
+    ],
+    fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+    formAction: ["'self'"],
+    frameAncestors: ["'none'"],
+    frameSrc: ["'self'", 'https://*.stripe.com', 'https://*.clerk.accounts.dev', 'https://*.clerk.com'],
+    imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+    objectSrc: ["'none'"],
+    scriptSrc: ["'self'", "'unsafe-inline'", 'https://*.stripe.com', 'https://*.clerk.accounts.dev', 'https://*.clerk.com'],
+    styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    workerSrc: ["'self'", 'blob:'],
+    upgradeInsecureRequests: [],
+  },
+  strictTransportSecurity: 'max-age=31536000; includeSubDomains; preload',
+  xFrameOptions: 'DENY',
+  xContentTypeOptions: 'nosniff',
+  referrerPolicy: 'strict-origin-when-cross-origin',
+  crossOriginOpenerPolicy: 'same-origin',
+  crossOriginResourcePolicy: 'same-origin',
+  permissionsPolicy: {
+    camera: false,
+    microphone: false,
+    geolocation: false,
+    payment: ['self'],
+  },
+  removePoweredBy: true,
+});
