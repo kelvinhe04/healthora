@@ -49,7 +49,7 @@ export function ProductCardSkeleton() {
       }}
     >
       {/* Image area */}
-      <ShimmerBox style={{ height: 280, borderRadius: 0 }} />
+      <ShimmerBox style={{ height: 220, borderRadius: 0 }} />
 
       {/* Text content */}
       <div style={{ padding: '16px 16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -104,7 +104,7 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
       style={{ cursor: 'pointer', background: 'var(--cream)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--ink-06)', transition: 'all 220ms cubic-bezier(.2,.8,.2,1)', transform: hover ? 'translateY(-2px)' : 'none', boxShadow: hover ? '0 18px 40px -20px rgba(0,0,0,0.15)' : '0 2px 6px -4px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}
     >
       <div style={{ position: 'relative', overflow: 'hidden' }}>
-        <div style={{ transform: hover ? 'scale(1.08)' : 'scale(1)', transition: 'transform 400ms cubic-bezier(.2,.8,.2,1)', width: '100%', height: '100%' }}>
+        <div style={{ transform: hover ? 'scale(1.03)' : 'scale(1)', transition: 'transform 400ms cubic-bezier(.2,.8,.2,1)', width: '100%', height: '100%' }}>
           {secondaryImage ? (
             <div style={{ position: 'relative' }}>
               <div style={{ opacity: hover ? 0 : 1, transform: hover ? 'scale(0.985)' : 'scale(1)', transition: 'opacity 280ms ease, transform 380ms cubic-bezier(.2,.8,.2,1)' }}>

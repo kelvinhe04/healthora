@@ -19,7 +19,7 @@ const sizes: Record<SizeKey, { w: number | string; h: number; fs: number }> = {
   sm: { w: 120, h: 140, fs: 12 },
   md: { w: 220, h: 260, fs: 16 },
   lg: { w: 520, h: 620, fs: 28 },
-  tile: { w: '100%', h: 280, fs: 14 },
+  tile: { w: '100%', h: 220, fs: 14 },
 };
 
 function tintOf(color: string, amount: number) {
@@ -39,9 +39,9 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
 
   if (rawSrc) {
     const isCatalogTile = flat && size === 'tile';
-    const imagePadding = isCatalogTile ? 0 : size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
-    const objectFit = isCatalogTile ? 'cover' : 'contain';
-    const frameBackground = isCatalogTile ? 'var(--cream-2)' : 'white';
+    const imagePadding = isCatalogTile ? 12 : size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
+    const objectFit = 'contain';
+    const frameBackground = isCatalogTile ? 'var(--cream)' : 'white';
     return (
       <div style={{ width: s.w, height: s.h, background: frameBackground, borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box' }}>
         <img
