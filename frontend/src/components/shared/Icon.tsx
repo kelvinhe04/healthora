@@ -31,6 +31,7 @@ export function Icon({ name, size = 18, stroke = 'currentColor', style }: IconPr
     case 'pencil': return <svg {...common}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
     case 'trash': return <svg {...common}><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>;
     case 'alert-circle': return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01" strokeWidth={2.5}/></svg>;
+    case 'activity': return <svg {...common}><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>;
     case 'thumbs-up': return <svg {...common}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14Z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>;
     case 'receipt': return <svg {...common}><path d="M4 2v20l2.5-1.5L9 22l2.5-1.5L14 22l2.5-1.5L19 22V2"/><path d="M9 9h6M9 13h4"/></svg>;
     case 'sun': return <svg {...common}><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>;
