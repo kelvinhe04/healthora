@@ -22,6 +22,7 @@ import { sendOrderConfirmationEmail } from './lib/email';
 import { recalculateBestsellers, recalculateNew } from './lib/bestsellers';
 import { reviewsRouter } from './routes/reviews';
 import { newsletterRouter } from './routes/newsletter';
+import { ipRateLimit } from './middleware/rateLimit';
 import { errorReportsRouter } from './routes/errorReports';
 import { swaggerUI } from '@hono/swagger-ui';
 import { openApiDocument } from './openapi';
@@ -34,6 +35,7 @@ import { errorTracking } from './middleware/errorTracking';
 import { logger } from './lib/logger';
 import { requestLogger } from './middleware/requestLogger';
 import { getCorsOrigins } from './lib/appEnv';
+import { securityHeaders } from './middleware/securityHeaders';
 import { clearCatalogCache } from './lib/cache';
 import { cacheableJson } from './lib/httpCache';
 
@@ -49,9 +51,11 @@ await recalculateNew();
 
 const app = new Hono();
 
+app.use('*', securityHeaders);
 app.use('*', requestLogger);
 app.use('*', errorTracking);
 app.use('*', performanceMetrics);
+app.use('*', ipRateLimit);
 const corsOrigins = getCorsOrigins();
 app.use(
   '*',

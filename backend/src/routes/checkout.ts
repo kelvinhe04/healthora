@@ -36,9 +36,9 @@ export const checkoutRouter = new Hono<AppEnv>()
     const { items, address, promoCode, freeSampleId } = body;
     const user = c.get('user');
 
-    const productIds = items.map((i) => i.productId);
+    const productIds = [...new Set(items.map((i) => i.productId))];
     const products = await Product.find({ id: { $in: productIds }, active: true }).lean();
-    if (products.length !== items.length) {
+    if (products.length !== productIds.length) {
       return c.json({ error: 'One or more products not found' }, 400);
     }
 
