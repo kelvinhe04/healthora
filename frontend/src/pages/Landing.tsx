@@ -9,6 +9,7 @@ import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 gsap.registerPlugin(ScrollTrigger);
 import type { Product, Category, ProductVariant } from '../types';
 import { ProductCard, ProductCardSkeleton } from '../components/shared/ProductCard';
+import { RecentlyViewedSection } from '../components/shared/RecentlyViewedSection';
 import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
@@ -735,6 +736,10 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               ))
           }
         </div>
+      </RevealSection>
+
+      <RevealSection style={{ padding: secPad }} delay={70}>
+        <RecentlyViewedSection onOpenProduct={onOpenProduct} onAdd={onAdd} />
       </RevealSection>
 
       {/* PROMO BAND */}
