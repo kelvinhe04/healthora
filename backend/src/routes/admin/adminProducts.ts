@@ -44,6 +44,7 @@ const productVariantSchema = z.object({
   imageUrl: optionalTextField(400),
   images: z.array(textField(400)).max(20).optional(),
   imagesBySize: z.record(z.string(), z.array(textField(400)).max(20)).optional(),
+  stockBySize: z.record(z.string(), z.coerce.number().int().min(0).max(999999)).optional(),
   isDefault: z.coerce.boolean().default(false),
   availableFor: z.array(productIdSchema).max(50).optional(),
 });

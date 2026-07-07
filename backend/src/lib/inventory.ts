@@ -6,9 +6,9 @@ type ProductStockLike = Parameters<typeof resolveVariantPricing>[0];
 export function resolveStockTarget(
   product: ProductStockLike,
   variantId?: string,
-): Pick<ResolvedVariantPricing, 'stock' | 'stockVariantId'> {
-  const { stock, stockVariantId } = resolveVariantPricing(product, variantId);
-  return { stock, stockVariantId };
+): Pick<ResolvedVariantPricing, 'stock' | 'stockVariantId' | 'stockField'> {
+  const { stock, stockVariantId, stockField } = resolveVariantPricing(product, variantId);
+  return { stock, stockVariantId, stockField };
 }
 
 export async function decrementStock(
@@ -21,15 +21,16 @@ export async function decrementStock(
   const product = await Product.findOne({ id: productId }).lean();
   if (!product) return false;
 
-  const { stockVariantId } = resolveVariantPricing(product, variantId);
+  const { stockVariantId, stockField } = resolveVariantPricing(product, variantId);
 
   if (stockVariantId) {
+    const field = stockField ?? 'stock';
     const updated = await Product.findOneAndUpdate(
       {
         id: productId,
-        variants: { $elemMatch: { id: stockVariantId, stock: { $gte: qty } } },
+        variants: { $elemMatch: { id: stockVariantId, [field]: { $gte: qty } } },
       },
-      { $inc: { 'variants.$.stock': -qty } },
+      { $inc: { [`variants.$.${field}`]: -qty } },
     );
     return !!updated;
   }

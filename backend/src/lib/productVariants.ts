@@ -4,6 +4,7 @@ type ProductVariant = {
   type: string;
   price: number;
   stock: number;
+  stockBySize?: Record<string, number>;
 };
 
 type ProductLike = {
@@ -25,6 +26,8 @@ export type ResolvedVariantPricing = {
   label?: string;
   /** Variant document id whose stock should be decremented; omit for product-level stock. */
   stockVariantId?: string;
+  /** Dot-path within the stockVariantId's variant subdocument to decrement; defaults to 'stock'. */
+  stockField?: string;
 };
 
 export function resolveVariantPricing(product: ProductLike, variantId?: string): ResolvedVariantPricing {
@@ -39,14 +42,23 @@ export function resolveVariantPricing(product: ProductLike, variantId?: string):
     if (!primary || !size) {
       throw new Error(`Variante invalida para ${product.name}`);
     }
-    const stock = size.stock ?? primary.stock ?? product.stock;
+    const stockOverride = primary.stockBySize?.[size.id];
+    const stock = stockOverride ?? size.stock ?? primary.stock ?? product.stock;
     const stockVariantId =
-      size.stock != null ? size.id : primary.stock != null ? primary.id : undefined;
+      stockOverride != null
+        ? primary.id
+        : size.stock != null
+          ? size.id
+          : primary.stock != null
+            ? primary.id
+            : undefined;
+    const stockField = stockOverride != null ? `stockBySize.${size.id}` : undefined;
     return {
       price: primary.price + size.price,
       stock,
       label: `${primary.label} · ${size.label}`,
       stockVariantId,
+      stockField,
     };
   }
 
