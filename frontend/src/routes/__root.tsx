@@ -41,7 +41,9 @@ function RootComponent() {
         <PostHogIdentity />
         <QueryClientProvider client={queryClient}>
           <ParallaxProvider>
-            <Outlet />
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
           </ParallaxProvider>
         </QueryClientProvider>
       </ClerkProvider>

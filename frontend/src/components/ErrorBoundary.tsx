@@ -1,8 +1,10 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { captureFrontendException } from '../lib/posthog';
+import { ErrorPage } from '../pages/ErrorPage';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
+  onReset?: () => void;
 };
 
 type ErrorBoundaryState = {
@@ -23,29 +25,27 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     });
   }
 
+  private handleReset = () => {
+    this.setState({ hasError: false });
+    this.props.onReset?.();
+  };
+
   render() {
     if (this.state.hasError) {
       return (
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'grid',
-            placeItems: 'center',
-            padding: 24,
-            background: 'var(--cream)',
-            color: 'var(--ink)',
-            fontFamily: '"Geist", sans-serif',
+        <ErrorPage
+          code={500}
+          title={
+            <>
+              Algo salió <em style={{ color: 'var(--coral)' }}>mal</em>
+            </>
+          }
+          message="Ya registramos el error. Puedes reintentar o volver al inicio."
+          onHome={() => {
+            window.location.href = '/';
           }}
-        >
-          <div style={{ maxWidth: 460, textAlign: 'center' }}>
-            <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 44, fontWeight: 400 }}>
-              Algo salio mal
-            </h1>
-            <p style={{ color: 'var(--ink-60)', lineHeight: 1.6 }}>
-              Ya registramos el error. Recarga la pagina para volver a intentarlo.
-            </p>
-          </div>
-        </div>
+          onRetry={this.handleReset}
+        />
       );
     }
 

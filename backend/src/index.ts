@@ -95,6 +95,13 @@ app.post('/test-email', async (c) => {
   return c.json({ success: true, message: 'Email sent to ' + email });
 });
 
+app.notFound((c) => c.json({ error: 'Not found' }, 404));
+
+app.onError((err, c) => {
+  console.error('[API]', err);
+  return c.json({ error: 'Internal server error' }, 500);
+});
+
 const port = Number(process.env.PORT) || 3002;
 
 Bun.serve({
