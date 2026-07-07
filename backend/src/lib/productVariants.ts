@@ -4,6 +4,9 @@ type ProductVariant = {
   type: string;
   price: number;
   stock: number;
+  imageUrl?: string;
+  images?: string[];
+  imagesBySize?: Record<string, string[]>;
   stockBySize?: Record<string, number>;
 };
 
@@ -75,6 +78,30 @@ export function resolveVariantPricing(product: ProductLike, variantId?: string):
   };
 }
 
+/** Resolves the correct photo for a purchased combo, falling back to the product's own primary image. */
+export function resolveVariantImage(product: ProductLike, variantId?: string): string {
+  const fallback =
+    product.images?.find((img) => img.isPrimary)?.url ||
+    product.images?.[0]?.url ||
+    product.imageUrl ||
+    '';
+
+  if (!variantId?.trim() || !product.variants?.length) return fallback;
+
+  if (variantId.includes(':')) {
+    const [primaryId, sizeId] = variantId.split(':');
+    const primary = product.variants.find((v) => v.id === primaryId);
+    const size = product.variants.find((v) => v.id === sizeId);
+    if (!primary || !size) return fallback;
+    const bySize = primary.imagesBySize?.[size.id];
+    return bySize?.[0] || primary.images?.[0] || primary.imageUrl || size.images?.[0] || size.imageUrl || fallback;
+  }
+
+  const variant = product.variants.find((v) => v.id === variantId);
+  if (!variant) return fallback;
+  return variant.images?.[0] || variant.imageUrl || fallback;
+}
+
 export function buildPaidLineItem(
   product: ProductLike,
   item: { productId: string; qty: number; variantId?: string; isSample?: boolean },
@@ -107,7 +134,7 @@ export function buildPaidLineItem(
     productName: resolved.label ? `${product.name} · ${resolved.label}` : product.name,
     qty: item.qty,
     price: resolved.price,
-    imageUrl: primaryImage,
+    imageUrl: resolveVariantImage(product, item.variantId),
     category: product.category,
     isSample: false,
     variantId: item.variantId,

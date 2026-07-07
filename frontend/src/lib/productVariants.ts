@@ -47,3 +47,27 @@ export function getEffectivePriceBefore(product: Product): number | undefined {
   const { variant } = pickDefaultCombo(product);
   return variant?.priceBefore ?? product.priceBefore;
 }
+
+/** Reconstructs the exact ProductVariant (single or combo) that a persisted `variantId` refers to, for reorder/cart flows. */
+export function resolveVariantById(variants: ProductVariant[] | undefined, variantId?: string): ProductVariant | undefined {
+  if (!variantId || !variants?.length) return undefined;
+
+  if (variantId.includes(':')) {
+    const [primaryId, sizeId] = variantId.split(':');
+    const primary = variants.find((v) => v.id === primaryId);
+    const size = variants.find((v) => v.id === sizeId);
+    if (!primary || !size) return undefined;
+    const images = primary.imagesBySize?.[size.id] ?? primary.images ?? size.images;
+    return {
+      ...primary,
+      id: variantId,
+      label: `${primary.label} · ${size.label}`,
+      price: primary.price + size.price,
+      stock: primary.stockBySize?.[size.id] ?? size.stock ?? primary.stock,
+      images,
+      imageUrl: primary.imageUrl ?? size.imageUrl,
+    };
+  }
+
+  return variants.find((v) => v.id === variantId);
+}

@@ -10,6 +10,7 @@ import type { Order, OrderAddress } from '../types';
 import { useOnceLoading, Skeleton } from '../components/admin';
 import { useCartStore } from '../store/cartStore';
 import { useUiStore } from '../store/uiStore';
+import { resolveVariantById } from '../lib/productVariants';
 
 interface OrdersProps {
   onBack: () => void;
@@ -478,8 +479,10 @@ export function Orders({ onBack }: OrdersProps) {
       for (const item of selected.items.filter((line) => !line.isSample)) {
         try {
           const product = await api.products.get(item.productId);
-          if (!product.active || product.stock <= 0) continue;
-          addToCart(product, Math.min(item.qty, product.stock));
+          const variant = resolveVariantById(product.variants, item.variantId);
+          const availableStock = variant?.stock ?? product.stock;
+          if (!product.active || availableStock <= 0) continue;
+          addToCart(product, Math.min(item.qty, availableStock), variant);
           addedLines += 1;
         } catch {
           // Producto ya no existe en catálogo
