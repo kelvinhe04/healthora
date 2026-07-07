@@ -9,17 +9,17 @@ import {
   trStyle,
   iconBtnAd,
 } from '../../../components/admin';
+import type { FulfillmentStatus } from '../../../types';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { PaginationControls } from '../components/PaginationControls';
 import { useAdminPanelContext } from '../AdminPanelContext';
-import type { FulfillmentStatus } from '../types';
 
 export function OrdersSection() {
   const {
-  showOrdersSkeleton,
   orders,
+  showOrdersSkeleton,
   orderSearch,
   setOrderSearch,
   orderFulfillmentFilter,
