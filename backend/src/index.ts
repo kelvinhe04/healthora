@@ -37,6 +37,7 @@ import { requestLogger } from './middleware/requestLogger';
 import { getCorsOrigins } from './lib/appEnv';
 import { securityHeaders } from './middleware/securityHeaders';
 import { clearCatalogCache } from './lib/cache';
+import { cacheableJson } from './lib/httpCache';
 
 const testEmailSchema = z.object({
   email: emailField(),
@@ -90,7 +91,7 @@ app.route('/admin/audit-logs', adminAuditLogsRouter);
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
-app.get('/openapi.json', (c) => c.json(openApiDocument));
+app.get('/openapi.json', (c) => cacheableJson(c, openApiDocument, 'staticDocument'));
 app.get('/docs', swaggerUI({ url: '/openapi.json' }));
 
 app.post('/test-email', async (c) => {
