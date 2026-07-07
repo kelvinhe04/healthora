@@ -378,7 +378,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
             </div>
             <AnimatedButton variant="primary" size="lg" onClick={handleAdd} disabled={effectiveStock === 0} style={{ flex: 1 }} text={effectiveStock === 0 ? 'Sin stock' : added ? '✓ Agregado al carrito' : `Agregar al carrito · $${(effectivePrice * qty).toFixed(2)}`} />
           </div>
-          <AnimatedButton variant="outline" full onClick={() => onBuyNow(product, qty, cartVariant)} disabled={effectiveStock === 0} text="Comprar ahora con un clic" />
+          <AnimatedButton aria-label="Comprar ahora con un clic" variant="outline" full onClick={() => onBuyNow(product, qty, cartVariant)} disabled={effectiveStock === 0} text="Comprar ahora con un clic" />
 
           <div style={{ marginTop: 24, background: 'var(--cream-2)', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid var(--ink-06)' }}>
             {[{ icon: 'truck', t: 'Envío gratis en órdenes sobre $50' }, { icon: 'shield', t: 'Pago seguro con Stripe · 3D Secure' }, { icon: 'check', t: 'Productos verificados por farmacéuticos' }].map((row) => (
