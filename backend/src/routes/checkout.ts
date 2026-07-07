@@ -7,9 +7,10 @@ import { Order } from '../db/models/Order';
 import { stripe } from '../lib/stripe';
 import { getPromotion } from '../lib/promotions';
 import { addressSchema, cartItemSchema, optionalTextField, parseJson, productIdSchema } from '../lib/validation';
+import { buildPaidLineItem } from '../lib/productVariants';
 
 type CheckoutBody = {
-  items: { productId: string; qty: number }[];
+  items: { productId: string; qty: number; variantId?: string }[];
   address: { name: string; phone: string; address: string; city: string; postal: string };
   promoCode?: string;
   freeSampleId?: string;
@@ -48,12 +49,17 @@ export const checkoutRouter = new Hono<AppEnv>()
       freeSampleProduct = await Product.findOne({ id: freeSampleId, active: true }).lean();
     }
 
-    const lineItems = items.map((item) => {
-      const p = products.find((product) => product.id === item.productId);
-      if (!p) throw new Error('Product not found');
-      if (p.stock < item.qty) throw new Error(`Stock insuficiente para ${p.name}`);
-      return { productId: p.id, productName: p.name, qty: item.qty, price: p.price };
-    });
+    let lineItems;
+    try {
+      lineItems = items.map((item) => {
+        const p = products.find((product) => product.id === item.productId);
+        if (!p) throw new Error('Product not found');
+        return buildPaidLineItem(p, item);
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid cart item';
+      return c.json({ error: message }, 400);
+    }
 
     const subtotal = roundMoney(lineItems.reduce((s, i) => s + i.price * i.qty, 0));
     const promotion = promoCode

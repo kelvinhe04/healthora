@@ -19,6 +19,7 @@ import {
   parseQuery,
   textField,
 } from '../lib/validation';
+import { buildPaidLineItem } from '../lib/productVariants';
 
 const ordersQuerySchema = z.object({
   stripeSessionId: textField(255).optional(),
@@ -85,6 +86,7 @@ type CheckoutAddress = {
 type CheckoutCartItem = {
   productId: string;
   qty: number;
+  variantId?: string;
   isSample?: boolean;
 };
 
@@ -111,9 +113,7 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
   const lineItems = cartItems.map((item) => {
     const product = products.find((entry) => entry.id === item.productId);
     if (!product) throw new Error(`Product not found for ${item.productId}`);
-    if (!item.isSample && product.stock < item.qty) throw new Error(`Insufficient stock for ${product.name}`);
-    const primaryImage = product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || product.imageUrl || '';
-    return { productId: product.id, productName: product.name, qty: item.qty, price: item.isSample ? 0 : product.price, imageUrl: primaryImage, category: product.category, isSample: item.isSample ?? false };
+    return buildPaidLineItem(product, item);
   });
 
   const subtotal = lineItems.reduce((sum, item) => sum + item.price * item.qty, 0);
