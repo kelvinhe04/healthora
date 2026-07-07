@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
@@ -11,6 +11,7 @@ import { api } from '../lib/api';
 import { useAuth } from '@clerk/clerk-react';
 import { canApplyPromotion, getAvailablePromotionCodes, getPromotion, normalizePromotionCode } from '../lib/promotions';
 import { useCartStore } from '../store/cartStore';
+import { getE2EAuthToken, getE2EUser } from '../lib/e2eAuth';
 
 interface CheckoutProps {
   items: CartItem[];
@@ -80,9 +81,13 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   const isMobile = bp === 'mobile';
   const isTablet = bp === 'tablet';
   const isSmall = isMobile || isTablet;
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn: clerkIsSignedIn, user: clerkUser } = useUser();
   const freeSample = useCartStore((s) => s.freeSample);
   const { getToken } = useAuth();
+  const e2eUser = getE2EUser();
+  const isSignedIn = Boolean(clerkIsSignedIn || e2eUser);
+  const user = e2eUser ?? clerkUser;
+  const getEffectiveToken = useCallback(async () => getE2EAuthToken() ?? getToken(), [getToken]);
   const [step, setStep] = useState(isSignedIn ? 2 : 1);
   const [showSignInModal, setShowSignInModal] = useState(false);
 
@@ -111,7 +116,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
 
     const loadSavedAddresses = async () => {
       try {
-        const token = await getToken();
+        const token = await getEffectiveToken();
         if (!token) return;
         const addresses = await api.account.addresses.list(token);
         if (cancelled) return;
@@ -139,7 +144,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     return () => {
       cancelled = true;
     };
-  }, [getToken, isSignedIn]);
+  }, [getEffectiveToken, isSignedIn]);
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -151,7 +156,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
 
     const loadOrderEligibility = async () => {
       try {
-        const token = await getToken();
+        const token = await getEffectiveToken();
         if (!token) return;
         const orders = await api.orders.list(token);
         if (cancelled) return;
@@ -171,7 +176,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     return () => {
       cancelled = true;
     };
-  }, [appliedPromoCode, getToken, isSignedIn]);
+  }, [appliedPromoCode, getEffectiveToken, isSignedIn]);
 
   const subtotal = roundMoney(items.reduce((s, it) => s + (it.variant?.price ?? it.product.price) * it.qty, 0));
   const appliedPromo = appliedPromoCode ? getPromotion(appliedPromoCode, items) : null;
@@ -215,7 +220,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     setProcessing(true);
     setError('');
     try {
-      const token = await getToken();
+      const token = await getEffectiveToken();
       const { url } = await api.checkout.createSession(
         {
           items: items.map((it) => ({ productId: it.product.id, qty: it.qty })),
@@ -348,7 +353,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             </div>
             {addressError && <div role="alert" style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{addressError}</div>}
             {step === 2 && (
-              <AnimatedButton variant="primary" onClick={() => { if (!isAddressValid) { setAddressError('Por favor completa todos los campos requeridos'); } else { setStep(3); }}} style={{ marginTop: 16 }} disabled={!isAddressValid} text="Continuar al pago" />
+              <AnimatedButton aria-label="Continuar al pago" variant="primary" onClick={() => { if (!isAddressValid) { setAddressError('Por favor completa todos los campos requeridos'); } else { setStep(3); }}} style={{ marginTop: 16 }} disabled={!isAddressValid} text="Continuar al pago" />
             )}
           </section>
 
@@ -365,7 +370,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
               Serás redirigido a Stripe Checkout para completar el pago de forma segura. Acepta tarjetas Visa, Mastercard, Amex y más.
             </div>
             {error && <div role="alert" style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{error}</div>}
-            <AnimatedButton variant="primary" size="lg" full onClick={handlePay} style={{ marginTop: 20 }} icon={<Icon name="lock" size={14} />} disabled={processing} text={processing ? 'Redirigiendo a Stripe…' : `Pagar $${total.toFixed(2)}`} />
+            <AnimatedButton aria-label={processing ? 'Redirigiendo a Stripe' : `Pagar $${total.toFixed(2)}`} variant="primary" size="lg" full onClick={handlePay} style={{ marginTop: 20 }} icon={<Icon name="lock" size={14} />} disabled={processing} text={processing ? 'Redirigiendo a Stripe…' : `Pagar $${total.toFixed(2)}`} />
           </section>
         </div>
 
