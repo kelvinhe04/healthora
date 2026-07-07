@@ -8,6 +8,7 @@ import { useReviews } from '../../hooks/useReviews';
 import { useThemeStore } from '../../store/themeStore';
 import { pickDefaultCombo, getEffectivePrice, getEffectivePriceBefore } from '../../lib/productVariants';
 import { useCompareStore } from '../../store/compareStore';
+import { useWishlistStore } from '../../store/wishlistStore';
 
 // ─── Shared shimmer helper ────────────────────────────────────────────────────
 function ShimmerBox({ style }: { style?: CSSProperties }) {
@@ -73,14 +74,17 @@ interface ProductCardProps {
   onAdd: (p: Product) => void;
   priority?: boolean;
   showCompare?: boolean;
+  showWishlist?: boolean;
 }
 
-export function ProductCard({ product, onClick, onAdd, priority = false, showCompare = true }: ProductCardProps) {
+export function ProductCard({ product, onClick, onAdd, priority = false, showCompare = true, showWishlist = true }: ProductCardProps) {
   const [hover, setHover] = useState(false);
   const [compareHint, setCompareHint] = useState('');
   const dark = useThemeStore((s) => s.theme === 'dark');
   const toggleCompare = useCompareStore((s) => s.toggle);
   const isCompared = useCompareStore((s) => s.contains(product.id));
+  const toggleWishlist = useWishlistStore((s) => s.toggle);
+  const isWishlisted = useWishlistStore((s) => s.contains(product.id));
   const { data: liveReviews } = useReviews(product.id);
   const liveCount = liveReviews?.length ?? 0;
   const liveRating = liveReviews && liveReviews.length > 0
@@ -130,6 +134,35 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
         
         {product.stock > 0 && effectivePriceBefore && (
           <span style={{ position: 'absolute', top: 12, right: 12, background: 'var(--coral)', color: 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, fontWeight: 600 }}>−{Math.round((1 - effectivePrice / effectivePriceBefore) * 100)}%</span>
+        )}
+
+        {showWishlist && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWishlist(product.id);
+            }}
+            aria-label={isWishlisted ? 'Quitar de wishlist' : 'Agregar a wishlist'}
+            aria-pressed={isWishlisted}
+            style={{
+              position: 'absolute',
+              top: 56,
+              left: 12,
+              width: 44,
+              height: 44,
+              borderRadius: 999,
+              border: isWishlisted ? '2px solid var(--coral)' : '1px solid var(--ink-12)',
+              background: isWishlisted ? 'color-mix(in oklab, var(--coral) 12%, white)' : 'rgba(255,255,255,0.92)',
+              color: isWishlisted ? 'var(--coral)' : 'var(--ink)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Icon name="heart" size={16} stroke={isWishlisted ? 'var(--coral)' : 'currentColor'} />
+          </button>
         )}
 
         {showCompare && (
