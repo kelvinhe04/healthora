@@ -4,6 +4,7 @@ import { ProductDetail } from '../../pages/ProductDetail';
 import { ErrorPage } from '../../pages/ErrorPage';
 import { useProduct } from '../../hooks/useProducts';
 import { useStorefrontNav } from '../../hooks/useStorefrontNav';
+import { useRecentlyViewedStore } from '../../store/recentlyViewedStore';
 
 export const Route = createFileRoute('/_storefront/product/$productId')({
   component: ProductDetailRoute,
@@ -14,6 +15,11 @@ function ProductDetailRoute() {
   const router = useRouter();
   const { openProduct, onAdd, onBuyNow } = useStorefrontNav();
   const { data: product, isLoading, isError } = useProduct(productId);
+  const trackRecentlyViewed = useRecentlyViewedStore((s) => s.track);
+
+  useEffect(() => {
+    if (product) trackRecentlyViewed(product.id);
+  }, [product, trackRecentlyViewed]);
 
   useEffect(() => {
     if (product || isLoading || isError) return;

@@ -10,6 +10,7 @@ import { Icon } from '../components/shared/Icon';
 import { useProducts } from '../hooks/useProducts';
 import { useReviews } from '../hooks/useReviews';
 import { ReviewSection } from '../components/shared/ReviewSection';
+import { RecentlyViewedSection } from '../components/shared/RecentlyViewedSection';
 import { PRIMARY_VARIANT_TYPES, pickDefaultPrimary, sizesFor, pickDefaultSize } from '../lib/productVariants';
 
 interface ProductDetailProps {
@@ -512,6 +513,12 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
           )}
         </div>
       </div>
+
+      <RecentlyViewedSection
+        onOpenProduct={onOpenProduct}
+        onAdd={(p) => onAdd(p, 1)}
+        excludeProductId={product.id}
+      />
 
       {related.length > 0 && (
         <section style={{ marginTop: 80 }}>
