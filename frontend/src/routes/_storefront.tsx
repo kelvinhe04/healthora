@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { Topbar } from "../components/chrome/Topbar";
@@ -12,6 +12,7 @@ import { useUiStore } from "../store/uiStore";
 import { useThemeStore, applyTheme } from "../store/themeStore";
 import { api } from "../lib/api";
 import { useStorefrontNav } from "../hooks/useStorefrontNav";
+import { getE2EAuthToken, getE2EUser } from "../lib/e2eAuth";
 
 export const Route = createFileRoute("/_storefront")({
   component: StorefrontLayout,
@@ -23,8 +24,11 @@ function StorefrontLayout() {
   const setCartOpen = useUiStore((s) => s.setCartOpen);
   const setCheckoutItems = useUiStore((s) => s.setCheckoutItems);
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const { user } = useUser();
+  const { user: clerkUser } = useUser();
   const { getToken } = useAuth();
+  const e2eUser = getE2EUser();
+  const user = e2eUser ?? clerkUser;
+  const getEffectiveToken = useCallback(async () => getE2EAuthToken() ?? getToken(), [getToken]);
   const { bindOwner, items, replaceItems } = useCartStore();
   const lastLoadedOwnerRef = useRef<string | null>(null);
   const skipNextCartSaveRef = useRef(false);
@@ -55,7 +59,7 @@ function StorefrontLayout() {
 
     const loadRemoteCart = async () => {
       try {
-        const token = await getToken();
+        const token = await getEffectiveToken();
         if (!token) return;
         const remoteItems = await api.cart.get(token);
         if (cancelled) return;
@@ -72,7 +76,7 @@ function StorefrontLayout() {
     return () => {
       cancelled = true;
     };
-  }, [getToken, replaceItems, user?.id]);
+  }, [getEffectiveToken, replaceItems, user?.id]);
 
   useEffect(() => {
     if (!user?.id || lastLoadedOwnerRef.current !== user.id) return;
@@ -84,7 +88,7 @@ function StorefrontLayout() {
     const timeoutId = window.setTimeout(() => {
       void (async () => {
         try {
-          const token = await getToken();
+          const token = await getEffectiveToken();
           if (!token) return;
           await api.cart.save(
             items.map((item) => ({
@@ -100,7 +104,7 @@ function StorefrontLayout() {
     }, 250);
 
     return () => window.clearTimeout(timeoutId);
-  }, [getToken, items, user?.id]);
+  }, [getEffectiveToken, items, user?.id]);
 
   return (
     <>
