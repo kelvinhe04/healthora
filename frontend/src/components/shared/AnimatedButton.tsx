@@ -58,7 +58,6 @@ export function AnimatedButton({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    overflow: 'hidden',
     borderRadius: 999,
     fontFamily: '"Geist", sans-serif',
     fontWeight: 600,
@@ -86,67 +85,8 @@ export function AnimatedButton({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* animated letters */}
-      <span style={{ display: 'inline-flex' }}>
-        {text.split('').map((char, index) => (
-          <span
-            key={index}
-            style={{ position: 'relative', display: 'inline-block', overflow: 'hidden', whiteSpace: 'pre' }}
-          >
-            <span
-              style={{
-                display: 'inline-block',
-                transform: hovered && !disabled ? 'translateY(-100%)' : 'translateY(0)',
-                transition: 'transform 120ms ease-in-out',
-                transitionDelay: `${index * 0.014}s`,
-              }}
-            >
-              {char === ' ' ? ' ' : char}
-            </span>
-            <span
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                display: 'inline-block',
-                transform: hovered && !disabled ? 'translateY(0)' : 'translateY(100%)',
-                transition: 'transform 120ms ease-in-out',
-                transitionDelay: `${index * 0.014}s`,
-              }}
-            >
-              {char === ' ' ? ' ' : char}
-            </span>
-          </span>
-        ))}
-      </span>
-      {/* animated icon — slides with the text, delay after last character */}
-      {icon && (
-        <span style={{ position: 'relative', display: 'inline-flex', overflow: 'hidden', flexShrink: 0 }}>
-          <span
-            style={{
-              display: 'inline-flex',
-              transform: hovered && !disabled ? 'translateY(-100%)' : 'translateY(0)',
-              transition: 'transform 120ms ease-in-out',
-              transitionDelay: `${(text.length - 1) * 0.014 + 0.1}s`,
-            }}
-          >
-            {icon}
-          </span>
-          <span
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              display: 'inline-flex',
-              transform: hovered && !disabled ? 'translateY(0)' : 'translateY(100%)',
-              transition: 'transform 120ms ease-in-out',
-              transitionDelay: `${(text.length - 1) * 0.014 + 0.1}s`,
-            }}
-          >
-            {icon}
-          </span>
-        </span>
-      )}
+      <span>{text}</span>
+      {icon && <span style={{ display: 'inline-flex', flexShrink: 0 }}>{icon}</span>}
     </button>
   );
 }
