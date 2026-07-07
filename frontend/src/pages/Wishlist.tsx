@@ -50,7 +50,7 @@ export function WishlistPage({ onOpenProduct, onAdd, onBrowse }: WishlistSection
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: isSmall ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 20 }}>
           {products.map((p) => (
-            <ProductCard key={p.id} product={p} onClick={onOpenProduct} onAdd={onAdd} />
+            <ProductCard key={p.id} product={p} onClick={onOpenProduct} onAdd={onAdd} showWishlist={false} />
           ))}
         </div>
       )}

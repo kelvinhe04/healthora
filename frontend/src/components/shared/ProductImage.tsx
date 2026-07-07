@@ -38,9 +38,12 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
   const imgSrc = failedOptimizedSrc === optimizedSrc ? rawSrc : optimizedSrc;
 
   if (rawSrc) {
-    const imagePadding = size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
+    const isCatalogTile = flat && size === 'tile';
+    const imagePadding = isCatalogTile ? 0 : size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
+    const objectFit = isCatalogTile ? 'cover' : 'contain';
+    const frameBackground = isCatalogTile ? 'var(--cream-2)' : 'white';
     return (
-      <div style={{ width: s.w, height: s.h, background: 'white', borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box' }}>
+      <div style={{ width: s.w, height: s.h, background: frameBackground, borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box' }}>
         <img
           src={imgSrc || rawSrc}
           srcSet={srcSet}
@@ -52,7 +55,7 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
           onError={() => {
             if (imgSrc !== rawSrc) setFailedOptimizedSrc(optimizedSrc);
           }}
-          style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center center' }}
+          style={{ width: '100%', height: '100%', objectFit, objectPosition: 'center center' }}
         />
       </div>
     );
