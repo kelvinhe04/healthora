@@ -16,8 +16,28 @@ const widthBySize = {
 
 export type ImageSizeKey = keyof typeof widthBySize;
 
+const responsiveWidthsBySize: Record<ImageSizeKey, number[]> = {
+  xs: [80, 120, 180],
+  sm: [160, 240, 360],
+  md: [320, 440, 640],
+  lg: [640, 1040, 1440],
+  tile: [320, 560, 840],
+};
+
+const sizesBySize: Record<ImageSizeKey, string> = {
+  xs: '60px',
+  sm: '120px',
+  md: '220px',
+  lg: '(max-width: 768px) 100vw, 520px',
+  tile: '(max-width: 768px) 50vw, (max-width: 1100px) 50vw, 33vw',
+};
+
 export function imageWidthForSize(size: ImageSizeKey): number {
   return widthBySize[size];
+}
+
+export function imageSizesForSize(size: ImageSizeKey): string {
+  return sizesBySize[size];
 }
 
 /** CDN fetch transform via Cloudinary. Sin cloud name devuelve la URL original. */
@@ -35,6 +55,20 @@ export function optimizeImageUrl(url: string, width = 800): string {
 
   const encoded = encodeURIComponent(absolute);
   return `https://res.cloudinary.com/${cloudName}/image/fetch/f_auto,q_auto:good,w_${width}/${encoded}`;
+}
+
+export function responsiveImageSrcSet(url: string, size: ImageSizeKey): string | undefined {
+  if (!url || !isCloudinaryEnabled()) return undefined;
+
+  const candidates = responsiveWidthsBySize[size];
+  const srcSet = candidates
+    .map((width) => {
+      const optimized = optimizeImageUrl(url, width);
+      return optimized === url ? null : `${optimized} ${width}w`;
+    })
+    .filter((candidate): candidate is string => Boolean(candidate));
+
+  return srcSet.length ? srcSet.join(', ') : undefined;
 }
 
 export function isCloudinaryActive(): boolean {

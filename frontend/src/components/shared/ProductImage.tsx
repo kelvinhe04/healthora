@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { Product } from '../../types';
-import { imageWidthForSize, optimizeImageUrl, type ImageSizeKey } from '../../lib/cloudinary';
+import { imageSizesForSize, imageWidthForSize, optimizeImageUrl, responsiveImageSrcSet, type ImageSizeKey } from '../../lib/cloudinary';
 
 type SizeKey = 'xs' | 'sm' | 'md' | 'lg' | 'tile';
 
@@ -30,12 +30,12 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
   const s = sizes[size];
   const defaultVariant = product.variants?.find((v) => v.isDefault) ?? product.variants?.[0];
   const rawSrc = imageUrl || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || defaultVariant?.images?.[0] || defaultVariant?.imageUrl;
-  const optimizedSrc = rawSrc ? optimizeImageUrl(rawSrc, imageWidthForSize(size as ImageSizeKey)) : '';
-  const [imgSrc, setImgSrc] = useState(optimizedSrc);
-
-  useEffect(() => {
-    setImgSrc(optimizedSrc);
-  }, [optimizedSrc]);
+  const imageSize = size as ImageSizeKey;
+  const optimizedSrc = rawSrc ? optimizeImageUrl(rawSrc, imageWidthForSize(imageSize)) : '';
+  const srcSet = rawSrc ? responsiveImageSrcSet(rawSrc, imageSize) : undefined;
+  const sizesAttr = imageSizesForSize(imageSize);
+  const [failedOptimizedSrc, setFailedOptimizedSrc] = useState('');
+  const imgSrc = failedOptimizedSrc === optimizedSrc ? rawSrc : optimizedSrc;
 
   if (rawSrc) {
     const imagePadding = size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
@@ -43,12 +43,14 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
       <div style={{ width: s.w, height: s.h, background: 'white', borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box' }}>
         <img
           src={imgSrc || rawSrc}
+          srcSet={srcSet}
+          sizes={srcSet ? sizesAttr : undefined}
           alt={alt || product.name}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
           fetchPriority={priority ? 'high' : 'auto'}
           onError={() => {
-            if (imgSrc !== rawSrc) setImgSrc(rawSrc);
+            if (imgSrc !== rawSrc) setFailedOptimizedSrc(optimizedSrc);
           }}
           style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center center' }}
         />

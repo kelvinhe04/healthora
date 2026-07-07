@@ -896,12 +896,13 @@ export function Catalog({
                 gap: isMobile ? 12 : 20,
               }}
             >
-              {paginated.map((p) => (
+              {paginated.map((p, index) => (
                 <ProductCard
                   key={p.id}
                   product={p}
                   onClick={onOpenProduct}
                   onAdd={onAdd}
+                  priority={currentPage === 1 && index < (isMobile ? 2 : isTablet ? 4 : 3)}
                 />
               ))}
             </div>
