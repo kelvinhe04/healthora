@@ -104,9 +104,9 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
 
   const cartItems = parsedCartItems.data as CheckoutCartItem[];
   const address = parsedAddress.data as CheckoutAddress;
-  const productIds = cartItems.map((item) => item.productId);
+  const productIds = [...new Set(cartItems.map((item) => item.productId))];
   const products = await Product.find({ id: { $in: productIds }, active: true }).lean();
-  if (products.length !== cartItems.length) return null;
+  if (products.length !== productIds.length) return null;
 
   const lineItems = cartItems.map((item) => {
     const product = products.find((entry) => entry.id === item.productId);
