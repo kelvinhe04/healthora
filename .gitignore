@@ -10,6 +10,7 @@ pnpm-lock.yaml
 **/.cache/
 **/.output/
 frontend/src/routeTree.gen.ts
+frontend/.tanstack/
 
 # Environment and secrets
 **/.env
