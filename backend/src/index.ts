@@ -14,6 +14,7 @@ import { adminProductsRouter } from './routes/admin/adminProducts';
 import { adminUsersRouter } from './routes/admin/adminUsers';
 import { adminSalesRouter } from './routes/admin/adminSales';
 import { adminEarningsRouter } from './routes/admin/adminEarnings';
+import { adminAuditLogsRouter } from './routes/admin/adminAuditLogs';
 import { accountRouter } from './routes/account';
 import { sendOrderConfirmationEmail } from './lib/email';
 import { recalculateBestsellers, recalculateNew } from './lib/bestsellers';
@@ -51,6 +52,7 @@ app.route('/admin/products', adminProductsRouter);
 app.route('/admin/users', adminUsersRouter);
 app.route('/admin/sales', adminSalesRouter);
 app.route('/admin/earnings', adminEarningsRouter);
+app.route('/admin/audit-logs', adminAuditLogsRouter);
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
