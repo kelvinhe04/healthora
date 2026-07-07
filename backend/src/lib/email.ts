@@ -293,6 +293,10 @@ function buildFulfillmentSteps(currentStatus: FulfillmentStatus): string {
 export async function sendOrderConfirmationEmail(data: EmailData): Promise<void> {
   const { customerName, customerEmail, orderId, items, subtotal, discountCode, discountAmount = 0, tax, shipping, total, address, createdAt } = data;
 
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+
   if (!customerEmail) {
     console.error('[EMAIL] No customer email provided, skipping email');
     return;

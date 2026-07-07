@@ -18,6 +18,17 @@ function resolveRole(email?: string | null, metadataRole?: string | null) {
 }
 
 export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
+  if (process.env.NODE_ENV === 'test') {
+    c.set('user', {
+      clerkId: c.req.header('x-test-clerk-id') || 'test-user',
+      role: c.req.header('x-test-role') || 'customer',
+      name: c.req.header('x-test-name') || 'Test User',
+      email: c.req.header('x-test-email') || 'test@example.com',
+    });
+    await next();
+    return;
+  }
+
   const authHeader = c.req.header('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     return c.json({ error: 'Unauthorized' }, 401);
