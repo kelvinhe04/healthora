@@ -70,9 +70,10 @@ interface ProductCardProps {
   product: Product;
   onClick: (p: Product) => void;
   onAdd: (p: Product) => void;
+  priority?: boolean;
 }
 
-export function ProductCard({ product, onClick, onAdd }: ProductCardProps) {
+export function ProductCard({ product, onClick, onAdd, priority = false }: ProductCardProps) {
   const [hover, setHover] = useState(false);
   const dark = useThemeStore((s) => s.theme === 'dark');
   const { data: liveReviews } = useReviews(product.id);
@@ -98,14 +99,14 @@ export function ProductCard({ product, onClick, onAdd }: ProductCardProps) {
           {secondaryImage ? (
             <div style={{ position: 'relative' }}>
               <div style={{ opacity: hover ? 0 : 1, transform: hover ? 'scale(0.985)' : 'scale(1)', transition: 'opacity 280ms ease, transform 380ms cubic-bezier(.2,.8,.2,1)' }}>
-                <ProductImage product={product} size="tile" flat imageUrl={primaryImage} />
+                <ProductImage product={product} size="tile" flat imageUrl={primaryImage} priority={priority} />
               </div>
               <div style={{ position: 'absolute', inset: 0, opacity: hover ? 1 : 0, transform: hover ? 'scale(1)' : 'scale(1.015)', transition: 'opacity 320ms ease, transform 420ms cubic-bezier(.2,.8,.2,1)' }}>
                 <ProductImage product={product} size="tile" flat imageUrl={secondaryImage} />
               </div>
             </div>
           ) : (
-            <ProductImage product={product} size="tile" flat imageUrl={primaryImage} />
+            <ProductImage product={product} size="tile" flat imageUrl={primaryImage} priority={priority} />
           )}
         </div>
         

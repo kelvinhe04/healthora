@@ -730,7 +730,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
             : bestSellers.map((p, i) => (
                 <StaggerItem key={p.id} index={i}>
-                  <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} />
+                  <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} priority={i < (isMobile ? 2 : 4)} />
                 </StaggerItem>
               ))
           }
@@ -772,7 +772,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                       minHeight: 140,
                     }}
                   >
-                    <ProductImage product={promoSkinProduct} size="md" />
+                    <ProductImage product={promoSkinProduct} size="md" priority />
                   </div>
                 </Parallax>
               )}
@@ -799,7 +799,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                       minHeight: 140,
                     }}
                   >
-                    <ProductImage product={promoHydrationProduct} size="md" />
+                    <ProductImage product={promoHydrationProduct} size="md" priority />
                   </div>
                 </Parallax>
               )}

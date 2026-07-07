@@ -37,13 +37,14 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU-077 | Cache Redis catálogo | `feat/hu-077-cache-redis` / merge directo a `main` | EiJassiel | `backend/src/lib/cache.ts` (Redis o memoria), productos y categorías cacheados. |
 | HU-073 | Containerización y CI/CD | `feat/hu-073-containerizacion-cicd` / merge directo a `main` | EiJassiel | `docker-compose.yml`, CI GitHub Actions, Dockerfile puerto 3002, docs. |
 | HU-071 | Tests unitarios | `HU-071-tests-unitarios` / PR #119 | Roy | Tests unitarios con Bun y cobertura para filtros de catálogo, variantes/precios efectivos y promociones/descuentos. |
+| HU-072 | Tests end-to-end (Playwright) | `HU-072-tests-end-to-end-playwright` / PR #121 | Roy | E2E de checkout con Playwright: catálogo → producto → checkout → Stripe mock; cubre camino feliz, dirección incompleta y error al crear sesión de pago. |
 
 ## En curso
 
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
 | HU-033 | Precio por variante aplicado en checkout | por crear | Kelvin | Parcial ya en `main`: cálculo de subtotal en frontend correcto; falta validar precio de variante en backend al confirmar la orden. |
-| HU-072 | Tests end-to-end (Playwright) | `HU-072-tests-end-to-end-playwright` / PR #121 | Roy | E2E de checkout con Playwright: catálogo → producto → checkout → Stripe mock; cubre camino feliz, dirección incompleta y error al crear sesión de pago. Issue #76 cerrada; pendiente merge del PR a `main`. |
+| HU-080 | Optimización de imágenes (Cloudinary, lazy load) | `HU-080-optimizacion-imagenes-cloudinary-lazy-load` / PR #124 | Roy | `srcset`/`sizes` responsive con Cloudinary `f_auto,q_auto`, lazy por defecto y prioridad selectiva para LCP. Issue #84 cerrada; pendiente merge del PR a `main`. |
 
 
 ## Pendientes — continuación directa de variantes (Kelvin, ramas nuevas tras el merge)
@@ -67,7 +68,7 @@ Ramas secuenciales desde `main` (una a la vez, todas tocan `backend/src/index.ts
 
 HU-065/066/067/068 ya mergeadas a `main` (ver tabla de Completadas), fuera de orden respecto al plan original (Roy las abrió antes que 062/064) — 062 y 064 siguen pendientes.
 
-En pausa hasta que variantes/UI se estabilicen: HU-070 (tests), HU-080/081 (optimización de imágenes / HTTP cache — tocan `ProductCard`/`ProductImage`, zona con bug abierto de imagen de variante).
+En pausa hasta que variantes/UI se estabilicen: HU-081 (HTTP cache — toca API/backend).
 
 ---
 
