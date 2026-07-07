@@ -19,7 +19,7 @@ Rollback = **volver al commit/tag conocido bueno**, no parchear en caliente salv
 2. Congelar merges a main
 3. Identificar último tag estable: git tag -l 'v*' --sort=-v:refname
 4. Rollback backend/frontend al tag o deployment previo
-5. Ejecutar health check: scripts/health-check.ps1
+5. Ejecutar health check: tooling/ops/health-check.ps1
 6. Registrar incidente y abrir fix en rama nueva desde main estable
 ```
 
@@ -30,7 +30,7 @@ Antes de cada release a producción:
 ```powershell
 git checkout main
 git pull origin main
-./scripts/tag-release.ps1 v2026.07.06.1 "Release estable post HU-086"
+./tooling/ops/tag-release.ps1 v2026.07.06.1 "Release estable post HU-086"
 git push origin v2026.07.06.1
 ```
 
@@ -80,7 +80,7 @@ GET https://<api-host>/openapi.json
 ## Script de verificación
 
 ```powershell
-./scripts/health-check.ps1 -ApiBase https://tu-api.koyeb.app -FrontendBase https://tu-app.vercel.app
+./tooling/ops/health-check.ps1 -ApiBase https://tu-api.koyeb.app -FrontendBase https://tu-app.vercel.app
 ```
 
 Variables opcionales en `.env` local para el script: ver comentarios en el script.
