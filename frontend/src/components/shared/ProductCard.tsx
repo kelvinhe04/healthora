@@ -131,7 +131,7 @@ export function ProductCard({ product, onClick, onAdd, priority = false }: Produ
         {product.stock > 0 && (
           <button
             onClick={(e) => { e.stopPropagation(); onAdd(product); }}
-            style={{ position: 'absolute', bottom: 12, right: 12, width: 40, height: 40, borderRadius: 999, background: 'oklch(0.18 0.03 155)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hover ? 'scale(1.1) rotate(180deg)' : 'scale(0.85) rotate(0deg)', opacity: hover ? 1 : 0.8, transition: 'all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: hover ? '0 8px 20px rgba(0,0,0,0.15)' : 'none' }}
+            style={{ position: 'absolute', bottom: 12, right: 12, width: 44, height: 44, borderRadius: 999, background: 'oklch(0.18 0.03 155)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hover ? 'scale(1.1) rotate(180deg)' : 'scale(0.85) rotate(0deg)', opacity: hover ? 1 : 0.8, transition: 'all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: hover ? '0 8px 20px rgba(0,0,0,0.15)' : 'none' }}
             aria-label="Agregar al carrito"
           >
             <Icon name="plus" size={16} />

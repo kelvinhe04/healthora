@@ -29,7 +29,17 @@ const VARIANT_TYPE_LABEL: Record<string, string> = {
   scent: 'FRAGANCIA',
 };
 
-const qtyBtn: CSSProperties = { width: 36, height: 36, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+const qtyBtn = (compact: boolean): CSSProperties => ({
+  width: compact ? 44 : 36,
+  height: compact ? 44 : 36,
+  borderRadius: 999,
+  border: 'none',
+  background: 'transparent',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
 
 export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack }: ProductDetailProps) {
   const bp = useBreakpoint();
@@ -277,7 +287,8 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                 aria-pressed={selected}
                 aria-label={`${v.label}${v.stock === 0 ? ', agotado' : ''}`}
                 style={{
-                  padding: '8px 16px',
+                  padding: isMobile ? '12px 18px' : '8px 16px',
+                  minHeight: isMobile ? 44 : undefined,
                   borderRadius: 999,
                   border: selected ? '2px solid var(--ink)' : '1px solid var(--ink-20)',
                   background: selected ? 'var(--ink)' : 'transparent',
@@ -308,7 +319,8 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                   }}
                   style={{
                     width: '100%',
-                    padding: '10px 36px 10px 14px',
+                    padding: isMobile ? '14px 36px 14px 14px' : '10px 36px 10px 14px',
+                    minHeight: isMobile ? 48 : undefined,
                     borderRadius: 10,
                     border: '1px solid var(--ink-20)',
                     background: 'var(--cream)',
@@ -419,8 +431,8 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
             );
           })()}
 
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 28, paddingBottom: 28, borderBottom: '1px solid var(--ink-06)' }}>
-            <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 48, color: 'var(--ink)', lineHeight: 1 }}>${effectivePrice.toFixed(2)}</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 28, paddingBottom: 28, borderBottom: '1px solid var(--ink-06)', flexWrap: 'wrap' }}>
+            <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 36 : isTablet ? 42 : 48, color: 'var(--ink)', lineHeight: 1 }}>${effectivePrice.toFixed(2)}</span>
             {effectivePriceBefore && (
               <>
                 <span style={{ fontSize: 20, color: 'var(--ink-40)', textDecoration: 'line-through' }}>${effectivePriceBefore.toFixed(2)}</span>
@@ -429,13 +441,13 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--ink-20)', borderRadius: 999, padding: 4, opacity: effectiveStock === 0 ? 0.4 : 1 }}>
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={qtyBtn} disabled={effectiveStock === 0 || qty <= 1}><Icon name="minus" size={14} /></button>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', marginBottom: 16, flexDirection: isMobile ? 'column' : 'row' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--ink-20)', borderRadius: 999, padding: 4, opacity: effectiveStock === 0 ? 0.4 : 1, alignSelf: isMobile ? 'flex-start' : undefined }}>
+              <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={qtyBtn(isMobile)} disabled={effectiveStock === 0 || qty <= 1} aria-label="Disminuir cantidad"><Icon name="minus" size={14} /></button>
               <span style={{ width: 40, textAlign: 'center', fontFamily: '"Geist", sans-serif', fontSize: 15 }}>{qty}</span>
-              <button onClick={() => setQty((q) => Math.min(effectiveStock, q + 1))} style={qtyBtn} disabled={effectiveStock === 0 || qty >= effectiveStock}><Icon name="plus" size={14} /></button>
+              <button onClick={() => setQty((q) => Math.min(effectiveStock, q + 1))} style={qtyBtn(isMobile)} disabled={effectiveStock === 0 || qty >= effectiveStock} aria-label="Aumentar cantidad"><Icon name="plus" size={14} /></button>
             </div>
-            <AnimatedButton variant="primary" size="lg" onClick={handleAdd} disabled={effectiveStock === 0} style={{ flex: 1 }} text={effectiveStock === 0 ? 'Sin stock' : added ? '✓ Agregado al carrito' : `Agregar al carrito · $${(effectivePrice * qty).toFixed(2)}`} />
+            <AnimatedButton variant="primary" size="lg" onClick={handleAdd} disabled={effectiveStock === 0} style={{ flex: 1, width: isMobile ? '100%' : undefined }} text={effectiveStock === 0 ? 'Sin stock' : added ? '✓ Agregado al carrito' : `Agregar al carrito · $${(effectivePrice * qty).toFixed(2)}`} />
           </div>
           <AnimatedButton aria-label="Comprar ahora con un clic" variant="outline" full onClick={() => onBuyNow(product, qty, cartVariant)} disabled={effectiveStock === 0} text="Comprar ahora con un clic" />
 

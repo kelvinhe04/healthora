@@ -138,6 +138,22 @@ html.theme-transition *:after {
 /* ─── Root layout ────────────────────────────────────────────────────────────── */
 #root {
   min-height: 100vh;
+  overflow-x: clip;
+}
+
+/* Responsive storefront helpers (HU-088) */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea,
+  button {
+    font-size: max(16px, 1em);
+  }
 }
 
 /* ─── Accessibility (WCAG 2.1 AA helpers) ───────────────────────────────────── */
