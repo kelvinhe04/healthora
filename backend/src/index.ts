@@ -15,6 +15,7 @@ import { adminUsersRouter } from './routes/admin/adminUsers';
 import { adminSalesRouter } from './routes/admin/adminSales';
 import { adminEarningsRouter } from './routes/admin/adminEarnings';
 import { adminErrorReportsRouter } from './routes/admin/adminErrorReports';
+import { adminAuditLogsRouter } from './routes/admin/adminAuditLogs';
 import { accountRouter } from './routes/account';
 import { sendOrderConfirmationEmail } from './lib/email';
 import { recalculateBestsellers, recalculateNew } from './lib/bestsellers';
@@ -26,6 +27,8 @@ import { z } from 'zod';
 import { captureException } from './lib/errorTracking';
 import { shutdownPostHog } from './lib/posthog';
 import { errorTracking } from './middleware/errorTracking';
+import { logger } from './lib/logger';
+import { requestLogger } from './middleware/requestLogger';
 
 const testEmailSchema = z.object({
   email: emailField(),
@@ -38,6 +41,7 @@ await recalculateNew();
 
 const app = new Hono();
 
+app.use('*', requestLogger);
 app.use('*', errorTracking);
 app.use('*', cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }));
 
@@ -59,6 +63,7 @@ app.route('/admin/users', adminUsersRouter);
 app.route('/admin/sales', adminSalesRouter);
 app.route('/admin/earnings', adminEarningsRouter);
 app.route('/admin/error-reports', adminErrorReportsRouter);
+app.route('/admin/audit-logs', adminAuditLogsRouter);
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
@@ -98,7 +103,7 @@ Bun.serve({
   maxRequestBodySize: 20 * 1024 * 1024,
 });
 
-console.log(`Healthora backend running on :${port}`);
+logger.info({ port }, 'Healthora backend running');
 
 process.on('uncaughtException', (error) => {
   captureException({

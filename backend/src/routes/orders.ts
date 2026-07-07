@@ -226,12 +226,12 @@ export const ordersRouter = new Hono<AppEnv>()
 
       try {
         const createdOrder = await createOrderFromPaidSession(stripeSessionId, clerkId);
-        if (!createdOrder) return c.json({ error: 'Not found' });
+        if (!createdOrder) return c.json({ error: 'Not found' }, 404);
         const [enriched] = await addItemImages([createdOrder as unknown as Record<string, unknown>]);
         return c.json(enriched);
       } catch (error) {
         console.error('[ORDERS] Failed to create order from paid session:', error);
-        return c.json({ error: 'Not found' });
+        return c.json({ error: 'Not found' }, 404);
       }
     }
 

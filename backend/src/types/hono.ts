@@ -26,5 +26,6 @@ export interface CartResponseItem {
 export interface AppEnv {
   Variables: {
     user: AuthUser;
+    requestId: string;
   };
 }
