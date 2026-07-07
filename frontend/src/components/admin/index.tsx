@@ -997,7 +997,9 @@ type AdminPage =
   | "products"
   | "users"
   | "sales"
-  | "earnings";
+  | "earnings"
+  | "performance"
+  | "errors";
 interface SidebarProps {
   page: AdminPage;
   setPage: (p: AdminPage) => void;
@@ -1035,6 +1037,8 @@ export function Sidebar({
     { id: "users", label: "Clientes", icon: "user", count: counts?.users },
     { id: "sales", label: "Ventas", icon: "truck" },
     { id: "earnings", label: "Ganancias", icon: "percent" },
+    { id: "performance", label: "Rendimiento", icon: "activity" },
+    { id: "errors", label: "Errores", icon: "alert-circle" },
   ];
   return (
     <aside

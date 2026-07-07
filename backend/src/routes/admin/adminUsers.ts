@@ -1,9 +1,20 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { requireAdmin } from '../../middleware/requireAdmin';
 import type { AppEnv } from '../../types/hono';
 import { User } from '../../db/models/User';
 import { Order } from '../../db/models/Order';
 import { clerk } from '../../lib/clerk';
+import { objectIdSchema, parseJson, parseParams } from '../../lib/validation';
+import { recordSecurityEvent } from '../../lib/securityAudit';
+
+const userIdParamsSchema = z.object({
+  id: objectIdSchema,
+});
+
+const rolePayloadSchema = z.object({
+  role: z.enum(['customer', 'admin']),
+});
 
 export const adminUsersRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
@@ -44,30 +55,50 @@ export const adminUsersRouter = new Hono<AppEnv>()
     return c.json(enriched);
   })
   .patch('/:id/role', async (c) => {
-    const body = await c.req.json<{ role?: 'customer' | 'admin' }>();
-    if (body.role !== 'customer' && body.role !== 'admin') {
-      return c.json({ error: 'Invalid role' }, 400);
-    }
+    const parsedParams = parseParams(c, userIdParamsSchema);
+    if (!parsedParams.success) return parsedParams.response;
 
-    const user = await User.findById(c.req.param('id'));
+    const parsedBody = await parseJson(c, rolePayloadSchema);
+    if (!parsedBody.success) return parsedBody.response;
+
+    const user = await User.findById(parsedParams.data.id);
     if (!user) return c.json({ error: 'Not found' }, 404);
 
-    user.role = body.role;
+    const previousRole = user.role;
+    user.role = parsedBody.data.role;
     await user.save();
 
     try {
       const clerkUser = await clerk.users.getUser(user.clerkId);
       await clerk.users.updateUserMetadata(user.clerkId, {
-        publicMetadata: { ...clerkUser.publicMetadata, role: body.role },
+        publicMetadata: { ...clerkUser.publicMetadata, role: parsedBody.data.role },
       });
     } catch (error) {
       console.error('[ADMIN] Failed to sync Clerk role:', error);
     }
 
+    recordSecurityEvent(c, {
+      actor: c.get('user'),
+      action: 'user.role_changed',
+      resource: `PATCH /admin/users/${parsedParams.data.id}/role`,
+      target: {
+        clerkId: user.clerkId,
+        userId: user._id,
+        email: user.email,
+      },
+      metadata: {
+        previousRole,
+        nextRole: parsedBody.data.role,
+      },
+    });
+
     return c.json({ ok: true });
   })
   .delete('/:id', async (c) => {
-    const user = await User.findById(c.req.param('id'));
+    const parsedParams = parseParams(c, userIdParamsSchema);
+    if (!parsedParams.success) return parsedParams.response;
+
+    const user = await User.findById(parsedParams.data.id);
     if (!user) return c.json({ error: 'Not found' }, 404);
 
     await User.findByIdAndDelete(user._id);

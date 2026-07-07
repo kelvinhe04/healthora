@@ -1,10 +1,12 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { clerkAuth } from '../middleware/clerkAuth';
 import type { AppEnv } from '../types/hono';
 import { Product } from '../db/models/Product';
 import { Order } from '../db/models/Order';
 import { stripe } from '../lib/stripe';
 import { getPromotion } from '../lib/promotions';
+import { addressSchema, cartItemSchema, optionalTextField, parseJson, productIdSchema } from '../lib/validation';
 
 type CheckoutBody = {
   items: { productId: string; qty: number }[];
@@ -13,6 +15,13 @@ type CheckoutBody = {
   freeSampleId?: string;
 };
 
+const checkoutSchema = z.object({
+  items: z.array(cartItemSchema).min(1).max(100),
+  address: addressSchema,
+  promoCode: optionalTextField(40).transform((code) => code?.toUpperCase()),
+  freeSampleId: productIdSchema.optional(),
+});
+
 function roundMoney(value: number): number {
   return Math.round(value * 100) / 100;
 }
@@ -20,13 +29,16 @@ function roundMoney(value: number): number {
 export const checkoutRouter = new Hono<AppEnv>()
   .use('*', clerkAuth)
   .post('/session', async (c) => {
-    const body = await c.req.json<CheckoutBody>();
+    const parsed = await parseJson(c, checkoutSchema);
+    if (!parsed.success) return parsed.response;
+
+    const body = parsed.data as CheckoutBody;
     const { items, address, promoCode, freeSampleId } = body;
     const user = c.get('user');
 
-    const productIds = items.map((i) => i.productId);
+    const productIds = [...new Set(items.map((i) => i.productId))];
     const products = await Product.find({ id: { $in: productIds }, active: true }).lean();
-    if (products.length !== items.length) {
+    if (products.length !== productIds.length) {
       return c.json({ error: 'One or more products not found' }, 400);
     }
 
@@ -125,8 +137,8 @@ export const checkoutRouter = new Hono<AppEnv>()
           tax: String(tax),
           shipping: String(shipping),
         },
-        success_url: `${origin}/?view=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/?view=checkout`,
+        success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/checkout`,
       });
 
       return c.json({ url: session.url });

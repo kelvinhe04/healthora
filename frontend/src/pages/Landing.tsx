@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Parallax } from 'react-scroll-parallax';
 import gsap from 'gsap';
@@ -7,7 +7,7 @@ import { useGSAP } from '@gsap/react';
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 
 gsap.registerPlugin(ScrollTrigger);
-import type { Product, Category } from '../types';
+import type { Product, Category, ProductVariant } from '../types';
 import { ProductCard, ProductCardSkeleton } from '../components/shared/ProductCard';
 import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
@@ -153,7 +153,7 @@ const NEEDS = [
 interface LandingProps {
   onNav: (view: View, filter?: Record<string, string>) => void;
   onOpenProduct: (p: Product) => void;
-  onAdd: (p: Product, qty?: number) => void;
+  onAdd: (p: Product, qty?: number, variant?: ProductVariant) => void;
 }
 
 const headKicker: CSSProperties = { fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 10 };
@@ -500,19 +500,31 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     return () => cancelAnimationFrame(rafId);
   }, [reviewStats]);
 
-  const bestSellers = products.filter((p) => p.tag === 'Más vendido').slice(0, 4);
-  const featured = products.filter((p) => p.tag === 'Nuevo').slice(0, 4);
+  const bestSellers = useMemo(() => {
+    const tagged = products.filter((p) => p.tag === 'Más vendido').slice(0, 4);
+    if (tagged.length > 0) return tagged;
+    return [...products].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, 4);
+  }, [products]);
+
+  const featured = useMemo(() => {
+    const tagged = products.filter((p) => p.tag === 'Nuevo').slice(0, 4);
+    if (tagged.length > 0) return tagged;
+    return products.slice(0, 4);
+  }, [products]);
   
   const activeHero = HERO_CONTENT[activeHeroIdx];
-  const activeProducts = products
-    .filter((p) => p.category === activeHero.id && (p.imageUrl || p.images?.length))
-    .slice(0, 4); // Take up to 4 to display 3 or 4 in the floating composition
+  const activeProducts = useMemo(() => {
+    const withImage = (p: typeof products[number]) => Boolean(p.imageUrl || p.images?.length);
+    const fromCategory = products.filter((p) => p.category === activeHero.id && withImage(p)).slice(0, 4);
+    if (fromCategory.length > 0) return fromCategory;
+    return products.filter(withImage).slice(0, 4);
+  }, [products, activeHero.id]);
 
   const promoSkinProduct = products.find(p => p.name.includes('Superfood Cleanser')) || products.find(p => p.category === 'Salud de la piel' && (p.imageUrl || p.images?.length)) || products[2];
   const promoHydrationProduct = products.find(p => p.name.includes('Toleriane Double Repair Face Moisturizer')) || products.find(p => p.category === 'Hidratantes' && (p.imageUrl || p.images?.length)) || products[6];
 
   return (
-    <main>
+    <div>
       {/* HERO */}
       <RevealSection style={{ padding: isMobile ? '16px 16px 0' : isTablet ? '24px 24px 0' : '32px 40px 0' }}>
         <div ref={heroRef} style={{ borderRadius: isMobile ? 20 : 32, overflow: 'hidden', background: 'linear-gradient(120deg, oklch(0.28 0.055 155) 0%, oklch(0.32 0.06 155) 38%, oklch(0.4 0.065 155) 100%)', color: 'oklch(0.985 0.008 85)', minHeight: isMobile ? 420 : 560, position: 'relative' }}>
@@ -636,7 +648,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                       }}
                       onClick={() => onOpenProduct(product)}
                       >
-                        <ProductImage product={product} size="md" />
+                        <ProductImage product={product} size="md" priority />
                       </div>
                     </div>
                   </div>
@@ -954,6 +966,6 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
         </div>
         <BrandsMarquee onNav={onNav} />
       </RevealSection>
-    </main>
+    </div>
   );
 }

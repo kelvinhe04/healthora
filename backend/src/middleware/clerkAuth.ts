@@ -4,6 +4,7 @@ import { clerk } from '../lib/clerk';
 import { User } from '../db/models/User';
 import type { AppEnv } from '../types/hono';
 import { userRateLimit } from './rateLimit';
+import { recordSecurityEvent } from '../lib/securityAudit';
 
 const AUTHORIZED_PARTIES = ['http://localhost:5173', 'http://localhost:5175', 'http://localhost:3001'];
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || process.env.CLERK_ADMIN_EMAILS || '')
@@ -37,6 +38,7 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
 
     const clerkId = payload.sub;
     let user = await User.findOne({ clerkId }).lean();
+    let createdUser = false;
 
     if (!user) {
       try {
@@ -54,6 +56,7 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
           },
           { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
         );
+        createdUser = true;
       } catch (createError: unknown) {
         console.error('[AUTH] User upsert error:', createError);
         user = await User.findOne({ clerkId }).lean();
@@ -88,6 +91,18 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
 
     const rateLimitedResponse = await userRateLimit(c, async () => undefined);
     if (rateLimitedResponse) return rateLimitedResponse;
+
+    recordSecurityEvent(c, {
+      actor: {
+        clerkId,
+        role: user.role,
+        name: user.name,
+        email: user.email,
+        _id: user._id,
+      },
+      action: 'auth.login',
+      metadata: { newUser: createdUser },
+    });
 
     await next();
   } catch (error) {

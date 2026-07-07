@@ -58,12 +58,18 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
         alt: `${product.name} ${i + 1}`,
         isPrimary: i === 0,
       })).filter((img) => img.url);
-  const variantImages = (selectedVariant?.imagesBySize && selectedSize ? selectedVariant.imagesBySize[selectedSize.id] : null) ?? selectedVariant?.images;
-  const variantImageUrl = selectedVariant?.imageUrl;
+  const imagesBySizeMatch = selectedVariant?.imagesBySize && selectedSize ? selectedVariant.imagesBySize[selectedSize.id] : null;
+  // Si el sabor no trae fotos propias, se usa la foto del tamaño (ej. bolsa vs caja multipack)
+  // para que la galeria siga cambiando con la seleccion.
+  const variantImages = imagesBySizeMatch ?? selectedVariant?.images ?? selectedSize?.images;
+  const variantImageUrl = selectedVariant?.imageUrl ?? selectedSize?.imageUrl;
+  const galleryLabel = imagesBySizeMatch?.length || selectedVariant?.images?.length || selectedVariant?.imageUrl
+    ? selectedVariant?.label
+    : selectedSize?.label ?? selectedVariant?.label;
   const gallery = variantImages && variantImages.length > 0
-    ? variantImages.map((url, i) => ({ url, alt: `${product.name} · ${selectedVariant!.label} ${i + 1}`, isPrimary: i === 0 }))
+    ? variantImages.map((url, i) => ({ url, alt: `${product.name} · ${galleryLabel} ${i + 1}`, isPrimary: i === 0 }))
     : variantImageUrl
-    ? [{ url: variantImageUrl, alt: `${product.name} · ${selectedVariant!.label}`, isPrimary: true }, ...baseGallery.slice(1)]
+    ? [{ url: variantImageUrl, alt: `${product.name} · ${galleryLabel}`, isPrimary: true }, ...baseGallery.slice(1)]
     : baseGallery;
   const activeImage = gallery[activeImageIndex]?.url || product.imageUrl;
   const hasRealImages = Boolean(activeImage);
@@ -145,13 +151,19 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   };
 
   return (
-    <main style={{ padding: isMobile ? '20px 16px 0' : isTablet ? '24px 24px 0' : '24px 40px 0' }}>
+    <div style={{ padding: isMobile ? '20px 16px 0' : isTablet ? '24px 24px 0' : '24px 40px 0' }}>
       {isZoomed && (
         <div 
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Vista ampliada de ${product.name}`}
           onClick={closeZoom} 
           style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(253, 252, 250, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out', backdropFilter: 'blur(10px)', padding: 40, animation: isZoomingOut ? 'zoomModalOut 0.25s cubic-bezier(0.3, 0, 0.8, 0.15) forwards' : 'zoomModalBgIn 0.3s ease-out' }}
         >
-          <button 
+          <button
+            type="button"
+            aria-label="Cerrar vista ampliada"
+            onClick={closeZoom}
             style={{ position: 'absolute', top: 32, right: 32, background: 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 999, width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.2s', transform: isZoomingOut ? 'scale(0.8)' : 'scale(1)' }}
           >
             <Icon name="x" size={20} />
@@ -175,7 +187,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
       )}
 
       <div style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', marginBottom: 24, letterSpacing: '0.06em' }}>
-        <span onClick={onBack} style={{ cursor: 'pointer' }}>TIENDA</span> · {product.category.toUpperCase()} · <span style={{ color: 'var(--ink)' }}>{product.name.toUpperCase()}</span>
+        <button type="button" onClick={onBack} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'inherit', font: 'inherit' }}>TIENDA</button> · {product.category.toUpperCase()} · <span style={{ color: 'var(--ink)' }}>{product.name.toUpperCase()}</span>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1.1fr 1fr', gap: isSmall ? 24 : 48, alignItems: 'start' }}>
@@ -190,11 +202,19 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
             </div>
             <style>{`@keyframes fadeInImage { from { opacity: 0.4; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }`}</style>
           </div>
-          <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+          <div
+            role="tablist"
+            aria-label="Miniaturas del producto"
+            style={{ display: 'flex', gap: 10, marginTop: 12 }}
+          >
             {gallery.map((image, i) => (
-              <div 
-                key={image.url} 
-                onClick={() => setActiveImageIndex(i)} 
+              <button
+                type="button"
+                key={image.url}
+                role="tab"
+                aria-selected={i === activeImageIndex}
+                aria-label={image.alt || `Imagen ${i + 1}`}
+                onClick={() => setActiveImageIndex(i)}
                 onMouseEnter={() => setActiveImageIndex(i)}
                 style={{ 
                   flex: 1, 
@@ -214,7 +234,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                 onMouseLeave={(e) => { if (i !== activeImageIndex) e.currentTarget.style.opacity = '0.6'; }}
               >
                 <ProductImage product={product} size="xs" imageUrl={image.url} alt={image.alt} />
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -250,9 +270,12 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
           {product.variants && product.variants.length > 0 && (() => {
             const pillBtn = (v: ProductVariant, selected: boolean, onClick: () => void) => (
               <button
+                type="button"
                 key={v.id}
                 onClick={onClick}
                 disabled={v.stock === 0}
+                aria-pressed={selected}
+                aria-label={`${v.label}${v.stock === 0 ? ', agotado' : ''}`}
                 style={{
                   padding: '8px 16px',
                   borderRadius: 999,
@@ -271,6 +294,43 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                 {v.label}
               </button>
             );
+            // Con muchas opciones (ej. 25 sabores) los pills se ven desbordados; a partir de 7
+            // opciones se compacta en un <select> nativo.
+            const DROPDOWN_THRESHOLD = 7;
+            const dropdown = (options: ProductVariant[], selected: ProductVariant | null, onChange: (v: ProductVariant) => void, label: string) => (
+              <div style={{ position: 'relative', maxWidth: 320 }}>
+                <select
+                  aria-label={label}
+                  value={selected?.id ?? ''}
+                  onChange={(e) => {
+                    const v = options.find((o) => o.id === e.target.value);
+                    if (v) onChange(v);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 36px 10px 14px',
+                    borderRadius: 10,
+                    border: '1px solid var(--ink-20)',
+                    background: 'var(--cream)',
+                    color: 'var(--ink)',
+                    fontSize: 14,
+                    fontFamily: '"Geist", sans-serif',
+                    cursor: 'pointer',
+                    appearance: 'none',
+                    WebkitAppearance: 'none',
+                  }}
+                >
+                  {options.map((v) => (
+                    <option key={v.id} value={v.id} disabled={v.stock === 0}>
+                      {v.label}{v.stock === 0 ? ' · Sin stock' : ''}
+                    </option>
+                  ))}
+                </select>
+                <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--ink-60)' }}>
+                  <Icon name="chevron-down" size={14} />
+                </span>
+              </div>
+            );
 
             if (hasTwoDimensions) {
               const primaryLabel = VARIANT_TYPE_LABEL[primaryVariants[0]?.type] ?? primaryVariants[0]?.type.toUpperCase();
@@ -280,21 +340,33 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                     <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 10 }}>
                       {primaryLabel}{selectedVariant && <span style={{ color: 'var(--ink)' }}> · {selectedVariant.label.toUpperCase()}</span>}
                     </div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      {primaryVariants.map((v) => pillBtn(v, selectedVariant?.id === v.id, () => {
+                    {primaryVariants.length > DROPDOWN_THRESHOLD ? (
+                      dropdown(primaryVariants, selectedVariant, (v) => {
                         setSelectedVariant(v);
                         setSelectedSize(pickDefaultSize(product.variants, v));
                         setQty(1);
-                      }))}
-                    </div>
+                      }, primaryLabel)
+                    ) : (
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {primaryVariants.map((v) => pillBtn(v, selectedVariant?.id === v.id, () => {
+                          setSelectedVariant(v);
+                          setSelectedSize(pickDefaultSize(product.variants, v));
+                          setQty(1);
+                        }))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 10 }}>
                       TAMAÑO{selectedSize && <span style={{ color: 'var(--ink)' }}> · {selectedSize.label.toUpperCase()}</span>}
                     </div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      {availableSizeVariants.map((v) => pillBtn(v, selectedSize?.id === v.id, () => setSelectedSize(v)))}
-                    </div>
+                    {availableSizeVariants.length > DROPDOWN_THRESHOLD ? (
+                      dropdown(availableSizeVariants, selectedSize, (v) => setSelectedSize(v), 'TAMAÑO')
+                    ) : (
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {availableSizeVariants.map((v) => pillBtn(v, selectedSize?.id === v.id, () => setSelectedSize(v)))}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -308,35 +380,41 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                   {VARIANT_TYPE_LABEL[variantType] ?? variantType.toUpperCase()}
                   {selectedVariant && <span style={{ color: 'var(--ink)' }}> · {selectedVariant.label.toUpperCase()}</span>}
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {product.variants!.map((v) => (
-                    isColor ? (
-                      <button
-                        key={v.id}
-                        onClick={() => { setSelectedVariant(v); setQty(1); }}
-                        title={v.label}
-                        disabled={v.stock === 0}
-                        style={{
-                          width: 34,
-                          height: 34,
-                          borderRadius: '50%',
-                          background: v.color ?? '#ccc',
-                          border: selectedVariant?.id === v.id ? '2.5px solid var(--ink)' : '2px solid transparent',
-                          outline: selectedVariant?.id === v.id ? '2px solid var(--ink)' : '2px solid var(--ink-10)',
-                          outlineOffset: 2,
-                          boxShadow: 'inset 0 0 0 1.5px rgba(0,0,0,0.18)',
-                          cursor: v.stock === 0 ? 'not-allowed' : 'pointer',
-                          opacity: v.stock === 0 ? 0.35 : 1,
-                          transition: 'all 0.15s ease',
-                          position: 'relative',
-                          flexShrink: 0,
-                        }}
-                      />
-                    ) : (
-                      pillBtn(v, selectedVariant?.id === v.id, () => { setSelectedVariant(v); setQty(1); })
-                    )
-                  ))}
-                </div>
+                {!isColor && product.variants!.length > DROPDOWN_THRESHOLD ? (
+                  dropdown(product.variants!, selectedVariant, (v) => { setSelectedVariant(v); setQty(1); }, VARIANT_TYPE_LABEL[variantType] ?? variantType.toUpperCase())
+                ) : (
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {product.variants!.map((v) => (
+                      isColor ? (
+                        <button
+                          type="button"
+                          key={v.id}
+                          onClick={() => { setSelectedVariant(v); setQty(1); }}
+                          aria-label={`Color ${v.label}`}
+                          aria-pressed={selectedVariant?.id === v.id}
+                          disabled={v.stock === 0}
+                          style={{
+                            width: 34,
+                            height: 34,
+                            borderRadius: '50%',
+                            background: v.color ?? '#ccc',
+                            border: selectedVariant?.id === v.id ? '2.5px solid var(--ink)' : '2px solid transparent',
+                            outline: selectedVariant?.id === v.id ? '2px solid var(--ink)' : '2px solid var(--ink-10)',
+                            outlineOffset: 2,
+                            boxShadow: 'inset 0 0 0 1.5px rgba(0,0,0,0.18)',
+                            cursor: v.stock === 0 ? 'not-allowed' : 'pointer',
+                            opacity: v.stock === 0 ? 0.35 : 1,
+                            transition: 'all 0.15s ease',
+                            position: 'relative',
+                            flexShrink: 0,
+                          }}
+                        />
+                      ) : (
+                        pillBtn(v, selectedVariant?.id === v.id, () => { setSelectedVariant(v); setQty(1); })
+                      )
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })()}
@@ -436,6 +514,6 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
       )}
 
       <ReviewSection productId={product.id} />
-    </main>
+    </div>
   );
 }

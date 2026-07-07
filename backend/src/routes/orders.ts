@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { clerkAuth } from '../middleware/clerkAuth';
 import type { AppEnv } from '../types/hono';
 import { Order } from '../db/models/Order';
@@ -6,6 +7,50 @@ import { Product } from '../db/models/Product';
 import { normalizeOrder } from '../lib/orderStatus';
 import { stripe } from '../lib/stripe';
 import { sendOrderConfirmationEmail } from '../lib/email';
+import {
+  addressSchema,
+  cartItemSchema,
+  emailField,
+  moneyFromInput,
+  objectIdSchema,
+  optionalTextField,
+  parseJson,
+  parseParams,
+  parseQuery,
+  textField,
+} from '../lib/validation';
+
+const ordersQuerySchema = z.object({
+  stripeSessionId: textField(255).optional(),
+});
+
+const orderIdParamsSchema = z.object({
+  id: objectIdSchema,
+});
+
+const paidSessionCartItemSchema = cartItemSchema.extend({
+  isSample: z.coerce.boolean().optional(),
+});
+
+const paidSessionMetadataSchema = z.object({
+  customerId: textField(180),
+  customerName: optionalTextField(160),
+  customerEmail: emailField().optional(),
+  cartItems: textField(20000),
+  address: textField(5000),
+  discountCode: optionalTextField(80),
+  discountAmount: moneyFromInput().default(0),
+  tax: moneyFromInput().default(0),
+  shipping: moneyFromInput().default(0),
+});
+
+function parseSessionJsonMetadata<T>(value: string, schema: z.ZodType<T>) {
+  try {
+    return schema.safeParse(JSON.parse(value));
+  } catch {
+    return schema.safeParse(null);
+  }
+}
 
 async function addItemImages(orders: Array<Record<string, unknown>>) {
   const ids = [...new Set(
@@ -49,12 +94,19 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
     return null;
   }
 
-  const metadata = session.metadata || {};
-  const cartItems = JSON.parse(metadata.cartItems || '[]') as CheckoutCartItem[];
-  const address = JSON.parse(metadata.address || '{}') as CheckoutAddress;
-  const productIds = cartItems.map((item) => item.productId);
+  const parsedMetadata = paidSessionMetadataSchema.safeParse(session.metadata || {});
+  if (!parsedMetadata.success) return null;
+
+  const metadata = parsedMetadata.data;
+  const parsedCartItems = parseSessionJsonMetadata(metadata.cartItems, z.array(paidSessionCartItemSchema).min(1).max(100));
+  const parsedAddress = parseSessionJsonMetadata(metadata.address, addressSchema);
+  if (!parsedCartItems.success || !parsedAddress.success) return null;
+
+  const cartItems = parsedCartItems.data as CheckoutCartItem[];
+  const address = parsedAddress.data as CheckoutAddress;
+  const productIds = [...new Set(cartItems.map((item) => item.productId))];
   const products = await Product.find({ id: { $in: productIds }, active: true }).lean();
-  if (products.length !== cartItems.length) return null;
+  if (products.length !== productIds.length) return null;
 
   const lineItems = cartItems.map((item) => {
     const product = products.find((entry) => entry.id === item.productId);
@@ -66,9 +118,9 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
 
   const subtotal = lineItems.reduce((sum, item) => sum + item.price * item.qty, 0);
   const discountCode = metadata.discountCode || undefined;
-  const discountAmount = Number(metadata.discountAmount || 0);
-  const tax = Number(metadata.tax || 0);
-  const shipping = Number(metadata.shipping || 0);
+  const discountAmount = metadata.discountAmount;
+  const tax = metadata.tax;
+  const shipping = metadata.shipping;
   const total = Math.round((subtotal - discountAmount + tax + shipping) * 100) / 100;
 
   const existing = await Order.findOne({ stripeSessionId }).lean();
@@ -103,7 +155,7 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
   if (customerEmail) {
     try {
       await sendOrderConfirmationEmail({
-        customerName: metadata.customerName,
+        customerName: metadata.customerName || 'cliente',
         customerEmail: customerEmail,
         orderId: createdOrder._id.toString(),
         items: lineItems,
@@ -133,7 +185,7 @@ async function syncOrderPaymentFromStripe(order: Record<string, unknown>) {
   }
 
   try {
-    const session = await stripe.checkout.sessions.retrieve(normalizedOrder.stripeSessionId);
+    const session = await stripe.checkout.sessions.retrieve(String(normalizedOrder.stripeSessionId));
 
     if (session.payment_status === 'paid' || session.status === 'complete') {
       const updatedOrder = await Order.findByIdAndUpdate(
@@ -158,7 +210,10 @@ async function syncOrderPaymentFromStripe(order: Record<string, unknown>) {
 export const ordersRouter = new Hono<AppEnv>()
   .use('*', clerkAuth)
   .get('/', async (c) => {
-    const stripeSessionId = c.req.query('stripeSessionId');
+    const parsedQuery = parseQuery(c, ordersQuerySchema);
+    if (!parsedQuery.success) return parsedQuery.response;
+
+    const stripeSessionId = parsedQuery.data.stripeSessionId;
     const clerkId = c.get('user').clerkId;
 
     if (stripeSessionId) {
@@ -171,12 +226,12 @@ export const ordersRouter = new Hono<AppEnv>()
 
       try {
         const createdOrder = await createOrderFromPaidSession(stripeSessionId, clerkId);
-        if (!createdOrder) return c.json({ error: 'Not found' });
+        if (!createdOrder) return c.json({ error: 'Not found' }, 404);
         const [enriched] = await addItemImages([createdOrder as unknown as Record<string, unknown>]);
         return c.json(enriched);
       } catch (error) {
         console.error('[ORDERS] Failed to create order from paid session:', error);
-        return c.json({ error: 'Not found' });
+        return c.json({ error: 'Not found' }, 404);
       }
     }
 
@@ -185,7 +240,10 @@ export const ordersRouter = new Hono<AppEnv>()
     return c.json(await addItemImages(normalized as unknown as Record<string, unknown>[]));
   })
   .get('/:id', async (c) => {
-    const order = await Order.findById(c.req.param('id')).lean();
+    const parsedParams = parseParams(c, orderIdParamsSchema);
+    if (!parsedParams.success) return parsedParams.response;
+
+    const order = await Order.findById(parsedParams.data.id).lean();
     if (!order || (order as { customerId?: string }).customerId !== c.get('user').clerkId) {
       return c.json({ error: 'Not found' }, 404);
     }
@@ -193,8 +251,11 @@ export const ordersRouter = new Hono<AppEnv>()
     return c.json(enriched);
   })
   .patch('/:id/cancel', async (c) => {
+    const parsedParams = parseParams(c, orderIdParamsSchema);
+    if (!parsedParams.success) return parsedParams.response;
+
     const clerkId = c.get('user').clerkId;
-    const order = await Order.findById(c.req.param('id')).lean() as Record<string, unknown> | null;
+    const order = await Order.findById(parsedParams.data.id).lean() as Record<string, unknown> | null;
     if (!order || order.customerId !== clerkId) return c.json({ error: 'Not found' }, 404);
 
     if (!['unfulfilled', 'processing'].includes(order.fulfillmentStatus as string)) {
@@ -202,7 +263,7 @@ export const ordersRouter = new Hono<AppEnv>()
     }
 
     const updated = await Order.findByIdAndUpdate(
-      c.req.param('id'),
+      parsedParams.data.id,
       { fulfillmentStatus: 'cancelled', paymentStatus: 'cancelled', status: 'cancelled' },
       { returnDocument: 'after' }
     ).lean();
@@ -212,22 +273,27 @@ export const ordersRouter = new Hono<AppEnv>()
     return c.json(enriched);
   })
   .patch('/:id/address', async (c) => {
+    const parsedParams = parseParams(c, orderIdParamsSchema);
+    if (!parsedParams.success) return parsedParams.response;
+
     const clerkId = c.get('user').clerkId;
-    const order = await Order.findById(c.req.param('id')).lean() as Record<string, unknown> | null;
+    const order = await Order.findById(parsedParams.data.id).lean() as Record<string, unknown> | null;
     if (!order || order.customerId !== clerkId) return c.json({ error: 'Not found' }, 404);
 
     if (order.fulfillmentStatus !== 'unfulfilled') {
       return c.json({ error: 'Solo puedes editar la dirección antes de que el pedido sea procesado' }, 400);
     }
 
-    const body = await c.req.json() as Record<string, string>;
+    const parsedBody = await parseJson(c, addressSchema);
+    if (!parsedBody.success) return parsedBody.response;
+    const body = parsedBody.data;
     const { name, phone, address, city, postal } = body;
     if (!name?.trim() || !phone?.trim() || !address?.trim() || !city?.trim() || !postal?.trim()) {
       return c.json({ error: 'Todos los campos de dirección son requeridos' }, 400);
     }
 
     const updated = await Order.findByIdAndUpdate(
-      c.req.param('id'),
+      parsedParams.data.id,
       { address: { name: name.trim(), phone: phone.trim(), address: address.trim(), city: city.trim(), postal: postal.trim() } },
       { returnDocument: 'after' }
     ).lean();
