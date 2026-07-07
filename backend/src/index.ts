@@ -23,6 +23,8 @@ import { recalculateBestsellers, recalculateNew } from './lib/bestsellers';
 import { reviewsRouter } from './routes/reviews';
 import { newsletterRouter } from './routes/newsletter';
 import { errorReportsRouter } from './routes/errorReports';
+import { swaggerUI } from '@hono/swagger-ui';
+import { openApiDocument } from './openapi';
 import { emailField, parseJson, textField } from './lib/validation';
 import { z } from 'zod';
 import { performanceMetrics } from './middleware/performanceMetrics';
@@ -70,6 +72,9 @@ app.route('/admin/error-reports', adminErrorReportsRouter);
 app.route('/admin/audit-logs', adminAuditLogsRouter);
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
+
+app.get('/openapi.json', (c) => c.json(openApiDocument));
+app.get('/docs', swaggerUI({ url: '/openapi.json' }));
 
 app.post('/test-email', async (c) => {
   const parsed = await parseJson(c, testEmailSchema);
