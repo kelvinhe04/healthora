@@ -8,6 +8,7 @@ import { sendOrderConfirmationEmail } from '../lib/email';
 import { recalculateBestsellers } from '../lib/bestsellers';
 import { addressSchema, cartItemSchema, emailField, moneyFromInput, optionalTextField, textField } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
+import { decrementStock, validateCartStock } from '../lib/inventory';
 
 type CheckoutAddress = {
   name: string;
@@ -99,6 +100,12 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
           console.error('[WEBHOOK] Missing products while creating paid order for session', session.id);
         } else {
           console.log('[WEBHOOK] cartItems from metadata:', JSON.stringify(cartItems));
+          try {
+            validateCartStock(products, cartItems);
+          } catch (error) {
+            console.error('[WEBHOOK] Stock validation failed:', error);
+            return c.json({ error: 'Stock insuficiente' }, 400);
+          }
           const lineItems = cartItems.map((item) => {
             const product = products.find((entry) => entry.id === item.productId);
             if (!product) throw new Error(`Product not found for ${item.productId}`);
@@ -158,7 +165,11 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
           }
 
           for (const item of lineItems) {
-            await Product.findOneAndUpdate({ id: item.productId }, { $inc: { stock: -item.qty } });
+            if (item.isSample) continue;
+            const ok = await decrementStock(item.productId, item.qty, item.variantId);
+            if (!ok) {
+              console.error('[WEBHOOK] Stock decrement failed for', item.productId, item.variantId);
+            }
           }
         }
       } catch (error) {

@@ -23,6 +23,7 @@ describe('resolveVariantPricing', () => {
       price: 12,
       stock: 3,
       label: 'Vainilla',
+      stockVariantId: 'vanilla',
     });
   });
 
@@ -31,6 +32,7 @@ describe('resolveVariantPricing', () => {
       price: 14,
       stock: 4,
       label: 'Vainilla · 30 ct',
+      stockVariantId: 'small',
     });
   });
 });

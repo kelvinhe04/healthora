@@ -23,6 +23,8 @@ export type ResolvedVariantPricing = {
   price: number;
   stock: number;
   label?: string;
+  /** Variant document id whose stock should be decremented; omit for product-level stock. */
+  stockVariantId?: string;
 };
 
 export function resolveVariantPricing(product: ProductLike, variantId?: string): ResolvedVariantPricing {
@@ -37,10 +39,14 @@ export function resolveVariantPricing(product: ProductLike, variantId?: string):
     if (!primary || !size) {
       throw new Error(`Variante invalida para ${product.name}`);
     }
+    const stock = size.stock ?? primary.stock ?? product.stock;
+    const stockVariantId =
+      size.stock != null ? size.id : primary.stock != null ? primary.id : undefined;
     return {
       price: primary.price + size.price,
-      stock: size.stock ?? primary.stock ?? product.stock,
+      stock,
       label: `${primary.label} · ${size.label}`,
+      stockVariantId,
     };
   }
 
@@ -53,6 +59,7 @@ export function resolveVariantPricing(product: ProductLike, variantId?: string):
     price: variant.price,
     stock: variant.stock ?? product.stock,
     label: variant.label,
+    stockVariantId: variant.stock != null ? variant.id : undefined,
   };
 }
 
