@@ -96,7 +96,7 @@ export const api = {
   checkout: {
     createSession: (
       body: {
-        items: { productId: string; qty: number }[];
+        items: { productId: string; qty: number; variantId?: string }[];
         address: object;
         promoCode?: string;
         freeSampleId?: string;

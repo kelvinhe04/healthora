@@ -66,6 +66,7 @@ export const savedAddressSchema = addressSchema.extend({
 export const cartItemSchema = z.object({
   productId: productIdSchema,
   qty: intFromInput(1, 999),
+  variantId: optionalTextField(180),
 });
 
 function formatZodError(error: ZodError) {

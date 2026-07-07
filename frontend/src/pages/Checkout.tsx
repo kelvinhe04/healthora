@@ -223,7 +223,11 @@ export function Checkout({ items, onBack }: CheckoutProps) {
       const token = await getEffectiveToken();
       const { url } = await api.checkout.createSession(
         {
-          items: items.map((it) => ({ productId: it.product.id, qty: it.qty })),
+          items: items.map((it) => ({
+            productId: it.product.id,
+            qty: it.qty,
+            ...(it.variant?.id ? { variantId: it.variant.id } : {}),
+          })),
           address,
           promoCode: appliedPromo?.code,
           freeSampleId: freeSample?.id,
