@@ -7,6 +7,8 @@ import type {
   Product,
   ProductVariant,
 } from '../../types';
+import type { MatrixState } from './variantMatrix';
+import { emptyMatrixState } from './variantMatrix';
 
 export type VariantFormRow = {
   id: string;
@@ -15,6 +17,8 @@ export type VariantFormRow = {
   price: string;
   stock: string;
   sku: string;
+  color: string;
+  images: string[];
   isDefault: boolean;
 };
 
@@ -34,6 +38,8 @@ export const emptyVariantRow = (): VariantFormRow => ({
   price: '0',
   stock: '0',
   sku: '',
+  color: '',
+  images: [],
   isDefault: false,
 });
 
@@ -211,7 +217,9 @@ export type ProductForm = {
   color: string;
   swatchColor: string;
   label: string;
-  variants: VariantFormRow[];
+  variantsMode: 'simple' | 'matrix';
+  variantsSimple: VariantFormRow[];
+  variantsMatrix: MatrixState;
 };
 
 export const emptyForm: ProductForm = {
@@ -237,7 +245,9 @@ export const emptyForm: ProductForm = {
   color: "oklch(0.92 0.1 140)",
   swatchColor: "oklch(0.6 0.15 140)",
   label: "",
-  variants: [],
+  variantsMode: "simple",
+  variantsSimple: [],
+  variantsMatrix: emptyMatrixState(),
 };
 
 export const fulfillmentStatusLabels: Record<FulfillmentStatus | "", string> = {

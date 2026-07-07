@@ -1,6 +1,8 @@
 import type { FulfillmentStatus, Product, ProductVariant } from '../../types';
 import type { ProductForm, VariantFormRow } from './types';
 import { fulfillmentStatusSequence } from './types';
+import { hasTwoDimensions } from '../../lib/productVariants';
+import { composeFromMatrix, decomposeToMatrix, emptyMatrixState } from './variantMatrix';
 
 export const ADMIN_PAGE_SIZE = 10;
 
@@ -61,15 +63,21 @@ export function productToForm(p: Product): ProductForm {
     color: p.color || 'oklch(0.92 0.1 140)',
     swatchColor: p.swatchColor || 'oklch(0.6 0.15 140)',
     label: p.label || '',
-    variants: (p.variants || []).map((v) => ({
-      id: v.id,
-      label: v.label,
-      type: v.type,
-      price: String(v.price),
-      stock: String(v.stock),
-      sku: v.sku || '',
-      isDefault: Boolean(v.isDefault),
-    })),
+    variantsMode: hasTwoDimensions(p.variants) ? 'matrix' : 'simple',
+    variantsSimple: hasTwoDimensions(p.variants)
+      ? []
+      : (p.variants || []).map((v) => ({
+          id: v.id,
+          label: v.label,
+          type: v.type,
+          price: String(v.price),
+          stock: String(v.stock),
+          sku: v.sku || '',
+          color: v.color || '',
+          images: v.images?.length ? v.images : v.imageUrl ? [v.imageUrl] : [],
+          isDefault: Boolean(v.isDefault),
+        })),
+    variantsMatrix: hasTwoDimensions(p.variants) ? decomposeToMatrix(p.variants || []) : emptyMatrixState(),
   };
 }
 
@@ -89,6 +97,9 @@ function variantRowToPayload(row: VariantFormRow, usedIds: Set<string>): Product
     price: parseFloat(row.price) || 0,
     stock: parseInt(row.stock, 10) || 0,
     ...(row.sku.trim() ? { sku: row.sku.trim() } : {}),
+    ...(row.color.trim() ? { color: row.color.trim() } : {}),
+    ...(row.images[0] ? { imageUrl: row.images[0] } : {}),
+    ...(row.images.length ? { images: row.images } : {}),
     ...(row.isDefault ? { isDefault: true } : {}),
   };
 }
@@ -142,11 +153,14 @@ export function formToPayload(f: ProductForm): Partial<Product> {
     label: f.label.trim(),
     rating: 0,
     reviews: 0,
-    variants: (() => {
-      const usedIds = new Set<string>();
-      return f.variants
-        .map((row) => variantRowToPayload(row, usedIds))
-        .filter((v): v is ProductVariant => v !== null);
-    })(),
+    variants:
+      f.variantsMode === 'matrix'
+        ? composeFromMatrix(f.variantsMatrix)
+        : (() => {
+            const usedIds = new Set<string>();
+            return f.variantsSimple
+              .map((row) => variantRowToPayload(row, usedIds))
+              .filter((v): v is ProductVariant => v !== null);
+          })(),
   };
 }

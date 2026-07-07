@@ -7,7 +7,8 @@ import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { emptyForm, type ProductForm } from '../types';
 import { formToPayload, productToForm } from '../utils';
 import { ImageDropZone } from './ImageDropZone';
-import { ProductVariantsEditor } from './ProductVariantsEditor';
+import { ProductVariantsMatrixEditor } from './ProductVariantsMatrixEditor';
+import { slugify } from '../utils';
 
 export function ProductModal({
   open,
@@ -78,18 +79,37 @@ export function ProductModal({
       setValidationError("El precio debe ser mayor a 0.");
       return;
     }
-    if ((parseInt(form.stock) || 0) <= 0 && form.variants.length === 0) {
+    const hasVariants =
+      form.variantsMode === "matrix"
+        ? form.variantsMatrix.primary.length > 0
+        : form.variantsSimple.length > 0;
+    if ((parseInt(form.stock) || 0) <= 0 && !hasVariants) {
       setValidationError("Las existencias tienen que ser mayor a 0.");
       return;
     }
-    for (const row of form.variants) {
-      if (!row.label.trim()) {
-        setValidationError("Cada variante necesita una etiqueta.");
-        return;
+    if (form.variantsMode === "simple") {
+      for (const row of form.variantsSimple) {
+        if (!row.label.trim()) {
+          setValidationError("Cada variante necesita una etiqueta.");
+          return;
+        }
+        if ((parseInt(row.stock, 10) || 0) < 0) {
+          setValidationError("El stock de variante no puede ser negativo.");
+          return;
+        }
       }
-      if ((parseInt(row.stock, 10) || 0) < 0) {
-        setValidationError("El stock de variante no puede ser negativo.");
-        return;
+    } else {
+      for (const row of form.variantsMatrix.primary) {
+        if (!row.label.trim()) {
+          setValidationError("Cada sabor necesita una etiqueta.");
+          return;
+        }
+      }
+      for (const row of form.variantsMatrix.sizes) {
+        if (!row.label.trim()) {
+          setValidationError("Cada tamaño necesita una etiqueta.");
+          return;
+        }
       }
     }
     if (!form.imageUrl.trim()) {
@@ -369,9 +389,14 @@ export function ProductModal({
 
           <div style={dividerS} />
 
-          <ProductVariantsEditor
-            variants={form.variants}
-            onChange={(variants) => setForm((prev) => ({ ...prev, variants }))}
+          <ProductVariantsMatrixEditor
+            mode={form.variantsMode}
+            onModeChange={(variantsMode) => setForm((prev) => ({ ...prev, variantsMode }))}
+            simple={form.variantsSimple}
+            onSimpleChange={(variantsSimple) => setForm((prev) => ({ ...prev, variantsSimple }))}
+            matrix={form.variantsMatrix}
+            onMatrixChange={(variantsMatrix) => setForm((prev) => ({ ...prev, variantsMatrix }))}
+            folder={slugify(form.name) || 'general'}
           />
 
           <div style={dividerS} />

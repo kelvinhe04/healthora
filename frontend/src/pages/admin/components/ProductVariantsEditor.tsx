@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { iconBtnAd } from '../../../components/admin';
 import { Icon } from '../../../components/shared/Icon';
 import { emptyVariantRow, VARIANT_TYPE_OPTIONS, type VariantFormRow } from '../types';
+import { MiniImagePicker } from './MiniImagePicker';
 
 const inputS: CSSProperties = {
   width: '100%',
@@ -29,9 +30,11 @@ const labelS: CSSProperties = {
 export function ProductVariantsEditor({
   variants,
   onChange,
+  folder = 'general',
 }: {
   variants: VariantFormRow[];
   onChange: (variants: VariantFormRow[]) => void;
+  folder?: string;
 }) {
   const updateRow = (idx: number, patch: Partial<VariantFormRow>) => {
     const next = variants.map((row, i) => {
@@ -77,16 +80,23 @@ export function ProductVariantsEditor({
             <div
               key={idx}
               style={{
-                display: 'grid',
-                gridTemplateColumns: '1.2fr 0.9fr 0.7fr 0.7fr 0.9fr auto auto',
-                gap: 8,
-                alignItems: 'end',
                 padding: '12px',
                 borderRadius: 10,
                 background: 'var(--cream-2)',
                 border: '1px solid var(--ink-06)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
               }}
             >
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: row.type === 'color' ? '1.1fr 0.8fr 0.65fr 0.65fr 0.8fr 0.7fr auto auto' : '1.2fr 0.9fr 0.7fr 0.7fr 0.9fr auto auto',
+                  gap: 8,
+                  alignItems: 'end',
+                }}
+              >
               <div>
                 <label style={labelS}>Etiqueta</label>
                 <input
@@ -142,6 +152,17 @@ export function ProductVariantsEditor({
                   placeholder="Opcional"
                 />
               </div>
+              {row.type === 'color' && (
+                <div>
+                  <label style={labelS}>Color (hex)</label>
+                  <input
+                    style={{ ...inputS, padding: '6px 8px' }}
+                    type="color"
+                    value={/^#[0-9a-fA-F]{6}$/.test(row.color) ? row.color : '#cccccc'}
+                    onChange={(e) => updateRow(idx, { color: e.target.value })}
+                  />
+                </div>
+              )}
               <label
                 style={{
                   display: 'flex',
@@ -169,8 +190,17 @@ export function ProductVariantsEditor({
                 style={{ ...iconBtnAd, color: 'var(--coral)', marginBottom: 6 }}
                 title="Eliminar variante"
               >
-                <Icon name="trash-2" size={14} />
+                <Icon name="trash" size={14} />
               </button>
+              </div>
+              <div>
+                <label style={labelS}>Imágenes (hasta 4)</label>
+                <MiniImagePicker
+                  images={row.images}
+                  onChange={(images) => updateRow(idx, { images })}
+                  folder={folder}
+                />
+              </div>
             </div>
           ))}
         </div>

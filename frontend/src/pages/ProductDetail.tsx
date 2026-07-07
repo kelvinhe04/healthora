@@ -130,6 +130,12 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   const sizeVariants = product.variants?.filter((v) => v.type === 'size') ?? [];
   const hasTwoDimensions = primaryVariants.length > 0 && sizeVariants.length > 0;
   const availableSizeVariants = sizesFor(product.variants, selectedVariant);
+  // Reflect the selected sabor's combo-specific stock (stockBySize) in the tamaño picker,
+  // instead of only the tamaño's own shared stock.
+  const availableSizeVariantsWithStock = availableSizeVariants.map((v) => {
+    const override = selectedVariant?.stockBySize?.[v.id];
+    return override != null ? { ...v, stock: override } : v;
+  });
 
   useEffect(() => {
     setQty(1);
@@ -144,7 +150,9 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
 
   const effectivePrice = (selectedVariant?.price ?? product.price) + (hasTwoDimensions ? (selectedSize?.price ?? 0) : 0);
   const effectivePriceBefore = selectedVariant?.priceBefore ?? product.priceBefore;
-  const effectiveStock = hasTwoDimensions ? (selectedSize?.stock ?? selectedVariant?.stock ?? product.stock) : (selectedVariant?.stock ?? product.stock);
+  const effectiveStock = hasTwoDimensions
+    ? (selectedSize && selectedVariant?.stockBySize?.[selectedSize.id]) ?? selectedSize?.stock ?? selectedVariant?.stock ?? product.stock
+    : (selectedVariant?.stock ?? product.stock);
   // For a flavor+size combo, cart/checkout need a single variant carrying the combined price,
   // stock and a unique id (so different sizes of the same flavor don't collapse into one cart line).
   const cartVariant: ProductVariant | undefined = selectedVariant
@@ -375,11 +383,11 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                     <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 10 }}>
                       TAMAÑO{selectedSize && <span style={{ color: 'var(--ink)' }}> · {selectedSize.label.toUpperCase()}</span>}
                     </div>
-                    {availableSizeVariants.length > DROPDOWN_THRESHOLD ? (
-                      dropdown(availableSizeVariants, selectedSize, (v) => setSelectedSize(v), 'TAMAÑO')
+                    {availableSizeVariantsWithStock.length > DROPDOWN_THRESHOLD ? (
+                      dropdown(availableSizeVariantsWithStock, selectedSize, (v) => setSelectedSize(v), 'TAMAÑO')
                     ) : (
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        {availableSizeVariants.map((v) => pillBtn(v, selectedSize?.id === v.id, () => setSelectedSize(v)))}
+                        {availableSizeVariantsWithStock.map((v) => pillBtn(v, selectedSize?.id === v.id, () => setSelectedSize(v)))}
                       </div>
                     )}
                   </div>
