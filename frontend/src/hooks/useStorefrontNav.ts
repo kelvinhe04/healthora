@@ -5,7 +5,7 @@ import { useCartStore } from '../store/cartStore';
 import { useUiStore } from '../store/uiStore';
 import { normalizeCatalogFilter, rememberCatalogBrands, clearStoredCatalogBrands, type CatalogFilter } from '../lib/catalogFilter';
 
-export type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club' | 'orders' | 'sample-picker';
+export type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club' | 'orders' | 'sample-picker' | 'compare';
 
 export function useStorefrontNav() {
   const navigate = useNavigate();
@@ -45,6 +45,9 @@ export function useStorefrontNav() {
         break;
       case 'sample-picker':
         navigate({ to: '/sample-picker' });
+        break;
+      case 'compare':
+        navigate({ to: '/compare' });
         break;
       case 'admin':
         navigate({ to: '/admin' });

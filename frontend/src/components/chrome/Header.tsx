@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParamsCompat as useSearchParams } from "../../hooks/useSearchParamsCompat";
 import { useCartStore } from "../../store/cartStore";
+import { useCompareStore } from "../../store/compareStore";
 import { useThemeStore } from "../../store/themeStore";
 import { Icon } from "../shared/Icon";
 import { AnimatedButton } from "../shared/AnimatedButton";
@@ -17,7 +18,8 @@ type View =
   | "checkout"
   | "success"
   | "admin"
-  | "orders";
+  | "orders"
+  | "compare";
 
 interface HeaderProps {
   onNav: (view: View, filter?: any, noScroll?: boolean) => void;
@@ -571,6 +573,7 @@ function AddressManagerModal({
 
 export function Header({ onNav, onOpenCart }: HeaderProps) {
   const cartCount = useCartStore((s) => s.count());
+  const compareCount = useCompareStore((s) => s.productIds.length);
   const { theme, toggle: toggleTheme } = useThemeStore();
   const { isSignedIn, user } = useUser();
   const { signOut } = useClerk();
@@ -1212,6 +1215,36 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
           >
             <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
           </span>
+        </button>
+
+        <button
+          style={{ ...headerIconBtn, position: "relative" }}
+          onClick={() => onNav("compare")}
+          aria-label="Comparar productos"
+        >
+          <Icon name="layers" />
+          {compareCount > 0 && (
+            <span
+              style={{
+                position: "absolute",
+                top: -4,
+                right: -6,
+                background: "var(--ink)",
+                color: "var(--cream)",
+                fontSize: 10,
+                fontFamily: '"JetBrains Mono", monospace',
+                minWidth: 18,
+                height: 18,
+                borderRadius: 999,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0 4px",
+              }}
+            >
+              {compareCount}
+            </span>
+          )}
         </button>
 
         <button
