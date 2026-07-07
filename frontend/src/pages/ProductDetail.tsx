@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import type { Product, ProductVariant } from '../types';
@@ -11,6 +11,8 @@ import { useProducts } from '../hooks/useProducts';
 import { useReviews } from '../hooks/useReviews';
 import { ReviewSection } from '../components/shared/ReviewSection';
 import { RecentlyViewedSection } from '../components/shared/RecentlyViewedSection';
+import { RelatedProductsSection } from '../components/shared/RelatedProductsSection';
+import { getRelatedProducts } from '../lib/relatedProducts';
 import { PRIMARY_VARIANT_TYPES, pickDefaultPrimary, sizesFor, pickDefaultSize } from '../lib/productVariants';
 
 interface ProductDetailProps {
@@ -56,7 +58,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(() => pickDefaultPrimary(product.variants));
   const [selectedSize, setSelectedSize] = useState<ProductVariant | null>(() => pickDefaultSize(product.variants, pickDefaultPrimary(product.variants)));
   const { data: allProducts = [] } = useProducts();
-  const related = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
+  const related = useMemo(() => getRelatedProducts(product, allProducts, 4), [allProducts, product]);
   const { data: liveReviews } = useReviews(product.id);
   const liveCount = liveReviews?.length ?? 0;
   const liveRating = liveReviews && liveReviews.length > 0
@@ -520,17 +522,13 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
         excludeProductId={product.id}
       />
 
-      {related.length > 0 && (
-        <section style={{ marginTop: 80 }}>
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 10 }}>También te puede gustar</div>
-            <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 44, letterSpacing: '-0.03em', margin: 0, color: 'var(--ink)', fontWeight: 400 }}>Productos <em style={{ color: 'var(--green)' }}>relacionados</em></h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: isSmall ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 20 }}>
-            {related.map((p) => <ProductCard key={p.id} product={p} onClick={onOpenProduct} onAdd={(pr) => onAdd(pr, 1)} />)}
-          </div>
-        </section>
-      )}
+      <RelatedProductsSection
+        subtitle="También te puede gustar"
+        title={<>Productos <em style={{ color: 'var(--green)' }}>relacionados</em></>}
+        products={related}
+        onOpenProduct={onOpenProduct}
+        onAdd={(p) => onAdd(p, 1)}
+      />
 
       <ReviewSection productId={product.id} />
     </div>
