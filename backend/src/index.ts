@@ -35,6 +35,7 @@ import { errorTracking } from './middleware/errorTracking';
 import { logger } from './lib/logger';
 import { requestLogger } from './middleware/requestLogger';
 import { getCorsOrigins } from './lib/appEnv';
+import { securityHeaders } from './middleware/securityHeaders';
 import { clearCatalogCache } from './lib/cache';
 
 const testEmailSchema = z.object({
@@ -49,6 +50,7 @@ await recalculateNew();
 
 const app = new Hono();
 
+app.use('*', securityHeaders);
 app.use('*', requestLogger);
 app.use('*', errorTracking);
 app.use('*', performanceMetrics);

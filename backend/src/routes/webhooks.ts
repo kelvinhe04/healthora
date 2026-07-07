@@ -182,7 +182,9 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
   }
 
   // Recalculate bestsellers after any payment event
-  recalculateBestsellers().catch((e) => console.error('[bestsellers] recalc error:', e));
+  if (process.env.NODE_ENV !== 'test') {
+    recalculateBestsellers().catch((e) => console.error('[bestsellers] recalc error:', e));
+  }
 
   console.log('[WEBHOOK] Request processed');
   return c.json({ received: true });
