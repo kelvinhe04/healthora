@@ -40,5 +40,7 @@ describe('buildPaidLineItem', () => {
     const line = buildPaidLineItem(product, { productId: 'demo', qty: 1, variantId: 'vanilla' });
     expect(line.price).toBe(12);
     expect(line.productName).toBe('Demo Product · Vainilla');
+    expect(line.variantId).toBe('vanilla');
+    expect(line.variantLabel).toBe('Vainilla');
   });
 });

@@ -91,6 +91,8 @@ export function buildPaidLineItem(
     imageUrl: primaryImage,
     category: product.category,
     isSample: false,
+    variantId: item.variantId,
+    variantLabel: resolved.label,
   };
 }
 

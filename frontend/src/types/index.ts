@@ -107,6 +107,8 @@ export interface OrderLineItem {
   qty: number;
   price: number;
   imageUrl?: string;
+  variantId?: string;
+  variantLabel?: string;
   isSample?: boolean;
 }
 
