@@ -868,7 +868,11 @@ export function Catalog({
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
+                gridTemplateColumns: isMobile
+                  ? "repeat(2, 1fr)"
+                  : isTablet
+                    ? "repeat(2, 1fr)"
+                    : "repeat(3, 1fr)",
                 gap: isMobile ? 12 : 20,
               }}
             >
@@ -892,7 +896,11 @@ export function Catalog({
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
+                gridTemplateColumns: isMobile
+                  ? "repeat(2, 1fr)"
+                  : isTablet
+                    ? "repeat(2, 1fr)"
+                    : "repeat(3, 1fr)",
                 gap: isMobile ? 12 : 20,
               }}
             >

@@ -9,6 +9,7 @@ import { useThemeStore } from '../../store/themeStore';
 import { pickDefaultCombo, getEffectivePrice, getEffectivePriceBefore } from '../../lib/productVariants';
 import { useCompareStore } from '../../store/compareStore';
 import { useWishlistStore } from '../../store/wishlistStore';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 // ─── Shared shimmer helper ────────────────────────────────────────────────────
 function ShimmerBox({ style }: { style?: CSSProperties }) {
@@ -80,6 +81,8 @@ interface ProductCardProps {
 export function ProductCard({ product, onClick, onAdd, priority = false, showCompare = true, showWishlist = true }: ProductCardProps) {
   const [hover, setHover] = useState(false);
   const [compareHint, setCompareHint] = useState('');
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
   const dark = useThemeStore((s) => s.theme === 'dark');
   const toggleCompare = useCompareStore((s) => s.toggle);
   const isCompared = useCompareStore((s) => s.contains(product.id));
@@ -95,6 +98,13 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
   const secondaryImage = (defaultVariant?.imagesBySize && defaultSize ? defaultVariant.imagesBySize[defaultSize.id]?.[1] : null) || defaultVariant?.images?.[1] || product.images?.find((img, i) => img.url && img.url !== primaryImage && i !== 0)?.url || product.images?.[1]?.url;
   const effectivePrice = getEffectivePrice(product);
   const effectivePriceBefore = getEffectivePriceBefore(product);
+  const showOverlayActions = isMobile || hover || isWishlisted || isCompared;
+  const overlayActionStyle = {
+    opacity: showOverlayActions ? (hover || isMobile ? 1 : 0.85) : 0,
+    transform: showOverlayActions ? 'scale(1)' : 'scale(0.85)',
+    transition: 'all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+    pointerEvents: showOverlayActions ? ('auto' as const) : ('none' as const),
+  };
 
   return (
     <div
@@ -104,7 +114,7 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
       style={{ cursor: 'pointer', background: 'var(--cream)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--ink-06)', transition: 'all 220ms cubic-bezier(.2,.8,.2,1)', transform: hover ? 'translateY(-2px)' : 'none', boxShadow: hover ? '0 18px 40px -20px rgba(0,0,0,0.15)' : '0 2px 6px -4px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}
     >
       <div style={{ position: 'relative', overflow: 'hidden' }}>
-        <div style={{ transform: hover ? 'scale(1.03)' : 'scale(1)', transition: 'transform 400ms cubic-bezier(.2,.8,.2,1)', width: '100%', height: '100%' }}>
+        <div style={{ transform: hover ? 'scale(1.08)' : 'scale(1)', transition: 'transform 400ms cubic-bezier(.2,.8,.2,1)', width: '100%', height: '100%' }}>
           {secondaryImage ? (
             <div style={{ position: 'relative' }}>
               <div style={{ opacity: hover ? 0 : 1, transform: hover ? 'scale(0.985)' : 'scale(1)', transition: 'opacity 280ms ease, transform 380ms cubic-bezier(.2,.8,.2,1)' }}>
@@ -153,8 +163,8 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
               position: 'absolute',
               top: 12,
               right: product.stock > 0 && effectivePriceBefore ? 52 : 12,
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
               borderRadius: 999,
               border: isCompared ? '2px solid var(--green)' : '1px solid var(--ink-12)',
               background: isCompared ? 'color-mix(in oklab, var(--green) 12%, white)' : 'rgba(255,255,255,0.92)',
@@ -163,6 +173,8 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              zIndex: 2,
+              ...overlayActionStyle,
             }}
           >
             <Icon name="layers" size={16} />
@@ -182,8 +194,8 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
               position: 'absolute',
               bottom: 12,
               left: 12,
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
               borderRadius: 999,
               border: isWishlisted ? '2px solid var(--coral)' : '1px solid var(--ink-12)',
               background: isWishlisted ? 'color-mix(in oklab, var(--coral) 12%, white)' : 'rgba(255,255,255,0.92)',
@@ -193,6 +205,7 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 2,
+              ...overlayActionStyle,
             }}
           >
             <Icon name="heart" size={16} stroke={isWishlisted ? 'var(--coral)' : 'currentColor'} />
@@ -203,7 +216,7 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
         {product.stock > 0 && (
           <button
             onClick={(e) => { e.stopPropagation(); onAdd(product); }}
-            style={{ position: 'absolute', bottom: 12, right: 12, width: 44, height: 44, borderRadius: 999, background: 'oklch(0.18 0.03 155)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hover ? 'scale(1.1) rotate(180deg)' : 'scale(0.85) rotate(0deg)', opacity: hover ? 1 : 0.8, transition: 'all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: hover ? '0 8px 20px rgba(0,0,0,0.15)' : 'none', zIndex: 2 }}
+            style={{ position: 'absolute', bottom: 12, right: 12, width: 40, height: 40, borderRadius: 999, background: 'oklch(0.18 0.03 155)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hover ? 'scale(1.1) rotate(180deg)' : 'scale(0.85) rotate(0deg)', opacity: hover ? 1 : 0.8, transition: 'all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: hover ? '0 8px 20px rgba(0,0,0,0.15)' : 'none', zIndex: 2 }}
             aria-label="Agregar al carrito"
           >
             <Icon name="plus" size={16} />
