@@ -38,9 +38,8 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
   const imgSrc = failedOptimizedSrc === optimizedSrc ? rawSrc : optimizedSrc;
 
   if (rawSrc) {
-    const isCatalogTile = flat && size === 'tile';
-    const imagePadding = isCatalogTile ? 0 : size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
-    const objectFit = isCatalogTile ? 'cover' : 'contain';
+    const imagePadding = size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
+    const objectFit = 'contain';
     return (
       <div style={{ width: s.w, height: s.h, background: 'white', borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box' }}>
         <img

@@ -191,7 +191,7 @@ function buildProductRows(items: OrderItem[], cidMap?: Map<string, string>): str
                   alt="${productName}"
                   width="76"
                   height="76"
-                  style="width: 76px; height: 76px; object-fit: cover; border-radius: 14px; display: block; border: 1px solid #dfe8e1; background-color: #f7faf7;"
+                  style="width: 76px; height: 76px; object-fit: contain; padding: 6px; box-sizing: border-box; border-radius: 14px; display: block; border: 1px solid #dfe8e1; background-color: #f7faf7;"
                 />
               </td>
               <td style="padding-left: 16px; vertical-align: middle;">
