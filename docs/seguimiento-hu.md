@@ -42,7 +42,7 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
 | HU-033 | Precio por variante aplicado en checkout | por crear | Kelvin | Parcial ya en `main`: cálculo de subtotal en frontend correcto; falta validar precio de variante en backend al confirmar la orden. |
-| HU-071 | Tests unitarios | por crear | Roy | Issue #75 sigue abierto y sin PR mergeado detectado; mover a Completadas cuando exista PR mergeado a `main`. |
+| HU-071 | Tests unitarios | `HU-071-tests-unitarios` / PR #119 | Roy | Tests unitarios con Bun y cobertura para filtros de catálogo, variantes/precios efectivos y promociones/descuentos. Pendiente merge a `main` para cerrar issue #75. |
 
 
 ## Pendientes — continuación directa de variantes (Kelvin, ramas nuevas tras el merge)
