@@ -70,3 +70,19 @@ export async function cacheSet(key: string, value: unknown, ttlSec = DEFAULT_TTL
   }
   memorySet(key, payload, ttlSec);
 }
+
+export async function clearCatalogCache(): Promise<void> {
+  const client = getRedis();
+  if (client) {
+    try {
+      if (client.status !== 'ready') await client.connect();
+      const keys = await client.keys('catalog:*');
+      if (keys.length) await client.del(...keys);
+    } catch {
+      redisFailed = true;
+    }
+  }
+  for (const key of [...memory.keys()]) {
+    if (key.startsWith('catalog:')) memory.delete(key);
+  }
+}

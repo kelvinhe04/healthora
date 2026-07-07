@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Parallax } from 'react-scroll-parallax';
 import gsap from 'gsap';
@@ -500,13 +500,25 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     return () => cancelAnimationFrame(rafId);
   }, [reviewStats]);
 
-  const bestSellers = products.filter((p) => p.tag === 'Más vendido').slice(0, 4);
-  const featured = products.filter((p) => p.tag === 'Nuevo').slice(0, 4);
+  const bestSellers = useMemo(() => {
+    const tagged = products.filter((p) => p.tag === 'Más vendido').slice(0, 4);
+    if (tagged.length > 0) return tagged;
+    return [...products].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, 4);
+  }, [products]);
+
+  const featured = useMemo(() => {
+    const tagged = products.filter((p) => p.tag === 'Nuevo').slice(0, 4);
+    if (tagged.length > 0) return tagged;
+    return products.slice(0, 4);
+  }, [products]);
   
   const activeHero = HERO_CONTENT[activeHeroIdx];
-  const activeProducts = products
-    .filter((p) => p.category === activeHero.id && (p.imageUrl || p.images?.length))
-    .slice(0, 4); // Take up to 4 to display 3 or 4 in the floating composition
+  const activeProducts = useMemo(() => {
+    const withImage = (p: typeof products[number]) => Boolean(p.imageUrl || p.images?.length);
+    const fromCategory = products.filter((p) => p.category === activeHero.id && withImage(p)).slice(0, 4);
+    if (fromCategory.length > 0) return fromCategory;
+    return products.filter(withImage).slice(0, 4);
+  }, [products, activeHero.id]);
 
   const promoSkinProduct = products.find(p => p.name.includes('Superfood Cleanser')) || products.find(p => p.category === 'Salud de la piel' && (p.imageUrl || p.images?.length)) || products[2];
   const promoHydrationProduct = products.find(p => p.name.includes('Toleriane Double Repair Face Moisturizer')) || products.find(p => p.category === 'Hidratantes' && (p.imageUrl || p.images?.length)) || products[6];
@@ -636,7 +648,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                       }}
                       onClick={() => onOpenProduct(product)}
                       >
-                        <ProductImage product={product} size="md" />
+                        <ProductImage product={product} size="md" priority />
                       </div>
                     </div>
                   </div>

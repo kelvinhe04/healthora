@@ -553,6 +553,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     sidebarCounts,
     dashboard,
     customers,
+    orders,
     showOrdersSkeleton,
     orderSearch,
     setOrderSearch,
