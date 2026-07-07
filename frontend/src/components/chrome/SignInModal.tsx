@@ -188,7 +188,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
   };
 
   return (
-    <ModalOverlay open={open} onClose={handleClose} zIndex={200} overlayColor="rgba(17, 24, 20, 0.36)" backdropFilter="blur(2px)">
+    <ModalOverlay open={open} onClose={handleClose} zIndex={200} overlayColor="rgba(17, 24, 20, 0.36)" backdropFilter="blur(2px)" ariaLabelledBy={step === 'otp' ? 'signin-modal-otp-title' : 'signin-modal-title'}>
       <div
         style={{
           width: '100%', maxWidth: 780, background: 'var(--cream)',
@@ -252,7 +252,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
                 <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 8 }}>
                   Verificación
                 </div>
-                <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 32, lineHeight: 1, letterSpacing: '-0.03em', margin: 0, fontWeight: 400 }}>
+                <h2 id="signin-modal-otp-title" style={{ fontFamily: '"Instrument Serif", serif', fontSize: 32, lineHeight: 1, letterSpacing: '-0.03em', margin: 0, fontWeight: 400 }}>
                   Revisa tu <em style={{ color: 'var(--green)' }}>email</em>
                 </h2>
               </div>
@@ -277,7 +277,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
                   />
                 </label>
 
-                {error && <p style={{ fontSize: 13, color: 'var(--coral)', fontFamily: '"Geist", sans-serif', margin: 0 }}>{error}</p>}
+                {error && <p role="alert" style={{ fontSize: 13, color: 'var(--coral)', fontFamily: '"Geist", sans-serif', margin: 0 }}>{error}</p>}
 
                 <AnimatedButton variant="green" full type="submit" disabled={loading} text={loading ? 'Verificando…' : (mode === 'sign-in' ? 'Ingresar' : 'Crear cuenta')} />
 
@@ -293,6 +293,9 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
           ) : (
             /* ── Email step ── */
             <>
+              <h2 id="signin-modal-title" className="sr-only">
+                {mode === 'sign-in' ? 'Iniciar sesión en Healthora' : 'Crear cuenta en Healthora'}
+              </h2>
               {/* Mode tabs */}
               <div style={{ display: 'flex', gap: 4, padding: 4, background: 'var(--ink-06)', borderRadius: 14, marginBottom: 24 }}>
                 <button
@@ -343,7 +346,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
                 </label>
 
                 {error && (
-                  <p style={{ fontSize: 13, color: 'var(--coral)', fontFamily: '"Geist", sans-serif', margin: 0, lineHeight: 1.45 }}>
+                  <p role="alert" style={{ fontSize: 13, color: 'var(--coral)', fontFamily: '"Geist", sans-serif', margin: 0, lineHeight: 1.45 }}>
                     {error}{' '}
                     {mode === 'sign-in' && error.includes('crear') && (
                       <button

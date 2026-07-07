@@ -14,7 +14,7 @@ export function Club({ onNav }: ClubProps) {
   const isTablet = bp === 'tablet';
   const isSmall = isMobile || isTablet;
   return (
-    <main style={{ padding: isMobile ? '40px 16px' : isTablet ? '48px 24px' : '60px 40px', maxWidth: 1200, margin: '0 auto' }}>
+    <div style={{ padding: isMobile ? '40px 16px' : isTablet ? '48px 24px' : '60px 40px', maxWidth: 1200, margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: 56 }}>
         <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 12 }}>
           Club Healthora
@@ -52,6 +52,6 @@ export function Club({ onNav }: ClubProps) {
         </p>
         <AnimatedButton variant="lime" size="lg" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Comenzar ahora" />
       </div>
-    </main>
+    </div>
   );
 }

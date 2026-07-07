@@ -1,5 +1,6 @@
 import { Sidebar } from '../../components/admin';
 import { Icon } from '../../components/shared/Icon';
+import { SkipToContent } from '../../components/shared/SkipToContent';
 import type { AdminAccess } from './types';
 import { AdminPanelProvider, useAdminPanelContext } from './AdminPanelContext';
 import { DashboardSection } from './sections/DashboardSection';
@@ -39,6 +40,7 @@ function AdminPanelLayout({
         background: "var(--cream-2)",
       }}
     >
+      <SkipToContent targetId="admin-main-content" />
       {/* Mobile top bar */}
       {isSmall && (
         <div style={{ position: "sticky", top: 0, zIndex: 50, background: "var(--cream)", borderBottom: "1px solid var(--ink-06)", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>

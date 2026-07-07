@@ -21,6 +21,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'UTF-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1.0' },
+      { name: 'description', content: 'Healthora — farmacia y bienestar en línea con envío a domicilio.' },
       { title: 'Healthora' },
     ],
     links: [

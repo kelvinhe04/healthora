@@ -34,12 +34,16 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
       </div>
     );
   }
-  const lines = product.label.split('\n');
+  const placeholderLines = product.label.split('\n');
   return (
-    <div style={{ width: s.w, height: s.h, background: product.color, borderRadius: flat ? 0 : 6, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+    <div
+      role="img"
+      aria-label={alt || product.name}
+      style={{ width: s.w, height: s.h, background: product.color, borderRadius: flat ? 0 : 6, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}
+    >
       <div style={{ width: '55%', height: '78%', background: `linear-gradient(180deg, ${product.swatchColor} 0%, ${product.swatchColor} 20%, ${tintOf(product.swatchColor, 0.92)} 20%, ${tintOf(product.swatchColor, 0.92)} 100%)`, borderRadius: '12px 12px 8px 8px', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 -20px 40px rgba(0,0,0,0.06), inset 3px 0 6px rgba(255,255,255,0.4)' }}>
         <div style={{ color: product.swatchColor, fontFamily: '"Geist", sans-serif', fontWeight: 700, fontSize: s.fs, textAlign: 'center', lineHeight: 1.05, marginTop: `${(s.fs as number) * 0.6}px`, letterSpacing: '-0.02em', whiteSpace: 'pre-line', filter: 'contrast(1.5)', mixBlendMode: 'multiply' }}>
-          {lines.map((l, i) => <div key={i}>{l}</div>)}
+          {placeholderLines.map((l, i) => <div key={i} aria-hidden="true">{l}</div>)}
         </div>
       </div>
     </div>

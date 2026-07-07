@@ -39,7 +39,7 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
   };
 
   return (
-    <main style={{ padding: isMobile ? '20px 16px 120px' : '32px 40px 120px', maxWidth: 1280, margin: '0 auto' }}>
+    <div style={{ padding: isMobile ? '20px 16px 120px' : '32px 40px 120px', maxWidth: 1280, margin: '0 auto' }}>
       <button
         onClick={onBack}
         style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--ink-60)', fontSize: 13, marginBottom: 32, fontFamily: '"Geist", sans-serif' }}
@@ -151,7 +151,7 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
           icon={<Icon name="arrow-right" size={14} />}
         />
       </div>
-    </main>
+    </div>
   );
 }
 

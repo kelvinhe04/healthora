@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { ModalOverlay } from '../components/shared/ModalOverlay';
@@ -50,16 +50,47 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
     setConfirmClearOpen(false);
   };
 
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open, onClose]);
+
+  const drawerRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (open) closeButtonRef.current?.focus();
+  }, [open]);
+
   return (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none', transition: 'opacity 200ms', zIndex: 100 }} />
-      <aside style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: `min(460px, 100vw)`, background: 'var(--cream)', zIndex: 101, transform: open ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 280ms cubic-bezier(.2,.8,.2,1)', display: 'flex', flexDirection: 'column' }}>
+      <div
+        onClick={onClose}
+        aria-hidden="true"
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none', transition: 'opacity 200ms', zIndex: 100 }}
+      />
+      <aside
+        ref={drawerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cart-drawer-title"
+        style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: `min(460px, 100vw)`, background: 'var(--cream)', zIndex: 101, transform: open ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 280ms cubic-bezier(.2,.8,.2,1)', display: 'flex', flexDirection: 'column' }}
+      >
         <div style={{ padding: `24px ${drawerPad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--ink-06)' }}>
           <div>
-            <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Tu carrito</div>
-            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'var(--ink-60)', letterSpacing: '0.08em' }}>{items.length} {items.length === 1 ? 'ARTÍCULO' : 'ARTÍCULOS'}</div>
+            <div id="cart-drawer-title" style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Tu carrito</div>
+            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'var(--ink-60)', letterSpacing: '0.08em' }} aria-live="polite">{items.length} {items.length === 1 ? 'ARTÍCULO' : 'ARTÍCULOS'}</div>
           </div>
-          <button onClick={onClose} style={iconBtn}><Icon name="x" /></button>
+          <button ref={closeButtonRef} onClick={onClose} style={iconBtn} aria-label="Cerrar carrito"><Icon name="x" /></button>
         </div>
 
         {items.length === 0 ? (
@@ -74,7 +105,9 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
             <div style={{ flex: 1, overflow: 'auto', padding: `8px ${drawerPad}` }}>
               <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 0 6px' }}>
                 <button
+                  type="button"
                   onClick={() => setConfirmClearOpen(true)}
+                  aria-label="Vaciar carrito"
                   style={{
                     border: '1px solid #e8a5a0',
                     background: '#fef2f1',
@@ -115,9 +148,9 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: it.variant ? 0 : 8 }}>
                       <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--ink-20)', borderRadius: 999 }}>
-                        <button onClick={() => update(it.product.id, it.qty - 1, it.variant?.id)} style={qtyBtn}><Icon name="minus" size={12} /></button>
-                        <span style={{ fontSize: 13, minWidth: 24, textAlign: 'center' }}>{it.qty}</span>
-                        <button onClick={() => update(it.product.id, it.qty + 1, it.variant?.id)} style={qtyBtn}><Icon name="plus" size={12} /></button>
+                        <button onClick={() => update(it.product.id, it.qty - 1, it.variant?.id)} style={qtyBtn} aria-label={`Reducir cantidad de ${it.product.name}`}><Icon name="minus" size={12} /></button>
+                        <span style={{ fontSize: 13, minWidth: 24, textAlign: 'center' }} aria-label={`Cantidad: ${it.qty}`}>{it.qty}</span>
+                        <button onClick={() => update(it.product.id, it.qty + 1, it.variant?.id)} style={qtyBtn} aria-label={`Aumentar cantidad de ${it.product.name}`}><Icon name="plus" size={12} /></button>
                       </div>
                       <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20 }}>${(effectivePrice * it.qty).toFixed(2)}</div>
                     </div>

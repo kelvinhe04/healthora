@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
@@ -26,12 +26,13 @@ function Row({ k, v }: { k: ReactNode; v: ReactNode }) {
 }
 
 function FormInput({ label, value, onChange, placeholder, full, required }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; full?: boolean; required?: boolean }) {
+  const id = useId();
   return (
-    <label style={{ display: 'flex', flexDirection: 'column', gap: 6, gridColumn: full ? '1 / -1' : 'auto' }}>
+    <label htmlFor={id} style={{ display: 'flex', flexDirection: 'column', gap: 6, gridColumn: full ? '1 / -1' : 'auto' }}>
       <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>
         {label} {required && <span style={{ color: 'var(--coral)' }}>*</span>}
       </span>
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} style={{ padding: '12px 14px', border: '1px solid var(--ink-20)', borderRadius: 10, background: 'var(--cream)', fontSize: 14, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', outline: 'none' }} />
+      <input id={id} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} autoComplete={label === 'Nombre' ? 'name' : label === 'Teléfono' ? 'tel' : label === 'Ciudad' ? 'address-level2' : label === 'Código postal' ? 'postal-code' : label === 'Dirección' ? 'street-address' : undefined} style={{ padding: '12px 14px', border: '1px solid var(--ink-20)', borderRadius: 10, background: 'var(--cream)', fontSize: 14, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', outline: 'none' }} />
     </label>
   );
 }
@@ -234,8 +235,8 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   };
 
   return (
-    <main style={{ padding: isMobile ? '20px 16px 0' : isTablet ? '24px 24px 0' : '24px 40px 0' }}>
-      <button onClick={onBack} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--ink-60)', fontSize: 13, marginBottom: 24, fontFamily: '"Geist", sans-serif' }}>
+    <div style={{ padding: isMobile ? '20px 16px 0' : isTablet ? '24px 24px 0' : '24px 40px 0' }}>
+      <button type="button" onClick={onBack} aria-label="Volver a la tienda" style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--ink-60)', fontSize: 13, marginBottom: 24, fontFamily: '"Geist", sans-serif' }}>
         <Icon name="arrow-left" size={14} /> Volver a la tienda
       </button>
 
@@ -246,7 +247,14 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 40 : isTablet ? 50 : 60, letterSpacing: '-0.035em', lineHeight: 1, margin: 0, color: 'var(--ink)', fontWeight: 400 }}>Finaliza tu <em style={{ color: 'var(--green)' }}>compra</em></h1>
           </div>
 
-          <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
+          <div
+            role="progressbar"
+            aria-label="Progreso del checkout"
+            aria-valuemin={1}
+            aria-valuemax={3}
+            aria-valuenow={step}
+            style={{ display: 'flex', gap: 8, marginBottom: 32 }}
+          >
             {[1, 2, 3].map((n) => <div key={n} style={{ flex: 1, height: 4, borderRadius: 999, background: step >= n ? 'var(--green)' : 'var(--ink-06)' }} />)}
           </div>
 
@@ -338,7 +346,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
               <FormInput label="Ciudad" value={address.city} onChange={(v) => { setAddress({ ...address, city: v }); setAddressError(''); }} placeholder="Ciudad" required />
               <FormInput label="Código postal" value={address.postal} onChange={(v) => { setAddress({ ...address, postal: v.replace(/\D/g, '') }); setAddressError(''); }} placeholder="10001" required />
             </div>
-            {addressError && <div style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{addressError}</div>}
+            {addressError && <div role="alert" style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{addressError}</div>}
             {step === 2 && (
               <AnimatedButton variant="primary" onClick={() => { if (!isAddressValid) { setAddressError('Por favor completa todos los campos requeridos'); } else { setStep(3); }}} style={{ marginTop: 16 }} disabled={!isAddressValid} text="Continuar al pago" />
             )}
@@ -356,7 +364,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             <div style={{ marginTop: 20, padding: 18, border: '1px solid var(--ink-20)', borderRadius: 14, background: 'var(--cream-2)', fontSize: 14, fontFamily: '"Geist", sans-serif', color: 'var(--ink-80)', lineHeight: 1.6 }}>
               Serás redirigido a Stripe Checkout para completar el pago de forma segura. Acepta tarjetas Visa, Mastercard, Amex y más.
             </div>
-            {error && <div style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{error}</div>}
+            {error && <div role="alert" style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{error}</div>}
             <AnimatedButton variant="primary" size="lg" full onClick={handlePay} style={{ marginTop: 20 }} icon={<Icon name="lock" size={14} />} disabled={processing} text={processing ? 'Redirigiendo a Stripe…' : `Pagar $${total.toFixed(2)}`} />
           </section>
         </div>
@@ -461,6 +469,6 @@ export function Checkout({ items, onBack }: CheckoutProps) {
         </aside>
       </div>
       <SignInModal open={showSignInModal} onClose={() => setShowSignInModal(false)} />
-    </main>
+    </div>
   );
 }

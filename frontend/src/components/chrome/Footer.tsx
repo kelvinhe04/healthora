@@ -278,7 +278,7 @@ export function Footer({ onNav }: FooterProps) {
   const description = 'Tu farmacia online para salud, cuidado personal, belleza y bienestar.';
 
   return (
-    <footer ref={footerRef} style={{ background: 'var(--green)', color: 'var(--cream)', padding: isMobile ? '48px 24px 24px' : '64px 40px 32px', borderRadius: isMobile ? '24px 24px 0 0' : '32px 32px 0 0', marginTop: isMobile ? 40 : 80, overflow: 'hidden' }}>
+    <footer ref={footerRef} role="contentinfo" aria-label="Pie de página" style={{ background: 'var(--green)', color: 'var(--cream)', padding: isMobile ? '48px 24px 24px' : '64px 40px 32px', borderRadius: isMobile ? '24px 24px 0 0' : '32px 32px 0 0', marginTop: isMobile ? 40 : 80, overflow: 'hidden' }}>
       <style>{`
         .newsletter-input::placeholder { color: color-mix(in srgb, var(--cream) 50%, transparent); }
         .newsletter-input { border-radius: 999px; }

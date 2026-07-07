@@ -512,7 +512,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   const promoHydrationProduct = products.find(p => p.name.includes('Toleriane Double Repair Face Moisturizer')) || products.find(p => p.category === 'Hidratantes' && (p.imageUrl || p.images?.length)) || products[6];
 
   return (
-    <main>
+    <div>
       {/* HERO */}
       <RevealSection style={{ padding: isMobile ? '16px 16px 0' : isTablet ? '24px 24px 0' : '32px 40px 0' }}>
         <div ref={heroRef} style={{ borderRadius: isMobile ? 20 : 32, overflow: 'hidden', background: 'linear-gradient(120deg, oklch(0.28 0.055 155) 0%, oklch(0.32 0.06 155) 38%, oklch(0.4 0.065 155) 100%)', color: 'oklch(0.985 0.008 85)', minHeight: isMobile ? 420 : 560, position: 'relative' }}>
@@ -954,6 +954,6 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
         </div>
         <BrandsMarquee onNav={onNav} />
       </RevealSection>
-    </main>
+    </div>
   );
 }

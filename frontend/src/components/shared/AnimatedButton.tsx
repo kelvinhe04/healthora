@@ -79,6 +79,7 @@ export function AnimatedButton({
 
   return (
     <button
+      type={props.type ?? 'button'}
       {...props}
       disabled={disabled}
       style={base}

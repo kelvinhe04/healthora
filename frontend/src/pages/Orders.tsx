@@ -425,7 +425,7 @@ export function Orders({ onBack }: OrdersProps) {
   };
 
   return (
-    <main style={{ padding: stackLayout ? '24px 16px 60px' : isMobile ? '32px 20px 60px' : isTablet ? '40px 28px 60px' : '48px 40px 80px', maxWidth: 1280, margin: '0 auto' }}>
+    <div style={{ padding: stackLayout ? '24px 16px 60px' : isMobile ? '32px 20px 60px' : isTablet ? '40px 28px 60px' : '48px 40px 80px', maxWidth: 1280, margin: '0 auto' }}>
       <style>{`
         @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
         @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
@@ -435,7 +435,7 @@ export function Orders({ onBack }: OrdersProps) {
 
       {/* Page header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 40 }}>
-        <button onClick={onBack} style={{ ...iconBtn, gap: 6, fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)', padding: '8px 14px', borderRadius: 10, border: '1px solid var(--ink-10)', background: 'var(--cream-2)' }}>
+        <button type="button" onClick={onBack} aria-label="Regresar al catálogo" style={{ ...iconBtn, gap: 6, fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)', padding: '8px 14px', borderRadius: 10, border: '1px solid var(--ink-10)', background: 'var(--cream-2)' }}>
           <Icon name="arrow-left" size={14} /> Regresar
         </button>
         <div>
@@ -572,6 +572,6 @@ export function Orders({ onBack }: OrdersProps) {
           )}
         </div>
       )}
-    </main>
+    </div>
   );
 }

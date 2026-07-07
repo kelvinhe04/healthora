@@ -501,7 +501,7 @@ export function Catalog({
   );
 
   return (
-    <main
+    <div
       style={{
         padding: isMobile
           ? "20px 16px 0"
@@ -1012,6 +1012,6 @@ export function Catalog({
           )}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

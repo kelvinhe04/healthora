@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
+const FOCUSABLE =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
 interface ModalOverlayProps {
   open: boolean;
   onClose: () => void;
@@ -7,6 +10,9 @@ interface ModalOverlayProps {
   overlayColor?: string;
   backdropFilter?: string;
   absolute?: boolean;
+  /** Accessible name when no visible title is wired via aria-labelledby */
+  ariaLabel?: string;
+  ariaLabelledBy?: string;
   children: ReactNode;
 }
 
@@ -17,14 +23,16 @@ export function ModalOverlay({
   overlayColor = 'rgba(17, 24, 20, 0.40)',
   backdropFilter,
   absolute = false,
+  ariaLabel = 'Diálogo',
+  ariaLabelledBy,
   children,
 }: ModalOverlayProps) {
   const [visible, setVisible] = useState(open);
   const [closing, setClosing] = useState(false);
   const frozenChildren = useRef<ReactNode>(children);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  // Freeze children snapshot so exit animation renders the last valid content.
-  // Only update while open and not yet closing — preserves data during exit.
   if (open && !closing) frozenChildren.current = children;
 
   useEffect(() => {
@@ -39,12 +47,61 @@ export function ModalOverlay({
       }, 220);
       return () => clearTimeout(t);
     }
-  }, [open]);
+  }, [open, visible]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== 'Tab' || !panelRef.current) return;
+
+      const focusables = Array.from(
+        panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE),
+      ).filter((el) => !el.hasAttribute('disabled') && el.tabIndex !== -1);
+
+      if (focusables.length === 0) return;
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusTimer = window.setTimeout(() => {
+      const focusables = panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE);
+      focusables?.[0]?.focus();
+    }, 0);
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      window.clearTimeout(focusTimer);
+      previousFocusRef.current?.focus?.();
+    };
+  }, [open, onClose]);
 
   if (!visible) return null;
 
   return (
     <div
+      role="presentation"
       onClick={closing ? undefined : onClose}
       style={{
         position: absolute ? 'absolute' : 'fixed',
@@ -60,7 +117,13 @@ export function ModalOverlay({
       }}
     >
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={ariaLabelledBy ? undefined : ariaLabel}
+        aria-labelledby={ariaLabelledBy}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
         style={{
           width: '100%',
           display: 'flex',

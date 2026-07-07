@@ -6,6 +6,7 @@ import { Header } from '../components/chrome/Header';
 import { Footer } from '../components/chrome/Footer';
 import { CartDrawer } from '../pages/CartDrawer';
 import { CustomCursor } from '../components/shared/CustomCursor';
+import { SkipToContent } from '../components/shared/SkipToContent';
 import { useCartStore } from '../store/cartStore';
 import { useUiStore } from '../store/uiStore';
 import { useThemeStore, applyTheme } from '../store/themeStore';
@@ -98,6 +99,7 @@ function StorefrontLayout() {
 
   return (
     <>
+      <SkipToContent />
       <CustomCursor />
       <Topbar />
       <Header onNav={nav} onOpenCart={() => setCartOpen(true)} />
@@ -107,9 +109,9 @@ function StorefrontLayout() {
         onCheckout={() => { setCheckoutItems(null); setCartOpen(false); nav('checkout'); }}
         onOpenSamplePicker={() => { setCartOpen(false); nav('sample-picker'); }}
       />
-      <div style={{ minHeight: 'calc(100vh - 200px)' }}>
+      <main id="main-content" style={{ minHeight: 'calc(100vh - 200px)' }} tabIndex={-1}>
         <Outlet />
-      </div>
+      </main>
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         aria-label="Volver arriba"
