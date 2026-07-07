@@ -577,6 +577,9 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   const { getToken } = useAuth();
   const bp = useBreakpoint();
   const isMobile = bp === "mobile";
+  const headerIconBtn = isMobile
+    ? { ...iconBtn, padding: 10, minWidth: 44, minHeight: 44, borderRadius: 10 }
+    : iconBtn;
   const [headerWide, setHeaderWide] = useState(
     () => typeof window !== "undefined" && window.innerWidth >= 1280,
   );
@@ -1050,7 +1053,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
       >
         <div ref={userMenuRef} style={{ position: "relative" }}>
           <button
-            style={iconBtn}
+            style={headerIconBtn}
             aria-label="Cuenta"
             onClick={() => {
               if (isSignedIn) setUserMenuOpen(!userMenuOpen);
@@ -1187,9 +1190,9 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
         <button
           onClick={toggleTheme}
           style={{
-            ...iconBtn,
-            width: 34,
-            height: 34,
+            ...headerIconBtn,
+            width: isMobile ? 44 : 34,
+            height: isMobile ? 44 : 34,
             borderRadius: 999,
             border: "1px solid var(--ink-06)",
             justifyContent: "center",
@@ -1212,7 +1215,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
         </button>
 
         <button
-          style={{ ...iconBtn, position: "relative" }}
+          style={{ ...headerIconBtn, position: "relative" }}
           onClick={onOpenCart}
           aria-label="Carrito"
         >

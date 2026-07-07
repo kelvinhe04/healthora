@@ -38,7 +38,7 @@ function FormInput({ label, value, onChange, placeholder, full, required }: { la
   );
 }
 
-const stepCard: CSSProperties = { background: 'var(--cream-2)', borderRadius: 20, padding: 28, marginBottom: 16, border: '1px solid var(--ink-06)', transition: 'opacity 200ms' };
+const stepCard = (compact: boolean): CSSProperties => ({ background: 'var(--cream-2)', borderRadius: compact ? 16 : 20, padding: compact ? '20px 16px' : 28, marginBottom: 16, border: '1px solid var(--ink-06)', transition: 'opacity 200ms' });
 const stepHeader: CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
 const stepNum: CSSProperties = { fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--ink-60)', letterSpacing: '0.12em', marginBottom: 4 };
 const stepTitle: CSSProperties = { fontFamily: '"Instrument Serif", serif', fontSize: 28, letterSpacing: '-0.02em', margin: 0, color: 'var(--ink)', fontWeight: 400 };
@@ -264,7 +264,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
           </div>
 
           {/* Step 1: Auth */}
-          <section style={stepCard}>
+          <section style={stepCard(isMobile)}>
             <div style={stepHeader}>
               <div>
                 <div style={stepNum}>01</div>
@@ -309,7 +309,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
           </section>
 
           {/* Step 2: Address */}
-          <section style={{ ...stepCard, opacity: isSignedIn ? 1 : 0.4, pointerEvents: isSignedIn ? 'auto' : 'none' }}>
+          <section style={{ ...stepCard(isMobile), opacity: isSignedIn ? 1 : 0.4, pointerEvents: isSignedIn ? 'auto' : 'none' }}>
             <div style={stepHeader}>
               <div>
                 <div style={stepNum}>02</div>
@@ -358,7 +358,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
           </section>
 
           {/* Step 3: Payment */}
-          <section style={{ ...stepCard, opacity: step >= 3 ? 1 : 0.4, pointerEvents: step >= 3 ? 'auto' : 'none' }}>
+          <section style={{ ...stepCard(isMobile), opacity: step >= 3 ? 1 : 0.4, pointerEvents: step >= 3 ? 'auto' : 'none' }}>
             <div style={stepHeader}>
               <div>
                 <div style={stepNum}>03</div>

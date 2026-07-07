@@ -127,7 +127,7 @@ function StorefrontLayout() {
       />
       <main
         id="main-content"
-        style={{ minHeight: "calc(100vh - 200px)" }}
+        style={{ minHeight: "calc(100vh - 200px)", overflowX: "clip", maxWidth: "100vw" }}
         tabIndex={-1}
       >
         <Outlet />
