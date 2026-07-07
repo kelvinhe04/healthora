@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
+    "test": "bun test",
     "seed": "bun src/db/seed.ts",
     "seed:orders": "bun src/db/seed-orders.ts",
     "seed:reviews": "bun src/db/seed-reviews.ts"
