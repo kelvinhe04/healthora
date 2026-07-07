@@ -1,0 +1,33 @@
+name: Uptime monitor
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  uptime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check uptime
+        shell: pwsh
+        env:
+          HEALTHORA_API_URL: ${{ vars.HEALTHORA_API_URL }}
+          HEALTHORA_FRONTEND_URL: ${{ vars.HEALTHORA_FRONTEND_URL }}
+          UPTIME_ALERT_WEBHOOK_URL: ${{ secrets.UPTIME_ALERT_WEBHOOK_URL }}
+          UPTIME_ALERT_CHANNEL: ${{ vars.UPTIME_ALERT_CHANNEL }}
+        run: |
+          ./tooling/ops/uptime-monitor.ps1 `
+            -ApiBase "$env:HEALTHORA_API_URL" `
+            -FrontendBase "$env:HEALTHORA_FRONTEND_URL" `
+            -AlertWebhookUrl "$env:UPTIME_ALERT_WEBHOOK_URL" `
+            -AlertChannel "$env:UPTIME_ALERT_CHANNEL" `
+            -HistoryPath "uptime-history.jsonl"
+      - name: Upload uptime history
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uptime-history
+          path: uptime-history.jsonl
+          if-no-files-found: warn
