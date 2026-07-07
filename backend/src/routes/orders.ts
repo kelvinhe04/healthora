@@ -20,6 +20,7 @@ import {
   textField,
 } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
+import { decrementStock } from '../lib/inventory';
 
 const ordersQuerySchema = z.object({
   stripeSessionId: textField(255).optional(),
@@ -147,7 +148,10 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
 
   for (const item of lineItems) {
     if (!item.isSample) {
-      await Product.findOneAndUpdate({ id: item.productId }, { $inc: { stock: -item.qty } });
+      const ok = await decrementStock(item.productId, item.qty, item.variantId);
+      if (!ok) {
+        console.error('[ORDERS] Stock decrement failed for', item.productId, item.variantId);
+      }
     }
   }
 

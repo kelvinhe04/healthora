@@ -8,6 +8,7 @@ import { stripe } from '../lib/stripe';
 import { getPromotion } from '../lib/promotions';
 import { addressSchema, cartItemSchema, optionalTextField, parseJson, productIdSchema } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
+import { validateCartStock } from '../lib/inventory';
 
 type CheckoutBody = {
   items: { productId: string; qty: number; variantId?: string }[];
@@ -51,6 +52,7 @@ export const checkoutRouter = new Hono<AppEnv>()
 
     let lineItems;
     try {
+      validateCartStock(products, items);
       lineItems = items.map((item) => {
         const p = products.find((product) => product.id === item.productId);
         if (!p) throw new Error('Product not found');
