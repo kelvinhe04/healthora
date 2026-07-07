@@ -621,7 +621,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 18.49,
-    imageUrl: '/products/vitaminas/natures-bounty-biotin-10000-mcg-120-rapid-release-softgels-1.jpg',
     rating: 4.7,
     reviews: 2031,
     short: 'Biotina de alta potencia para cabello, piel y unas en capsulas rapid release.',
@@ -5270,7 +5269,7 @@ const PRODUCTS = [
     ],
     variants: [
       { id: '8oz', label: '8 fl oz', type: 'size', price: 9.78, stock: 65, isDefault: true, images: ['/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/8fl/1.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/8fl/2.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/8fl/3.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/8fl/4.jpg'] },
-      { id: '16oz', label: '16 fl oz', type: 'size', price: 11.99, stock: 50, images: ['/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/16fl/1.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/16fl/2.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/16fl/3.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/16fl/4.jpg'] },
+      { id: '16oz', label: '16 fl oz', type: 'size', price: 11.99, stock: 50, images: ['/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/16fl/1.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/16fl/2.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/16fl/3.jpg'] },
       { id: '25oz', label: '25 fl oz', type: 'size', price: 16.99, priceBefore: 18.95, stock: 30, images: ['/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/25fl/placeholder-1.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/25fl/placeholder-2.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/3.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/4.jpg'] },
       { id: '32oz', label: '32 fl oz', type: 'size', price: 17.17, stock: 35, images: ['/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/32fl/placeholder-1.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/32fl/placeholder-2.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/3.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/4.jpg'] },
       { id: '64oz', label: '64 fl oz', type: 'size', price: 34.38, stock: 22, images: ['/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/64fl/placeholder-1.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/64fl/placeholder-2.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/3.jpg', '/products/cuidado-personal/dr-bronners-peppermint-pure-castile-soap/4.jpg'] },
