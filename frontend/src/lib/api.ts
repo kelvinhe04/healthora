@@ -6,6 +6,7 @@ import type {
   ProductFilters,
   SavedAddress,
   Review,
+  ErrorReport,
 } from "../types";
 import type { CartItem } from "../types";
 
@@ -199,6 +200,12 @@ export const api = {
     performance: (token: string, minutes?: number) =>
       request<unknown>(
         `/admin/performance${minutes ? `?minutes=${minutes}` : ""}`,
+        undefined,
+        token,
+      ),
+    errorReports: (token: string, source?: "backend" | "frontend") =>
+      request<{ items: ErrorReport[]; total: number; page: number; limit: number }>(
+        `/admin/error-reports${source ? `?source=${source}` : ""}`,
         undefined,
         token,
       ),

@@ -3,6 +3,10 @@ import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-r
 import { ClerkProvider } from '@clerk/clerk-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ParallaxProvider } from 'react-scroll-parallax';
+import { PostHogProvider } from '@posthog/react';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { PostHogIdentity } from '../components/PostHogIdentity';
+import { installGlobalErrorTracking, isPostHogConfigured, posthogOptions, posthogToken } from '../lib/posthog';
 import appCss from '../index.css?url';
 
 const queryClient = new QueryClient({
@@ -10,6 +14,7 @@ const queryClient = new QueryClient({
 });
 
 const clerkPk = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
+installGlobalErrorTracking();
 
 export const Route = createRootRoute({
   head: () => ({
@@ -30,15 +35,28 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-  return (
-    <RootDocument>
+  const app = (
+    <ErrorBoundary>
       <ClerkProvider publishableKey={clerkPk} afterSignOutUrl="/">
+        <PostHogIdentity />
         <QueryClientProvider client={queryClient}>
           <ParallaxProvider>
             <Outlet />
           </ParallaxProvider>
         </QueryClientProvider>
       </ClerkProvider>
+    </ErrorBoundary>
+  );
+
+  return (
+    <RootDocument>
+      {isPostHogConfigured ? (
+        <PostHogProvider apiKey={posthogToken} options={posthogOptions}>
+          {app}
+        </PostHogProvider>
+      ) : (
+        app
+      )}
     </RootDocument>
   );
 }
