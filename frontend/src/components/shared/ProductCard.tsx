@@ -7,6 +7,7 @@ import { Icon } from './Icon';
 import { useReviews } from '../../hooks/useReviews';
 import { useThemeStore } from '../../store/themeStore';
 import { pickDefaultCombo, getEffectivePrice, getEffectivePriceBefore } from '../../lib/productVariants';
+import { useCompareStore } from '../../store/compareStore';
 
 // ─── Shared shimmer helper ────────────────────────────────────────────────────
 function ShimmerBox({ style }: { style?: CSSProperties }) {
@@ -71,11 +72,15 @@ interface ProductCardProps {
   onClick: (p: Product) => void;
   onAdd: (p: Product) => void;
   priority?: boolean;
+  showCompare?: boolean;
 }
 
-export function ProductCard({ product, onClick, onAdd, priority = false }: ProductCardProps) {
+export function ProductCard({ product, onClick, onAdd, priority = false, showCompare = true }: ProductCardProps) {
   const [hover, setHover] = useState(false);
+  const [compareHint, setCompareHint] = useState('');
   const dark = useThemeStore((s) => s.theme === 'dark');
+  const toggleCompare = useCompareStore((s) => s.toggle);
+  const isCompared = useCompareStore((s) => s.contains(product.id));
   const { data: liveReviews } = useReviews(product.id);
   const liveCount = liveReviews?.length ?? 0;
   const liveRating = liveReviews && liveReviews.length > 0
@@ -126,6 +131,39 @@ export function ProductCard({ product, onClick, onAdd, priority = false }: Produ
         {product.stock > 0 && effectivePriceBefore && (
           <span style={{ position: 'absolute', top: 12, right: 12, background: 'var(--coral)', color: 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, fontWeight: 600 }}>−{Math.round((1 - effectivePrice / effectivePriceBefore) * 100)}%</span>
         )}
+
+        {showCompare && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              const result = toggleCompare(product.id);
+              if (result === 'full') {
+                setCompareHint('Máximo 4 productos');
+                window.setTimeout(() => setCompareHint(''), 1800);
+              }
+            }}
+            aria-label={isCompared ? 'Quitar de comparación' : 'Agregar a comparación'}
+            aria-pressed={isCompared}
+            style={{
+              position: 'absolute',
+              top: 12,
+              right: product.stock > 0 && effectivePriceBefore ? 52 : 12,
+              width: 44,
+              height: 44,
+              borderRadius: 999,
+              border: isCompared ? '2px solid var(--green)' : '1px solid var(--ink-12)',
+              background: isCompared ? 'color-mix(in oklab, var(--green) 12%, white)' : 'rgba(255,255,255,0.92)',
+              color: 'var(--ink)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Icon name="layers" size={16} />
+          </button>
+        )}
         
         {/* Add to cart button */}
         {product.stock > 0 && (
@@ -139,6 +177,9 @@ export function ProductCard({ product, onClick, onAdd, priority = false }: Produ
         )}
       </div>
       <div style={{ padding: '16px 16px 18px' }}>
+        {compareHint && (
+          <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--coral)', marginBottom: 6 }}>{compareHint}</div>
+        )}
         <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{product.brand}</div>
         <div style={{ fontFamily: '"Geist", sans-serif', fontSize: 15, fontWeight: 500, color: 'var(--ink)', lineHeight: 1.25, marginBottom: 8, letterSpacing: '-0.01em', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: 38 }}>{product.name}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, minHeight: 18 }}>
