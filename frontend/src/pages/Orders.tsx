@@ -8,6 +8,8 @@ import { Icon } from '../components/shared/Icon';
 import { api } from '../lib/api';
 import type { Order, OrderAddress } from '../types';
 import { useOnceLoading, Skeleton } from '../components/admin';
+import { useCartStore } from '../store/cartStore';
+import { useUiStore } from '../store/uiStore';
 
 interface OrdersProps {
   onBack: () => void;
@@ -111,18 +113,24 @@ interface OrderDetailProps {
   onAddrChange: (key: keyof OrderAddress, value: string) => void;
   onSaveAddr: () => void;
   onCancelEditAddr: () => void;
+  onReorder: () => void;
+  isReordering: boolean;
+  reorderMessage: string;
 }
 
 function OrderDetail({
   order,
   showCancelConfirm, isCancelling, cancelError, onRequestCancel, onConfirmCancel, onAbortCancel,
   editingAddress, addrForm, isSavingAddr, addrError, onStartEditAddr, onAddrChange, onSaveAddr, onCancelEditAddr,
+  onReorder, isReordering, reorderMessage,
 }: OrderDetailProps) {
   const bpInner = useBreakpoint();
   const isMobileInner = bpInner === 'mobile';
   const s = STATUS_CFG[order.status] ?? STATUS_CFG.paid;
   const canCancel = ['unfulfilled', 'processing'].includes(order.fulfillmentStatus) && !['cancelled', 'refunded'].includes(order.status);
   const canEditAddr = order.fulfillmentStatus === 'unfulfilled' && !['cancelled', 'refunded'].includes(order.status);
+  const canReorder = !['cancelled', 'refunded', 'pending_payment'].includes(order.status)
+    && order.items.some((item) => !item.isSample);
 
   const sectionLabel: CSSProperties = {
     fontSize: 10, fontFamily: '"JetBrains Mono", monospace',
@@ -205,6 +213,38 @@ function OrderDetail({
             </div>
           ))}
         </div>
+        {canReorder && (
+          <div style={{ marginTop: 18 }}>
+            <button
+              type="button"
+              onClick={onReorder}
+              disabled={isReordering}
+              style={{
+                padding: '12px 18px',
+                minHeight: 44,
+                borderRadius: 12,
+                border: '1px solid var(--green)',
+                background: 'color-mix(in oklab, var(--green) 8%, white)',
+                color: 'var(--green)',
+                fontSize: 13,
+                fontFamily: '"Geist", sans-serif',
+                cursor: isReordering ? 'wait' : 'pointer',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <Icon name="bag" size={15} />
+              {isReordering ? 'Agregando al carrito…' : 'Volver a comprar'}
+            </button>
+            {reorderMessage && (
+              <div style={{ marginTop: 10, fontSize: 13, color: reorderMessage.includes('disponible') ? 'var(--coral)' : 'var(--green)', fontFamily: '"Geist", sans-serif' }}>
+                {reorderMessage}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {divider}
@@ -357,6 +397,10 @@ export function Orders({ onBack }: OrdersProps) {
   const [addrForm, setAddrForm] = useState<OrderAddress>(EMPTY_ADDR);
   const [cancelError, setCancelError] = useState('');
   const [addrError, setAddrError] = useState('');
+  const [isReordering, setIsReordering] = useState(false);
+  const [reorderMessage, setReorderMessage] = useState('');
+  const addToCart = useCartStore((s) => s.add);
+  const setCartOpen = useUiStore((s) => s.setCartOpen);
 
   const sorted = orders
     ? [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -371,6 +415,7 @@ export function Orders({ onBack }: OrdersProps) {
     setEditingAddress(false);
     setCancelError('');
     setAddrError('');
+    setReorderMessage('');
   };
 
   const cancelMut = useMutation({
@@ -417,6 +462,33 @@ export function Orders({ onBack }: OrdersProps) {
     }
     if (!selected) return;
     editAddrMut.mutate({ id: selected._id, address: addrForm });
+  };
+
+  const handleReorder = async () => {
+    if (!selected) return;
+    setIsReordering(true);
+    setReorderMessage('');
+    let addedLines = 0;
+    try {
+      for (const item of selected.items.filter((line) => !line.isSample)) {
+        try {
+          const product = await api.products.get(item.productId);
+          if (!product.active || product.stock <= 0) continue;
+          addToCart(product, Math.min(item.qty, product.stock));
+          addedLines += 1;
+        } catch {
+          // Producto ya no existe en catálogo
+        }
+      }
+      if (addedLines === 0) {
+        setReorderMessage('Ningún producto de este pedido está disponible ahora.');
+      } else {
+        setCartOpen(true);
+        setReorderMessage(`${addedLines} producto(s) agregados al carrito.`);
+      }
+    } finally {
+      setIsReordering(false);
+    }
   };
 
   const iconBtn: CSSProperties = {
@@ -568,6 +640,9 @@ export function Orders({ onBack }: OrdersProps) {
               onAddrChange={(key, value) => setAddrForm(f => ({ ...f, [key]: value }))}
               onSaveAddr={handleSaveAddr}
               onCancelEditAddr={() => { setEditingAddress(false); setAddrError(''); }}
+              onReorder={() => { void handleReorder(); }}
+              isReordering={isReordering}
+              reorderMessage={reorderMessage}
             />
           )}
         </div>
