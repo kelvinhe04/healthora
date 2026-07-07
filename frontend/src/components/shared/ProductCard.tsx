@@ -50,7 +50,7 @@ export function ProductCardSkeleton() {
       }}
     >
       {/* Image area */}
-      <ShimmerBox style={{ height: 220, borderRadius: 0 }} />
+      <ShimmerBox style={{ height: 280, borderRadius: 0 }} />
 
       {/* Text content */}
       <div style={{ padding: '16px 16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
