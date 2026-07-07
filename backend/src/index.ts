@@ -34,6 +34,7 @@ import { errorTracking } from './middleware/errorTracking';
 import { logger } from './lib/logger';
 import { requestLogger } from './middleware/requestLogger';
 import { getCorsOrigins } from './lib/appEnv';
+import { clearCatalogCache } from './lib/cache';
 
 const testEmailSchema = z.object({
   email: emailField(),
@@ -41,6 +42,7 @@ const testEmailSchema = z.object({
 });
 
 await connectDB();
+await clearCatalogCache();
 await recalculateBestsellers();
 await recalculateNew();
 

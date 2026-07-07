@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useClerk, useUser } from '@clerk/clerk-react';
 import { AnimatedButton } from '../../components/shared/AnimatedButton';
+import { Icon } from '../../components/shared/Icon';
 import { api } from '../../lib/api';
-import type { AdminAccess } from './types';
 import { AdminPanel } from './AdminPanel';
 import { useAdminToken } from './hooks/useAdminToken';
 

@@ -1,5 +1,6 @@
-import { type ChangeEvent, useEffect, useState } from 'react';
+import { type ChangeEvent, useEffect, useState, type CSSProperties } from 'react';
 import type { Product } from '../../../types';
+import { iconBtnAd } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';

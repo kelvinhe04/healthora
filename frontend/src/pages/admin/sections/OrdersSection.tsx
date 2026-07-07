@@ -9,6 +9,7 @@ import {
   trStyle,
   iconBtnAd,
 } from '../../../components/admin';
+import type { FulfillmentStatus } from '../../../types';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
@@ -17,6 +18,7 @@ import { useAdminPanelContext } from '../AdminPanelContext';
 
 export function OrdersSection() {
   const {
+  orders,
   showOrdersSkeleton,
   orderSearch,
   setOrderSearch,

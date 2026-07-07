@@ -42,6 +42,7 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
 | HU-033 | Precio por variante aplicado en checkout | por crear | Kelvin | Parcial ya en `main`: cálculo de subtotal en frontend correcto; falta validar precio de variante en backend al confirmar la orden. |
+| HU-071 | Tests unitarios | por crear | Roy | Issue #75 sigue abierto y sin PR mergeado detectado; mover a Completadas cuando exista PR mergeado a `main`. |
 
 
 ## Pendientes — continuación directa de variantes (Kelvin, ramas nuevas tras el merge)
@@ -65,7 +66,7 @@ Ramas secuenciales desde `main` (una a la vez, todas tocan `backend/src/index.ts
 
 HU-065/066/067/068 ya mergeadas a `main` (ver tabla de Completadas), fuera de orden respecto al plan original (Roy las abrió antes que 062/064) — 062 y 064 siguen pendientes.
 
-En pausa hasta que variantes/UI se estabilicen: HU-070/071/072 (tests), HU-080/081 (optimización de imágenes / HTTP cache — tocan `ProductCard`/`ProductImage`, zona con bug abierto de imagen de variante).
+En pausa hasta que variantes/UI se estabilicen: HU-070/072 (tests), HU-080/081 (optimización de imágenes / HTTP cache — tocan `ProductCard`/`ProductImage`, zona con bug abierto de imagen de variante).
 
 ---
 

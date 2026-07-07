@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { Product } from '../../types';
 import { imageWidthForSize, optimizeImageUrl, type ImageSizeKey } from '../../lib/cloudinary';
 
@@ -9,6 +10,8 @@ interface ProductImageProps {
   flat?: boolean;
   imageUrl?: string;
   alt?: string;
+  /** Above-the-fold images (hero): eager load, no lazy */
+  priority?: boolean;
 }
 
 const sizes: Record<SizeKey, { w: number | string; h: number; fs: number }> = {
@@ -23,16 +26,32 @@ function tintOf(color: string, amount: number) {
   return `color-mix(in oklch, ${color} ${(1 - amount) * 100}%, white)`;
 }
 
-export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt }: ProductImageProps) {
+export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt, priority = false }: ProductImageProps) {
   const s = sizes[size];
   const defaultVariant = product.variants?.find((v) => v.isDefault) ?? product.variants?.[0];
-  const src = imageUrl || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || defaultVariant?.images?.[0] || defaultVariant?.imageUrl;
-  if (src) {
+  const rawSrc = imageUrl || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || defaultVariant?.images?.[0] || defaultVariant?.imageUrl;
+  const optimizedSrc = rawSrc ? optimizeImageUrl(rawSrc, imageWidthForSize(size as ImageSizeKey)) : '';
+  const [imgSrc, setImgSrc] = useState(optimizedSrc);
+
+  useEffect(() => {
+    setImgSrc(optimizedSrc);
+  }, [optimizedSrc]);
+
+  if (rawSrc) {
     const imagePadding = size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
-    const optimizedSrc = optimizeImageUrl(src, imageWidthForSize(size as ImageSizeKey));
     return (
       <div style={{ width: s.w, height: s.h, background: 'white', borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box' }}>
-        <img src={optimizedSrc} alt={alt || product.name} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center center' }} />
+        <img
+          src={imgSrc || rawSrc}
+          alt={alt || product.name}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={priority ? 'high' : 'auto'}
+          onError={() => {
+            if (imgSrc !== rawSrc) setImgSrc(rawSrc);
+          }}
+          style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center center' }}
+        />
       </div>
     );
   }
