@@ -192,7 +192,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
           >
             <div style={{ position: 'absolute', top: 24, left: 24, fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--ink-60)', letterSpacing: '0.12em', zIndex: 2 }}>{String(activeImageIndex + 1).padStart(2, '0')} / 04 · PRODUCT SHOT</div>
             <div key={activeImage} style={{ animation: 'fadeInImage 0.4s ease-out', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ProductImage product={product} size="lg" imageUrl={activeImage} alt={gallery[activeImageIndex]?.alt} />
+              <ProductImage product={product} size="lg" imageUrl={activeImage} alt={gallery[activeImageIndex]?.alt} priority />
             </div>
             <style>{`@keyframes fadeInImage { from { opacity: 0.4; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }`}</style>
           </div>
