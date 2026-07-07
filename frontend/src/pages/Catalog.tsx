@@ -9,6 +9,8 @@ import { Icon } from "../components/shared/Icon";
 import { useProducts } from "../hooks/useProducts";
 import { useCategories } from "../hooks/useCategories";
 import { useBreakpoint } from "../hooks/useBreakpoint";
+import { RelatedProductsSection } from "../components/shared/RelatedProductsSection";
+import { getCatalogRecommendations } from "../lib/relatedProducts";
 
 interface CatalogProps {
   initialFilter?: {
@@ -200,6 +202,11 @@ export function Catalog({
   const paginated = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
+  );
+
+  const recommendations = useMemo(
+    () => getCatalogRecommendations(allProducts, { category: cat !== "Todos" ? cat : undefined, need: need ?? undefined }, 4),
+    [allProducts, cat, need],
   );
 
   const pageNumbers = Array.from(
@@ -1014,6 +1021,14 @@ export function Catalog({
           )}
         </div>
       </div>
+
+      <RelatedProductsSection
+        subtitle="Recomendaciones del catálogo"
+        title={<>También te puede <em style={{ color: 'var(--green)' }}>interesar</em></>}
+        products={recommendations}
+        onOpenProduct={onOpenProduct}
+        onAdd={onAdd}
+      />
     </div>
   );
 }
