@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Product } from '../db/models/Product';
 import { escapeRegex, parseParams, parseQuery, productIdSchema, textField } from '../lib/validation';
 import { cacheGet, cacheSet } from '../lib/cache';
+import { cacheableJson } from '../lib/httpCache';
 
 const productQuerySchema = z.object({
   category: textField(120).optional(),
@@ -48,21 +49,21 @@ export const productsRouter = new Hono()
 
     const cacheKey = `catalog:products:${JSON.stringify(query)}`;
     const cached = await cacheGet<unknown[]>(cacheKey);
-    if (cached && cached.length > 0) return c.json(cached);
+    if (cached && cached.length > 0) return cacheableJson(c, cached, 'catalogList');
 
     const result = await q.lean();
     if (result.length > 0) await cacheSet(cacheKey, result);
-    return c.json(result);
+    return cacheableJson(c, result, 'catalogList');
   })
   .get("/count", async (c) => {
     const cacheKey = 'catalog:products:count';
     const cached = await cacheGet<{ count: number }>(cacheKey);
-    if (cached) return c.json(cached);
+    if (cached) return cacheableJson(c, cached, 'catalogList');
 
     const count = await Product.countDocuments({ active: true });
     const payload = { count };
     await cacheSet(cacheKey, payload);
-    return c.json(payload);
+    return cacheableJson(c, payload, 'catalogList');
   })
   .get('/:id', async (c) => {
     const parsed = parseParams(c, productParamsSchema);
@@ -70,5 +71,5 @@ export const productsRouter = new Hono()
 
     const p = await Product.findOne({ id: parsed.data.id, active: true }).lean();
     if (!p) return c.json({ error: 'Not found' }, 404);
-    return c.json(p);
+    return cacheableJson(c, p, 'catalogDetail');
   });

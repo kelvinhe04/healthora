@@ -13,6 +13,7 @@ import {
   productIdSchema,
   textField,
 } from '../lib/validation';
+import { cacheableJson } from '../lib/httpCache';
 
 const reviewsQuerySchema = z.object({
   productId: productIdSchema,
@@ -35,14 +36,14 @@ export const reviewsRouter = new Hono<AppEnv>()
       { $group: { _id: null, total: { $sum: 1 }, avgRating: { $avg: '$rating' } } },
     ]);
     const { total = 0, avgRating = 0 } = result[0] ?? {};
-    return c.json({ total, avgRating: Math.round(avgRating * 10) / 10 });
+    return cacheableJson(c, { total, avgRating: Math.round(avgRating * 10) / 10 }, 'reviewList');
   })
   .get('/', async (c) => {
     const parsed = parseQuery(c, reviewsQuerySchema);
     if (!parsed.success) return parsed.response;
 
     const reviews = await Review.find({ productId: parsed.data.productId }).sort({ createdAt: -1 }).lean();
-    return c.json(reviews);
+    return cacheableJson(c, reviews, 'reviewList');
   })
   .post('/', clerkAuth, async (c) => {
     const user = c.get('user');
