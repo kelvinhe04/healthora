@@ -1,4 +1,5 @@
 import type { Product } from '../../types';
+import { imageWidthForSize, optimizeImageUrl, type ImageSizeKey } from '../../lib/cloudinary';
 
 type SizeKey = 'xs' | 'sm' | 'md' | 'lg' | 'tile';
 
@@ -28,9 +29,10 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
   const src = imageUrl || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || defaultVariant?.images?.[0] || defaultVariant?.imageUrl;
   if (src) {
     const imagePadding = size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
+    const optimizedSrc = optimizeImageUrl(src, imageWidthForSize(size as ImageSizeKey));
     return (
       <div style={{ width: s.w, height: s.h, background: 'white', borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box' }}>
-        <img src={src} alt={alt || product.name} style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center center' }} />
+        <img src={optimizedSrc} alt={alt || product.name} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center center' }} />
       </div>
     );
   }

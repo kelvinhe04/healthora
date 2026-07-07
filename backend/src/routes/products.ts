@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { Product } from '../db/models/Product';
 import { escapeRegex, parseParams, parseQuery, productIdSchema, textField } from '../lib/validation';
+import { cacheGet, cacheSet } from '../lib/cache';
 
 const productQuerySchema = z.object({
   category: textField(120).optional(),
@@ -45,11 +46,23 @@ export const productsRouter = new Hono()
     else if (query.sort === "rating") q = q.sort({ rating: -1 });
     else q = q.sort({ sortOrder: 1 });
 
-    return c.json(await q.lean());
+    const cacheKey = `catalog:products:${JSON.stringify(query)}`;
+    const cached = await cacheGet<unknown[]>(cacheKey);
+    if (cached) return c.json(cached);
+
+    const result = await q.lean();
+    await cacheSet(cacheKey, result);
+    return c.json(result);
   })
   .get("/count", async (c) => {
+    const cacheKey = 'catalog:products:count';
+    const cached = await cacheGet<{ count: number }>(cacheKey);
+    if (cached) return c.json(cached);
+
     const count = await Product.countDocuments({ active: true });
-    return c.json({ count });
+    const payload = { count };
+    await cacheSet(cacheKey, payload);
+    return c.json(payload);
   })
   .get('/:id', async (c) => {
     const parsed = parseParams(c, productParamsSchema);

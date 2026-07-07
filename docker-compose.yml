@@ -1,0 +1,25 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: "3002"
+      MONGODB_URI: mongodb://mongo:27017/healthora
+      MONGODB_DB_NAME: healthora
+      FRONTEND_URL: http://localhost:5173
+      APP_ENV: development
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:

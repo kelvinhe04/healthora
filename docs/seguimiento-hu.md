@@ -30,6 +30,12 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU-086 | Documentación API (OpenAPI/Swagger) | `feat/hu-086-openapi` / merge directo a `main` (`36b7465`) | EiJassiel | Spec en `/openapi.json` y Swagger UI en `/docs` (solo backend). |
 | HU-087 | Refactor del componente admin monolítico | `feat/hu-087-refactor-admin` / merge directo a `main` (`118e928`) | EiJassiel | `AdminApp` dividido en secciones, hooks y componentes; conserva paneles de rendimiento y errores (HU-068/067). |
 | HU-082 | Accesibilidad (WCAG 2.1 AA) | `feat/hu-082-accesibilidad` / merge directo a `main` (`015c27c`) | EiJassiel | Skip link, landmarks, `:focus-visible`, modales con focus trap, labels ARIA y `e2e/a11y.spec.ts`. |
+| HU-076 | Estrategia de rollback | `feat/hu-076-rollback` / merge directo a `main` (`9d39d30`) | EiJassiel | `docs/rollback-strategy.md`, `tooling/ops/health-check.ps1`, `tag-release.ps1`. |
+| HU-075 | Entorno staging | `feat/hu-075-staging` / merge directo a `main` | EiJassiel | `APP_ENV`, `CORS_ORIGINS`, `.env.staging.example` y `docs/staging-environment.md`. |
+| HU-078 | CDN Cloudinary imágenes | `feat/hu-078-cloudinary-cdn` / merge directo a `main` | EiJassiel | `frontend/src/lib/cloudinary.ts` + `ProductImage` con fetch transform y lazy load. |
+| HU-074 | Backups MongoDB Atlas | `feat/hu-074-backups-mongodb` / merge directo a `main` | EiJassiel | `docs/mongodb-backups.md` + `tooling/ops/mongodb-backup.ps1`. |
+| HU-077 | Cache Redis catálogo | `feat/hu-077-cache-redis` / merge directo a `main` | EiJassiel | `backend/src/lib/cache.ts` (Redis o memoria), productos y categorías cacheados. |
+| HU-073 | Containerización y CI/CD | `feat/hu-073-containerizacion-cicd` / merge directo a `main` | EiJassiel | `docker-compose.yml`, CI GitHub Actions, Dockerfile puerto 3002, docs. |
 
 ## En curso
 

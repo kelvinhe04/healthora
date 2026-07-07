@@ -33,6 +33,7 @@ import { shutdownPostHog } from './lib/posthog';
 import { errorTracking } from './middleware/errorTracking';
 import { logger } from './lib/logger';
 import { requestLogger } from './middleware/requestLogger';
+import { getCorsOrigins } from './lib/appEnv';
 
 const testEmailSchema = z.object({
   email: emailField(),
@@ -48,7 +49,17 @@ const app = new Hono();
 app.use('*', requestLogger);
 app.use('*', errorTracking);
 app.use('*', performanceMetrics);
-app.use('*', cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }));
+const corsOrigins = getCorsOrigins();
+app.use(
+  '*',
+  cors({
+    origin: (origin) => {
+      if (!origin || corsOrigins.includes(origin)) return origin ?? corsOrigins[0];
+      return corsOrigins[0];
+    },
+    credentials: true,
+  }),
+);
 
 app.route('/products', productsRouter);
 app.route('/categories', categoriesRouter);
