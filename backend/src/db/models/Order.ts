@@ -13,6 +13,8 @@ const OrderSchema = new Schema(
         price: Number,
         imageUrl: String,
         category: String,
+        variantId: String,
+        variantLabel: String,
         isSample: { type: Boolean, default: false },
       },
     ],

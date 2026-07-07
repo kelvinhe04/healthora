@@ -192,6 +192,11 @@ function OrderDetail({
                 <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 500, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {item.productName}
                 </div>
+                {item.variantLabel && (
+                  <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', color: 'var(--ink-60)', marginTop: 4, textTransform: 'uppercase' }}>
+                    Variante · {item.variantLabel}
+                  </div>
+                )}
                 {(item.isSample || item.price === 0) ? (
                   <div style={{ display: 'inline-block', marginTop: 4, fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.08em', color: 'var(--green)', background: 'color-mix(in oklab, var(--green) 10%, white)', border: '1px solid color-mix(in oklab, var(--green) 25%, white)', borderRadius: 999, padding: '2px 8px' }}>
                     MUESTRA GRATIS · CLUB HEALTHORA
