@@ -1,7 +1,7 @@
 import type { FulfillmentStatus, Product, ProductVariant } from '../../types';
 import type { ProductForm, VariantFormRow } from './types';
 import { fulfillmentStatusSequence } from './types';
-import { hasTwoDimensions } from '../../lib/productVariants';
+import { getEffectivePrice, hasTwoDimensions } from '../../lib/productVariants';
 import { composeFromMatrix, decomposeToMatrix, emptyMatrixState } from './variantMatrix';
 
 export const ADMIN_PAGE_SIZE = 10;
@@ -114,12 +114,38 @@ export function slugify(text: string) {
     .replace(/^-|-$/g, '');
 }
 
+/** Sum of the stock pools that actually gate checkout: every simple variant, or just the
+ * tamaño rows in matrix mode (sabor rows don't hold their own stock once a tamaño matches). */
+function sumVariantStock(variants: ProductVariant[], mode: ProductForm['variantsMode']): number {
+  const pools = mode === 'matrix' ? variants.filter((v) => v.type === 'size') : variants;
+  return pools.reduce((sum, v) => sum + (v.stock || 0), 0);
+}
+
 export function formToPayload(f: ProductForm): Partial<Product> {
   const allImages: NonNullable<Product['images']> = [];
   if (f.imageUrl) allImages.push({ url: f.imageUrl, isPrimary: true });
   if (f.image2) allImages.push({ url: f.image2 });
   if (f.image3) allImages.push({ url: f.image3 });
   if (f.image4) allImages.push({ url: f.image4 });
+
+  const variants =
+    f.variantsMode === 'matrix'
+      ? composeFromMatrix(f.variantsMatrix)
+      : (() => {
+          const usedIds = new Set<string>();
+          return f.variantsSimple
+            .map((row) => variantRowToPayload(row, usedIds))
+            .filter((v): v is ProductVariant => v !== null);
+        })();
+
+  const basePrice = parseFloat(f.price) || 0;
+  const baseStock = parseInt(f.stock) || 0;
+  // With variants, the product-level price/stock are just a fallback/display value (the admin
+  // list still shows them) - derive them from the variants instead of asking the admin to keep
+  // a redundant number in sync.
+  const price = variants.length ? getEffectivePrice({ price: basePrice, variants } as Product) : basePrice;
+  const stock = variants.length ? sumVariantStock(variants, f.variantsMode) : baseStock;
+
   return {
     id: slugify(f.name),
     name: f.name.trim(),
@@ -127,10 +153,10 @@ export function formToPayload(f: ProductForm): Partial<Product> {
     category: f.category.trim(),
     need: f.need.trim(),
     short: f.short.trim(),
-    price: parseFloat(f.price) || 0,
+    price,
     ...(f.priceBefore ? { priceBefore: parseFloat(f.priceBefore) } : {}),
     ...(f.tag ? { tag: normalizeTag(f.tag) } : {}),
-    stock: parseInt(f.stock) || 0,
+    stock,
     active: f.active,
     benefits: f.benefits
       .split('\n')
@@ -153,14 +179,6 @@ export function formToPayload(f: ProductForm): Partial<Product> {
     label: f.label.trim(),
     rating: 0,
     reviews: 0,
-    variants:
-      f.variantsMode === 'matrix'
-        ? composeFromMatrix(f.variantsMatrix)
-        : (() => {
-            const usedIds = new Set<string>();
-            return f.variantsSimple
-              .map((row) => variantRowToPayload(row, usedIds))
-              .filter((v): v is ProductVariant => v !== null);
-          })(),
+    variants,
   };
 }

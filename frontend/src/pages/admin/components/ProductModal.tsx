@@ -54,6 +54,15 @@ export function ProductModal({
   const setImg = (key: keyof ProductForm) => (v: string) =>
     setForm((prev) => ({ ...prev, [key]: v }));
 
+  const hasVariants =
+    form.variantsMode === "matrix"
+      ? form.variantsMatrix.primary.length > 0
+      : form.variantsSimple.length > 0;
+  const hasVariantImages =
+    form.variantsMode === "matrix"
+      ? form.variantsMatrix.primary.some((row) => row.images.length > 0)
+      : form.variantsSimple.some((row) => row.images.length > 0);
+
   const handleSave = () => {
     if (!form.name.trim()) {
       setValidationError("El nombre es obligatorio.");
@@ -75,15 +84,11 @@ export function ProductModal({
       setValidationError("La descripción corta es obligatoria.");
       return;
     }
-    if ((parseFloat(form.price) || 0) <= 0) {
+    if (!hasVariants && (parseFloat(form.price) || 0) <= 0) {
       setValidationError("El precio debe ser mayor a 0.");
       return;
     }
-    const hasVariants =
-      form.variantsMode === "matrix"
-        ? form.variantsMatrix.primary.length > 0
-        : form.variantsSimple.length > 0;
-    if ((parseInt(form.stock) || 0) <= 0 && !hasVariants) {
+    if (!hasVariants && (parseInt(form.stock) || 0) <= 0) {
       setValidationError("Las existencias tienen que ser mayor a 0.");
       return;
     }
@@ -112,10 +117,6 @@ export function ProductModal({
         }
       }
     }
-    const hasVariantImages =
-      form.variantsMode === "matrix"
-        ? form.variantsMatrix.primary.some((row) => row.images.length > 0)
-        : form.variantsSimple.some((row) => row.images.length > 0);
     if (!form.imageUrl.trim() && !hasVariantImages) {
       setValidationError("La imagen 1 es obligatoria (o agrega fotos a las variantes).");
       return;
@@ -324,33 +325,51 @@ export function ProductModal({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr auto",
+              gridTemplateColumns: hasVariants ? "auto" : "1fr 1fr auto",
               gap: 16,
               marginBottom: 16,
               alignItems: "end",
             }}
           >
-            <div style={fieldS}>
-              <label style={labelS}>Precio ($) <span style={{ color: "#e53e3e" }}>*</span></label>
-              <input
-                style={inputS}
-                type="number"
-                value={form.price}
-                onChange={setF("price")}
-                min={0}
-                step={0.01}
-              />
-            </div>
-            <div style={fieldS}>
-              <label style={labelS}>Existencias <span style={{ color: "#e53e3e" }}>*</span></label>
-              <input
-                style={inputS}
-                type="number"
-                value={form.stock}
-                onChange={setF("stock")}
-                min={0}
-              />
-            </div>
+            {hasVariants ? (
+              <div
+                style={{
+                  fontSize: 12,
+                  fontFamily: '"Geist", sans-serif',
+                  color: "var(--ink-60)",
+                  background: "var(--cream-2)",
+                  border: "1px solid var(--ink-06)",
+                  borderRadius: 10,
+                  padding: "10px 14px",
+                }}
+              >
+                El precio y las existencias se definen por variante, más abajo.
+              </div>
+            ) : (
+              <>
+                <div style={fieldS}>
+                  <label style={labelS}>Precio ($) <span style={{ color: "#e53e3e" }}>*</span></label>
+                  <input
+                    style={inputS}
+                    type="number"
+                    value={form.price}
+                    onChange={setF("price")}
+                    min={0}
+                    step={0.01}
+                  />
+                </div>
+                <div style={fieldS}>
+                  <label style={labelS}>Existencias <span style={{ color: "#e53e3e" }}>*</span></label>
+                  <input
+                    style={inputS}
+                    type="number"
+                    value={form.stock}
+                    onChange={setF("stock")}
+                    min={0}
+                  />
+                </div>
+              </>
+            )}
             <label
               style={{
                 display: "flex",
@@ -382,14 +401,6 @@ export function ProductModal({
               </span>
             </label>
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr",
-              gap: 16,
-            }}
-          >
-          </div>
 
           <div style={dividerS} />
 
@@ -407,38 +418,56 @@ export function ProductModal({
 
           {/* Imágenes */}
           <div style={sectionS}>Imágenes del producto</div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 16,
-            }}
-          >
-            <ImageDropZone
-              value={form.imageUrl}
-              onChange={setImg("imageUrl")}
-              label="Imagen 1 · principal"
-              folder={slugify(form.name) || 'general'}
-            />
-            <ImageDropZone
-              value={form.image2}
-              onChange={setImg("image2")}
-              label="Imagen 2 (opcional)"
-              folder={slugify(form.name) || 'general'}
-            />
-            <ImageDropZone
-              value={form.image3}
-              onChange={setImg("image3")}
-              label="Imagen 3 (opcional)"
-              folder={slugify(form.name) || 'general'}
-            />
-            <ImageDropZone
-              value={form.image4}
-              onChange={setImg("image4")}
-              label="Imagen 4 (opcional)"
-              folder={slugify(form.name) || 'general'}
-            />
-          </div>
+          {hasVariants ? (
+            <div
+              style={{
+                fontSize: 12,
+                fontFamily: '"Geist", sans-serif',
+                color: "var(--ink-60)",
+                background: "var(--cream-2)",
+                border: "1px solid var(--ink-06)",
+                borderRadius: 10,
+                padding: "10px 14px",
+              }}
+            >
+              {hasVariantImages
+                ? "Las imágenes se definen por variante, más arriba."
+                : "Sin fotos por variante todavía — agrega al menos una arriba, o quita las variantes para usar imágenes generales."}
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 16,
+              }}
+            >
+              <ImageDropZone
+                value={form.imageUrl}
+                onChange={setImg("imageUrl")}
+                label="Imagen 1 · principal"
+                folder={slugify(form.name) || 'general'}
+              />
+              <ImageDropZone
+                value={form.image2}
+                onChange={setImg("image2")}
+                label="Imagen 2 (opcional)"
+                folder={slugify(form.name) || 'general'}
+              />
+              <ImageDropZone
+                value={form.image3}
+                onChange={setImg("image3")}
+                label="Imagen 3 (opcional)"
+                folder={slugify(form.name) || 'general'}
+              />
+              <ImageDropZone
+                value={form.image4}
+                onChange={setImg("image4")}
+                label="Imagen 4 (opcional)"
+                folder={slugify(form.name) || 'general'}
+              />
+            </div>
+          )}
 
           <div style={dividerS} />
 
