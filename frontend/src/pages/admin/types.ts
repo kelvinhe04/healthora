@@ -5,7 +5,37 @@ import type {
   OrderLineItem,
   PaymentStatus,
   Product,
+  ProductVariant,
 } from '../../types';
+
+export type VariantFormRow = {
+  id: string;
+  label: string;
+  type: ProductVariant['type'];
+  price: string;
+  stock: string;
+  sku: string;
+  isDefault: boolean;
+};
+
+export const VARIANT_TYPE_OPTIONS: { value: ProductVariant['type']; label: string }[] = [
+  { value: 'flavor', label: 'Sabor' },
+  { value: 'scent', label: 'Aroma' },
+  { value: 'size', label: 'Tamaño' },
+  { value: 'count', label: 'Conteo' },
+  { value: 'color', label: 'Color' },
+  { value: 'weight', label: 'Peso' },
+];
+
+export const emptyVariantRow = (): VariantFormRow => ({
+  id: '',
+  label: '',
+  type: 'count',
+  price: '0',
+  stock: '0',
+  sku: '',
+  isDefault: false,
+});
 
 export type AdminPage =
   | "dashboard"
@@ -181,6 +211,7 @@ export type ProductForm = {
   color: string;
   swatchColor: string;
   label: string;
+  variants: VariantFormRow[];
 };
 
 export const emptyForm: ProductForm = {
@@ -206,6 +237,7 @@ export const emptyForm: ProductForm = {
   color: "oklch(0.92 0.1 140)",
   swatchColor: "oklch(0.6 0.15 140)",
   label: "",
+  variants: [],
 };
 
 export const fulfillmentStatusLabels: Record<FulfillmentStatus | "", string> = {

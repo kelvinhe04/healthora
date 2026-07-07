@@ -7,6 +7,7 @@ import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { emptyForm, type ProductForm } from '../types';
 import { formToPayload, productToForm } from '../utils';
 import { ImageDropZone } from './ImageDropZone';
+import { ProductVariantsEditor } from './ProductVariantsEditor';
 
 export function ProductModal({
   open,
@@ -77,9 +78,19 @@ export function ProductModal({
       setValidationError("El precio debe ser mayor a 0.");
       return;
     }
-    if ((parseInt(form.stock) || 0) <= 0) {
+    if ((parseInt(form.stock) || 0) <= 0 && form.variants.length === 0) {
       setValidationError("Las existencias tienen que ser mayor a 0.");
       return;
+    }
+    for (const row of form.variants) {
+      if (!row.label.trim()) {
+        setValidationError("Cada variante necesita una etiqueta.");
+        return;
+      }
+      if ((parseInt(row.stock, 10) || 0) < 0) {
+        setValidationError("El stock de variante no puede ser negativo.");
+        return;
+      }
     }
     if (!form.imageUrl.trim()) {
       setValidationError("La imagen 1 es obligatoria.");
@@ -355,6 +366,13 @@ export function ProductModal({
             }}
           >
           </div>
+
+          <div style={dividerS} />
+
+          <ProductVariantsEditor
+            variants={form.variants}
+            onChange={(variants) => setForm((prev) => ({ ...prev, variants }))}
+          />
 
           <div style={dividerS} />
 
