@@ -112,8 +112,12 @@ export function ProductModal({
         }
       }
     }
-    if (!form.imageUrl.trim()) {
-      setValidationError("La imagen 1 es obligatoria.");
+    const hasVariantImages =
+      form.variantsMode === "matrix"
+        ? form.variantsMatrix.primary.some((row) => row.images.length > 0)
+        : form.variantsSimple.some((row) => row.images.length > 0);
+    if (!form.imageUrl.trim() && !hasVariantImages) {
+      setValidationError("La imagen 1 es obligatoria (o agrega fotos a las variantes).");
       return;
     }
     setValidationError("");
@@ -414,21 +418,25 @@ export function ProductModal({
               value={form.imageUrl}
               onChange={setImg("imageUrl")}
               label="Imagen 1 · principal"
+              folder={slugify(form.name) || 'general'}
             />
             <ImageDropZone
               value={form.image2}
               onChange={setImg("image2")}
               label="Imagen 2 (opcional)"
+              folder={slugify(form.name) || 'general'}
             />
             <ImageDropZone
               value={form.image3}
               onChange={setImg("image3")}
               label="Imagen 3 (opcional)"
+              folder={slugify(form.name) || 'general'}
             />
             <ImageDropZone
               value={form.image4}
               onChange={setImg("image4")}
               label="Imagen 4 (opcional)"
+              folder={slugify(form.name) || 'general'}
             />
           </div>
 

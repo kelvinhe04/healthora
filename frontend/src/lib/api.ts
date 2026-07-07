@@ -27,7 +27,10 @@ async function request<T>(
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || `HTTP ${res.status}`);
+    const details = Array.isArray(err.details)
+      ? err.details.map((d: { field: string; message: string }) => `${d.field}: ${d.message}`).join("; ")
+      : undefined;
+    throw new Error(details ? `${err.error} — ${details}` : err.error || `HTTP ${res.status}`);
   }
   if (res.status === 204 || res.headers.get("content-length") === "0")
     return null as T;
