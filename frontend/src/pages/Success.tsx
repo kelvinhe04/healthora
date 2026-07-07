@@ -1,4 +1,3 @@
-import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
@@ -8,15 +7,13 @@ import { api } from '../lib/api';
 import { useEffect, useRef } from 'react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
-interface SuccessProps { onBack: () => void; }
+interface SuccessProps { onBack: () => void; sessionId: string; }
 
-export function Success({ onBack }: SuccessProps) {
+export function Success({ onBack, sessionId }: SuccessProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('session_id') || '';
   const { getToken, isSignedIn } = useAuth();
-  const { data: order, isLoading } = useOrderBySession(sessionId);
+  const { data: order, isLoading, isError } = useOrderBySession(sessionId);
   const clearCart = useCartStore((s) => s.clear);
   const replaceItems = useCartStore((s) => s.replaceItems);
   const didSyncRemoteClearRef = useRef(false);
@@ -40,6 +37,22 @@ export function Success({ onBack }: SuccessProps) {
       }
     })();
   }, [getToken, isSignedIn, replaceItems, sessionId]);
+
+  if (isError) {
+    return (
+      <div style={{ padding: isMobile ? '40px 16px 0' : '60px 40px 0', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', maxWidth: 480 }}>
+          <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, color: 'var(--ink)', marginBottom: 12 }}>
+            Tu pago se procesó, pero aún estamos confirmando tu orden.
+          </div>
+          <p style={{ color: 'var(--ink-60)', fontSize: 15, marginBottom: 24 }}>
+            Puede tardar unos minutos en aparecer. Revisa "Mis pedidos" más tarde o contáctanos si no aparece.
+          </p>
+          <AnimatedButton variant="primary" onClick={onBack} text="Seguir comprando" />
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading || !order) {
     return (

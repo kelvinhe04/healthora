@@ -8714,16 +8714,26 @@ const PRODUCTS = [
         images: ['/products/maquillaje/tarte-shape-tape-concealer/53g-deep-golden/1.jpg', '/products/maquillaje/tarte-shape-tape-concealer/53g-deep-golden/2.jpg'] },
     ],
   },
-].map((product) => ({
-  ...product,
-  imageUrl: product.imageUrl || `/products/${CATEGORY_FOLDER_BY_ID[product.category]}/${product.id}-1.jpg`,
-  images: product.images || [
-    { url: `/products/${CATEGORY_FOLDER_BY_ID[product.category]}/${product.id}-1.jpg`, alt: `${product.name} frente`, isPrimary: true },
-    { url: `/products/${CATEGORY_FOLDER_BY_ID[product.category]}/${product.id}-2.jpg`, alt: `${product.name} angulo lateral` },
-    { url: `/products/${CATEGORY_FOLDER_BY_ID[product.category]}/${product.id}-3.jpg`, alt: `${product.name} parte trasera` },
-    { url: `/products/${CATEGORY_FOLDER_BY_ID[product.category]}/${product.id}-4.jpg`, alt: `${product.name} detalle` },
-  ],
-}));
+].map((product) => {
+  // Productos solo-variantes (sin imageUrl/images propios) no tienen fotos planas en
+  // la raiz de su categoria - las fotos reales viven en la carpeta de cada variante.
+  // Usar la variante default (o la primera) como fallback en vez de adivinar un nombre
+  // de archivo plano que nunca existio.
+  const defaultVariant = product.variants?.find((v) => v.isDefault) ?? product.variants?.[0];
+
+  return {
+    ...product,
+    imageUrl: product.imageUrl || defaultVariant?.imageUrl || `/products/${CATEGORY_FOLDER_BY_ID[product.category]}/${product.id}-1.jpg`,
+    images: product.images || (defaultVariant?.images
+      ? defaultVariant.images.map((url, i) => ({ url, alt: `${product.name} vista ${i + 1}`, isPrimary: i === 0 }))
+      : [
+        { url: `/products/${CATEGORY_FOLDER_BY_ID[product.category]}/${product.id}-1.jpg`, alt: `${product.name} frente`, isPrimary: true },
+        { url: `/products/${CATEGORY_FOLDER_BY_ID[product.category]}/${product.id}-2.jpg`, alt: `${product.name} angulo lateral` },
+        { url: `/products/${CATEGORY_FOLDER_BY_ID[product.category]}/${product.id}-3.jpg`, alt: `${product.name} parte trasera` },
+        { url: `/products/${CATEGORY_FOLDER_BY_ID[product.category]}/${product.id}-4.jpg`, alt: `${product.name} detalle` },
+      ]),
+  };
+});
 
 const CATEGORIES = [
   { id: 'Vitaminas', label: 'Vitaminas', sub: 'Nutricion diaria', color: 'oklch(0.92 0.04 75)' },

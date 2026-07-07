@@ -3,6 +3,7 @@ import { createMiddleware } from 'hono/factory';
 import { clerk } from '../lib/clerk';
 import { User } from '../db/models/User';
 import type { AppEnv } from '../types/hono';
+import { userRateLimit } from './rateLimit';
 import { recordSecurityEvent } from '../lib/securityAudit';
 
 const AUTHORIZED_PARTIES = ['http://localhost:5173', 'http://localhost:5175', 'http://localhost:3001'];
@@ -98,6 +99,9 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
       imageUrl: clerkUser.imageUrl,
       _id: user._id,
     });
+
+    const rateLimitedResponse = await userRateLimit(c, async () => undefined);
+    if (rateLimitedResponse) return rateLimitedResponse;
 
     recordSecurityEvent(c, {
       actor: {

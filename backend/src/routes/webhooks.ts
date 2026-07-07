@@ -91,9 +91,9 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
         const customerEmail = metadata.customerEmail || sessionEmail;
         console.log('[WEBHOOK] Customer email:', customerEmail);
 
-        const productIds = cartItems.map((item) => item.productId);
+        const productIds = [...new Set(cartItems.map((item) => item.productId))];
         const products = await Product.find({ id: { $in: productIds }, active: true }).lean();
-        if (products.length !== cartItems.length) {
+        if (products.length !== productIds.length) {
           console.error('[WEBHOOK] Missing products while creating paid order for session', session.id);
         } else {
           console.log('[WEBHOOK] cartItems from metadata:', JSON.stringify(cartItems));
