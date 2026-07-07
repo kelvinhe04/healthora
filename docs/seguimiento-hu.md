@@ -22,6 +22,10 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU-063 | Validación y saneamiento de inputs con Zod | `HU-063-validacion-y-saneamiento-inputs-zod` / PR #101 | Roy | Zod implementado en rutas de backend: productos, carrito, checkout, órdenes, reseñas, webhooks, admin. |
 | HU-085 | Búsqueda simple de productos | `feat/hu-085-busqueda` / PR #102 | EiJassiel | Búsqueda por nombre, marca, categoría, descripción corta y necesidad con escapeRegex. Incluye validación Zod. |
 | HU-091 | Migración del frontend a TanStack Start (SSR) | `feat/hu-091-tanstack-start` / PR #103 | Kelvin | Migrado a TanStack Router/Start en modo SPA (sin servidor). Rutas de archivo reales con URLs limpias reemplazan el switch de vistas por `?view=...`. Build y Playwright verificados. |
+| HU-065 | Logs de auditoría de seguridad | `HU-065-logs-de-auditoria-de-seguridad` / PR #104 | Roy | Modelo `SecurityAuditLog`, middleware de registro y endpoint admin `/admin/audit-logs`. |
+| HU-066 | Logging estructurado | `HU-066-logging-estructurado` / PR #105 | Roy | Logger (pino) + `requestLogger` middleware, reemplaza `console.log` por logs estructurados en `index.ts`. |
+| HU-067 | Error tracking con PostHog | `HU-067-error-tracking-con-posthog` / PR #107 | Roy | Captura de excepciones (backend y frontend), `ErrorBoundary`, reporte de errores vía PostHog + endpoint admin. Mergeado resolviendo conflicto con HU-065/066 en `backend/src/index.ts` y `package.json`/`bun.lock` (ambas features tocan el bootstrap del servidor). |
+| HU-068 | APM y métricas de rendimiento | `HU-068-apm-y-metricas-de-rendimiento` / PR #108 | Roy | Middleware de métricas de performance + endpoint admin `/admin/performance`. |
 
 ## En curso
 
@@ -47,11 +51,9 @@ Ramas secuenciales desde `main` (una a la vez, todas tocan `backend/src/index.ts
 |---|---|---|
 | 1 | HU-062 | Rate limiting |
 | 2 | HU-064 | Security headers (CSP, HSTS, X-Frame) |
-| 3 | HU-065 | Logs de auditoría de seguridad |
-| 4 | HU-066 | Logging estructurado |
-| 5 | HU-067 | Error tracking con PostHog |
-| 6 | HU-068 | APM y métricas de rendimiento |
 | 7 | HU-069 | Alertas y monitoreo de uptime |
+
+HU-065/066/067/068 ya mergeadas a `main` (ver tabla de Completadas), fuera de orden respecto al plan original (Roy las abrió antes que 062/064) — 062 y 064 siguen pendientes.
 
 En pausa hasta que variantes/UI se estabilicen: HU-070/071/072 (tests), HU-080/081 (optimización de imágenes / HTTP cache — tocan `ProductCard`/`ProductImage`, zona con bug abierto de imagen de variante).
 
@@ -64,3 +66,4 @@ _(ninguno pendiente por ahora)_
 ## Bugs resueltos
 
 - ~~Imagen del item en el carrito no refleja la variante seleccionada~~ — `CartDrawer.tsx` y `Checkout.tsx` llamaban `<ProductImage product={it.product} .../>` sin pasar la imagen de `it.variant`, así que siempre caía al fallback (imagen del producto o variante `isDefault`). Se corrigió pasando `imageUrl={it.variant?.images?.[0] ?? it.variant?.imageUrl}` en ambos. De paso, `Checkout.tsx` también mostraba precio y brand por línea ignorando la variante — corregido a la vez.
+- ~~Orden no se crea ni llega email tras pago exitoso de Stripe~~ (Issue #106, PR #109) — tras la migración a TanStack Start (HU-091) las rutas pasaron de `?view=...` a paths reales (`/checkout`, `/success`), pero `success_url`/`cancel_url` en `backend/src/routes/checkout.ts` seguían apuntando a `${origin}/?view=success...`. El router nuevo ignora `view` en `/` y renderiza Landing, así que el componente `Success` (crea la orden de respaldo si el webhook no llegó, manda el correo, limpia el carrito) nunca se montaba. Se corrigió apuntando a `/success` y `/checkout`. De paso se arregló que `GET /orders?stripeSessionId=` devolvía 200 con `{error}` en vez de 404 cuando la orden de respaldo aún no existía, así que el retry de `react-query` nunca se activaba.
