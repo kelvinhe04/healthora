@@ -410,12 +410,16 @@ export function ProductVariantsMatrixEditor({
                                       </div>
                                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                         {p.images.map((url, i) => (
-                                          <img
+                                          <div
                                             key={i}
-                                            src={url}
-                                            alt=""
-                                            style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--ink-12)', opacity: 0.6 }}
-                                          />
+                                            style={{ width: 44, height: 44, borderRadius: 6, background: 'var(--ink-06)', border: '1px solid var(--ink-12)' }}
+                                          >
+                                            <img
+                                              src={url}
+                                              alt=""
+                                              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 5, opacity: 0.85 }}
+                                            />
+                                          </div>
                                         ))}
                                       </div>
                                     </div>
