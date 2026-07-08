@@ -2,6 +2,27 @@ import type { ProductVariant } from '../../types';
 import { PRIMARY_VARIANT_TYPES } from '../../lib/productVariants';
 import { slugify } from './utils';
 
+/** Any variant type that can play the "primary" role in a primary x size matrix (everything but size). */
+export type PrimaryVariantType = Exclude<ProductVariant['type'], 'size'>;
+
+export const PRIMARY_TYPE_LABELS: Record<PrimaryVariantType, { singular: string; plural: string }> = {
+  flavor: { singular: 'Sabor', plural: 'Sabores' },
+  scent: { singular: 'Aroma', plural: 'Aromas' },
+  color: { singular: 'Color', plural: 'Colores' },
+  weight: { singular: 'Peso', plural: 'Pesos' },
+  count: { singular: 'Conteo', plural: 'Conteos' },
+};
+
+/** Which of the three "tipo de producto" pills is effectively active, derived from the form state
+ * rather than stored — picking "Sin variante" clears the simple rows, so an empty simple list
+ * always reads back as "none" even if `mode` is technically still 'simple'. */
+export type VariantTab = 'none' | 'simple' | 'matrix';
+
+export function getVariantTab(mode: 'simple' | 'matrix', simpleRowCount: number): VariantTab {
+  if (mode === 'matrix') return 'matrix';
+  return simpleRowCount === 0 ? 'none' : 'simple';
+}
+
 export type MatrixPrimaryRow = {
   /** Stable identity for React lists and cell lookups; independent of the editable `id`. */
   key: string;
@@ -12,6 +33,8 @@ export type MatrixPrimaryRow = {
   sku: string;
   isDefault: boolean;
   images: string[];
+  /** Only meaningful when primaryType === 'color'. */
+  color: string;
 };
 
 export type MatrixSizeRow = {
@@ -28,12 +51,14 @@ export type MatrixCell = {
   active: boolean;
   /** Combo-specific stock override; empty string means "use the size's shared stock". */
   stock: string;
+  /** Combo-specific price override; empty string means "use the tamaño's base price". */
+  price: string;
   /** Combo-specific images; empty array means "fall back to the sabor's images". */
   images: string[];
 };
 
 export type MatrixState = {
-  primaryType: 'flavor' | 'scent';
+  primaryType: PrimaryVariantType;
   primary: MatrixPrimaryRow[];
   sizes: MatrixSizeRow[];
   cells: Record<string, MatrixCell>;
@@ -48,7 +73,7 @@ export function cellKey(primaryKey: string, sizeKey: string): string {
 }
 
 export function emptyPrimaryRow(): MatrixPrimaryRow {
-  return { key: newKey(), id: '', label: '', price: '0', stock: '0', sku: '', isDefault: false, images: [] };
+  return { key: newKey(), id: '', label: '', price: '0', stock: '0', sku: '', isDefault: false, images: [], color: '' };
 }
 
 export function emptySizeRow(): MatrixSizeRow {
@@ -62,7 +87,7 @@ export function emptyMatrixState(): MatrixState {
 export function decomposeToMatrix(variants: ProductVariant[]): MatrixState {
   const primaryVariants = variants.filter((v) => PRIMARY_VARIANT_TYPES.includes(v.type));
   const sizeVariants = variants.filter((v) => v.type === 'size');
-  const primaryType = (primaryVariants[0]?.type as 'flavor' | 'scent') ?? 'flavor';
+  const primaryType = (primaryVariants[0]?.type as PrimaryVariantType) ?? 'flavor';
 
   const primary: MatrixPrimaryRow[] = primaryVariants.map((v) => ({
     key: v.id,
@@ -73,6 +98,7 @@ export function decomposeToMatrix(variants: ProductVariant[]): MatrixState {
     sku: v.sku ?? '',
     isDefault: Boolean(v.isDefault),
     images: v.images?.length ? v.images : v.imageUrl ? [v.imageUrl] : [],
+    color: v.color ?? '',
   }));
 
   const sizes: MatrixSizeRow[] = sizeVariants.map((v) => ({
@@ -88,11 +114,14 @@ export function decomposeToMatrix(variants: ProductVariant[]): MatrixState {
   const cells: Record<string, MatrixCell> = {};
   for (const p of primaryVariants) {
     for (const s of sizeVariants) {
-      const active = !s.availableFor?.length || s.availableFor.includes(p.id);
+      // Same undefined-vs-empty-array distinction as `sizesFor`: missing `availableFor` means
+      // "active for everyone", an empty array means "active for no one" - not the same thing.
+      const active = !s.availableFor || s.availableFor.includes(p.id);
       if (!active) continue;
       cells[cellKey(p.id, s.id)] = {
         active: true,
         stock: p.stockBySize?.[s.id] != null ? String(p.stockBySize[s.id]) : '',
+        price: p.priceBySize?.[s.id] != null ? String(p.priceBySize[s.id]) : '',
         images: p.imagesBySize?.[s.id] ?? [],
       };
     }
@@ -129,12 +158,14 @@ export function composeFromMatrix(state: MatrixState): ProductVariant[] {
       const id = primaryIdByKey.get(p.key)!;
       const imagesBySize: Record<string, string[]> = {};
       const stockBySize: Record<string, number> = {};
+      const priceBySize: Record<string, number> = {};
       for (const s of sizes) {
         const cell = cells[cellKey(p.key, s.key)];
         if (!cell?.active) continue;
         const sizeId = sizeIdByKey.get(s.key)!;
         if (cell.images.length) imagesBySize[sizeId] = cell.images;
         if (cell.stock.trim() !== '') stockBySize[sizeId] = parseInt(cell.stock, 10) || 0;
+        if (cell.price.trim() !== '') priceBySize[sizeId] = parseFloat(cell.price) || 0;
       }
       return {
         id,
@@ -143,10 +174,12 @@ export function composeFromMatrix(state: MatrixState): ProductVariant[] {
         price: parseFloat(p.price) || 0,
         stock: parseInt(p.stock, 10) || 0,
         ...(p.sku.trim() ? { sku: p.sku.trim() } : {}),
+        ...(primaryType === 'color' && p.color.trim() ? { color: p.color.trim() } : {}),
         ...(p.images[0] ? { imageUrl: p.images[0] } : {}),
         ...(p.images.length ? { images: p.images } : {}),
         ...(Object.keys(imagesBySize).length ? { imagesBySize } : {}),
         ...(Object.keys(stockBySize).length ? { stockBySize } : {}),
+        ...(Object.keys(priceBySize).length ? { priceBySize } : {}),
         ...(p.isDefault ? { isDefault: true } : {}),
       };
     });
@@ -156,8 +189,11 @@ export function composeFromMatrix(state: MatrixState): ProductVariant[] {
     .map((s) => {
       const id = sizeIdByKey.get(s.key)!;
       const activeForKeys = primary.filter((p) => cells[cellKey(p.key, s.key)]?.active);
+      // Omitting `availableFor` means "no restriction" (available for every primary) - only safe
+      // when every primary actually has this tamaño active. Any other count (including zero)
+      // needs an explicit list, or a tamaño nobody activated would wrongly show up for everyone.
       const availableFor =
-        activeForKeys.length > 0 && activeForKeys.length < primary.length
+        activeForKeys.length < primary.length
           ? activeForKeys.map((p) => primaryIdByKey.get(p.key)!)
           : undefined;
       return {

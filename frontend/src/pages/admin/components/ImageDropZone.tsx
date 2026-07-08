@@ -8,11 +8,13 @@ export function ImageDropZone({
   onChange,
   label,
   folder = 'general',
+  required = false,
 }: {
   value: string;
   onChange: (v: string) => void;
   label: string;
   folder?: string;
+  required?: boolean;
 }) {
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -54,7 +56,7 @@ export function ImageDropZone({
           marginBottom: 6,
         }}
       >
-        {label}
+        {label} {required && <span style={{ color: "#e53e3e" }}>*</span>}
       </span>
       <div
         onDragOver={(e) => {

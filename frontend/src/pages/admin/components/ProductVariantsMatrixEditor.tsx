@@ -1,15 +1,18 @@
 import type { CSSProperties } from 'react';
 import { iconBtnAd } from '../../../components/admin';
 import { Icon } from '../../../components/shared/Icon';
-import type { VariantFormRow } from '../types';
+import { emptyVariantRow, type VariantFormRow } from '../types';
 import {
   cellKey,
   emptyPrimaryRow,
   emptySizeRow,
+  getVariantTab,
+  PRIMARY_TYPE_LABELS,
   type MatrixCell,
   type MatrixPrimaryRow,
   type MatrixSizeRow,
   type MatrixState,
+  type PrimaryVariantType,
 } from '../variantMatrix';
 import { ProductVariantsEditor } from './ProductVariantsEditor';
 import { MiniImagePicker } from './MiniImagePicker';
@@ -44,6 +47,14 @@ const sectionTitleS: CSSProperties = {
   letterSpacing: '0.12em',
   color: 'var(--ink-60)',
   marginBottom: 12,
+};
+
+const columnLabelS: CSSProperties = {
+  fontSize: 10,
+  fontFamily: '"JetBrains Mono", monospace',
+  textTransform: 'uppercase',
+  letterSpacing: '0.06em',
+  color: 'var(--ink-40)',
 };
 
 function tabS(active: boolean): CSSProperties {
@@ -113,7 +124,7 @@ export function ProductVariantsMatrixEditor({
     const key = cellKey(pKey, sKey);
     const cells = { ...matrix.cells };
     if (cells[key]?.active) delete cells[key];
-    else cells[key] = { active: true, stock: '', images: [] };
+    else cells[key] = { active: true, stock: '', price: '', images: [] };
     onMatrixChange({ ...matrix, cells });
   };
 
@@ -132,42 +143,92 @@ export function ProductVariantsMatrixEditor({
     });
   };
 
+  const primaryLabels = PRIMARY_TYPE_LABELS[matrix.primaryType];
+  const onlyOneCombo = matrix.primary.length === 1 && matrix.sizes.length === 1;
+
+  const activeTab = getVariantTab(mode, simple.length);
+
+  const tabHint: Record<'none' | 'simple' | 'matrix', string> = {
+    none: 'El producto usa un solo precio y stock (los campos de arriba). No hay opciones para elegir.',
+    simple: 'Una lista de opciones de un solo tipo (ej. solo tamaño, o solo color) — cada una con su propio precio y stock.',
+    matrix: 'Dos dimensiones combinadas (ej. sabor + tamaño): cada combinación puede tener su propio precio, stock e imágenes.',
+  };
+
   return (
     <div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <button type="button" style={tabS(mode === 'simple')} onClick={() => onModeChange('simple')}>
-          Simple
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          style={tabS(activeTab === 'none')}
+          onClick={() => {
+            onModeChange('simple');
+            if (simple.length > 0) onSimpleChange([]);
+          }}
+        >
+          Sin variante
         </button>
-        <button type="button" style={tabS(mode === 'matrix')} onClick={() => onModeChange('matrix')}>
-          Sabor × Tamaño
+        <button
+          type="button"
+          style={tabS(activeTab === 'simple')}
+          onClick={() => {
+            onModeChange('simple');
+            if (simple.length === 0) onSimpleChange([emptyVariantRow()]);
+          }}
+        >
+          Variante simple
         </button>
+        <button type="button" style={tabS(activeTab === 'matrix')} onClick={() => onModeChange('matrix')}>
+          Variante × Tamaño
+        </button>
+      </div>
+      <div style={{ fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)', marginBottom: 16, maxWidth: 520 }}>
+        {tabHint[activeTab]}
       </div>
 
       {mode === 'simple' ? (
-        <ProductVariantsEditor variants={simple} onChange={onSimpleChange} folder={folder} />
+        activeTab === 'simple' && <ProductVariantsEditor variants={simple} onChange={onSimpleChange} folder={folder} />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <label style={labelS}>Tipo de sabor</label>
+            <label style={labelS}>Tipo de variante</label>
             <select
               style={{ ...inputS, width: 160, cursor: 'pointer' }}
               value={matrix.primaryType}
-              onChange={(e) => onMatrixChange({ ...matrix, primaryType: e.target.value as 'flavor' | 'scent' })}
+              onChange={(e) => onMatrixChange({ ...matrix, primaryType: e.target.value as PrimaryVariantType })}
             >
               <option value="flavor">Sabor</option>
               <option value="scent">Aroma</option>
+              <option value="color">Color</option>
+              <option value="weight">Peso</option>
+              <option value="count">Conteo</option>
             </select>
           </div>
 
           <div>
-            <div style={sectionTitleS}>Sabores</div>
+            <div style={sectionTitleS}>{primaryLabels.plural}</div>
+            <div style={{ fontSize: 11, fontFamily: '"Geist", sans-serif', color: 'var(--ink-40)', marginBottom: 8, maxWidth: 520 }}>
+              Solo el nombre — el precio, stock e imágenes de cada combinación se ajustan más abajo, en "Combinaciones".
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: matrix.primaryType === 'color' ? '1fr auto auto' : '1fr auto',
+                gap: 8,
+                padding: '0 10px',
+                marginBottom: 4,
+              }}
+            >
+              <span style={columnLabelS}>Nombre</span>
+              {matrix.primaryType === 'color' && <span style={columnLabelS}>Color</span>}
+              <span />
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {matrix.primary.map((p) => (
                 <div
                   key={p.key}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '1.3fr 0.7fr 0.6fr 1.4fr auto',
+                    gridTemplateColumns: matrix.primaryType === 'color' ? '1fr auto auto' : '1fr auto',
                     gap: 8,
                     alignItems: 'center',
                     padding: 10,
@@ -178,34 +239,24 @@ export function ProductVariantsMatrixEditor({
                 >
                   <input
                     style={inputS}
-                    placeholder="ej. Chocolate"
+                    placeholder={`ej. ${primaryLabels.singular === 'Color' ? 'Rojo' : 'Chocolate'}`}
                     value={p.label}
                     onChange={(e) => updatePrimary(p.key, { label: e.target.value })}
                   />
-                  <input
-                    style={inputS}
-                    type="number"
-                    placeholder="Precio"
-                    value={p.price}
-                    onChange={(e) => updatePrimary(p.key, { price: e.target.value })}
-                  />
-                  <input
-                    style={inputS}
-                    type="number"
-                    placeholder="Stock"
-                    value={p.stock}
-                    onChange={(e) => updatePrimary(p.key, { stock: e.target.value })}
-                  />
-                  <MiniImagePicker
-                    images={p.images}
-                    onChange={(images) => updatePrimary(p.key, { images })}
-                    folder={folder}
-                  />
+                  {matrix.primaryType === 'color' && (
+                    <input
+                      style={{ ...inputS, padding: '6px 8px', width: 44 }}
+                      type="color"
+                      title="Color (hex)"
+                      value={/^#[0-9a-fA-F]{6}$/.test(p.color) ? p.color : '#cccccc'}
+                      onChange={(e) => updatePrimary(p.key, { color: e.target.value })}
+                    />
+                  )}
                   <button
                     type="button"
                     onClick={() => removePrimary(p.key)}
                     style={{ ...iconBtnAd, color: 'var(--coral)' }}
-                    title="Eliminar sabor"
+                    title={`Eliminar ${primaryLabels.singular.toLowerCase()}`}
                   >
                     <Icon name="trash" size={14} />
                   </button>
@@ -217,12 +268,26 @@ export function ProductVariantsMatrixEditor({
               onClick={() => onMatrixChange({ ...matrix, primary: [...matrix.primary, emptyPrimaryRow()] })}
               style={{ fontSize: 12, color: 'var(--green)', cursor: 'pointer', padding: '10px 0 0', textAlign: 'left', background: 'transparent', border: 'none' }}
             >
-              + Agregar sabor
+              + Agregar {primaryLabels.singular.toLowerCase()}
             </button>
           </div>
 
           <div>
             <div style={sectionTitleS}>Tamaños</div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1.3fr 0.7fr 0.6fr auto',
+                gap: 8,
+                padding: '0 10px',
+                marginBottom: 4,
+              }}
+            >
+              <span style={columnLabelS}>Nombre</span>
+              <span style={columnLabelS}>Precio base <span style={{ color: '#e53e3e' }}>*</span></span>
+              <span style={columnLabelS}>Stock <span style={{ color: '#e53e3e' }}>*</span></span>
+              <span />
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {matrix.sizes.map((s) => (
                 <div
@@ -282,12 +347,18 @@ export function ProductVariantsMatrixEditor({
             <div>
               <div style={sectionTitleS}>Combinaciones</div>
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                <table style={{ borderCollapse: 'collapse', width: '100%', tableLayout: 'fixed' }}>
+                  <colgroup>
+                    <col style={{ width: 120 }} />
+                    {matrix.sizes.map((s) => (
+                      <col key={s.key} style={{ width: 220 }} />
+                    ))}
+                  </colgroup>
                   <thead>
                     <tr>
-                      <th style={{ textAlign: 'left', padding: 8, fontSize: 11, color: 'var(--ink-60)' }}>Sabor \ Tamaño</th>
+                      <th style={{ textAlign: 'left', padding: 8, fontSize: 11, color: 'var(--ink-60)' }}>{primaryLabels.singular} \ Tamaño</th>
                       {matrix.sizes.map((s) => (
-                        <th key={s.key} style={{ padding: 8, fontSize: 11, color: 'var(--ink-60)', minWidth: 180 }}>
+                        <th key={s.key} style={{ padding: 8, fontSize: 11, color: 'var(--ink-60)' }}>
                           {s.label || '(sin nombre)'}
                         </th>
                       ))}
@@ -317,25 +388,62 @@ export function ProductVariantsMatrixEditor({
                                   <input
                                     style={{ ...inputS, fontSize: 11 }}
                                     type="number"
+                                    placeholder={`Precio (default: $${((parseFloat(p.price) || 0) + (parseFloat(s.price) || 0)).toFixed(2)})`}
+                                    title="Solo si esta combinación necesita un precio distinto al default"
+                                    value={cell?.price ?? ''}
+                                    onChange={(e) => updateCell(p.key, s.key, { price: e.target.value })}
+                                  />
+                                  <input
+                                    style={{ ...inputS, fontSize: 11 }}
+                                    type="number"
                                     placeholder={`Stock (default: ${s.stock})`}
                                     value={cell?.stock ?? ''}
                                     onChange={(e) => updateCell(p.key, s.key, { stock: e.target.value })}
                                   />
+                                  <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-40)' }}>
+                                    Imágenes {p.images.length === 0 && <span style={{ color: '#e53e3e' }}>*</span>}
+                                  </span>
+                                  {p.images.length > 0 && !(cell?.images.length) && (
+                                    <div>
+                                      <div style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"Geist", sans-serif', marginBottom: 4 }}>
+                                        Heredadas de "{p.label.trim() || primaryLabels.singular}" (sube una foto arriba para usar una distinta en este combo):
+                                      </div>
+                                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                        {p.images.map((url, i) => (
+                                          <img
+                                            key={i}
+                                            src={url}
+                                            alt=""
+                                            style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--ink-12)', opacity: 0.6 }}
+                                          />
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
                                   <MiniImagePicker
                                     images={cell?.images ?? []}
                                     onChange={(images) => updateCell(p.key, s.key, { images })}
                                     folder={folder}
                                   />
-                                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }} title="Combo predeterminado">
-                                    <input
-                                      type="radio"
-                                      name="default-combo"
-                                      checked={isDefaultCombo}
-                                      onChange={() => setDefaultCombo(p.key, s.key)}
-                                      style={{ width: 14, height: 14, accentColor: 'var(--green)', cursor: 'pointer' }}
-                                    />
-                                    <span style={{ fontSize: 10, color: 'var(--ink-60)' }}>Default</span>
-                                  </label>
+                                  {isDefaultCombo && (
+                                    <div style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"Geist", sans-serif' }}>
+                                      {(cell?.images.length ?? 0) > 1
+                                        ? 'La 2ª imagen se usa para el efecto hover de la card en el catálogo.'
+                                        : 'Si agregas una 2ª imagen aquí, se usará para el efecto hover de la card en el catálogo.'}
+                                    </div>
+                                  )}
+                                  {!onlyOneCombo && (
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }} title="Combo predeterminado">
+                                      <input
+                                        type="radio"
+                                        name="default-combo"
+                                        checked={isDefaultCombo}
+                                        onChange={() => setDefaultCombo(p.key, s.key)}
+                                        style={{ width: 14, height: 14, accentColor: 'var(--green)', cursor: 'pointer' }}
+                                      />
+                                      <span style={{ fontSize: 10, color: 'var(--ink-60)' }}>Default</span>
+                                    </label>
+                                  )}
                                 </div>
                               )}
                             </td>

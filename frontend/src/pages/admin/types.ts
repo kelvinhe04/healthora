@@ -26,9 +26,9 @@ export const VARIANT_TYPE_OPTIONS: { value: ProductVariant['type']; label: strin
   { value: 'flavor', label: 'Sabor' },
   { value: 'scent', label: 'Aroma' },
   { value: 'size', label: 'Tamaño' },
-  { value: 'count', label: 'Conteo' },
   { value: 'color', label: 'Color' },
   { value: 'weight', label: 'Peso' },
+  { value: 'count', label: 'Conteo' },
 ];
 
 export const emptyVariantRow = (): VariantFormRow => ({
@@ -198,7 +198,6 @@ export type ProductForm = {
   name: string;
   brand: string;
   category: string;
-  need: string;
   short: string;
   price: string;
   priceBefore: string;
@@ -226,7 +225,6 @@ export const emptyForm: ProductForm = {
   name: "",
   brand: "",
   category: "",
-  need: "",
   short: "",
   price: "0",
   priceBefore: "",
