@@ -53,8 +53,13 @@ export type MatrixCell = {
   stock: string;
   /** Combo-specific price override; empty string means "use the tamaño's base price". */
   price: string;
-  /** Combo-specific images; empty array means "fall back to the sabor's images". */
+  /** Combo-specific images; ignored unless `imagesTouched` is true. */
   images: string[];
+  /** True once the user has edited this combo's own image picker (add or remove) - distinguishes
+   * "explicitly cleared to zero images" from "never touched, fall back to the sabor's images".
+   * Without this flag an empty `images` array is indistinguishable from "untouched", so removing
+   * the last image would immediately snap back to showing the sabor's 4 default photos. */
+  imagesTouched: boolean;
 };
 
 export type MatrixState = {
@@ -78,6 +83,10 @@ export function emptyPrimaryRow(): MatrixPrimaryRow {
 
 export function emptySizeRow(): MatrixSizeRow {
   return { key: newKey(), id: '', label: '', price: '0', stock: '0', sku: '', isDefault: false };
+}
+
+export function emptyMatrixCell(): MatrixCell {
+  return { active: true, stock: '', price: '', images: [], imagesTouched: false };
 }
 
 export function emptyMatrixState(): MatrixState {
@@ -123,6 +132,7 @@ export function decomposeToMatrix(variants: ProductVariant[]): MatrixState {
         stock: p.stockBySize?.[s.id] != null ? String(p.stockBySize[s.id]) : '',
         price: p.priceBySize?.[s.id] != null ? String(p.priceBySize[s.id]) : '',
         images: p.imagesBySize?.[s.id] ?? [],
+        imagesTouched: p.imagesBySize?.[s.id] != null,
       };
     }
   }
@@ -163,7 +173,7 @@ export function composeFromMatrix(state: MatrixState): ProductVariant[] {
         const cell = cells[cellKey(p.key, s.key)];
         if (!cell?.active) continue;
         const sizeId = sizeIdByKey.get(s.key)!;
-        if (cell.images.length) imagesBySize[sizeId] = cell.images;
+        if (cell.imagesTouched) imagesBySize[sizeId] = cell.images;
         if (cell.stock.trim() !== '') stockBySize[sizeId] = parseInt(cell.stock, 10) || 0;
         if (cell.price.trim() !== '') priceBySize[sizeId] = parseFloat(cell.price) || 0;
       }

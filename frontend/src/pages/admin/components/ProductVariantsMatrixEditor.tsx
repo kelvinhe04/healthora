@@ -4,6 +4,7 @@ import { Icon } from '../../../components/shared/Icon';
 import { emptyVariantRow, type VariantFormRow } from '../types';
 import {
   cellKey,
+  emptyMatrixCell,
   emptyPrimaryRow,
   emptySizeRow,
   getVariantTab,
@@ -124,7 +125,7 @@ export function ProductVariantsMatrixEditor({
     const key = cellKey(pKey, sKey);
     const cells = { ...matrix.cells };
     if (cells[key]?.active) delete cells[key];
-    else cells[key] = { active: true, stock: '', price: '', images: [] };
+    else cells[key] = emptyMatrixCell();
     onMatrixChange({ ...matrix, cells });
   };
 
@@ -372,8 +373,8 @@ export function ProductVariantsMatrixEditor({
                           const cell = matrix.cells[cellKey(p.key, s.key)];
                           const active = Boolean(cell?.active);
                           const isDefaultCombo = p.isDefault && s.isDefault;
-                          const imagesInherited = !cell?.images.length && p.images.length > 0;
-                          const effectiveImages = cell?.images.length ? cell.images : p.images;
+                          const imagesInherited = !cell?.imagesTouched && p.images.length > 0;
+                          const effectiveImages = cell?.imagesTouched ? cell.images : p.images;
                           return (
                             <td key={s.key} style={{ padding: 8, verticalAlign: 'top', border: '1px solid var(--ink-06)' }}>
                               <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginBottom: active ? 8 : 0 }}>
@@ -412,7 +413,7 @@ export function ProductVariantsMatrixEditor({
                                   )}
                                   <MiniImagePicker
                                     images={effectiveImages}
-                                    onChange={(images) => updateCell(p.key, s.key, { images })}
+                                    onChange={(images) => updateCell(p.key, s.key, { images, imagesTouched: true })}
                                     folder={folder}
                                   />
                                   {isDefaultCombo && (
