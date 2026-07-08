@@ -20,6 +20,8 @@ import { adminPerformanceRouter } from './routes/admin/adminPerformance';
 import { adminErrorReportsRouter } from './routes/admin/adminErrorReports';
 import { adminAuditLogsRouter } from './routes/admin/adminAuditLogs';
 import { accountRouter } from './routes/account';
+import { mcpAuth } from './mcp/auth';
+import { handleMcpRequest } from './mcp/server';
 import { sendOrderConfirmationEmail } from './lib/email';
 import { recalculateBestsellers, recalculateNew } from './lib/bestsellers';
 import { reviewsRouter } from './routes/reviews';
@@ -98,6 +100,12 @@ app.route('/admin/earnings', adminEarningsRouter);
 app.route('/admin/performance', adminPerformanceRouter);
 app.route('/admin/error-reports', adminErrorReportsRouter);
 app.route('/admin/audit-logs', adminAuditLogsRouter);
+
+// Remote MCP server (Model Context Protocol) - exposes read/write tools for catalog, variantes,
+// stock, ordenes, usuarios y ventas, importable desde Claude Code / Codex / conectores de
+// ChatGPT. Gated behind MCP_SERVICE_TOKEN (see mcp/auth.ts), not Clerk - it's a headless client,
+// not a browser session. See docs/mcp-server.md.
+app.all('/mcp', mcpAuth, async (c) => handleMcpRequest(c.req.raw));
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
