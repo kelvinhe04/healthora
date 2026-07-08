@@ -8,6 +8,7 @@ type ProductVariant = {
   images?: string[];
   imagesBySize?: Record<string, string[]>;
   stockBySize?: Record<string, number>;
+  availableFor?: string[];
 };
 
 type ProductLike = {
@@ -147,4 +148,25 @@ export function buildPaidLineItem(
 export function hasTwoDimensions(variants?: ProductVariant[]): boolean {
   if (!variants?.length) return false;
   return variants.some((v) => PRIMARY_VARIANT_TYPES.includes(v.type)) && variants.some((v) => v.type === 'size');
+}
+
+/** Mirrors frontend/src/lib/productVariants.ts getTotalStock. Sum of stock across every
+ * purchasable option: every simple variant, or every active sabor×tamaño combo in matrix mode
+ * (using each combo's `stockBySize` override when set, falling back to the tamaño's own stock).
+ * Computed live from `variants` rather than trusting the persisted `product.stock` - that field
+ * is a denormalized cache written at save time and goes stale as soon as combo stock changes. */
+export function getTotalStock(product: Pick<ProductLike, 'stock' | 'variants'>): number {
+  const variants = product.variants;
+  if (!variants?.length) return product.stock;
+  const sizes = variants.filter((v) => v.type === 'size');
+  const primaries = variants.filter((v) => PRIMARY_VARIANT_TYPES.includes(v.type));
+  if (!sizes.length || !primaries.length) return variants.reduce((sum, v) => sum + (v.stock || 0), 0);
+  let total = 0;
+  for (const p of primaries) {
+    const availableSizes = sizes.filter((s) => !s.availableFor || s.availableFor.includes(p.id));
+    for (const s of availableSizes) {
+      total += p.stockBySize?.[s.id] ?? s.stock ?? 0;
+    }
+  }
+  return total;
 }

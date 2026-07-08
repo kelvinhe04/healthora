@@ -4,6 +4,7 @@ import { Product } from '../../db/models/Product';
 import { escapeRegex, moneyFromInput, optionalTextField, productIdSchema, textField } from '../../lib/validation';
 import { errorResult, jsonResult } from '../toolHelpers';
 import { mcpVariantShape } from '../shapes';
+import { getTotalStock } from '../../lib/productVariants';
 
 export function registerCatalogTools(server: McpServer) {
   server.registerTool(
@@ -49,7 +50,7 @@ export function registerCatalogTools(server: McpServer) {
           brand: p.brand,
           category: p.category,
           price: p.price,
-          stock: p.stock,
+          stock: getTotalStock(p),
           active: p.active,
           rating: p.rating,
           reviews: p.reviews,

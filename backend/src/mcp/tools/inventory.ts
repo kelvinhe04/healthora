@@ -3,6 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Product } from '../../db/models/Product';
 import { productIdSchema, textField } from '../../lib/validation';
 import { errorResult, jsonResult } from '../toolHelpers';
+import { getTotalStock } from '../../lib/productVariants';
 
 export function registerInventoryTools(server: McpServer) {
   server.registerTool(
@@ -26,6 +27,15 @@ export function registerInventoryTools(server: McpServer) {
       let apply: () => void;
 
       if (!variantId) {
+        if (product.variants?.length) {
+          // Product-level `stock` is a stale denormalized cache once combos exist - real stock
+          // lives per combo/variant, so a blind write here would silently touch a column nothing
+          // reads. Reads return the live combo-aware total; writes must target a variantId.
+          if (readOnly) return jsonResult({ productId, variantId: null, stock: getTotalStock(product) });
+          return errorResult(
+            `"${productId}" tiene variantes/combinaciones - especifica variantId para ajustar su stock.`,
+          );
+        }
         current = product.stock;
         apply = () => {
           product.stock = Math.max(0, current + (delta ?? 0));
