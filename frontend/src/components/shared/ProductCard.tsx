@@ -94,8 +94,14 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
     ? Math.round(liveReviews.reduce((s, r) => s + r.rating, 0) / liveReviews.length * 10) / 10
     : 0;
   const { variant: defaultVariant, size: defaultSize } = pickDefaultCombo(product);
-  const primaryImage = (defaultVariant?.imagesBySize && defaultSize ? defaultVariant.imagesBySize[defaultSize.id]?.[0] : null) || defaultVariant?.images?.[0] || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url;
-  const secondaryImage = (defaultVariant?.imagesBySize && defaultSize ? defaultVariant.imagesBySize[defaultSize.id]?.[1] : null) || defaultVariant?.images?.[1] || product.images?.find((img, i) => img.url && img.url !== primaryImage && i !== 0)?.url || product.images?.[1]?.url;
+  // Once a combo has its own imagesBySize override, that override is authoritative for this
+  // combo - even if it only has 1 photo, it means "no hover swap for this combo", not "fall back
+  // to the sabor's own images[1]" (a different combo's hover photo bleeding into this one).
+  const comboImages = defaultVariant?.imagesBySize && defaultSize ? defaultVariant.imagesBySize[defaultSize.id] : undefined;
+  const primaryImage = comboImages?.[0] || defaultVariant?.images?.[0] || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url;
+  const secondaryImage = comboImages
+    ? comboImages[1]
+    : defaultVariant?.images?.[1] || product.images?.find((img, i) => img.url && img.url !== primaryImage && i !== 0)?.url || product.images?.[1]?.url;
   const effectivePrice = getEffectivePrice(product);
   const effectivePriceBefore = getEffectivePriceBefore(product);
   const showOverlayActions = isMobile || hover || isWishlisted || isCompared;
