@@ -270,7 +270,7 @@ const HERO_CONTENT = [
     sub: 'Productos esenciales para tu cuidado e higiene personal de todos los días.',
   },
   {
-    id: 'Suplementos',
+    id: 'Suplementos de Bienestar',
     pill: 'Nutrición integral',
     title: <>Optimiza tu<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>bienestar total</span></>,
     sub: 'Complementos nutricionales de alta calidad para cubrir tus requerimientos diarios.',

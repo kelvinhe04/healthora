@@ -32,7 +32,7 @@ const REVIEW_POOLS: Record<string, ReviewTemplate[]> = {
     { body: 'El envase es práctico y bien sellado. Las cápsulas no tienen olor fuerte y se conservan bien.', rating: 4 },
     { title: 'Las mejores del mercado', body: 'Probé varias marcas y ninguna me dio los mismos resultados. Con estas mis análisis de sangre mejoraron notablemente.', rating: 5 },
   ],
-  Suplementos: [
+  'Suplementos de Bienestar': [
     { title: 'Gran suplemento para recuperación', body: 'Llevo usándolo dos meses y los resultados se notan. Me ayuda bastante con la recuperación después de sesiones intensas de ejercicio.', rating: 5 },
     { body: 'Buena fórmula, sin sabores artificiales extraños. Se disuelve bien en agua fría o en el batido de proteína sin dejar grumos.', rating: 4 },
     { title: 'Muy recomendable', body: 'He probado varios del mercado y este es de los mejores por su calidad y precio. Volvería a comprarlo sin dudarlo.', rating: 5 },

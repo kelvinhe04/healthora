@@ -470,7 +470,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     "Vitaminas",
     "Cuidado personal",
     "Cuidado del bebé",
-    "Suplementos",
+    "Suplementos de Bienestar",
     "Salud de la piel",
     "Fitness",
     "Medicamentos",
