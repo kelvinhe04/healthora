@@ -1,0 +1,139 @@
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test';
+import mongoose from 'mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import { Product } from '../db/models/Product';
+import { Order } from '../db/models/Order';
+
+let mongo: MongoMemoryServer;
+let handleMcpRequest: (typeof import('./server'))['handleMcpRequest'];
+
+async function seedProduct() {
+  await Product.create({
+    id: 'combo-product',
+    name: 'Combo Product',
+    brand: 'Healthora',
+    category: 'Vitaminas',
+    need: 'Test',
+    price: 10,
+    stock: 13,
+    active: true,
+    variants: [
+      { id: 'chocolate', label: 'Chocolate', type: 'flavor', price: 0, stock: 20, stockBySize: { '5lb': 3 } },
+      { id: 'vanilla', label: 'Vainilla', type: 'flavor', price: 0, stock: 20 },
+      { id: '5lb', label: '5lb', type: 'size', price: 5, stock: 10 },
+    ],
+  });
+}
+
+async function rpc(body: Record<string, unknown>) {
+  const req = new Request('http://localhost/mcp', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream' },
+    body: JSON.stringify(body),
+  });
+  const res = await handleMcpRequest(req);
+  const text = await res.text();
+  return { status: res.status, json: text ? JSON.parse(text) : undefined };
+}
+
+describe('MCP server', () => {
+  beforeAll(async () => {
+    mongo = await MongoMemoryServer.create();
+    await mongoose.connect(mongo.getUri(), { dbName: 'healthora_mcp_test' });
+    ({ handleMcpRequest } = await import('./server'));
+  });
+
+  afterAll(async () => {
+    await mongoose.disconnect();
+    await mongo.stop();
+  });
+
+  beforeEach(async () => {
+    await Product.deleteMany({});
+    await Order.deleteMany({});
+    await seedProduct();
+  });
+
+  test('initialize negotiates the protocol', async () => {
+    const { status, json } = await rpc({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '1.0' } },
+    });
+    expect(status).toBe(200);
+    expect(json.result.serverInfo.name).toBe('healthora');
+  });
+
+  test('tools/list exposes all 12 registered tools', async () => {
+    const { json } = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
+    const names = json.result.tools.map((t: { name: string }) => t.name).sort();
+    expect(names).toEqual(
+      [
+        'analytics.getSalesReport',
+        'catalog.listProducts',
+        'catalog.upsertProduct',
+        'inventory.adjustStock',
+        'orders.getOrderItems',
+        'orders.listUserOrders',
+        'orders.updateOrderStatus',
+        'recommendations.getRelatedProducts',
+        'reviews.listReviews',
+        'users.updateUserRole',
+        'variants.upsertVariant',
+        'variants.updateVariantStock',
+      ].sort(),
+    );
+  });
+
+  test('catalog.listProducts returns the seeded product', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 3,
+      method: 'tools/call',
+      params: { name: 'catalog.listProducts', arguments: { category: 'Vitaminas' } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.count).toBe(1);
+    expect(payload.products[0].id).toBe('combo-product');
+    expect(payload.products[0].combinations).toBe(3);
+  });
+
+  test('inventory.adjustStock without delta is read-only and reflects stockBySize override', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 4,
+      method: 'tools/call',
+      params: { name: 'inventory.adjustStock', arguments: { productId: 'combo-product', variantId: 'chocolate:5lb' } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.stock).toBe(3);
+
+    const product = await Product.findOne({ id: 'combo-product' }).lean();
+    expect(product?.variants.find((v) => v.id === 'chocolate')?.stockBySize?.['5lb']).toBe(3);
+  });
+
+  test('variants.updateVariantStock sets an absolute value on a combo', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 5,
+      method: 'tools/call',
+      params: { name: 'variants.updateVariantStock', arguments: { productId: 'combo-product', variantId: 'vanilla:5lb', stock: 42 } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.stock).toBe(42);
+
+    const product = await Product.findOne({ id: 'combo-product' }).lean();
+    expect(product?.variants.find((v) => v.id === 'vanilla')?.stockBySize?.['5lb']).toBe(42);
+  });
+
+  test('unknown tool name returns an error result, not a crash', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 6,
+      method: 'tools/call',
+      params: { name: 'not.a.real.tool', arguments: {} },
+    });
+    expect(json.error || json.result?.isError).toBeTruthy();
+  });
+});

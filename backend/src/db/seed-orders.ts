@@ -2,6 +2,51 @@ import { connectDB } from './connection';
 import { Order } from './models/Order';
 import { Product } from './models/Product';
 import { recalculateBestsellers, recalculateNew } from '../lib/bestsellers';
+import { resolveVariantPricing, resolveVariantImage } from '../lib/productVariants';
+
+type SeedProduct = {
+  id: string;
+  name: string;
+  brand: string;
+  category: string;
+  price: number;
+  stock: number;
+  imageUrl?: string;
+  images?: Array<{ url: string; isPrimary?: boolean }>;
+  variants?: Array<{
+    id: string;
+    label: string;
+    type: string;
+    price: number;
+    stock: number;
+    imageUrl?: string;
+    images?: string[];
+    imagesBySize?: Record<string, string[]>;
+    stockBySize?: Record<string, number>;
+    availableFor?: string[];
+  }>;
+};
+
+/** Picks a random purchasable option for a product, the same way a shopper would on the PDP:
+ * a sabor/color x tamaño combo ("primaryId:sizeId") when the product is a two-dimension matrix
+ * (respecting `availableFor`), or a single variant id otherwise. Undefined for products with no
+ * variants at all. */
+function pickVariantId(product: SeedProduct): string | undefined {
+  const variants = product.variants;
+  if (!variants?.length) return undefined;
+
+  const sizes = variants.filter((v) => v.type === 'size');
+  const primaries = variants.filter((v) => v.type !== 'size');
+
+  if (sizes.length && primaries.length) {
+    const primary = randomChoice(primaries);
+    const availableSizes = sizes.filter((s) => !s.availableFor || s.availableFor.includes(primary.id));
+    if (!availableSizes.length) return primary.id;
+    return `${primary.id}:${randomChoice(availableSizes).id}`;
+  }
+
+  return randomChoice(variants).id;
+}
 
 const NAMES = [
   'Sofia Martinez', 'Diego Hernandez', 'Valentina Garcia', 'Mateo Rodriguez', 'Camila Lopez',
@@ -44,14 +89,14 @@ function randomChoice<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function generateOrderData(index: number, products: { id: string; name: string; brand: string; category: string; price: number }[], today: Date) {
+function generateOrderData(index: number, products: SeedProduct[], today: Date) {
   const orderDate = new Date(today);
   const daysAgo = randomInt(0, 180);
   orderDate.setDate(orderDate.getDate() - daysAgo);
   orderDate.setHours(randomInt(8, 20), randomInt(0, 59), randomInt(0, 59));
 
   const numItems = randomInt(1, 4);
-  const items: { productId: string; productName: string; qty: number; price: number; imageUrl?: string; category?: string }[] = [];
+  const items: { productId: string; productName: string; qty: number; price: number; imageUrl?: string; category?: string; variantId?: string; variantLabel?: string }[] = [];
   const usedProducts = new Set<string>();
 
   for (let i = 0; i < numItems; i++) {
@@ -60,12 +105,20 @@ function generateOrderData(index: number, products: { id: string; name: string; 
     const product = randomChoice(availableProducts);
     usedProducts.add(product.id);
     const qty = randomInt(1, 3);
+    // Pick a sabor/color x tamaño combo (or a simple variant) the same way a real shopper would,
+    // and resolve its price/image with the same helpers checkout uses - so fake historical orders
+    // show the actual combo "bought" instead of always the generic product price/photo.
+    const variantId = pickVariantId(product);
+    const resolved = resolveVariantPricing(product, variantId);
     items.push({
       productId: product.id,
-      productName: product.name,
+      productName: resolved.label ? `${product.name} · ${resolved.label}` : product.name,
       qty,
-      price: product.price,
+      price: resolved.price,
+      imageUrl: resolveVariantImage(product, variantId) || undefined,
       category: product.category,
+      variantId,
+      variantLabel: resolved.label,
     });
   }
 
@@ -111,7 +164,9 @@ function generateOrderData(index: number, products: { id: string; name: string; 
 async function seedOrders() {
   await connectDB();
 
-  const products = await Product.find({ price: { $gt: 0 } }).select('id name brand category price').lean();
+  const products = (await Product.find({ price: { $gt: 0 } })
+    .select('id name brand category price stock imageUrl images variants')
+    .lean()) as unknown as SeedProduct[];
   
   if (products.length === 0) {
     console.error('No products found in database. Run seed first.');
