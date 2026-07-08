@@ -372,6 +372,8 @@ export function ProductVariantsMatrixEditor({
                           const cell = matrix.cells[cellKey(p.key, s.key)];
                           const active = Boolean(cell?.active);
                           const isDefaultCombo = p.isDefault && s.isDefault;
+                          const imagesInherited = !cell?.images.length && p.images.length > 0;
+                          const effectiveImages = cell?.images.length ? cell.images : p.images;
                           return (
                             <td key={s.key} style={{ padding: 8, verticalAlign: 'top', border: '1px solid var(--ink-06)' }}>
                               <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginBottom: active ? 8 : 0 }}>
@@ -401,37 +403,21 @@ export function ProductVariantsMatrixEditor({
                                     onChange={(e) => updateCell(p.key, s.key, { stock: e.target.value })}
                                   />
                                   <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-40)' }}>
-                                    Imágenes {p.images.length === 0 && <span style={{ color: '#e53e3e' }}>*</span>}
+                                    Imágenes {effectiveImages.length === 0 && <span style={{ color: '#e53e3e' }}>*</span>}
                                   </span>
-                                  {p.images.length > 0 && !(cell?.images.length) && (
-                                    <div>
-                                      <div style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"Geist", sans-serif', marginBottom: 4 }}>
-                                        Heredadas de "{p.label.trim() || primaryLabels.singular}" (sube una foto arriba para usar una distinta en este combo):
-                                      </div>
-                                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                        {p.images.map((url, i) => (
-                                          <div
-                                            key={i}
-                                            style={{ width: 44, height: 44, borderRadius: 6, background: 'var(--ink-06)', border: '1px solid var(--ink-12)' }}
-                                          >
-                                            <img
-                                              src={url}
-                                              alt=""
-                                              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 5, opacity: 0.85 }}
-                                            />
-                                          </div>
-                                        ))}
-                                      </div>
+                                  {imagesInherited && (
+                                    <div style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"Geist", sans-serif' }}>
+                                      Parten de "{p.label.trim() || primaryLabels.singular}" — agrega o quita libremente, solo afecta esta combinación.
                                     </div>
                                   )}
                                   <MiniImagePicker
-                                    images={cell?.images ?? []}
+                                    images={effectiveImages}
                                     onChange={(images) => updateCell(p.key, s.key, { images })}
                                     folder={folder}
                                   />
                                   {isDefaultCombo && (
                                     <div style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"Geist", sans-serif' }}>
-                                      {(cell?.images.length ?? 0) > 1
+                                      {effectiveImages.length > 1
                                         ? 'La 2ª imagen se usa para el efecto hover de la card en el catálogo.'
                                         : 'Si agregas una 2ª imagen aquí, se usará para el efecto hover de la card en el catálogo.'}
                                     </div>
