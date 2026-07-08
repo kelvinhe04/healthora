@@ -33,4 +33,8 @@ jobs:
           bun-version: latest
       - run: bun install --frozen-lockfile
       - run: bun run build
+        env:
+          # Clave publica de Clerk (no sensible) - sin ella, el prerender SSR de "/" durante el
+          # build falla porque ClerkProvider revienta al montarse sin publishableKey.
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.VITE_CLERK_PUBLISHABLE_KEY }}
       - run: bun run lint
