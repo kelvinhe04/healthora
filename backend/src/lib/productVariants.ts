@@ -21,7 +21,9 @@ type ProductLike = {
   variants?: ProductVariant[];
 };
 
-const PRIMARY_VARIANT_TYPES = ['scent', 'flavor'];
+// Mirrors frontend/src/lib/productVariants.ts - any non-size type can be the primary dimension
+// of a sabor/color x tamaño matrix, not just scent/flavor.
+const PRIMARY_VARIANT_TYPES = ['scent', 'flavor', 'color', 'weight', 'count'];
 
 export type ResolvedVariantPricing = {
   price: number;
