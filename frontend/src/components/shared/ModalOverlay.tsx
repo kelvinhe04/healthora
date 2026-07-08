@@ -86,14 +86,17 @@ export function ModalOverlay({
 
     const focusTimer = window.setTimeout(() => {
       const focusables = panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE);
-      focusables?.[0]?.focus();
+      // `preventScroll` stops the browser from scrolling ancestor containers (the admin's
+      // `<main overflow: auto>`) to "reveal" the newly focused field - without it, focusing an
+      // element inside this `position: fixed` modal was yanking the page behind it to the top.
+      focusables?.[0]?.focus({ preventScroll: true });
     }, 0);
 
     return () => {
       document.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = previousOverflow;
       window.clearTimeout(focusTimer);
-      previousFocusRef.current?.focus?.();
+      previousFocusRef.current?.focus?.({ preventScroll: true });
     };
   }, [open, onClose]);
 
