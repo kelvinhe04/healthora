@@ -17,6 +17,7 @@ import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { api } from '../lib/api';
+import { NEEDS } from '../lib/needs';
 
 type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club';
 
@@ -143,13 +144,6 @@ function BrandsMarquee({ onNav }: { onNav: (view: View, filter?: Record<string, 
     </div>
   );
 }
-
-const NEEDS = [
-  { id: 'Piel seca', label: 'Piel seca', tone: 'half-left' },
-  { id: 'Energía y vitaminas', label: 'Energía y vitaminas', tone: 'half-right' },
-  { id: 'Cuidado del bebé', label: 'Cuidado del bebé', tone: 'ring' },
-  { id: 'Fitness y recuperación', label: 'Fitness y recuperación', tone: 'solid' },
-];
 
 interface LandingProps {
   onNav: (view: View, filter?: Record<string, string>) => void;
@@ -890,7 +884,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               ))
             : NEEDS.map((n, i) => (
                 <StaggerItem key={n.id} index={i}>
-                  <div onClick={() => onNav('catalog', { need: n.id })} style={{ background: 'var(--cream-2)', borderRadius: 20, padding: '28px 24px', cursor: 'pointer', border: '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', gap: 40, minHeight: 200, transition: 'all 220ms' }}
+                  <div onClick={() => onNav('catalog', { category: n.category })} style={{ background: 'var(--cream-2)', borderRadius: 20, padding: '28px 24px', cursor: 'pointer', border: '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', gap: 40, minHeight: 200, transition: 'all 220ms' }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--green)'; e.currentTarget.style.color = 'var(--cream)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--cream-2)'; e.currentTarget.style.color = 'var(--ink)'; }}>
                     <div style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}>
