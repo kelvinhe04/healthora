@@ -38,23 +38,17 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU-073 | Containerización y CI/CD | `feat/hu-073-containerizacion-cicd` / merge directo a `main` | EiJassiel | `docker-compose.yml`, CI GitHub Actions, Dockerfile puerto 3002, docs. |
 | HU-071 | Tests unitarios | `HU-071-tests-unitarios` / PR #119 | Roy | Tests unitarios con Bun y cobertura para filtros de catálogo, variantes/precios efectivos y promociones/descuentos. |
 | HU-072 | Tests end-to-end (Playwright) | `HU-072-tests-end-to-end-playwright` / PR #121 | Roy | E2E de checkout con Playwright: catálogo → producto → checkout → Stripe mock; cubre camino feliz, dirección incompleta y error al crear sesión de pago. |
+| HU-033 | Precio por variante aplicado en checkout | `feat/hu-033-variant-price-checkout` / PR #134 | Kelvin | Backend valida/recalcula el precio de la variante al confirmar la orden. |
+| HU-036 | Variante registrada en las órdenes | `feat/hu-036-variant-in-orders` / PR #135 | Kelvin | `Order.ts` guarda `variantId`/`variantLabel` por línea. |
+| HU-032 | Gestión de variantes desde el panel admin | `feat/hu-032-admin-variants` / PR #137, completado en `feat/variant-matrix-admin` / PR #149 | Kelvin | PR #137: editor de variantes admin de una sola dimensión. PR #149: editor "Sabor × Tamaño" completo (matrix, `imagesBySize`, `availableFor`, combo default), **color** como dimensión primaria con swatch picker, endpoint real de subida de imágenes (antes base64), y `priceBySize`/imágenes de combo opcionales con fallback al sabor. Cierra issues #145 y #150. |
+| HU-034 | Stock por variante (enforcement) | `feat/hu-034-037-variant-stock` / PR #138, completado en PR #149 | Kelvin | PR #138: enforcement base de stock por variante en checkout. PR #149: `stockBySize` real por combinación sabor+tamaño (antes el stock de un tamaño se compartía entre todos los sabores) — issue #146. |
+| HU-037 | Enforcement de stock (inventario) | `feat/hu-034-037-variant-stock` / PR #138 | Kelvin | `decrementStock`/`assertStockAvailable` validan en backend, no solo client-side. |
 
 ## En curso
 
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
-| HU-033 | Precio por variante aplicado en checkout | por crear | Kelvin | Parcial ya en `main`: cálculo de subtotal en frontend correcto; falta validar precio de variante en backend al confirmar la orden. |
 | HU-080 | Optimización de imágenes (Cloudinary, lazy load) | `HU-080-optimizacion-imagenes-cloudinary-lazy-load` / PR #124 | Roy | `srcset`/`sizes` responsive con Cloudinary `f_auto,q_auto`, lazy por defecto y prioridad selectiva para LCP. Issue #84 cerrada; pendiente merge del PR a `main`. |
-
-
-## Pendientes — continuación directa de variantes (Kelvin, ramas nuevas tras el merge)
-
-| HU | Título | Depende de | Notas |
-|---|---|---|---|
-| HU-032 | Gestión de variantes desde el panel admin | merge de `feat/product-variants` | Sin UI ni endpoints de admin para variantes todavía. |
-| HU-034 | Stock por variante (enforcement) | HU-032 | Campo `stock` ya existe en el schema; falta que el backend lo valide/descuente al hacer checkout. |
-| HU-036 | Variante registrada en las órdenes | HU-034 | `Order.ts` no guarda qué variante se compró. |
-| HU-037 | Enforcement de stock (inventario) | HU-034/036 | Hoy el chequeo de stock es solo client-side (`cartStore`). |
 
 ## Pendientes — asignadas a Roy (infra, sin tocar código de producto/variantes)
 
@@ -80,3 +74,7 @@ _(ninguno pendiente por ahora)_
 
 - ~~Imagen del item en el carrito no refleja la variante seleccionada~~ — `CartDrawer.tsx` y `Checkout.tsx` llamaban `<ProductImage product={it.product} .../>` sin pasar la imagen de `it.variant`, así que siempre caía al fallback (imagen del producto o variante `isDefault`). Se corrigió pasando `imageUrl={it.variant?.images?.[0] ?? it.variant?.imageUrl}` en ambos. De paso, `Checkout.tsx` también mostraba precio y brand por línea ignorando la variante — corregido a la vez.
 - ~~Orden no se crea ni llega email tras pago exitoso de Stripe~~ (Issue #106, PR #109) — tras la migración a TanStack Start (HU-091) las rutas pasaron de `?view=...` a paths reales (`/checkout`, `/success`), pero `success_url`/`cancel_url` en `backend/src/routes/checkout.ts` seguían apuntando a `${origin}/?view=success...`. El router nuevo ignora `view` en `/` y renderiza Landing, así que el componente `Success` (crea la orden de respaldo si el webhook no llegó, manda el correo, limpia el carrito) nunca se montaba. Se corrigió apuntando a `/success` y `/checkout`. De paso se arregló que `GET /orders?stripeSessionId=` devolvía 200 con `{error}` en vez de 404 cuando la orden de respaldo aún no existía, así que el retry de `react-query` nunca se activaba.
+- ~~Imagen de la variante no se reflejaba en pedidos/email + "volver a comprar" perdía la variante~~ (Issue #150, PR #149) — `buildPaidLineItem` usaba siempre la foto a nivel de producto en el line item pagado; `addItemImages()` en `orders.ts` además sobreescribía en cada lectura de pedidos el `imageUrl` ya correcto con la foto genérica; y `Orders.tsx` `handleReorder` agregaba el producto al carrito sin la variante. Corregido con `resolveVariantImage()` (prioriza `imagesBySize` del combo → imágenes del sabor → del tamaño → fallback) y `resolveVariantById()` para reconstruir la variante/combo desde el `variantId` persistido.
+- ~~`availableFor` vacío (combinación desactivada) se trataba como "sin restricción"~~ (PR #149) — el chequeo `!v.availableFor?.length` es `true` tanto si el campo no existe como si es un array vacío, así que una combinación sin ningún tamaño activo terminaba disponible para todos los sabores. Persistir esto además chocaba con que Mongoose defaultea campos array a `[]` cuando no vienen en el payload, colapsando "sin restricción" (ausente) y "restringida a nadie" (vacío) en el mismo valor guardado. Corregido en `sizesFor`, `decomposeToMatrix`, `composeFromMatrix`, `computeTotalStock` y el schema de Mongoose (`default: undefined`).
+- ~~Stock y precio totales (lista de admin, dashboard de stock bajo, ficha de producto) ignoraban overrides por combinación~~ (PR #149) — `sumVariantStock`/`computeTotalStock` sumaban solo el stock base de los tamaños, no `stockBySize`; `effectivePrice` en la ficha no leía `priceBySize`. Corregido para que ambos se calculen a partir de las combinaciones reales.
+- ~~Modal de editar/crear producto reseteaba el scroll de la página al abrir o cerrar~~ (PR #149) — el modal sincroniza su estado con la URL vía TanStack Router (`useSearchParamsCompat` → `navigate()`), y el router tiene `scrollRestoration: true`, que resetea el scroll en cualquier navegación aunque sea solo un cambio de query params. Corregido con `resetScroll: false` en esa navegación.
