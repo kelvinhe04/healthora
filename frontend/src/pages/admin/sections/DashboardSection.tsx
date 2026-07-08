@@ -12,6 +12,7 @@ import {
 } from '../../../components/admin';
 import { ProductImage } from '../../../components/shared/ProductImage';
 import { useAdminPanelContext } from '../AdminPanelContext';
+import { getTotalStock } from '../../../lib/productVariants';
 
 export function DashboardSection() {
   const {
@@ -306,7 +307,7 @@ export function DashboardSection() {
                             {product.brand}
                           </div>
                         </div>
-                        <StatusPill status={`${product.stock} uds`} />
+                        <StatusPill status={`${getTotalStock(product)} uds`} />
                       </div>
                     ))}
                   </div>

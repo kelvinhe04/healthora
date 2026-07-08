@@ -1,8 +1,9 @@
 import type { FulfillmentStatus, Product, ProductVariant } from '../../types';
 import type { ProductForm, VariantFormRow } from './types';
 import { fulfillmentStatusSequence } from './types';
-import { getEffectivePrice, hasTwoDimensions } from '../../lib/productVariants';
+import { getDefaultComboImage, getEffectivePrice, hasTwoDimensions, PRIMARY_VARIANT_TYPES, sizesFor } from '../../lib/productVariants';
 import { composeFromMatrix, decomposeToMatrix, emptyMatrixState } from './variantMatrix';
+import { CATEGORY_TO_NEED } from '../../lib/needs';
 
 export const ADMIN_PAGE_SIZE = 10;
 
@@ -44,7 +45,6 @@ export function productToForm(p: Product): ProductForm {
     name: p.name,
     brand: p.brand,
     category: p.category,
-    need: p.need || '',
     short: p.short || '',
     price: String(p.price),
     priceBefore: p.priceBefore ? String(p.priceBefore) : '',
@@ -114,11 +114,34 @@ export function slugify(text: string) {
     .replace(/^-|-$/g, '');
 }
 
-/** Sum of the stock pools that actually gate checkout: every simple variant, or just the
- * tamaño rows in matrix mode (sabor rows don't hold their own stock once a tamaño matches). */
+/** Sum of the stock pools that actually gate checkout: every simple variant, or every active
+ * sabor×tamaño combo in matrix mode - using each combo's `stockBySize` override when set,
+ * falling back to the tamaño's own stock otherwise (mirrors `getPrimaryVariantStock`). Summing
+ * the tamaño rows' base stock alone (their old behavior) ignored per-combo overrides entirely. */
 function sumVariantStock(variants: ProductVariant[], mode: ProductForm['variantsMode']): number {
-  const pools = mode === 'matrix' ? variants.filter((v) => v.type === 'size') : variants;
-  return pools.reduce((sum, v) => sum + (v.stock || 0), 0);
+  if (mode !== 'matrix') return variants.reduce((sum, v) => sum + (v.stock || 0), 0);
+  const primaries = variants.filter((v) => PRIMARY_VARIANT_TYPES.includes(v.type));
+  let total = 0;
+  for (const p of primaries) {
+    for (const s of sizesFor(variants, p)) {
+      total += p.stockBySize?.[s.id] ?? s.stock ?? 0;
+    }
+  }
+  return total;
+}
+
+/** How many purchasable options a product has, for admin list display. A sabor×tamaño matrix
+ * stores one row per sabor plus one row per tamaño (e.g. 5 + 3 = 8 `variants` entries) - that's
+ * not the number a shopper picks from, so for matrix products this counts active combo cells
+ * instead of dimension rows. */
+export function variantSummary(product: Product): { count: number; label: string } | null {
+  if (!product.variants?.length) return null;
+  if (hasTwoDimensions(product.variants)) {
+    const count = Object.keys(decomposeToMatrix(product.variants).cells).length;
+    return { count, label: count === 1 ? 'combinación' : 'combinaciones' };
+  }
+  const count = product.variants.length;
+  return { count, label: count === 1 ? 'variante' : 'variantes' };
 }
 
 export function formToPayload(f: ProductForm): Partial<Product> {
@@ -145,13 +168,17 @@ export function formToPayload(f: ProductForm): Partial<Product> {
   // a redundant number in sync.
   const price = variants.length ? getEffectivePrice({ price: basePrice, variants } as Product) : basePrice;
   const stock = variants.length ? sumVariantStock(variants, f.variantsMode) : baseStock;
+  // Same reasoning as price/stock above: with variants, the top-level cover image is derived
+  // from whichever combo is marked "Default" instead of the (hidden, stale) generic image fields -
+  // otherwise picking a new default variant wouldn't change the thumbnail shown in the admin list.
+  const imageUrl = variants.length ? getDefaultComboImage({ price: basePrice, variants } as Product) : f.imageUrl;
 
   return {
     id: slugify(f.name),
     name: f.name.trim(),
     brand: f.brand.trim(),
     category: f.category.trim(),
-    need: f.need.trim(),
+    need: CATEGORY_TO_NEED[f.category.trim()] ?? '',
     short: f.short.trim(),
     price,
     ...(f.priceBefore ? { priceBefore: parseFloat(f.priceBefore) } : {}),
@@ -172,8 +199,8 @@ export function formToPayload(f: ProductForm): Partial<Product> {
         label: t.label.trim(),
         content: t.content.trim(),
       })),
-    ...(f.imageUrl ? { imageUrl: f.imageUrl } : {}),
-    images: allImages,
+    ...(imageUrl ? { imageUrl } : {}),
+    images: variants.length ? (imageUrl ? [{ url: imageUrl, isPrimary: true }] : []) : allImages,
     color: f.color,
     swatchColor: f.swatchColor,
     label: f.label.trim(),

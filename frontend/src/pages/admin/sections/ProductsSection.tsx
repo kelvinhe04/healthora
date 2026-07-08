@@ -16,6 +16,8 @@ import { ProductImage } from '../../../components/shared/ProductImage';
 import { PaginationControls } from '../components/PaginationControls';
 import { ProductModal } from '../components/ProductModal';
 import { useAdminPanelContext } from '../AdminPanelContext';
+import { variantSummary } from '../utils';
+import { getTotalStock, getEffectivePrice, getEffectivePriceBefore } from '../../../lib/productVariants';
 
 export function ProductsSection() {
   const {
@@ -416,7 +418,9 @@ export function ProductsSection() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedProducts.items.map((product) => (
+                  {paginatedProducts.items.map((product) => {
+                    const variantInfo = variantSummary(product);
+                    return (
                     <tr key={product.id} style={trStyle}>
                       <td style={{ ...td, width: 52 }}>
                         <input
@@ -479,6 +483,18 @@ export function ProductsSection() {
                             >
                               {product.brand}
                             </div>
+                            {variantInfo && (
+                              <div
+                                style={{
+                                  fontSize: 10,
+                                  color: "var(--ink-40)",
+                                  fontFamily: '"JetBrains Mono", monospace',
+                                  marginTop: 2,
+                                }}
+                              >
+                                {variantInfo.count} {variantInfo.label}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -492,9 +508,9 @@ export function ProductsSection() {
                             fontSize: 18,
                           }}
                         >
-                          ${product.price.toFixed(2)}
+                          ${getEffectivePrice(product).toFixed(2)}
                         </div>
-                        {product.priceBefore && (
+                        {getEffectivePriceBefore(product) && (
                           <div
                             style={{
                               fontSize: 11,
@@ -503,7 +519,7 @@ export function ProductsSection() {
                               fontFamily: '"JetBrains Mono", monospace',
                             }}
                           >
-                            ${product.priceBefore.toFixed(2)}
+                            ${getEffectivePriceBefore(product)!.toFixed(2)}
                           </div>
                         )}
                       </td>
@@ -513,7 +529,7 @@ export function ProductsSection() {
                           fontFamily: '"JetBrains Mono", monospace',
                         }}
                       >
-                        {product.stock}
+                        {getTotalStock(product)}
                       </td>
                       <td style={td}>
                         <StatusPill
@@ -555,7 +571,8 @@ export function ProductsSection() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                   {displayedProducts.length === 0 && (
                     <tr>
                       <td

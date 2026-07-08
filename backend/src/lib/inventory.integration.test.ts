@@ -72,4 +72,14 @@ describe('decrementStock with stockBySize', () => {
     const ok = await decrementStock('combo-product', 10, 'chocolate:5lb');
     expect(ok).toBe(false);
   });
+
+  test('keeps the top-level stock field in sync with the sum of all active combos after a sale', async () => {
+    // seeded: chocolate:5lb has a 3-unit override, vanilla:5lb shares the size's 10-unit bucket.
+    // Total starts at 3 + 10 = 13; selling 4 vanilla:5lb only touches the shared bucket (10 -> 6),
+    // so the new total is chocolate's untouched 3 + vanilla's 6 = 9.
+    await decrementStock('combo-product', 4, 'vanilla:5lb');
+
+    const product = await Product.findOne({ id: 'combo-product' }).lean();
+    expect(product?.stock).toBe(9);
+  });
 });
