@@ -113,6 +113,19 @@ describe('MCP server', () => {
     expect(product?.variants.find((v) => v.id === 'chocolate')?.stockBySize?.['5lb']).toBe(3);
   });
 
+  test('inventory.adjustStock falls back to the tamaño stock when the combo has no stockBySize override', async () => {
+    // vanilla has no stockBySize override for 5lb - reading `?? 0` without checking the size's
+    // own stock would wrongly report 0 for every un-overridden combo (real bug, see PR history).
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 41,
+      method: 'tools/call',
+      params: { name: 'inventory.adjustStock', arguments: { productId: 'combo-product', variantId: 'vanilla:5lb' } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.stock).toBe(10);
+  });
+
   test('variants.updateVariantStock sets an absolute value on a combo', async () => {
     const { json } = await rpc({
       jsonrpc: '2.0',

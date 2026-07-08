@@ -33,8 +33,12 @@ export function registerInventoryTools(server: McpServer) {
       } else if (variantId.includes(':')) {
         const [primaryId, sizeId] = variantId.split(':');
         const primary = product.variants?.find((v) => v.id === primaryId);
-        if (!primary) return errorResult(`Combinación "${variantId}" no encontrada en "${productId}".`);
-        current = primary.stockBySize?.[sizeId] ?? 0;
+        const size = product.variants?.find((v) => v.id === sizeId && v.type === 'size');
+        if (!primary || !size) return errorResult(`Combinación "${variantId}" no encontrada en "${productId}".`);
+        // Same fallback chain as resolveVariantPricing: a combo without its own stockBySize
+        // override shares the tamaño's stock - falling back to `?? 0` here (no size lookup)
+        // would silently read every un-overridden combo as out of stock.
+        current = primary.stockBySize?.[sizeId] ?? size.stock ?? 0;
         apply = () => {
           primary.stockBySize = { ...(primary.stockBySize ?? {}), [sizeId]: Math.max(0, current + (delta ?? 0)) };
           product.markModified('variants');
