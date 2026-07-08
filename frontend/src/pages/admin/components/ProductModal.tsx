@@ -130,14 +130,17 @@ export function ProductModal({
         }
       }
       for (const p of form.variantsMatrix.primary) {
-        // A combo's own image is optional when the sabor/color row already has images - those
-        // are the fallback shown to shoppers for every size of that sabor (see resolveVariantImage
-        // / getDefaultComboImage), so requiring a redundant per-combo upload would just block
-        // saving products that intentionally share one photo set across their tamaños.
-        if (p.images.length > 0) continue;
         for (const s of form.variantsMatrix.sizes) {
           const cell = form.variantsMatrix.cells[cellKey(p.key, s.key)];
-          if (cell?.active && cell.images.length === 0) {
+          if (!cell?.active) continue;
+          // A combo's own image is optional when it hasn't overridden the sabor/color row's
+          // images - those are the fallback shown to shoppers for every size of that sabor (see
+          // resolveVariantImage / getDefaultComboImage). But once the combo has its own override
+          // (imagesTouched), that override is authoritative even if the user emptied it out -
+          // falling back to `p.images.length > 0` here would let an explicitly-emptied combo save
+          // with zero images just because the sabor happens to still have its own photos.
+          const effectiveLength = cell.imagesTouched ? cell.images.length : p.images.length;
+          if (effectiveLength === 0) {
             setValidationError(
               `"${p.label.trim()} × ${s.label.trim()}" necesita al menos 1 imagen (o agrega imágenes a "${p.label.trim()}" para que apliquen a todos sus tamaños).`,
             );
