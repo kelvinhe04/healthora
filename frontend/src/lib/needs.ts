@@ -14,7 +14,7 @@ export const NEEDS = [
  * products just won't surface in the "Por necesidad" Landing section. */
 export const CATEGORY_TO_NEED: Record<string, string> = {
   Vitaminas: 'Energía y vitaminas',
-  Suplementos: 'Energía y vitaminas',
+  'Suplementos de Bienestar': 'Energía y vitaminas',
   'Salud de la piel': 'Piel seca',
   Hidratantes: 'Piel seca',
   'Cuidado del bebé': 'Cuidado del bebé',

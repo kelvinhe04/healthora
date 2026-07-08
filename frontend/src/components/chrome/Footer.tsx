@@ -8,7 +8,7 @@ interface FooterProps {
   onNav?: (view: 'catalog', filter?: { category?: string }) => void;
 }
 
-const allCategories = ['Vitaminas', 'Medicamentos', 'Cuidado personal', 'Cuidado del bebé', 'Salud de la piel', 'Fitness', 'Fragancias', 'Hidratantes', 'Maquillaje', 'Suplementos'];
+const allCategories = ['Vitaminas', 'Medicamentos', 'Cuidado personal', 'Cuidado del bebé', 'Salud de la piel', 'Fitness', 'Fragancias', 'Hidratantes', 'Maquillaje', 'Suplementos de Bienestar'];
 
 const cols = [
   { title: 'Comprar', items: allCategories, isCategory: true },

@@ -29,7 +29,7 @@ const CATEGORY_FOLDER_BY_ID: Record<string, string> = {
   Vitaminas: 'vitaminas',
   'Cuidado personal': 'cuidado-personal',
   'Cuidado del bebé': 'cuidado-bebe',
-  Suplementos: 'suplementos',
+  'Suplementos de Bienestar': 'suplementos',
   'Salud de la piel': 'salud-piel',
   Fitness: 'fitness',
   Medicamentos: 'medicamentos',

@@ -195,9 +195,9 @@ export const adminProductsRouter = new Hono<AppEnv>()
         color: "oklch(0.95 0.02 85)",
       },
       {
-        id: "Suplementos",
-        label: "Suplementos",
-        sub: "Rendimiento total",
+        id: "Suplementos de Bienestar",
+        label: "Suplementos de Bienestar",
+        sub: "Bienestar diario",
         color: "oklch(0.9 0.04 140)",
       },
       {
