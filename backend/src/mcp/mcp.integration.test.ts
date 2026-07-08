@@ -96,7 +96,7 @@ describe('MCP server', () => {
     const payload = JSON.parse(json.result.content[0].text);
     expect(payload.count).toBe(1);
     expect(payload.products[0].id).toBe('combo-product');
-    expect(payload.products[0].combinations).toBe(3);
+    expect(payload.products[0].combinations).toBe(2);
   });
 
   test('inventory.adjustStock without delta is read-only and reflects stockBySize override', async () => {

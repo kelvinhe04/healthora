@@ -4,7 +4,7 @@ import { Product } from '../../db/models/Product';
 import { escapeRegex, moneyFromInput, optionalTextField, productIdSchema, textField } from '../../lib/validation';
 import { errorResult, jsonResult } from '../toolHelpers';
 import { mcpVariantShape } from '../shapes';
-import { getTotalStock } from '../../lib/productVariants';
+import { getCombinationCount, getTotalStock } from '../../lib/productVariants';
 
 export function registerCatalogTools(server: McpServer) {
   server.registerTool(
@@ -54,7 +54,7 @@ export function registerCatalogTools(server: McpServer) {
           active: p.active,
           rating: p.rating,
           reviews: p.reviews,
-          combinations: p.variants?.length ?? 0,
+          combinations: getCombinationCount(p.variants),
         })),
       });
     },

@@ -170,3 +170,18 @@ export function getTotalStock(product: Pick<ProductLike, 'stock' | 'variants'>):
   }
   return total;
 }
+
+/** Counts purchasable options: every simple variant, or every active sabor×tamaño combo in
+ * matrix mode (respecting each tamaño's `availableFor` restriction) - not just `variants.length`,
+ * which double-counts sabores and tamaños as if they were independent purchasable items. */
+export function getCombinationCount(variants?: ProductVariant[]): number {
+  if (!variants?.length) return 0;
+  const sizes = variants.filter((v) => v.type === 'size');
+  const primaries = variants.filter((v) => PRIMARY_VARIANT_TYPES.includes(v.type));
+  if (!sizes.length || !primaries.length) return variants.length;
+  let count = 0;
+  for (const p of primaries) {
+    count += sizes.filter((s) => !s.availableFor || s.availableFor.includes(p.id)).length;
+  }
+  return count;
+}
