@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -7,11 +7,25 @@ import { PostHogProvider } from '@posthog/react';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { PostHogIdentity } from '../components/PostHogIdentity';
 import { installGlobalErrorTracking, isPostHogConfigured, posthogOptions, posthogToken } from '../lib/posthog';
+import { subscribeToProductChanges } from '../lib/crossTabSync';
 import appCss from '../index.css?url';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 2, staleTime: 1000 * 60 * 5 } },
 });
+
+/** Keeps this tab's product cache in sync with admin edits made in another tab. */
+function CrossTabProductSync() {
+  useEffect(
+    () =>
+      subscribeToProductChanges(() => {
+        void queryClient.invalidateQueries({ queryKey: ['products'] });
+        void queryClient.invalidateQueries({ queryKey: ['product'] });
+      }),
+    [],
+  );
+  return null;
+}
 
 const clerkPk = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
 installGlobalErrorTracking();
@@ -41,6 +55,7 @@ function RootComponent() {
       <ClerkProvider publishableKey={clerkPk} afterSignOutUrl="/">
         <PostHogIdentity />
         <QueryClientProvider client={queryClient}>
+          <CrossTabProductSync />
           <ParallaxProvider>
             <ErrorBoundary>
               <Outlet />

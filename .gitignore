@@ -57,6 +57,9 @@ skills-lock.json
 # Local one-off scripts
 backend/src/scripts/
 
+# Uploaded images (local dev storage, not persisted in prod)
+backend/uploads/
+
 # Local image tooling artifacts
 /product-image-manifest.md
 /product-image-download-report.json

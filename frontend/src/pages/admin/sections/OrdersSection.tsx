@@ -36,8 +36,6 @@ export function OrdersSection() {
   confirmOrderStatus,
   orderStatusesMutation,
   getNextFulfillmentStatus,
-  setProductSuccess,
-  productSuccess,
   } = useAdminPanelContext();
 
   return (
@@ -674,90 +672,6 @@ export function OrdersSection() {
                   disabled={orderStatusesMutation.isPending}
                   text={orderStatusesMutation.isPending ? "Guardando..." : "Guardar cambio"}
                 />
-              </div>
-            </div>
-        </ModalOverlay>
-
-        <ModalOverlay open={!!productSuccess} onClose={() => setProductSuccess(null)} zIndex={114} overlayColor="rgba(17, 24, 20, 0.28)">
-            <div
-              style={{
-                width: "100%",
-                maxWidth: 430,
-                background: "var(--cream)",
-                border: "1px solid var(--ink-06)",
-                borderRadius: 24,
-                boxShadow: "0 28px 80px -36px rgba(0,0,0,0.32)",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  padding: "26px 26px 22px",
-                  borderBottom: "1px solid var(--ink-06)",
-                }}
-              >
-                <div
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 999,
-                    background: "var(--green)",
-                    color: "var(--cream)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: 18,
-                  }}
-                >
-                  <Icon name="check" size={20} />
-                </div>
-                <div
-                  style={{
-                    fontSize: 10,
-                    fontFamily: '"JetBrains Mono", monospace',
-                    textTransform: "uppercase",
-                    letterSpacing: "0.12em",
-                    color: "var(--ink-60)",
-                    marginBottom: 8,
-                  }}
-                >
-                  {productSuccess?.kicker}
-                </div>
-                <div
-                  style={{
-                    fontFamily: '"Instrument Serif", serif',
-                    fontSize: 32,
-                    lineHeight: 1,
-                    letterSpacing: "-0.03em",
-                    color: "var(--ink)",
-                  }}
-                >
-                  {productSuccess?.title}{" "}
-                  <em style={{ color: "var(--green)" }}>
-                    {productSuccess?.emphasis}
-                  </em>
-                </div>
-                <p
-                  style={{
-                    margin: "12px 0 0",
-                    fontSize: 14,
-                    lineHeight: 1.55,
-                    color: "var(--ink-80)",
-                    fontFamily: '"Geist", sans-serif',
-                  }}
-                >
-                  {productSuccess?.message}
-                </p>
-              </div>
-              <div
-                style={{
-                  padding: 24,
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  background: "var(--cream-2)",
-                }}
-              >
-                <AnimatedButton variant="primary" onClick={() => setProductSuccess(null)} text="Entendido" />
               </div>
             </div>
         </ModalOverlay>

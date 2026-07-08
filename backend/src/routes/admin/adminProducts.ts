@@ -44,6 +44,8 @@ const productVariantSchema = z.object({
   imageUrl: optionalTextField(400),
   images: z.array(textField(400)).max(20).optional(),
   imagesBySize: z.record(z.string(), z.array(textField(400)).max(20)).optional(),
+  stockBySize: z.record(z.string(), z.coerce.number().int().min(0).max(999999)).optional(),
+  priceBySize: z.record(z.string(), moneyFromInput()).optional(),
   isDefault: z.coerce.boolean().default(false),
   availableFor: z.array(productIdSchema).max(50).optional(),
 });
@@ -56,7 +58,7 @@ const productPayloadSchema = z.object({
   name: textField(220),
   brand: textField(140),
   category: textField(120),
-  need: textField(120),
+  need: optionalTextField(120),
   price: moneyFromInput(),
   priceBefore: moneyFromInput().optional(),
   tag: optionalTextField(80),
@@ -105,7 +107,7 @@ const mongoIdParamsSchema = z.object({
 export const adminProductsRouter = new Hono<AppEnv>()
   .use("*", requireAdmin)
   .get("/count", async (c) => c.json({ count: await Product.countDocuments() }))
-  .get("/", async (c) => c.json(await Product.find().lean()))
+  .get("/", async (c) => c.json(await Product.find().sort({ createdAt: -1 }).lean()))
   .post("/", async (c) => {
     try {
       const parsed = await parseJson(c, productPayloadSchema);

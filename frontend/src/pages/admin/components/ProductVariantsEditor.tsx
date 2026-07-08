@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { iconBtnAd } from '../../../components/admin';
 import { Icon } from '../../../components/shared/Icon';
 import { emptyVariantRow, VARIANT_TYPE_OPTIONS, type VariantFormRow } from '../types';
+import { MiniImagePicker } from './MiniImagePicker';
 
 const inputS: CSSProperties = {
   width: '100%',
@@ -26,13 +27,31 @@ const labelS: CSSProperties = {
   display: 'block',
 };
 
+/** Etiqueta placeholder por tipo, para que el ejemplo tenga sentido con la variante elegida
+ * (ej. "Chocolate" para Sabor, no "60 tabletas" cuando el tipo es Color). */
+const LABEL_PLACEHOLDER: Record<VariantFormRow['type'], string> = {
+  flavor: 'ej. Chocolate',
+  scent: 'ej. Lavanda',
+  size: 'ej. 500 ml',
+  count: 'ej. Pack de 2',
+  color: 'ej. Rojo',
+  weight: 'ej. 500 g',
+};
+
 export function ProductVariantsEditor({
   variants,
   onChange,
+  folder = 'general',
 }: {
   variants: VariantFormRow[];
   onChange: (variants: VariantFormRow[]) => void;
+  folder?: string;
 }) {
+  const type = variants[0]?.type ?? 'flavor';
+
+  const setType = (nextType: VariantFormRow['type']) =>
+    onChange(variants.map((row) => ({ ...row, type: nextType })));
+
   const updateRow = (idx: number, patch: Partial<VariantFormRow>) => {
     const next = variants.map((row, i) => {
       if (i !== idx) {
@@ -48,6 +67,20 @@ export function ProductVariantsEditor({
 
   return (
     <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <label style={labelS}>Tipo de variante</label>
+        <select
+          style={{ ...inputS, width: 160, cursor: 'pointer' }}
+          value={type}
+          onChange={(e) => setType(e.target.value as VariantFormRow['type'])}
+        >
+          {VARIANT_TYPE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
       <div
         style={{
           fontSize: 10,
@@ -77,43 +110,34 @@ export function ProductVariantsEditor({
             <div
               key={idx}
               style={{
-                display: 'grid',
-                gridTemplateColumns: '1.2fr 0.9fr 0.7fr 0.7fr 0.9fr auto auto',
-                gap: 8,
-                alignItems: 'end',
                 padding: '12px',
                 borderRadius: 10,
                 background: 'var(--cream-2)',
                 border: '1px solid var(--ink-06)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
               }}
             >
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: row.type === 'color' ? '1.3fr 0.7fr 0.7fr 0.8fr auto' : '1.4fr 0.8fr 0.8fr auto',
+                  gap: 8,
+                  alignItems: 'end',
+                }}
+              >
               <div>
                 <label style={labelS}>Etiqueta</label>
                 <input
                   style={inputS}
                   value={row.label}
                   onChange={(e) => updateRow(idx, { label: e.target.value })}
-                  placeholder="ej. 60 tabletas"
+                  placeholder={LABEL_PLACEHOLDER[row.type]}
                 />
               </div>
               <div>
-                <label style={labelS}>Tipo</label>
-                <select
-                  style={{ ...inputS, cursor: 'pointer' }}
-                  value={row.type}
-                  onChange={(e) =>
-                    updateRow(idx, { type: e.target.value as VariantFormRow['type'] })
-                  }
-                >
-                  {VARIANT_TYPE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label style={labelS}>Precio ($)</label>
+                <label style={labelS}>Precio ($) <span style={{ color: '#e53e3e' }}>*</span></label>
                 <input
                   style={inputS}
                   type="number"
@@ -124,7 +148,7 @@ export function ProductVariantsEditor({
                 />
               </div>
               <div>
-                <label style={labelS}>Stock</label>
+                <label style={labelS}>Stock <span style={{ color: '#e53e3e' }}>*</span></label>
                 <input
                   style={inputS}
                   type="number"
@@ -133,51 +157,63 @@ export function ProductVariantsEditor({
                   onChange={(e) => updateRow(idx, { stock: e.target.value })}
                 />
               </div>
-              <div>
-                <label style={labelS}>SKU</label>
-                <input
-                  style={inputS}
-                  value={row.sku}
-                  onChange={(e) => updateRow(idx, { sku: e.target.value })}
-                  placeholder="Opcional"
-                />
-              </div>
-              <label
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  paddingBottom: 10,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  fontSize: 12,
-                  fontFamily: '"Geist", sans-serif',
-                }}
-                title="Variante predeterminada"
-              >
-                <input
-                  type="checkbox"
-                  checked={row.isDefault}
-                  onChange={(e) => updateRow(idx, { isDefault: e.target.checked })}
-                  style={{ width: 16, height: 16, accentColor: 'var(--green)', cursor: 'pointer' }}
-                />
-                Default
-              </label>
+              {row.type === 'color' && (
+                <div>
+                  <label style={labelS}>Color (hex)</label>
+                  <input
+                    style={{ ...inputS, padding: '6px 8px' }}
+                    type="color"
+                    value={/^#[0-9a-fA-F]{6}$/.test(row.color) ? row.color : '#cccccc'}
+                    onChange={(e) => updateRow(idx, { color: e.target.value })}
+                  />
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => removeRow(idx)}
                 style={{ ...iconBtnAd, color: 'var(--coral)', marginBottom: 6 }}
                 title="Eliminar variante"
               >
-                <Icon name="trash-2" size={14} />
+                <Icon name="trash" size={14} />
               </button>
+              </div>
+              <div>
+                <label style={labelS}>Imágenes (mínimo 1, máximo 4) <span style={{ color: '#e53e3e' }}>*</span></label>
+                <MiniImagePicker
+                  images={row.images}
+                  onChange={(images) => updateRow(idx, { images })}
+                  folder={folder}
+                />
+                {row.isDefault && (
+                  <div style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"Geist", sans-serif', marginTop: 4 }}>
+                    {row.images.length > 1
+                      ? 'La 2ª imagen se usa para el efecto hover de la card en el catálogo.'
+                      : 'Si agregas una 2ª imagen aquí, se usará para el efecto hover de la card en el catálogo.'}
+                  </div>
+                )}
+              </div>
+              <label
+                style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', width: 'fit-content' }}
+                title="Usa la imagen de esta variante como portada del producto en el catálogo"
+              >
+                <input
+                  type="radio"
+                  name="default-variant"
+                  checked={row.isDefault}
+                  onChange={() => updateRow(idx, { isDefault: true })}
+                  style={{ width: 14, height: 14, accentColor: 'var(--green)', cursor: 'pointer' }}
+                />
+                <span style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>
+                  Default (imagen de portada)
+                </span>
+              </label>
             </div>
           ))}
         </div>
       )}
       <button
         type="button"
-        onClick={() => onChange([...variants, emptyVariantRow()])}
+        onClick={() => onChange([...variants, { ...emptyVariantRow(), type }])}
         style={{
           fontSize: 12,
           color: 'var(--green)',

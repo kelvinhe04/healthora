@@ -19,7 +19,7 @@ import {
   parseQuery,
   textField,
 } from '../lib/validation';
-import { buildPaidLineItem } from '../lib/productVariants';
+import { buildPaidLineItem, resolveVariantImage } from '../lib/productVariants';
 import { decrementStock } from '../lib/inventory';
 
 const ordersQuerySchema = z.object({
@@ -60,19 +60,19 @@ async function addItemImages(orders: Array<Record<string, unknown>>) {
   )];
   if (!ids.length) return orders;
 
-  const prods = await Product.find({ id: { $in: ids } }).select('id imageUrl images').lean();
-  const imgMap = new Map<string, string | undefined>();
-  for (const p of prods) {
-    const pd = p as { id: string; imageUrl?: string; images?: Array<{ url: string; isPrimary?: boolean }> };
-    imgMap.set(pd.id, pd.imageUrl ?? pd.images?.find(x => x.isPrimary)?.url ?? pd.images?.[0]?.url);
-  }
+  const prods = await Product.find({ id: { $in: ids } }).select('id imageUrl images variants').lean();
+  const prodMap = new Map(prods.map((p) => [p.id, p]));
 
   return orders.map(o => ({
     ...o,
-    items: ((o.items as Array<Record<string, unknown>> | undefined) ?? []).map(i => ({
-      ...i,
-      imageUrl: imgMap.get(i.productId as string) ?? null,
-    })),
+    items: ((o.items as Array<Record<string, unknown>> | undefined) ?? []).map(i => {
+      const product = prodMap.get(i.productId as string);
+      const variantId = i.variantId as string | undefined;
+      return {
+        ...i,
+        imageUrl: (product ? resolveVariantImage(product, variantId) : '') || null,
+      };
+    }),
   }));
 }
 

@@ -6,8 +6,11 @@ import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { emptyForm, type ProductForm } from '../types';
 import { formToPayload, productToForm } from '../utils';
+import { FormattedTextarea } from './FormattedTextarea';
 import { ImageDropZone } from './ImageDropZone';
-import { ProductVariantsEditor } from './ProductVariantsEditor';
+import { ProductVariantsMatrixEditor } from './ProductVariantsMatrixEditor';
+import { slugify } from '../utils';
+import { cellKey, getVariantTab } from '../variantMatrix';
 
 export function ProductModal({
   open,
@@ -47,11 +50,11 @@ export function ProductModal({
   const _setSelect =
     (key: keyof ProductForm) => (e: ChangeEvent<HTMLSelectElement>) =>
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
-  const setChk =
-    (key: keyof ProductForm) => (e: ChangeEvent<HTMLInputElement>) =>
-      setForm((prev) => ({ ...prev, [key]: e.target.checked }));
-  const setImg = (key: keyof ProductForm) => (v: string) =>
+  const setVal = (key: keyof ProductForm) => (v: string) =>
     setForm((prev) => ({ ...prev, [key]: v }));
+
+  const variantTab = getVariantTab(form.variantsMode, form.variantsSimple.length);
+  const usesGenericFields = variantTab === "none";
 
   const handleSave = () => {
     if (!form.name.trim()) {
@@ -66,35 +69,92 @@ export function ProductModal({
       setValidationError("La categoría es obligatoria.");
       return;
     }
-    if (!form.need.trim()) {
-      setValidationError("La necesidad es obligatoria.");
-      return;
-    }
     if (!form.short.trim()) {
       setValidationError("La descripción corta es obligatoria.");
       return;
     }
-    if ((parseFloat(form.price) || 0) <= 0) {
+    if (usesGenericFields && (parseFloat(form.price) || 0) <= 0) {
       setValidationError("El precio debe ser mayor a 0.");
       return;
     }
-    if ((parseInt(form.stock) || 0) <= 0 && form.variants.length === 0) {
+    if (usesGenericFields && (parseInt(form.stock) || 0) <= 0) {
       setValidationError("Las existencias tienen que ser mayor a 0.");
       return;
     }
-    for (const row of form.variants) {
-      if (!row.label.trim()) {
-        setValidationError("Cada variante necesita una etiqueta.");
+    if (variantTab === "simple") {
+      for (const row of form.variantsSimple) {
+        if (!row.label.trim()) {
+          setValidationError("Cada variante necesita una etiqueta.");
+          return;
+        }
+        if ((parseFloat(row.price) || 0) <= 0) {
+          setValidationError(`"${row.label.trim()}" necesita un precio mayor a 0.`);
+          return;
+        }
+        if ((parseInt(row.stock, 10) || 0) <= 0) {
+          setValidationError(`"${row.label.trim()}" necesita stock mayor a 0.`);
+          return;
+        }
+        if (row.images.length === 0) {
+          setValidationError(`"${row.label.trim()}" necesita al menos 1 imagen.`);
+          return;
+        }
+      }
+    } else if (variantTab === "matrix") {
+      if (form.variantsMatrix.primary.length === 0) {
+        setValidationError("Agrega al menos un sabor/variante.");
         return;
       }
-      if ((parseInt(row.stock, 10) || 0) < 0) {
-        setValidationError("El stock de variante no puede ser negativo.");
+      if (form.variantsMatrix.sizes.length === 0) {
+        setValidationError("Agrega al menos un tamaño.");
         return;
+      }
+      for (const row of form.variantsMatrix.primary) {
+        if (!row.label.trim()) {
+          setValidationError("Cada sabor necesita una etiqueta.");
+          return;
+        }
+      }
+      for (const row of form.variantsMatrix.sizes) {
+        if (!row.label.trim()) {
+          setValidationError("Cada tamaño necesita una etiqueta.");
+          return;
+        }
+        if ((parseFloat(row.price) || 0) <= 0) {
+          setValidationError(`"${row.label.trim()}" necesita un precio base mayor a 0.`);
+          return;
+        }
+        if ((parseInt(row.stock, 10) || 0) <= 0) {
+          setValidationError(`"${row.label.trim()}" necesita un stock base mayor a 0.`);
+          return;
+        }
+      }
+      for (const p of form.variantsMatrix.primary) {
+        // A combo's own image is optional when the sabor/color row already has images - those
+        // are the fallback shown to shoppers for every size of that sabor (see resolveVariantImage
+        // / getDefaultComboImage), so requiring a redundant per-combo upload would just block
+        // saving products that intentionally share one photo set across their tamaños.
+        if (p.images.length > 0) continue;
+        for (const s of form.variantsMatrix.sizes) {
+          const cell = form.variantsMatrix.cells[cellKey(p.key, s.key)];
+          if (cell?.active && cell.images.length === 0) {
+            setValidationError(
+              `"${p.label.trim()} × ${s.label.trim()}" necesita al menos 1 imagen (o agrega imágenes a "${p.label.trim()}" para que apliquen a todos sus tamaños).`,
+            );
+            return;
+          }
+        }
       }
     }
-    if (!form.imageUrl.trim()) {
+    if (usesGenericFields && !form.imageUrl.trim()) {
       setValidationError("La imagen 1 es obligatoria.");
       return;
+    }
+    for (const tab of form.extraTabs) {
+      if (Boolean(tab.label.trim()) !== Boolean(tab.content.trim())) {
+        setValidationError("Cada pestaña personalizada necesita título y contenido (o elimínala).");
+        return;
+      }
     }
     setValidationError("");
     onSave(formToPayload(form));
@@ -193,22 +253,80 @@ export function ProductModal({
               )}
             </h2>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 999,
-              border: "1px solid var(--ink-06)",
-              background: "transparent",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Icon name="x" size={16} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                cursor: "pointer",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 10,
+                  fontFamily: '"JetBrains Mono", monospace',
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: form.active ? "var(--green)" : "var(--ink-40)",
+                }}
+              >
+                {form.active ? "Activo" : "Inactivo"}
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.active}
+                aria-label="Producto activo (visible en la tienda)"
+                onClick={() =>
+                  setForm((prev) => ({ ...prev, active: !prev.active }))
+                }
+                style={{
+                  width: 40,
+                  height: 22,
+                  borderRadius: 999,
+                  border: "none",
+                  padding: 2,
+                  cursor: "pointer",
+                  background: form.active ? "var(--green)" : "var(--ink-20)",
+                  transition: "background 0.15s ease",
+                  flexShrink: 0,
+                  position: "relative",
+                }}
+              >
+                <span
+                  style={{
+                    display: "block",
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    background: "#fff",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.25)",
+                    transform: form.active
+                      ? "translateX(18px)"
+                      : "translateX(0)",
+                    transition: "transform 0.15s ease",
+                  }}
+                />
+              </button>
+            </label>
+            <button
+              onClick={onClose}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 999,
+                border: "1px solid var(--ink-06)",
+                background: "transparent",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon name="x" size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Body */}
@@ -269,15 +387,6 @@ export function ProductModal({
                 ))}
               </select>
             </div>
-            <div style={fieldS}>
-              <label style={labelS}>Necesidad <span style={{ color: "#e53e3e" }}>*</span></label>
-              <input
-                style={inputS}
-                value={form.need}
-                onChange={setF("need")}
-                placeholder="ej: Inmunidad, Energía"
-              />
-            </div>
           </div>
           <div style={fieldS}>
             <label style={labelS}>Descripción corta <span style={{ color: "#e53e3e" }}>*</span></label>
@@ -292,120 +401,111 @@ export function ProductModal({
               placeholder="Breve descripción del producto…"
             />
           </div>
-
           <div style={dividerS} />
 
-          {/* Precio & Inventario */}
-          <div style={sectionS}>Precio · Inventario</div>
+          {/* Tipo de producto / variantes — decide esto primero, define lo que sigue */}
+          <div style={sectionS}>Tipo de producto</div>
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr auto",
-              gap: 16,
+              fontSize: 12,
+              fontFamily: '"Geist", sans-serif',
+              color: "var(--ink-60)",
               marginBottom: 16,
-              alignItems: "end",
+              maxWidth: 520,
             }}
           >
-            <div style={fieldS}>
-              <label style={labelS}>Precio ($) <span style={{ color: "#e53e3e" }}>*</span></label>
-              <input
-                style={inputS}
-                type="number"
-                value={form.price}
-                onChange={setF("price")}
-                min={0}
-                step={0.01}
-              />
-            </div>
-            <div style={fieldS}>
-              <label style={labelS}>Existencias <span style={{ color: "#e53e3e" }}>*</span></label>
-              <input
-                style={inputS}
-                type="number"
-                value={form.stock}
-                onChange={setF("stock")}
-                min={0}
-              />
-            </div>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                paddingBottom: 12,
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={form.active}
-                onChange={setChk("active")}
-                style={{
-                  width: 16,
-                  height: 16,
-                  accentColor: "var(--green)",
-                  cursor: "pointer",
-                }}
-              />
-              <span
-                style={{
-                  fontSize: 13,
-                  fontFamily: '"Geist", sans-serif',
-                }}
-              >
-                Activo
-              </span>
-            </label>
+            ¿El producto tiene un solo precio/stock, o varía por opción (ej. sabor, tamaño, color)? Esto define qué campos ves más abajo.
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr",
-              gap: 16,
-            }}
-          >
-          </div>
-
-          <div style={dividerS} />
-
-          <ProductVariantsEditor
-            variants={form.variants}
-            onChange={(variants) => setForm((prev) => ({ ...prev, variants }))}
+          <ProductVariantsMatrixEditor
+            mode={form.variantsMode}
+            onModeChange={(variantsMode) => setForm((prev) => ({ ...prev, variantsMode }))}
+            simple={form.variantsSimple}
+            onSimpleChange={(variantsSimple) => setForm((prev) => ({ ...prev, variantsSimple }))}
+            matrix={form.variantsMatrix}
+            onMatrixChange={(variantsMatrix) => setForm((prev) => ({ ...prev, variantsMatrix }))}
+            folder={slugify(form.name) || 'general'}
           />
 
-          <div style={dividerS} />
+          {usesGenericFields && (
+            <>
+              <div style={dividerS} />
 
-          {/* Imágenes */}
-          <div style={sectionS}>Imágenes del producto</div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 16,
-            }}
-          >
-            <ImageDropZone
-              value={form.imageUrl}
-              onChange={setImg("imageUrl")}
-              label="Imagen 1 · principal"
-            />
-            <ImageDropZone
-              value={form.image2}
-              onChange={setImg("image2")}
-              label="Imagen 2 (opcional)"
-            />
-            <ImageDropZone
-              value={form.image3}
-              onChange={setImg("image3")}
-              label="Imagen 3 (opcional)"
-            />
-            <ImageDropZone
-              value={form.image4}
-              onChange={setImg("image4")}
-              label="Imagen 4 (opcional)"
-            />
-          </div>
+              {/* Precio & Inventario */}
+              <div style={sectionS}>Precio · Inventario</div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 16,
+                  marginBottom: 16,
+                }}
+              >
+                <div style={fieldS}>
+                  <label style={labelS}>Precio ($) <span style={{ color: "#e53e3e" }}>*</span></label>
+                  <input
+                    style={inputS}
+                    type="number"
+                    value={form.price}
+                    onChange={setF("price")}
+                    min={0}
+                    step={0.01}
+                  />
+                </div>
+                <div style={fieldS}>
+                  <label style={labelS}>Existencias <span style={{ color: "#e53e3e" }}>*</span></label>
+                  <input
+                    style={inputS}
+                    type="number"
+                    value={form.stock}
+                    onChange={setF("stock")}
+                    min={0}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {usesGenericFields && (
+            <>
+              <div style={dividerS} />
+
+              {/* Imágenes */}
+              <div style={sectionS}>Imágenes del producto</div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 16,
+                }}
+              >
+              <ImageDropZone
+                value={form.imageUrl}
+                onChange={setVal("imageUrl")}
+                label="Imagen 1 · principal"
+                required
+                folder={slugify(form.name) || 'general'}
+              />
+              <ImageDropZone
+                value={form.image2}
+                onChange={setVal("image2")}
+                label="Imagen 2 (opcional)"
+                folder={slugify(form.name) || 'general'}
+              />
+              <ImageDropZone
+                value={form.image3}
+                onChange={setVal("image3")}
+                label="Imagen 3 (opcional)"
+                folder={slugify(form.name) || 'general'}
+              />
+              <ImageDropZone
+                value={form.image4}
+                onChange={setVal("image4")}
+                label="Imagen 4 (opcional)"
+                folder={slugify(form.name) || 'general'}
+              />
+              </div>
+            </>
+          )}
 
           <div style={dividerS} />
 
@@ -432,14 +532,14 @@ export function ProductModal({
                   (uno por línea)
                 </span>
               </label>
-              <textarea
+              <FormattedTextarea
                 style={{
                   ...inputS,
                   resize: "vertical",
                   minHeight: 88,
                 }}
                 value={form.benefits}
-                onChange={setF("benefits")}
+                onChange={setVal("benefits")}
                 placeholder={
                   "Opcional: mejora el sistema inmune\nAumenta la energía\nReduce el estrés"
                 }
@@ -447,40 +547,40 @@ export function ProductModal({
             </div>
             <div style={fieldS}>
               <label style={labelS}>Modo de uso (opcional)</label>
-              <textarea
+              <FormattedTextarea
                 style={{
                   ...inputS,
                   resize: "vertical",
                   minHeight: 68,
                 }}
                 value={form.usage}
-                onChange={setF("usage")}
+                onChange={setVal("usage")}
                 placeholder="Opcional: tomar 1 cápsula al día con agua…"
               />
             </div>
             <div style={fieldS}>
               <label style={labelS}>Ingredientes (opcional)</label>
-              <textarea
+              <FormattedTextarea
                 style={{
                   ...inputS,
                   resize: "vertical",
                   minHeight: 68,
                 }}
                 value={form.ingredients}
-                onChange={setF("ingredients")}
+                onChange={setVal("ingredients")}
                 placeholder="Opcional: vitamina C 500mg, Zinc 10mg…"
               />
             </div>
             <div style={fieldS}>
               <label style={labelS}>Advertencias (opcional)</label>
-              <textarea
+              <FormattedTextarea
                 style={{
                   ...inputS,
                   resize: "vertical",
                   minHeight: 68,
                 }}
                 value={form.warnings}
-                onChange={setF("warnings")}
+                onChange={setVal("warnings")}
                 placeholder="Opcional: mantener fuera del alcance de los niños…"
               />
             </div>
@@ -529,6 +629,7 @@ export function ProductModal({
                       gap: 6,
                     }}
                   >
+                    <label style={labelS}>Título <span style={{ color: "#e53e3e" }}>*</span></label>
                     <input
                       value={tab.label}
                       onChange={(e) => {
@@ -539,16 +640,17 @@ export function ProductModal({
                         };
                         setForm((prev) => ({ ...prev, extraTabs: newTabs }));
                       }}
-                      placeholder="Título (ej: Fórmula)"
+                      placeholder="ej: Fórmula"
                       style={{ ...inputS, fontSize: 12, fontWeight: 500 }}
                     />
-                    <textarea
+                    <label style={labelS}>Contenido <span style={{ color: "#e53e3e" }}>*</span></label>
+                    <FormattedTextarea
                       value={tab.content}
-                      onChange={(e) => {
+                      onChange={(content) => {
                         const newTabs = [...form.extraTabs];
                         newTabs[idx] = {
                           ...newTabs[idx],
-                          content: e.target.value,
+                          content,
                         };
                         setForm((prev) => ({ ...prev, extraTabs: newTabs }));
                       }}
@@ -571,7 +673,7 @@ export function ProductModal({
                     style={{ ...iconBtnAd, color: "var(--coral)" }}
                     title="Eliminar pestaña"
                   >
-                    <Icon name="trash-2" size={14} />
+                    <Icon name="trash" size={14} />
                   </button>
                 </div>
               ))}

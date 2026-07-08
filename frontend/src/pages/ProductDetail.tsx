@@ -13,7 +13,8 @@ import { ReviewSection } from '../components/shared/ReviewSection';
 import { RecentlyViewedSection } from '../components/shared/RecentlyViewedSection';
 import { RelatedProductsSection } from '../components/shared/RelatedProductsSection';
 import { getRelatedProducts } from '../lib/relatedProducts';
-import { PRIMARY_VARIANT_TYPES, pickDefaultPrimary, sizesFor, pickDefaultSize } from '../lib/productVariants';
+import { PRIMARY_VARIANT_TYPES, pickDefaultPrimary, sizesFor, pickDefaultSize, getPrimaryVariantStock } from '../lib/productVariants';
+import { renderInlineText, renderRichText } from '../lib/richText';
 
 interface ProductDetailProps {
   product: Product;
@@ -126,10 +127,21 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isZoomed]);
 
-  const primaryVariants = product.variants?.filter((v) => PRIMARY_VARIANT_TYPES.includes(v.type)) ?? [];
+  const primaryVariantsRaw = product.variants?.filter((v) => PRIMARY_VARIANT_TYPES.includes(v.type)) ?? [];
   const sizeVariants = product.variants?.filter((v) => v.type === 'size') ?? [];
-  const hasTwoDimensions = primaryVariants.length > 0 && sizeVariants.length > 0;
+  const hasTwoDimensions = primaryVariantsRaw.length > 0 && sizeVariants.length > 0;
+  // The primary's own `.stock` isn't meaningful in matrix mode (see getPrimaryVariantStock) - swap
+  // it out here so every pill/dropdown consumer below just reads `.stock` like normal.
+  const primaryVariants = hasTwoDimensions
+    ? primaryVariantsRaw.map((v) => ({ ...v, stock: getPrimaryVariantStock(product.variants, v) }))
+    : primaryVariantsRaw;
   const availableSizeVariants = sizesFor(product.variants, selectedVariant);
+  // Reflect the selected sabor's combo-specific stock (stockBySize) in the tamaño picker,
+  // instead of only the tamaño's own shared stock.
+  const availableSizeVariantsWithStock = availableSizeVariants.map((v) => {
+    const override = selectedVariant?.stockBySize?.[v.id];
+    return override != null ? { ...v, stock: override } : v;
+  });
 
   useEffect(() => {
     setQty(1);
@@ -142,9 +154,23 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
     setSelectedSize(pickDefaultSize(product.variants, primary));
   }, [product.id]);
 
-  const effectivePrice = (selectedVariant?.price ?? product.price) + (hasTwoDimensions ? (selectedSize?.price ?? 0) : 0);
+  // A background refetch (cross-tab admin edit, refocus revalidation, etc.) gives a new
+  // `product.variants` array even when it's the same product. `selectedVariant`/`selectedSize`
+  // were captured by value, not re-derived from props, so without this they'd keep showing the
+  // price/stock/images from whenever they were first picked - re-resolve them by id here instead
+  // of resetting the whole selection (which would also yank qty/tab/zoom back to defaults).
+  useEffect(() => {
+    setSelectedVariant((prev) => (prev ? product.variants?.find((v) => v.id === prev.id) ?? prev : prev));
+    setSelectedSize((prev) => (prev ? product.variants?.find((v) => v.id === prev.id) ?? prev : prev));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.variants]);
+
+  const priceOverride = hasTwoDimensions && selectedSize ? selectedVariant?.priceBySize?.[selectedSize.id] : undefined;
+  const effectivePrice = priceOverride ?? ((selectedVariant?.price ?? product.price) + (hasTwoDimensions ? (selectedSize?.price ?? 0) : 0));
   const effectivePriceBefore = selectedVariant?.priceBefore ?? product.priceBefore;
-  const effectiveStock = hasTwoDimensions ? (selectedSize?.stock ?? selectedVariant?.stock ?? product.stock) : (selectedVariant?.stock ?? product.stock);
+  const effectiveStock = hasTwoDimensions
+    ? (selectedSize && selectedVariant?.stockBySize?.[selectedSize.id]) ?? selectedSize?.stock ?? selectedVariant?.stock ?? product.stock
+    : (selectedVariant?.stock ?? product.stock);
   // For a flavor+size combo, cart/checkout need a single variant carrying the combined price,
   // stock and a unique id (so different sizes of the same flavor don't collapse into one cart line).
   const cartVariant: ProductVariant | undefined = selectedVariant
@@ -308,6 +334,31 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                 {v.label}
               </button>
             );
+            const colorSwatchBtn = (v: ProductVariant, selected: boolean, onClick: () => void) => (
+              <button
+                type="button"
+                key={v.id}
+                onClick={onClick}
+                aria-label={`Color ${v.label}${v.stock === 0 ? ', agotado' : ''}`}
+                aria-pressed={selected}
+                disabled={v.stock === 0}
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '50%',
+                  background: v.color ?? '#ccc',
+                  border: selected ? '2.5px solid var(--ink)' : '2px solid transparent',
+                  outline: selected ? '2px solid var(--ink)' : '2px solid var(--ink-10)',
+                  outlineOffset: 2,
+                  boxShadow: 'inset 0 0 0 1.5px rgba(0,0,0,0.18)',
+                  cursor: v.stock === 0 ? 'not-allowed' : 'pointer',
+                  opacity: v.stock === 0 ? 0.35 : 1,
+                  transition: 'all 0.15s ease',
+                  position: 'relative',
+                  flexShrink: 0,
+                }}
+              />
+            );
             // Con muchas opciones (ej. 25 sabores) los pills se ven desbordados; a partir de 7
             // opciones se compacta en un <select> nativo.
             const DROPDOWN_THRESHOLD = 7;
@@ -348,14 +399,16 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
             );
 
             if (hasTwoDimensions) {
-              const primaryLabel = VARIANT_TYPE_LABEL[primaryVariants[0]?.type] ?? primaryVariants[0]?.type.toUpperCase();
+              const primaryType = primaryVariants[0]?.type;
+              const primaryLabel = VARIANT_TYPE_LABEL[primaryType] ?? primaryType.toUpperCase();
+              const isPrimaryColor = primaryType === 'color';
               return (
                 <div style={{ marginBottom: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
                   <div>
                     <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 10 }}>
                       {primaryLabel}{selectedVariant && <span style={{ color: 'var(--ink)' }}> · {selectedVariant.label.toUpperCase()}</span>}
                     </div>
-                    {primaryVariants.length > DROPDOWN_THRESHOLD ? (
+                    {!isPrimaryColor && primaryVariants.length > DROPDOWN_THRESHOLD ? (
                       dropdown(primaryVariants, selectedVariant, (v) => {
                         setSelectedVariant(v);
                         setSelectedSize(pickDefaultSize(product.variants, v));
@@ -363,7 +416,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                       }, primaryLabel)
                     ) : (
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        {primaryVariants.map((v) => pillBtn(v, selectedVariant?.id === v.id, () => {
+                        {primaryVariants.map((v) => (isPrimaryColor ? colorSwatchBtn : pillBtn)(v, selectedVariant?.id === v.id, () => {
                           setSelectedVariant(v);
                           setSelectedSize(pickDefaultSize(product.variants, v));
                           setQty(1);
@@ -375,11 +428,11 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                     <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 10 }}>
                       TAMAÑO{selectedSize && <span style={{ color: 'var(--ink)' }}> · {selectedSize.label.toUpperCase()}</span>}
                     </div>
-                    {availableSizeVariants.length > DROPDOWN_THRESHOLD ? (
-                      dropdown(availableSizeVariants, selectedSize, (v) => setSelectedSize(v), 'TAMAÑO')
+                    {availableSizeVariantsWithStock.length > DROPDOWN_THRESHOLD ? (
+                      dropdown(availableSizeVariantsWithStock, selectedSize, (v) => setSelectedSize(v), 'TAMAÑO')
                     ) : (
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        {availableSizeVariants.map((v) => pillBtn(v, selectedSize?.id === v.id, () => setSelectedSize(v)))}
+                        {availableSizeVariantsWithStock.map((v) => pillBtn(v, selectedSize?.id === v.id, () => setSelectedSize(v)))}
                       </div>
                     )}
                   </div>
@@ -399,35 +452,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                   dropdown(product.variants!, selectedVariant, (v) => { setSelectedVariant(v); setQty(1); }, VARIANT_TYPE_LABEL[variantType] ?? variantType.toUpperCase())
                 ) : (
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {product.variants!.map((v) => (
-                      isColor ? (
-                        <button
-                          type="button"
-                          key={v.id}
-                          onClick={() => { setSelectedVariant(v); setQty(1); }}
-                          aria-label={`Color ${v.label}`}
-                          aria-pressed={selectedVariant?.id === v.id}
-                          disabled={v.stock === 0}
-                          style={{
-                            width: 34,
-                            height: 34,
-                            borderRadius: '50%',
-                            background: v.color ?? '#ccc',
-                            border: selectedVariant?.id === v.id ? '2.5px solid var(--ink)' : '2px solid transparent',
-                            outline: selectedVariant?.id === v.id ? '2px solid var(--ink)' : '2px solid var(--ink-10)',
-                            outlineOffset: 2,
-                            boxShadow: 'inset 0 0 0 1.5px rgba(0,0,0,0.18)',
-                            cursor: v.stock === 0 ? 'not-allowed' : 'pointer',
-                            opacity: v.stock === 0 ? 0.35 : 1,
-                            transition: 'all 0.15s ease',
-                            position: 'relative',
-                            flexShrink: 0,
-                          }}
-                        />
-                      ) : (
-                        pillBtn(v, selectedVariant?.id === v.id, () => { setSelectedVariant(v); setQty(1); })
-                      )
-                    ))}
+                    {product.variants!.map((v) => (isColor ? colorSwatchBtn : pillBtn)(v, selectedVariant?.id === v.id, () => { setSelectedVariant(v); setQty(1); }))}
                   </div>
                 )}
               </div>
@@ -469,10 +494,10 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                 <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '14px 4px', marginRight: 28, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, fontFamily: '"Geist", sans-serif', color: tab === t.id ? 'var(--ink)' : 'var(--ink-60)', borderBottom: tab === t.id ? '2px solid var(--ink)' : '2px solid transparent', marginBottom: -1, whiteSpace: 'nowrap' }}>{t.label}</button>
               ))}
             </div>
-            <div style={{ padding: '20px 0', fontSize: 15, lineHeight: 1.6, color: 'var(--ink-80)', fontFamily: '"Geist", sans-serif' }}>
-              {tab === 'benefits' && <ul style={{ paddingLeft: 18, margin: 0 }}>{benefits.map((b) => <li key={b} style={{ marginBottom: 6 }}>{b}</li>)}</ul>}
-              {tab === 'usage' && hasText(product.usage) && <p style={{ margin: 0 }}>{product.usage}</p>}
-              {tab === 'ingredients' && hasText(product.ingredients) && <p style={{ margin: 0 }}>{product.ingredients}</p>}
+            <div style={{ padding: '20px 0', fontSize: 15, lineHeight: 1.6, color: 'var(--ink-80)', fontFamily: '"Geist", sans-serif', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
+              {tab === 'benefits' && <ul style={{ paddingLeft: 18, margin: 0 }}>{benefits.map((b) => <li key={b} style={{ marginBottom: 6 }}>{renderInlineText(b, b)}</li>)}</ul>}
+              {tab === 'usage' && hasText(product.usage) && renderRichText(product.usage)}
+              {tab === 'ingredients' && hasText(product.ingredients) && renderRichText(product.ingredients)}
               {tab === 'nutrition' && product.nutritionFacts && (
                 <pre style={{ margin: 0, fontFamily: '"JetBrains Mono", monospace', fontSize: 12, lineHeight: 1.9, whiteSpace: 'pre-wrap', color: 'var(--ink-80)' }}>{product.nutritionFacts}</pre>
               )}
@@ -504,12 +529,14 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                   ))}
                 </div>
               )}
-              {tab.startsWith('extra:') && (
-                <p style={{ margin: 0 }}>
-                  {product.extraTabs?.find((t) => `extra:${t.id}` === tab)?.content || ''}
-                </p>
+              {tab.startsWith('extra:') &&
+                renderRichText(product.extraTabs?.find((t) => `extra:${t.id}` === tab)?.content || '')}
+              {tab === 'warnings' && hasText(product.warnings) && (
+                <div style={{ color: 'var(--coral)' }}>
+                  <span>⚠ </span>
+                  {renderRichText(product.warnings)}
+                </div>
               )}
-              {tab === 'warnings' && hasText(product.warnings) && <p style={{ margin: 0, color: 'var(--coral)' }}>⚠ {product.warnings}</p>}
             </div>
           </div>
           )}

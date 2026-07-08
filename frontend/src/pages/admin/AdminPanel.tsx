@@ -1,5 +1,7 @@
 import { Sidebar } from '../../components/admin';
 import { Icon } from '../../components/shared/Icon';
+import { AnimatedButton } from '../../components/shared/AnimatedButton';
+import { ModalOverlay } from '../../components/shared/ModalOverlay';
 import { SkipToContent } from '../../components/shared/SkipToContent';
 import type { AdminAccess } from './types';
 import { AdminPanelProvider, useAdminPanelContext } from './AdminPanelContext';
@@ -29,6 +31,8 @@ function AdminPanelLayout({
     isSmall,
     isMobile,
     isTablet,
+    productSuccess,
+    setProductSuccess,
   } = useAdminPanelContext();
 
   return (
@@ -94,6 +98,118 @@ function AdminPanelLayout({
         {page === "performance" && <PerformanceSection />}
         {page === "errors" && <ErrorsSection />}
       </main>
+
+      {/* Mounted at the layout level (not per-section) so it shows no matter which admin page
+          triggered the mutation — product create/update/delete all set this via context. */}
+      <ModalOverlay open={!!productSuccess} onClose={() => setProductSuccess(null)} zIndex={114} overlayColor="rgba(17, 24, 20, 0.28)">
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 430,
+            background: "var(--cream)",
+            border: "1px solid var(--ink-06)",
+            borderRadius: 24,
+            boxShadow: "0 28px 80px -36px rgba(0,0,0,0.32)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              padding: "26px 26px 22px",
+              borderBottom: "1px solid var(--ink-06)",
+            }}
+          >
+            <div
+              style={{
+                position: "relative",
+                width: 44,
+                height: 44,
+                marginBottom: 18,
+              }}
+            >
+              <div
+                key={`ring-${productSuccess?.kicker}`}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  borderRadius: 999,
+                  border: "1.5px solid var(--green)",
+                  animation: "success-ring-pulse 900ms ease-out 120ms both",
+                }}
+              />
+              <div
+                key={`icon-${productSuccess?.kicker}`}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 999,
+                  background: "var(--green)",
+                  color: "var(--cream)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  animation: "success-icon-pop 480ms cubic-bezier(0.34, 1.56, 0.64, 1) both",
+                }}
+              >
+                <Icon name="check" size={20} />
+              </div>
+            </div>
+            <div
+              key={`kicker-${productSuccess?.kicker}`}
+              style={{
+                fontSize: 10,
+                fontFamily: '"JetBrains Mono", monospace',
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "var(--ink-60)",
+                marginBottom: 8,
+                animation: "success-fade-up 360ms ease-out 80ms both",
+              }}
+            >
+              {productSuccess?.kicker}
+            </div>
+            <div
+              key={`title-${productSuccess?.kicker}`}
+              style={{
+                fontFamily: '"Instrument Serif", serif',
+                fontSize: 32,
+                lineHeight: 1,
+                letterSpacing: "-0.03em",
+                color: "var(--ink)",
+                animation: "success-fade-up 360ms ease-out 140ms both",
+              }}
+            >
+              {productSuccess?.title}{" "}
+              <em style={{ color: "var(--green)" }}>
+                {productSuccess?.emphasis}
+              </em>
+            </div>
+            <p
+              key={`msg-${productSuccess?.kicker}`}
+              style={{
+                margin: "12px 0 0",
+                fontSize: 14,
+                lineHeight: 1.55,
+                color: "var(--ink-80)",
+                fontFamily: '"Geist", sans-serif',
+                animation: "success-fade-up 360ms ease-out 200ms both",
+              }}
+            >
+              {productSuccess?.message}
+            </p>
+          </div>
+          <div
+            style={{
+              padding: 24,
+              display: "flex",
+              justifyContent: "flex-end",
+              background: "var(--cream-2)",
+            }}
+          >
+            <AnimatedButton variant="primary" onClick={() => setProductSuccess(null)} text="Entendido" />
+          </div>
+        </div>
+      </ModalOverlay>
     </div>
   );
 }

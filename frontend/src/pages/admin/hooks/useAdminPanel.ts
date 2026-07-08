@@ -21,6 +21,7 @@ import {
 } from '../types';
 import { getNextFulfillmentStatus, paginateItems } from '../utils';
 import { useAdminToken } from './useAdminToken';
+import { broadcastProductsChanged } from '../../../lib/crossTabSync';
 
 export type AdminPanelState = ReturnType<typeof useAdminPanel>;
 
@@ -281,7 +282,13 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     void queryClient.invalidateQueries({ queryKey: ["admin-products"] });
     void queryClient.invalidateQueries({ queryKey: ["admin-products-count"] });
     void queryClient.invalidateQueries({ queryKey: ["products"] });
+    // Product detail pages cache under a separate singular key (`useProduct`) with its own
+    // staleTime - without this, an edit in admin doesn't reach an already-open detail page.
+    void queryClient.invalidateQueries({ queryKey: ["product"] });
     void queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] });
+    // Each browser tab has its own in-memory cache - tell other open tabs (e.g. the storefront
+    // preview) to refresh too, instead of waiting out their own staleTime.
+    broadcastProductsChanged();
   };
 
   const productUpdateMutation = useMutation({

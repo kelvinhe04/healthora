@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { buildPaidLineItem, resolveVariantPricing } from '../lib/productVariants';
+import { buildPaidLineItem, resolveVariantImage, resolveVariantPricing } from '../lib/productVariants';
 
 const product = {
   id: 'demo',
@@ -35,6 +35,39 @@ describe('resolveVariantPricing', () => {
       stockVariantId: 'small',
     });
   });
+
+  test('prefers stockBySize override for composite id when present', () => {
+    const productWithOverride = {
+      ...product,
+      variants: [
+        { id: 'vanilla', label: 'Vainilla', type: 'flavor', price: 12, stock: 3, stockBySize: { small: 1 } },
+        { id: 'small', label: '30 ct', type: 'size', price: 2, stock: 4 },
+      ],
+    };
+    expect(resolveVariantPricing(productWithOverride, 'vanilla:small')).toEqual({
+      price: 14,
+      stock: 1,
+      label: 'Vainilla · 30 ct',
+      stockVariantId: 'vanilla',
+      stockField: 'stockBySize.small',
+    });
+  });
+
+  test('falls back to shared size stock when stockBySize has no entry for that size', () => {
+    const productWithOverride = {
+      ...product,
+      variants: [
+        { id: 'vanilla', label: 'Vainilla', type: 'flavor', price: 12, stock: 3, stockBySize: { other: 9 } },
+        { id: 'small', label: '30 ct', type: 'size', price: 2, stock: 4 },
+      ],
+    };
+    expect(resolveVariantPricing(productWithOverride, 'vanilla:small')).toEqual({
+      price: 14,
+      stock: 4,
+      label: 'Vainilla · 30 ct',
+      stockVariantId: 'small',
+    });
+  });
 });
 
 describe('buildPaidLineItem', () => {
@@ -44,5 +77,42 @@ describe('buildPaidLineItem', () => {
     expect(line.productName).toBe('Demo Product · Vainilla');
     expect(line.variantId).toBe('vanilla');
     expect(line.variantLabel).toBe('Vainilla');
+  });
+
+  test('uses the variant photo, not the product default, when the variant has its own image', () => {
+    const productWithVariantImage = {
+      ...product,
+      imageUrl: '/products/demo-default.jpg',
+      variants: [
+        { id: 'vanilla', label: 'Vainilla', type: 'flavor', price: 12, stock: 3, imageUrl: '/products/vanilla.jpg' },
+        { id: 'small', label: '30 ct', type: 'size', price: 2, stock: 4 },
+      ],
+    };
+    const line = buildPaidLineItem(productWithVariantImage, { productId: 'demo', qty: 1, variantId: 'vanilla' });
+    expect(line.imageUrl).toBe('/products/vanilla.jpg');
+  });
+
+  test('uses the combo-specific imagesBySize photo for two-dimension variants', () => {
+    const productWithCombo = {
+      ...product,
+      imageUrl: '/products/demo-default.jpg',
+      variants: [
+        {
+          id: 'vanilla', label: 'Vainilla', type: 'flavor', price: 12, stock: 3,
+          imageUrl: '/products/vanilla-flat.jpg',
+          imagesBySize: { small: ['/products/vanilla-small.jpg'] },
+        },
+        { id: 'small', label: '30 ct', type: 'size', price: 2, stock: 4 },
+      ],
+    };
+    const line = buildPaidLineItem(productWithCombo, { productId: 'demo', qty: 1, variantId: 'vanilla:small' });
+    expect(line.imageUrl).toBe('/products/vanilla-small.jpg');
+  });
+});
+
+describe('resolveVariantImage', () => {
+  test('falls back to product image when variant has no photo of its own', () => {
+    const withProductImage = { ...product, imageUrl: '/products/demo-default.jpg' };
+    expect(resolveVariantImage(withProductImage, 'vanilla')).toBe('/products/demo-default.jpg');
   });
 });

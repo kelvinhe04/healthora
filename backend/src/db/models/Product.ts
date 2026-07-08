@@ -6,7 +6,7 @@ const ProductSchema = new Schema(
     name: { type: String, required: true },
     brand: { type: String, required: true },
     category: { type: String, required: true },
-    need: { type: String, required: true },
+    need: String,
     price: { type: Number, required: true },
     priceBefore: Number,
     tag: String,
@@ -57,8 +57,13 @@ const ProductSchema = new Schema(
         imageUrl: String,
         images: [String],
         imagesBySize: { type: Object },
+        stockBySize: { type: Object },
+        priceBySize: { type: Object },
         isDefault: { type: Boolean, default: false },
-        availableFor: [String],
+        // Mongoose auto-defaults array paths to `[]` when omitted, which would collapse "no
+        // restriction" (key absent) and "active for no one" (explicit empty array) into the same
+        // persisted value. `default: undefined` keeps an omitted `availableFor` truly absent.
+        availableFor: { type: [String], default: undefined },
       },
     ],
     active: { type: Boolean, default: true },

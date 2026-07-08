@@ -20,7 +20,10 @@ export function useSearchParamsCompat(): [URLSearchParams, SetSearchParams] {
     const next = updater(prev);
     const nextSearch: Record<string, string> = {};
     next.forEach((value, key) => { nextSearch[key] = value; });
-    navigate({ search: () => nextSearch, replace: opts?.replace } as unknown as Parameters<typeof navigate>[0]);
+    // The router has `scrollRestoration: true`, which resets scroll to top on every navigation
+    // by default - including these search-param-only updates (e.g. opening a modal). This hook
+    // is just syncing UI state to the URL, not actually changing pages, so scroll must stay put.
+    navigate({ search: () => nextSearch, replace: opts?.replace, resetScroll: false } as unknown as Parameters<typeof navigate>[0]);
   };
 
   return [searchParams, setSearchParams];

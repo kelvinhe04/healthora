@@ -22,12 +22,20 @@ async function request<T>(
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
   const res = await fetch(`${BASE}${path}`, {
+    // Product/catalog routes send a long Cache-Control (max-age up to 120s) for CDN/browser
+    // caching on repeat visits. 'no-cache' still lets the browser do a conditional revalidation
+    // (If-None-Match) instead of blindly trusting max-age - otherwise an admin edit doesn't show
+    // up in an already-open tab until that window expires, even after cache invalidation.
+    cache: "no-cache",
     ...opts,
     headers: { ...headers, ...opts?.headers },
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || `HTTP ${res.status}`);
+    const details = Array.isArray(err.details)
+      ? err.details.map((d: { field: string; message: string }) => `${d.field}: ${d.message}`).join("; ")
+      : undefined;
+    throw new Error(details ? `${err.error} — ${details}` : err.error || `HTTP ${res.status}`);
   }
   if (res.status === 204 || res.headers.get("content-length") === "0")
     return null as T;

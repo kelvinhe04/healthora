@@ -1,23 +1,40 @@
 import { type DragEvent, useRef, useState } from 'react';
 import { Icon } from '../../../components/shared/Icon';
+import { useAdminToken } from '../hooks/useAdminToken';
+import { uploadImage } from '../../../lib/uploadImage';
 
 export function ImageDropZone({
   value,
   onChange,
   label,
+  folder = 'general',
+  required = false,
 }: {
   value: string;
   onChange: (v: string) => void;
   label: string;
+  folder?: string;
+  required?: boolean;
 }) {
   const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const getToken = useAdminToken();
 
-  const processFile = (file: File) => {
+  const processFile = async (file: File) => {
     if (!file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = (e) => onChange(e.target?.result as string);
-    reader.readAsDataURL(file);
+    setError('');
+    setUploading(true);
+    try {
+      const token = await getToken();
+      const url = await uploadImage(file, folder, token);
+      onChange(url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al subir imagen');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const onDrop = (e: DragEvent<HTMLDivElement>) => {
@@ -39,7 +56,7 @@ export function ImageDropZone({
           marginBottom: 6,
         }}
       >
-        {label}
+        {label} {required && <span style={{ color: "#e53e3e" }}>*</span>}
       </span>
       <div
         onDragOver={(e) => {
@@ -48,7 +65,7 @@ export function ImageDropZone({
         }}
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
-        onClick={() => !value && inputRef.current?.click()}
+        onClick={() => !value && !uploading && inputRef.current?.click()}
         style={{
           border: `2px dashed ${dragging ? "var(--green)" : value ? "var(--ink-12)" : "var(--ink-20)"}`,
           borderRadius: 12,
@@ -56,14 +73,18 @@ export function ImageDropZone({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          cursor: value ? "default" : "pointer",
+          cursor: uploading ? "wait" : value ? "default" : "pointer",
           background: dragging ? "oklch(0.97 0.02 140)" : "var(--cream-2)",
           position: "relative",
           overflow: "hidden",
           transition: "border-color 120ms, background 120ms",
         }}
       >
-        {value ? (
+        {uploading ? (
+          <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: "var(--ink-40)" }}>
+            SUBIENDO…
+          </div>
+        ) : value ? (
           <>
             <img
               src={value}
@@ -168,6 +189,7 @@ export function ImageDropZone({
           }}
         />
       </div>
+      {error && <div style={{ fontSize: 10, color: "var(--coral)", marginTop: 4 }}>{error}</div>}
     </div>
   );
 }

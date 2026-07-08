@@ -23,6 +23,10 @@ export interface ProductVariant {
   imageUrl?: string;
   images?: string[];
   imagesBySize?: Record<string, string[]>;
+  /** For a `flavor`/`scent` variant: stock specific to a sabor+tamaño combo, keyed by size variant id. Omit to share the size's own stock across all flavors. */
+  stockBySize?: Record<string, number>;
+  /** Price override for a specific sabor+tamaño combo, keyed by size variant id. Omit to use the tamaño's base price (sabores no longer add their own price extra). */
+  priceBySize?: Record<string, number>;
   isDefault?: boolean;
   /** For a `size` variant paired with a `flavor`/`scent` variant: restricts this size to the given primary variant ids. Omit to make it available for all. */
   availableFor?: string[];

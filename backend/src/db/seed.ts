@@ -8654,10 +8654,19 @@ const PRODUCTS = [
     color: 'oklch(0.91 0.04 15)',
     swatchColor: 'oklch(0.62 0.10 15)',
     label: 'Lash\nParadise',
+    // Sin fotos por tono reales (nunca se armo una carpeta por variante para este producto,
+    // a diferencia de otros mascaras/concealers del catalogo) - se reusan las 4 fotos generales
+    // del producto como relleno temporal hasta que se suban fotos reales por tono.
     variants: [
-      { id: 'blackest-black', label: 'Blackest Black', type: 'color', price: 12.99, stock: 96, color: '#0A0A0A', isDefault: true },
-      { id: 'black-brown', label: 'Black Brown', type: 'color', price: 12.99, stock: 45, color: '#2A1508' },
-      { id: 'mystic-black', label: 'Mystic Black', type: 'color', price: 12.99, stock: 32, color: '#141420' },
+      { id: 'blackest-black', label: 'Blackest Black', type: 'color', price: 12.99, stock: 96, color: '#0A0A0A', isDefault: true,
+        imageUrl: '/products/maquillaje/loreal-lash-paradise-mascara-1.jpg',
+        images: ['/products/maquillaje/loreal-lash-paradise-mascara-1.jpg', '/products/maquillaje/loreal-lash-paradise-mascara-2.jpg', '/products/maquillaje/loreal-lash-paradise-mascara-3.jpg', '/products/maquillaje/loreal-lash-paradise-mascara-4.jpg'] },
+      { id: 'black-brown', label: 'Black Brown', type: 'color', price: 12.99, stock: 45, color: '#2A1508',
+        imageUrl: '/products/maquillaje/loreal-lash-paradise-mascara-1.jpg',
+        images: ['/products/maquillaje/loreal-lash-paradise-mascara-1.jpg', '/products/maquillaje/loreal-lash-paradise-mascara-2.jpg', '/products/maquillaje/loreal-lash-paradise-mascara-3.jpg', '/products/maquillaje/loreal-lash-paradise-mascara-4.jpg'] },
+      { id: 'mystic-black', label: 'Mystic Black', type: 'color', price: 12.99, stock: 32, color: '#141420',
+        imageUrl: '/products/maquillaje/loreal-lash-paradise-mascara-1.jpg',
+        images: ['/products/maquillaje/loreal-lash-paradise-mascara-1.jpg', '/products/maquillaje/loreal-lash-paradise-mascara-2.jpg', '/products/maquillaje/loreal-lash-paradise-mascara-3.jpg', '/products/maquillaje/loreal-lash-paradise-mascara-4.jpg'] },
     ],
   },
   {
@@ -8748,11 +8757,46 @@ const CATEGORIES = [
   { id: 'Maquillaje', label: 'Maquillaje', sub: 'Toque natural', color: 'oklch(0.9 0.04 25)' },
 ];
 
+/** Products are hand-authored with an arbitrary top-level `stock` that doesn't necessarily match
+ * their variants. The storefront catalog card and the admin low-stock dashboard both read that
+ * top-level field directly (they don't look at variants), so derive it from the variants here —
+ * same convention as the admin form's `sumVariantStock` (and what `decrementStock` keeps in sync
+ * afterwards): sum the size-typed variants for a sabor×tamaño combo product, or all variants
+ * otherwise. */
+function totalStockFor(p: { stock: number; variants?: { type: string; stock: number }[] }): number {
+  const variants = p.variants;
+  if (!variants?.length) return p.stock;
+  const hasSize = variants.some((v) => v.type === 'size');
+  const hasPrimary = variants.some((v) => v.type !== 'size');
+  const pool = hasSize && hasPrimary ? variants.filter((v) => v.type === 'size') : variants;
+  return pool.reduce((sum, v) => sum + (v.stock || 0), 0);
+}
+
+/** Mirrors frontend/src/lib/needs.ts CATEGORY_TO_NEED. The hand-authored `need` per product used
+ * to be close to random (e.g. Fragancias/Maquillaje tagged "Piel seca"), which made the Landing
+ * "Por necesidad" section show unrelated products. Categories with no natural shopping-intent
+ * match (Medicamentos, Cuidado personal, Fragancias, Maquillaje) are left out on purpose. */
+const CATEGORY_TO_NEED: Record<string, string> = {
+  Vitaminas: 'Energía y vitaminas',
+  Suplementos: 'Energía y vitaminas',
+  'Salud de la piel': 'Piel seca',
+  Hidratantes: 'Piel seca',
+  'Cuidado del bebé': 'Cuidado del bebé',
+  Fitness: 'Fitness y recuperación',
+};
+
 async function seed() {
   await connectDB();
   await Product.deleteMany({});
   await Category.deleteMany({});
-  await Product.insertMany(PRODUCTS.map((p, i) => ({ ...p, sortOrder: i })));
+  await Product.insertMany(
+    PRODUCTS.map((p, i) => ({
+      ...p,
+      need: CATEGORY_TO_NEED[p.category] ?? '',
+      stock: totalStockFor(p),
+      sortOrder: i,
+    })),
+  );
   await Category.insertMany(CATEGORIES);
   console.log(`Seeded ${PRODUCTS.length} products and ${CATEGORIES.length} categories`);
   process.exit(0);

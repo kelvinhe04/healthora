@@ -4,6 +4,10 @@ type ProductVariant = {
   type: string;
   price: number;
   stock: number;
+  imageUrl?: string;
+  images?: string[];
+  imagesBySize?: Record<string, string[]>;
+  stockBySize?: Record<string, number>;
 };
 
 type ProductLike = {
@@ -25,6 +29,8 @@ export type ResolvedVariantPricing = {
   label?: string;
   /** Variant document id whose stock should be decremented; omit for product-level stock. */
   stockVariantId?: string;
+  /** Dot-path within the stockVariantId's variant subdocument to decrement; defaults to 'stock'. */
+  stockField?: string;
 };
 
 export function resolveVariantPricing(product: ProductLike, variantId?: string): ResolvedVariantPricing {
@@ -39,14 +45,23 @@ export function resolveVariantPricing(product: ProductLike, variantId?: string):
     if (!primary || !size) {
       throw new Error(`Variante invalida para ${product.name}`);
     }
-    const stock = size.stock ?? primary.stock ?? product.stock;
+    const stockOverride = primary.stockBySize?.[size.id];
+    const stock = stockOverride ?? size.stock ?? primary.stock ?? product.stock;
     const stockVariantId =
-      size.stock != null ? size.id : primary.stock != null ? primary.id : undefined;
+      stockOverride != null
+        ? primary.id
+        : size.stock != null
+          ? size.id
+          : primary.stock != null
+            ? primary.id
+            : undefined;
+    const stockField = stockOverride != null ? `stockBySize.${size.id}` : undefined;
     return {
       price: primary.price + size.price,
       stock,
       label: `${primary.label} · ${size.label}`,
       stockVariantId,
+      stockField,
     };
   }
 
@@ -61,6 +76,30 @@ export function resolveVariantPricing(product: ProductLike, variantId?: string):
     label: variant.label,
     stockVariantId: variant.stock != null ? variant.id : undefined,
   };
+}
+
+/** Resolves the correct photo for a purchased combo, falling back to the product's own primary image. */
+export function resolveVariantImage(product: ProductLike, variantId?: string): string {
+  const fallback =
+    product.images?.find((img) => img.isPrimary)?.url ||
+    product.images?.[0]?.url ||
+    product.imageUrl ||
+    '';
+
+  if (!variantId?.trim() || !product.variants?.length) return fallback;
+
+  if (variantId.includes(':')) {
+    const [primaryId, sizeId] = variantId.split(':');
+    const primary = product.variants.find((v) => v.id === primaryId);
+    const size = product.variants.find((v) => v.id === sizeId);
+    if (!primary || !size) return fallback;
+    const bySize = primary.imagesBySize?.[size.id];
+    return bySize?.[0] || primary.images?.[0] || primary.imageUrl || size.images?.[0] || size.imageUrl || fallback;
+  }
+
+  const variant = product.variants.find((v) => v.id === variantId);
+  if (!variant) return fallback;
+  return variant.images?.[0] || variant.imageUrl || fallback;
 }
 
 export function buildPaidLineItem(
@@ -95,7 +134,7 @@ export function buildPaidLineItem(
     productName: resolved.label ? `${product.name} · ${resolved.label}` : product.name,
     qty: item.qty,
     price: resolved.price,
-    imageUrl: primaryImage,
+    imageUrl: resolveVariantImage(product, item.variantId),
     category: product.category,
     isSample: false,
     variantId: item.variantId,

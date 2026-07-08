@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'bun:test';
 import type { Product, ProductVariant } from '../types';
 import {
+  getDefaultComboImage,
   getEffectivePrice,
   getEffectivePriceBefore,
   hasTwoDimensions,
   pickDefaultCombo,
   pickDefaultPrimary,
   pickDefaultSize,
+  resolveVariantById,
   sizesFor,
 } from './productVariants';
 
@@ -76,11 +78,81 @@ describe('productVariants', () => {
     expect(getEffectivePriceBefore(testProduct)).toBe(28);
   });
 
+  it('usa el precio override de la combinacion en vez de sumar sabor + tamano', () => {
+    const chocolateWithOverride = variant({
+      id: 'chocolate',
+      label: 'Chocolate',
+      type: 'flavor',
+      price: 24,
+      isDefault: true,
+      priceBySize: { large: 27.5 },
+    });
+    const testProduct = product({
+      price: 20,
+      variants: [chocolateWithOverride, small, large],
+    });
+
+    expect(getEffectivePrice(testProduct)).toBe(27.5);
+  });
+
   it('usa precio base cuando no hay variantes', () => {
     const testProduct = product({ price: 19, priceBefore: 25 });
 
     expect(pickDefaultCombo(testProduct)).toEqual({ variant: null, size: null });
     expect(getEffectivePrice(testProduct)).toBe(19);
     expect(getEffectivePriceBefore(testProduct)).toBe(25);
+  });
+
+  it('usa la foto especifica del combo default (sabor+tamano), no solo la del sabor', () => {
+    const chocolateWithCombo = variant({
+      id: 'chocolate',
+      label: 'Chocolate',
+      type: 'flavor',
+      price: 24,
+      isDefault: true,
+      images: ['/chocolate-general.jpg'],
+      imagesBySize: { large: ['/chocolate-large-combo.jpg'] },
+    });
+    const testProduct = product({
+      variants: [chocolateWithCombo, small, large],
+    });
+
+    expect(getDefaultComboImage(testProduct)).toBe('/chocolate-large-combo.jpg');
+  });
+
+  it('cambia la foto de portada al marcar otro combo como default', () => {
+    const chocolate = variant({
+      id: 'chocolate',
+      label: 'Chocolate',
+      type: 'flavor',
+      price: 24,
+      isDefault: true,
+      images: ['/chocolate-general.jpg'],
+      imagesBySize: { small: ['/chocolate-small-combo.jpg'], big: ['/chocolate-big-combo.jpg'] },
+    });
+    const smallSize = variant({ id: 'small', label: 'Small', type: 'size', price: 0, isDefault: true });
+    const bigSize = variant({ id: 'big', label: 'Big', type: 'size', price: 5 });
+
+    const defaultsToSmall = product({ variants: [chocolate, smallSize, bigSize] });
+    expect(getDefaultComboImage(defaultsToSmall)).toBe('/chocolate-small-combo.jpg');
+
+    // admin flips which size is marked default in the "Combinaciones" table
+    const defaultsToBig = product({
+      variants: [chocolate, { ...smallSize, isDefault: false }, { ...bigSize, isDefault: true }],
+    });
+    expect(getDefaultComboImage(defaultsToBig)).toBe('/chocolate-big-combo.jpg');
+  });
+
+  it('resuelve el precio de un combo por id usando el override si existe, si no sabor + tamano', () => {
+    const chocolateWithOverride = variant({
+      id: 'chocolate',
+      label: 'Chocolate',
+      type: 'flavor',
+      price: 24,
+      priceBySize: { large: 27.5 },
+    });
+
+    expect(resolveVariantById([chocolateWithOverride, large], 'chocolate:large')?.price).toBe(27.5);
+    expect(resolveVariantById([chocolateWithOverride, small], 'chocolate:small')?.price).toBe(24);
   });
 });

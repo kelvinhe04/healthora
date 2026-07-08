@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Product } from '../../types';
 import { imageSizesForSize, imageWidthForSize, optimizeImageUrl, responsiveImageSrcSet, type ImageSizeKey } from '../../lib/cloudinary';
+import { getDefaultComboImage } from '../../lib/productVariants';
 
 type SizeKey = 'xs' | 'sm' | 'md' | 'lg' | 'tile';
 
@@ -28,8 +29,7 @@ function tintOf(color: string, amount: number) {
 
 export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt, priority = false }: ProductImageProps) {
   const s = sizes[size];
-  const defaultVariant = product.variants?.find((v) => v.isDefault) ?? product.variants?.[0];
-  const rawSrc = imageUrl || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || defaultVariant?.images?.[0] || defaultVariant?.imageUrl;
+  const rawSrc = imageUrl || product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || getDefaultComboImage(product);
   const imageSize = size as ImageSizeKey;
   const optimizedSrc = rawSrc ? optimizeImageUrl(rawSrc, imageWidthForSize(imageSize)) : '';
   const srcSet = rawSrc ? responsiveImageSrcSet(rawSrc, imageSize) : undefined;
@@ -38,9 +38,8 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
   const imgSrc = failedOptimizedSrc === optimizedSrc ? rawSrc : optimizedSrc;
 
   if (rawSrc) {
-    const isCatalogTile = flat && size === 'tile';
-    const imagePadding = isCatalogTile ? 0 : size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
-    const objectFit = isCatalogTile ? 'cover' : 'contain';
+    const imagePadding = size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
+    const objectFit = 'contain';
     return (
       <div style={{ width: s.w, height: s.h, background: 'white', borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box' }}>
         <img
