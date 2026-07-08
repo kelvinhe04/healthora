@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Product } from '../../db/models/Product';
 import { productIdSchema, textField } from '../../lib/validation';
+import { saveImageFile } from '../../lib/imageStorage';
 import { errorResult, jsonResult } from '../toolHelpers';
 import { mcpVariantShape } from '../shapes';
 
@@ -66,6 +67,55 @@ export function registerVariantTools(server: McpServer) {
 
       await product.save();
       return jsonResult({ productId, variantId, stock });
+    },
+  );
+
+  server.registerTool(
+    'variants.uploadVariantImage',
+    {
+      title: 'Subir imagen de una variante',
+      description:
+        'Sube una imagen (JPEG/PNG/WEBP, maximo 5MB) codificada en base64 y la asigna a una variante existente del producto. Requiere rol Admin.',
+      inputSchema: {
+        productId: productIdSchema,
+        variantId: textField(200),
+        imageBase64: z.string().min(1).max(10_000_000),
+        mimeType: z.enum(['image/jpeg', 'image/png', 'image/webp']),
+        setAsPrimary: z.coerce.boolean().default(true),
+      },
+    },
+    async ({ productId, variantId, imageBase64, mimeType, setAsPrimary }) => {
+      const product = await Product.findOne({ id: productId });
+      if (!product) return errorResult(`Producto "${productId}" no encontrado.`);
+
+      const variant = product.variants?.find((v) => v.id === variantId);
+      if (!variant) return errorResult(`Variante "${variantId}" no encontrada en "${productId}".`);
+
+      let buffer: Buffer;
+      try {
+        buffer = Buffer.from(imageBase64, 'base64');
+      } catch {
+        return errorResult('imageBase64 invalido.');
+      }
+      if (buffer.length === 0) return errorResult('imageBase64 invalido.');
+
+      let url: string;
+      try {
+        url = await saveImageFile(buffer, mimeType, productId);
+      } catch (err) {
+        return errorResult(err instanceof Error ? err.message : 'Error al subir imagen.');
+      }
+
+      const existingImages = variant.images ?? [];
+      variant.images = setAsPrimary
+        ? [url, ...existingImages.filter((img) => img !== url)].slice(0, 20)
+        : [...existingImages, url].slice(0, 20);
+      if (setAsPrimary || !variant.imageUrl) variant.imageUrl = url;
+
+      product.markModified('variants');
+      await product.save();
+
+      return jsonResult({ productId, variantId, url });
     },
   );
 }
