@@ -10,10 +10,12 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const to = process.argv[2] || process.env.SMTP_USER;
+
 transporter.sendMail(
   {
-    from: process.env.SMTP_FROM || 'Healthora <noreply@healthora.com>',
-    to: process.env.SMTP_USER,
+    from: process.env.SMTP_FROM || `Healthora <${process.env.SMTP_USER}>`,
+    to,
     subject: 'Test Healthora Email',
     html: '<h1>Test email</h1><p>Si recibes esto, el SMTP funciona.</p>',
   },

@@ -124,6 +124,15 @@ function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
 }
 
+/** From-address for outgoing mail. Must default to the *authenticated* SMTP account
+ * (`SMTP_USER`), not an unrelated domain - a mismatch between the authenticated sender and the
+ * `From` header is a classic spam signal (looks like spoofing) unless that domain has SPF/DKIM
+ * authorizing this SMTP account to send on its behalf, which a plain Gmail account doesn't have
+ * for an arbitrary custom domain (see issue #171). */
+function getSmtpFrom(): string {
+  return process.env.SMTP_FROM || `Healthora <${process.env.SMTP_USER}>`;
+}
+
 function getFrontendUrl(): string {
   return trimTrailingSlash(process.env.FRONTEND_URL || 'http://localhost:5173');
 }
@@ -519,7 +528,7 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
 
   try {
     const info = await transporter.sendMail({
-      from: process.env.SMTP_FROM || 'Healthora <noreply@healthora.com>',
+      from: getSmtpFrom(),
       to: customerEmail,
       subject: `Tu pedido #${orderId.slice(-8).toUpperCase()} ha sido confirmado - Healthora`,
       html,
@@ -681,7 +690,7 @@ export async function sendOrderStatusUpdateEmail(data: OrderStatusEmailData): Pr
 
   try {
     const info = await transporter.sendMail({
-      from: process.env.SMTP_FROM || 'Healthora <noreply@healthora.com>',
+      from: getSmtpFrom(),
       to: customerEmail,
       subject: `${copy.label}: pedido #${orderId.slice(-8).toUpperCase()} - Healthora`,
       html,
@@ -759,7 +768,7 @@ export async function sendNewsletterSubscriptionEmail(data: NewsletterEmailData)
   `;
 
   const info = await transporter.sendMail({
-    from: process.env.SMTP_FROM || 'Healthora <noreply@healthora.com>',
+    from: getSmtpFrom(),
     to: data.email,
     subject: 'Bienvenido al newsletter de Healthora',
     html,
