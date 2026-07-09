@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 
 type SetSearchParams = (
@@ -13,7 +14,11 @@ type SetSearchParams = (
 export function useSearchParamsCompat(): [URLSearchParams, SetSearchParams] {
   const location = useLocation();
   const navigate = useNavigate();
-  const searchParams = new URLSearchParams(location.searchStr ?? '');
+  // Memoized on the query string itself, not just re-created every render: consumers that sync
+  // local state off this value in a `useEffect([searchParams])` (e.g. the header search box) would
+  // otherwise see a "new" object on every unrelated re-render and re-run that effect, clobbering
+  // whatever the user just typed before the URL itself ever changed.
+  const searchParams = useMemo(() => new URLSearchParams(location.searchStr ?? ''), [location.searchStr]);
 
   const setSearchParams: SetSearchParams = (updater, opts) => {
     const prev = new URLSearchParams(location.searchStr ?? '');
