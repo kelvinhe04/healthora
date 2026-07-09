@@ -13,6 +13,7 @@ import { useMemo, useState, useEffect, memo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { useThemeStore } from "../../store/themeStore";
 import { Icon } from "../shared/Icon";
+import { formatPanamaDayMonth } from "../../lib/dates";
 
 let _adminSessionId = "";
 const _shownSkeletons = new Set<string>();
@@ -229,7 +230,7 @@ function formatDayLabel(date: string) {
   if (!date) return "";
   const d = new Date(date);
   if (isNaN(d.getTime())) return date;
-  return d.toLocaleDateString("es-MX", { day: "2-digit", month: "2-digit" });
+  return formatPanamaDayMonth(d);
 }
 
 function formatMoney(value: number) {
@@ -339,10 +340,7 @@ const BarChartInner = ({
               if (!date) return "";
               const d = new Date(date);
               if (isNaN(d.getTime())) return date;
-              return d.toLocaleDateString("es-MX", {
-                day: "2-digit",
-                month: "2-digit",
-              });
+              return formatPanamaDayMonth(d);
             }}
           />
           <YAxis
@@ -931,6 +929,87 @@ export const iconBtnAd: CSSProperties = {
   justifyContent: "center",
   color: "var(--ink-60)",
 };
+
+// Generic click-to-sort table header + "clear sort" chip, shared by every admin table
+// (Productos, Pedidos, Clientes) so they all sort the same way: click cycles asc -> desc ->
+// unsorted, and the chip gives an explicit way back to unsorted too.
+export type SortDir = "asc" | "desc";
+export type ColumnSort<K extends string> = { key: K | null; dir: SortDir };
+
+export function SortableTh<K extends string>({
+  label,
+  sortKey,
+  activeSort,
+  onSort,
+}: {
+  label: string;
+  sortKey: K;
+  activeSort: ColumnSort<K>;
+  onSort: (key: K) => void;
+}) {
+  const active = activeSort.key === sortKey;
+  return (
+    <th style={{ ...th, whiteSpace: "nowrap" }}>
+      <button
+        onClick={() => onSort(sortKey)}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+          border: "none",
+          background: "transparent",
+          padding: 0,
+          cursor: "pointer",
+          font: "inherit",
+          color: active ? "var(--ink)" : "var(--ink-60)",
+          letterSpacing: "inherit",
+          textTransform: "inherit",
+          whiteSpace: "nowrap",
+        }}
+        title={`Ordenar por ${label.toLowerCase()}`}
+      >
+        {label}
+        <span style={{ fontSize: 9, opacity: active ? 1 : 0.35 }}>
+          {active ? (activeSort.dir === "asc" ? "▲" : "▼") : "▲▼"}
+        </span>
+      </button>
+    </th>
+  );
+}
+
+export function SortClearChip<K extends string>({
+  sort,
+  labels,
+  onClear,
+}: {
+  sort: ColumnSort<K>;
+  labels: Record<K, string>;
+  onClear: () => void;
+}) {
+  if (!sort.key) return null;
+  return (
+    <button
+      onClick={onClear}
+      title="Quitar orden"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "5px 10px",
+        borderRadius: 999,
+        border: "1px solid var(--ink-20)",
+        background: "transparent",
+        color: "var(--ink-60)",
+        fontSize: 11,
+        fontFamily: '"JetBrains Mono", monospace',
+        cursor: "pointer",
+      }}
+    >
+      Orden: {labels[sort.key]} {sort.dir === "asc" ? "▲" : "▼"}
+      <Icon name="x" size={11} />
+    </button>
+  );
+}
 
 // Donut
 export function Donut({

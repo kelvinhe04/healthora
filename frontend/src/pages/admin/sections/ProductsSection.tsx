@@ -8,6 +8,8 @@ import {
   th,
   trStyle,
   iconBtnAd,
+  SortableTh,
+  SortClearChip,
 } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { Icon } from '../../../components/shared/Icon';
@@ -25,6 +27,7 @@ const PRODUCT_SORT_LABEL: Record<ProductSortKey, string> = {
   price: 'Precio',
   stock: 'Stock',
   rating: 'Reseña',
+  active: 'Estado',
 };
 
 function ProductRatingCell({ summary }: { summary?: { avgRating: number; count: number } }) {
@@ -45,47 +48,6 @@ function ProductRatingCell({ summary }: { summary?: { avgRating: number; count: 
   );
 }
 
-function SortableTh({
-  label,
-  sortKey,
-  activeSort,
-  onSort,
-}: {
-  label: string;
-  sortKey: ProductSortKey;
-  activeSort: { key: ProductSortKey | null; dir: 'asc' | 'desc' };
-  onSort: (key: ProductSortKey) => void;
-}) {
-  const active = activeSort.key === sortKey;
-  return (
-    <th style={{ ...th, whiteSpace: 'nowrap' }}>
-      <button
-        onClick={() => onSort(sortKey)}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 4,
-          border: 'none',
-          background: 'transparent',
-          padding: 0,
-          cursor: 'pointer',
-          font: 'inherit',
-          color: active ? 'var(--ink)' : 'var(--ink-60)',
-          letterSpacing: 'inherit',
-          textTransform: 'inherit',
-          whiteSpace: 'nowrap',
-        }}
-        title={`Ordenar por ${label.toLowerCase()}`}
-      >
-        {label}
-        <span style={{ fontSize: 9, opacity: active ? 1 : 0.35 }}>
-          {active ? (activeSort.dir === 'asc' ? '▲' : '▼') : '▲▼'}
-        </span>
-      </button>
-    </th>
-  );
-}
-
 export function ProductsSection() {
   const {
   showProductsSkeleton,
@@ -96,6 +58,9 @@ export function ProductsSection() {
   categoryCounts,
   productSearch,
   setProductSearch,
+  productStatusFilter,
+  setProductStatusFilter,
+  statusCounts,
   productSort,
   toggleProductSort,
   clearProductSort,
@@ -282,6 +247,60 @@ export function ProductsSection() {
               </div>
             )}
 
+            {!showProductsSkeleton && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: 6,
+                  marginBottom: 20,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                {(["Todos", "Activo", "Inactivo"] as const).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setProductStatusFilter(status)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "6px 12px",
+                      borderRadius: 999,
+                      fontSize: 11,
+                      cursor: "pointer",
+                      border:
+                        "1px solid " +
+                        (productStatusFilter === status
+                          ? "var(--ink)"
+                          : "var(--ink-20)"),
+                      background:
+                        productStatusFilter === status
+                          ? "var(--ink)"
+                          : "transparent",
+                      color:
+                        productStatusFilter === status
+                          ? "var(--cream)"
+                          : "var(--ink-60)",
+                      fontFamily: '"Geist", sans-serif',
+                      transition: "all 120ms",
+                    }}
+                  >
+                    <span>{status}</span>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontFamily: '"JetBrains Mono", monospace',
+                        opacity: productStatusFilter === status ? 0.8 : 0.6,
+                      }}
+                    >
+                      {statusCounts[status] ?? 0}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+
             {showProductsSkeleton ? (
               <div
                 style={{
@@ -321,28 +340,7 @@ export function ProductsSection() {
                       ? `${selectedDisplayedIds.length} seleccionados en esta vista`
                       : "Selecciona varios productos para borrado masivo."}
                   </div>
-                  {productSort.key && (
-                    <button
-                      onClick={clearProductSort}
-                      title="Quitar orden"
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        padding: "5px 10px",
-                        borderRadius: 999,
-                        border: "1px solid var(--ink-20)",
-                        background: "transparent",
-                        color: "var(--ink-60)",
-                        fontSize: 11,
-                        fontFamily: '"JetBrains Mono", monospace',
-                        cursor: "pointer",
-                      }}
-                    >
-                      Orden: {PRODUCT_SORT_LABEL[productSort.key]} {productSort.dir === "asc" ? "▲" : "▼"}
-                      <Icon name="x" size={11} />
-                    </button>
-                  )}
+                  <SortClearChip sort={productSort} labels={PRODUCT_SORT_LABEL} onClear={clearProductSort} />
                 </div>
                 <div
                   style={{
@@ -532,7 +530,7 @@ export function ProductsSection() {
                     <SortableTh label="Precio" sortKey="price" activeSort={productSort} onSort={toggleProductSort} />
                     <SortableTh label="Stock" sortKey="stock" activeSort={productSort} onSort={toggleProductSort} />
                     <SortableTh label="Reseña" sortKey="rating" activeSort={productSort} onSort={toggleProductSort} />
-                    <th style={th}>Estado</th>
+                    <SortableTh label="Estado" sortKey="active" activeSort={productSort} onSort={toggleProductSort} />
                     <th style={th}></th>
                   </tr>
                 </thead>

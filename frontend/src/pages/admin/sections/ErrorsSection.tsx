@@ -10,6 +10,7 @@ import {
   trStyle,
 } from '../../../components/admin';
 import { useAdminPanelContext } from '../AdminPanelContext';
+import { formatPanamaDateTime } from '../../../lib/dates';
 
 export function ErrorsSection() {
   const {
@@ -144,7 +145,7 @@ export function ErrorsSection() {
                   </td>
                   <td style={td}>{item.userEmail || item.userId || '—'}</td>
                   <td style={{ ...td, fontFamily: '"JetBrains Mono", monospace', fontSize: 12 }}>
-                    {new Date(item.createdAt).toLocaleString()}
+                    {formatPanamaDateTime(item.createdAt)}
                   </td>
                 </tr>
               ))}

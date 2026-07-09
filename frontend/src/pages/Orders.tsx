@@ -11,6 +11,7 @@ import { useOnceLoading, Skeleton } from '../components/admin';
 import { useCartStore } from '../store/cartStore';
 import { useUiStore } from '../store/uiStore';
 import { resolveVariantById } from '../lib/productVariants';
+import { formatPanamaFull, formatPanamaMedium } from '../lib/dates';
 
 interface OrdersProps {
   onBack: () => void;
@@ -37,20 +38,8 @@ const STEPS = [
   { key: 'delivered',   label: 'Entregada' },
 ];
 
-function formatFull(iso: string) {
-  return new Intl.DateTimeFormat('es-PA', {
-    timeZone: 'America/Panama',
-    day: 'numeric', month: 'long', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  }).format(new Date(iso));
-}
-
-function formatShort(iso: string) {
-  return new Intl.DateTimeFormat('es-PA', {
-    timeZone: 'America/Panama',
-    day: 'numeric', month: 'short', year: 'numeric',
-  }).format(new Date(iso));
-}
+const formatFull = formatPanamaFull;
+const formatShort = formatPanamaMedium;
 
 function FulfillmentTimeline({ status }: { status: string }) {
   if (status === 'cancelled') {

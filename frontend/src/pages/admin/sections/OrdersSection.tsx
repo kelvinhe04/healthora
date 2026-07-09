@@ -7,6 +7,8 @@ import {
   td,
   th,
   trStyle,
+  SortableTh,
+  SortClearChip,
 } from '../../../components/admin';
 import type { FulfillmentStatus } from '../../../types';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
@@ -14,6 +16,13 @@ import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { PaginationControls } from '../components/PaginationControls';
 import { useAdminPanelContext } from '../AdminPanelContext';
+import type { OrderSortKey } from '../hooks/useAdminPanel';
+import { formatPanamaShortDate, formatPanamaTime } from '../../../lib/dates';
+
+const ORDER_SORT_LABEL: Record<OrderSortKey, string> = {
+  total: 'Total',
+  date: 'Fecha',
+};
 
 export function OrdersSection() {
   const {
@@ -23,8 +32,12 @@ export function OrdersSection() {
   setOrderSearch,
   orderFulfillmentFilter,
   setOrderFulfillmentFilter,
+  orderFulfillmentCounts,
   fulfillmentStatusOptions,
   fulfillmentStatusLabels,
+  orderSort,
+  toggleOrderSort,
+  clearOrderSort,
   displayedOrders,
   paginatedOrders,
   setOrdersPage,
@@ -133,6 +146,9 @@ export function OrdersSection() {
                       key={status}
                       onClick={() => setOrderFulfillmentFilter(status)}
                       style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
                         padding: "7px 14px",
                         borderRadius: 999,
                         fontSize: 12,
@@ -153,7 +169,16 @@ export function OrdersSection() {
                         fontFamily: '"Geist", sans-serif',
                       }}
                     >
-                      {fulfillmentStatusLabels[status]}
+                      <span>{fulfillmentStatusLabels[status]}</span>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontFamily: '"JetBrains Mono", monospace',
+                          opacity: orderFulfillmentFilter === status ? 0.8 : 0.6,
+                        }}
+                      >
+                        {orderFulfillmentCounts[status] ?? 0}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -314,14 +339,24 @@ export function OrdersSection() {
               >
                 <div
                   style={{
-                    fontSize: 12,
-                    fontFamily: '"Geist", sans-serif',
-                    color: "var(--ink-60)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    flexWrap: "wrap",
                   }}
                 >
-                  {orderSearch
-                    ? `${displayedOrders.length} resultado${displayedOrders.length !== 1 ? "s" : ""} de ${orders?.length || 0}`
-                    : `${displayedOrders.length} pedido${displayedOrders.length !== 1 ? "s" : ""}`}
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontFamily: '"Geist", sans-serif',
+                      color: "var(--ink-60)",
+                    }}
+                  >
+                    {orderSearch
+                      ? `${displayedOrders.length} resultado${displayedOrders.length !== 1 ? "s" : ""} de ${orders?.length || 0}`
+                      : `${displayedOrders.length} pedido${displayedOrders.length !== 1 ? "s" : ""}`}
+                  </div>
+                  <SortClearChip sort={orderSort} labels={ORDER_SORT_LABEL} onClear={clearOrderSort} />
                 </div>
               </div>
               <div style={{ overflowX: 'auto', width: '100%' }}>
@@ -331,10 +366,10 @@ export function OrdersSection() {
                     <th style={th}>Orden</th>
                     <th style={th}>Cliente / Envío</th>
                     <th style={th}>Productos</th>
-                    <th style={th}>Total</th>
+                    <SortableTh label="Total" sortKey="total" activeSort={orderSort} onSort={toggleOrderSort} />
                     <th style={th}>Pago</th>
                     <th style={th}>Estado</th>
-                    <th style={th}>Fecha y hora</th>
+                    <SortableTh label="Fecha y hora" sortKey="date" activeSort={orderSort} onSort={toggleOrderSort} />
                   </tr>
                 </thead>
                 <tbody>
@@ -533,20 +568,14 @@ export function OrdersSection() {
                         {order.createdAt ? (
                           <>
                             <div>
-                              {new Date(order.createdAt).toLocaleDateString()}
+                              {formatPanamaShortDate(order.createdAt)}
                             </div>
                             <div
                               style={{
                                 marginTop: 4,
                               }}
                             >
-                              {new Date(order.createdAt).toLocaleTimeString(
-                                [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
-                              )}
+                              {formatPanamaTime(order.createdAt)}
                             </div>
                           </>
                         ) : (

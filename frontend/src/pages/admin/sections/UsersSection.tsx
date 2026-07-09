@@ -6,15 +6,31 @@ import {
   td,
   th,
   trStyle,
+  SortableTh,
+  SortClearChip,
 } from '../../../components/admin';
+import { Icon } from '../../../components/shared/Icon';
 import { PaginationControls } from '../components/PaginationControls';
 import { useAdminPanelContext } from '../AdminPanelContext';
+import type { UserSortKey } from '../hooks/useAdminPanel';
+import { formatPanamaShortDate } from '../../../lib/dates';
+
+const USER_SORT_LABEL: Record<UserSortKey, string> = {
+  orders: 'Órdenes',
+  spend: 'Gasto total',
+  registered: 'Registro',
+};
 
 export function UsersSection() {
   const {
   showUsersSkeleton,
   customers,
-  users,
+  userSearch,
+  setUserSearch,
+  userSort,
+  toggleUserSort,
+  clearUserSort,
+  displayedUsers,
   paginatedUsers,
   setUsersPage,
   } = useAdminPanelContext();
@@ -36,6 +52,78 @@ export function UsersSection() {
               }
               sub="Listado de clientes finales del e-commerce."
             />
+            {!showUsersSkeleton && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  marginBottom: 20,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    background: "var(--cream)",
+                    borderRadius: 999,
+                    padding: "9px 16px",
+                    border: "1px solid var(--ink-06)",
+                    flexShrink: 0,
+                    width: 296,
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <Icon name="search" size={14} stroke="var(--ink-40)" />
+                  <input
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    placeholder="Buscar por nombre o email…"
+                    style={{
+                      border: "none",
+                      outline: "none",
+                      background: "transparent",
+                      fontSize: 13,
+                      fontFamily: '"Geist", sans-serif',
+                      width: "100%",
+                      color: "var(--ink)",
+                    }}
+                  />
+                  {userSearch && (
+                    <button
+                      onClick={() => setUserSearch("")}
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        cursor: "pointer",
+                        padding: "2px 4px",
+                        display: "flex",
+                        alignItems: "center",
+                        color: "var(--ink-40)",
+                        borderRadius: 4,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon name="x" size={13} />
+                    </button>
+                  )}
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontFamily: '"Geist", sans-serif',
+                    color: "var(--ink-60)",
+                  }}
+                >
+                  {userSearch
+                    ? `${displayedUsers.length} resultado${displayedUsers.length !== 1 ? "s" : ""} de ${customers.length}`
+                    : `${displayedUsers.length} cliente${displayedUsers.length !== 1 ? "s" : ""}`}
+                </div>
+                <SortClearChip sort={userSort} labels={USER_SORT_LABEL} onClear={clearUserSort} />
+              </div>
+            )}
             <Card
               pad={0}
               loading={showUsersSkeleton}
@@ -131,9 +219,9 @@ export function UsersSection() {
                   <tr>
                     <th style={th}>Usuario</th>
                     <th style={th}>Rol</th>
-                    <th style={th}>Órdenes</th>
-                    <th style={th}>Gasto total</th>
-                    <th style={th}>Registro</th>
+                    <SortableTh label="Órdenes" sortKey="orders" activeSort={userSort} onSort={toggleUserSort} />
+                    <SortableTh label="Gasto total" sortKey="spend" activeSort={userSort} onSort={toggleUserSort} />
+                    <SortableTh label="Registro" sortKey="registered" activeSort={userSort} onSort={toggleUserSort} />
                   </tr>
                 </thead>
                 <tbody>
@@ -241,7 +329,7 @@ export function UsersSection() {
                         }}
                       >
                         {user.createdAt
-                          ? new Date(user.createdAt).toLocaleDateString()
+                          ? formatPanamaShortDate(user.createdAt)
                           : "—"}
                       </td>
                     </tr>
@@ -252,7 +340,7 @@ export function UsersSection() {
               <PaginationControls
                 page={paginatedUsers.page}
                 totalPages={paginatedUsers.totalPages}
-                totalItems={users.length}
+                totalItems={displayedUsers.length}
                 start={paginatedUsers.start}
                 end={paginatedUsers.end}
                 onPageChange={setUsersPage}
