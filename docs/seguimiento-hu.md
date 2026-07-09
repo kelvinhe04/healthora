@@ -55,6 +55,7 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
 | HU-080 | Optimización de imágenes (Cloudinary, lazy load) | `HU-080-optimizacion-imagenes-cloudinary-lazy-load` / PR #124 | Roy | `srcset`/`sizes` responsive con Cloudinary `f_auto,q_auto`, lazy por defecto y prioridad selectiva para LCP. Issue #84 cerrada; pendiente merge del PR a `main`. |
+| HU-056 | Moderación de reseñas en el admin | `feat/hu-056-moderacion-resenas` / PR #190 | Kelvin | Closes #60. `Review.status` (pending/published/hidden, default published). Nueva sección "Reseñas" en el admin: filtrar por estado, aprobar/ocultar/eliminar. Público (`GET /reviews`, `/reviews/stats`, `/reviews/summary`) y `recomputeProductRating` filtran `status != hidden` (no `== published`, para no ocultar de golpe reseñas ya existentes sin el campo). |
 
 ## Pendientes — nueva funcionalidad (sin iniciar)
 
