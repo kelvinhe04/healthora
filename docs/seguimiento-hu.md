@@ -60,7 +60,7 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 
 | HU | Título | Notas |
 |---|---|---|
-| HU-100 | Opciones de velocidad de entrega en el checkout | Issue #185. Complementa a HU-051 (cálculo real de envío por carrier/región, también pendiente): esa calcula el costo según destino/carrier, esta agrega la dimensión de velocidad (ej. Estándar 24-48h vs Express) para que el cliente elija. Documentada en `Healthora-Historias-de-Usuario.docx` (Sección II, junto a HU-051). Prioridad Media, módulo Ecommerce. Sin rama/PR — solo especificada, no implementada. |
+| HU-100 | Opciones de velocidad de entrega en el checkout | Issue #185. Complementa a HU-038 (Cálculo de envío por zona en Panamá, también pendiente): esa calcula el costo según zona (capital/interior), esta agrega la dimensión de velocidad (ej. Estándar 24-48h vs Express) para que el cliente elija. Documentada en `Healthora-Historias-de-Usuario.docx` (Sección II, junto a HU-038 — insertada directamente en el .docx existente, no regenerada desde el script local, que estaba desactualizado respecto al documento real). Prioridad Media, módulo Ecommerce. Sin rama/PR — solo especificada, no implementada. |
 
 ## Pendientes — asignadas a Roy (infra, sin tocar código de producto/variantes)
 
