@@ -199,7 +199,7 @@ export function Catalog({
     if (inStock) list = list.filter((p) => p.stock > 0);
     if (sort === "priceAsc") list.sort((a, b) => a.price - b.price);
     if (sort === "priceDesc") list.sort((a, b) => b.price - a.price);
-    if (sort === "rating") list.sort((a, b) => b.rating - a.rating);
+    if (sort === "rating") list.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
     return list;
   }, [
     catalogProducts,
