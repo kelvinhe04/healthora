@@ -496,6 +496,14 @@ export function KpiCard({
   animKey,
 }: KpiCardProps) {
   const isDark = mode === "dark";
+  const rawNum =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? parseFloat(value.replace(/[^0-9.-]/g, ""))
+        : 0;
+  // El hook debe llamarse incondicionalmente, antes de cualquier return temprano (rules-of-hooks).
+  const animated = useCounter(rawNum, 1500, animKey);
   if (loading) {
     return (
       <div
@@ -521,12 +529,6 @@ export function KpiCard({
       </div>
     );
   }
-  const rawNum =
-    typeof value === "number"
-      ? value
-      : typeof value === "string"
-        ? parseFloat(value.replace(/[^0-9.-]/g, ""))
-        : 0;
   if (isNaN(rawNum)) {
     return (
       <div
@@ -621,7 +623,6 @@ export function KpiCard({
       </div>
     );
   }
-  const animated = useCounter(rawNum, 1500, animKey);
   const displayValue = formatValue(value, animated);
   return (
     <div

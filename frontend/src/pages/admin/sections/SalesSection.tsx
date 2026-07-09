@@ -2,7 +2,6 @@ import {
   BarChart,
   Card,
   KpiCard,
-  LineChart,
   PageHeader,
   Skeleton,
   StatusPill,
@@ -17,8 +16,6 @@ export function SalesSection() {
   const {
   showSalesSkeleton,
   sales,
-  isMobile,
-  isTablet,
   isSmall,
   } = useAdminPanelContext();
 

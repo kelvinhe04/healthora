@@ -3,7 +3,6 @@ import type { CSSProperties } from 'react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import type { Product, ProductVariant } from '../types';
 import { ProductImage } from '../components/shared/ProductImage';
-import { ProductCard } from '../components/shared/ProductCard';
 import { Stars } from '../components/shared/Stars';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
@@ -162,7 +161,6 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   useEffect(() => {
     setSelectedVariant((prev) => (prev ? product.variants?.find((v) => v.id === prev.id) ?? prev : prev));
     setSelectedSize((prev) => (prev ? product.variants?.find((v) => v.id === prev.id) ?? prev : prev));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.variants]);
 
   const priceOverride = hasTwoDimensions && selectedSize ? selectedVariant?.priceBySize?.[selectedSize.id] : undefined;
