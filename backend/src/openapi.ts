@@ -207,12 +207,14 @@ export const openApiDocument = {
             "application/json": {
               schema: {
                 type: "object",
-                required: ["items", "address"],
+                required: ["items", "address", "shippingZone"],
                 properties: {
                   items: { type: "array", items: { $ref: "#/components/schemas/CartItemInput" } },
                   address: { $ref: "#/components/schemas/OrderAddress" },
                   promoCode: { type: "string" },
                   freeSampleId: { type: "string" },
+                  shippingZone: { type: "string", enum: ["capital", "interior", "pickup"] },
+                  shippingSpeed: { type: "string", enum: ["standard", "express"], default: "standard" },
                 },
               },
             },

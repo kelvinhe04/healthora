@@ -251,7 +251,7 @@ function OrderDetail({
           {([
             { label: 'Subtotal de productos', value: order.subtotal },
             ...(order.discountAmount && order.discountAmount > 0 ? [{ label: `Descuento ${order.discountCode || ''}`.trim(), value: -order.discountAmount }] : []),
-            { label: 'Envío',                 value: order.shipping },
+            { label: order.shippingLabel ? `Envío (${order.shippingLabel})` : 'Envío', value: order.shipping },
             { label: 'Impuesto (IVA)',         value: order.tax },
           ] as const).map(row => (
             <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

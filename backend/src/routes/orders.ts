@@ -17,6 +17,8 @@ import {
   parseJson,
   parseParams,
   parseQuery,
+  shippingSpeedSchema,
+  shippingZoneSchema,
   textField,
 } from '../lib/validation';
 import { buildPaidLineItem, resolveVariantImage } from '../lib/productVariants';
@@ -46,6 +48,10 @@ const paidSessionMetadataSchema = z.object({
   discountAmount: moneyFromInput().default(0),
   tax: moneyFromInput().default(0),
   shipping: moneyFromInput().default(0),
+  shippingZone: shippingZoneSchema.optional(),
+  shippingSpeed: shippingSpeedSchema.optional(),
+  shippingLabel: optionalTextField(160),
+  shippingEta: optionalTextField(80),
 });
 
 function parseSessionJsonMetadata<T>(value: string, schema: z.ZodType<T>) {
@@ -139,6 +145,10 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
     discountAmount,
     tax,
     shipping,
+    shippingZone: metadata.shippingZone,
+    shippingSpeed: metadata.shippingSpeed,
+    shippingLabel: metadata.shippingLabel,
+    shippingEta: metadata.shippingEta,
     total,
     paymentStatus: 'paid',
     fulfillmentStatus: 'unfulfilled',

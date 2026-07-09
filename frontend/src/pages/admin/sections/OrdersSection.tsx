@@ -410,6 +410,19 @@ export function OrdersSection() {
                             {order.address.postal}
                           </div>
                         )}
+                        {order.shippingLabel && (
+                          <div
+                            style={{
+                              marginTop: 6,
+                              fontSize: 11,
+                              fontFamily: '"JetBrains Mono", monospace',
+                              color: "var(--green)",
+                            }}
+                          >
+                            {order.shippingLabel}
+                            {order.shippingEta ? ` · ${order.shippingEta}` : ""}
+                          </div>
+                        )}
                       </td>
                       <td style={td}>
                         <div

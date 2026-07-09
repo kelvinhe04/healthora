@@ -69,6 +69,9 @@ export const cartItemSchema = z.object({
   variantId: optionalTextField(180),
 });
 
+export const shippingZoneSchema = z.enum(['capital', 'interior', 'pickup']);
+export const shippingSpeedSchema = z.enum(['standard', 'express']);
+
 function formatZodError(error: ZodError) {
   return error.issues.map((issue) => ({
     field: issue.path.length ? issue.path.join('.') : 'body',

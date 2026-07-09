@@ -12,6 +12,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { canApplyPromotion, getAvailablePromotionCodes, getPromotion, normalizePromotionCode } from '../lib/promotions';
 import { useCartStore } from '../store/cartStore';
 import { getE2EAuthToken, getE2EUser } from '../lib/e2eAuth';
+import { resolveShipping, SHIPPING_SPEED_OPTIONS, SHIPPING_ZONE_OPTIONS, type ShippingSpeed, type ShippingZone } from '../lib/shipping';
 
 interface CheckoutProps {
   items: CartItem[];
@@ -98,6 +99,8 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   }, [isSignedIn, step]);
 
   const [address, setAddress] = useState<OrderAddress>({ name: '', phone: '', address: '', city: '', postal: '' });
+  const [shippingZone, setShippingZone] = useState<ShippingZone>('capital');
+  const [shippingSpeed, setShippingSpeed] = useState<ShippingSpeed>('standard');
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
@@ -182,7 +185,8 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   const appliedPromo = appliedPromoCode ? getPromotion(appliedPromoCode, items) : null;
   const discountAmount = appliedPromo?.discountAmount ?? 0;
   const discountedSubtotal = roundMoney(Math.max(0, subtotal - discountAmount));
-  const shipping = discountedSubtotal >= 50 || discountedSubtotal === 0 ? 0 : 6.90;
+  const shippingResolved = resolveShipping(shippingZone, shippingSpeed, discountedSubtotal);
+  const shipping = shippingResolved.cost;
   const tax = roundMoney(discountedSubtotal * 0.07);
   const total = roundMoney(discountedSubtotal + shipping + tax);
 
@@ -231,6 +235,8 @@ export function Checkout({ items, onBack }: CheckoutProps) {
           address,
           promoCode: appliedPromo?.code,
           freeSampleId: freeSample?.id,
+          shippingZone,
+          shippingSpeed,
         },
         token!
       );
@@ -356,6 +362,62 @@ export function Checkout({ items, onBack }: CheckoutProps) {
               <FormInput label="Código postal" value={address.postal} onChange={(v) => { setAddress({ ...address, postal: v.replace(/\D/g, '') }); setAddressError(''); }} placeholder="10001" required />
             </div>
             {addressError && <div role="alert" style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{addressError}</div>}
+
+            <div style={{ marginTop: 20 }}>
+              <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>Zona de entrega</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                {SHIPPING_ZONE_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setShippingZone(option.value)}
+                    style={{
+                      border: shippingZone === option.value ? '1px solid var(--green)' : '1px solid var(--ink-20)',
+                      background: shippingZone === option.value ? 'var(--ink-06)' : 'var(--cream)',
+                      borderRadius: 999,
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      fontSize: 12,
+                      fontFamily: '"Geist", sans-serif',
+                      color: 'var(--ink)',
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {shippingZone !== 'pickup' && (
+              <div style={{ marginTop: 16 }}>
+                <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>Velocidad de envío</span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                  {SHIPPING_SPEED_OPTIONS.map((option) => {
+                    const resolved = resolveShipping(shippingZone, option.value, discountedSubtotal);
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setShippingSpeed(option.value)}
+                        style={{
+                          border: shippingSpeed === option.value ? '1px solid var(--green)' : '1px solid var(--ink-20)',
+                          background: shippingSpeed === option.value ? 'var(--ink-06)' : 'var(--cream)',
+                          borderRadius: 12,
+                          padding: '10px 14px',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          fontFamily: '"Geist", sans-serif',
+                        }}
+                      >
+                        <div style={{ fontSize: 13, color: 'var(--ink)' }}>{option.label} <span style={{ color: 'var(--ink-60)' }}>· {resolved.eta}</span></div>
+                        <div style={{ fontSize: 12, color: 'var(--green)', marginTop: 2 }}>{resolved.cost === 0 ? 'GRATIS' : `$${resolved.cost.toFixed(2)}`}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {step === 2 && (
               <AnimatedButton aria-label="Continuar al pago" variant="primary" onClick={() => { if (!isAddressValid) { setAddressError('Por favor completa todos los campos requeridos'); } else { setStep(3); }}} style={{ marginTop: 16 }} disabled={!isAddressValid} text="Continuar al pago" />
             )}
@@ -465,7 +527,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             <Row k="Subtotal" v={`$${subtotal.toFixed(2)}`} />
             {discountAmount > 0 && <Row k={`Descuento ${appliedPromo?.code}`} v={<span style={{ color: 'var(--green)' }}>-${discountAmount.toFixed(2)}</span>} />}
             {freeSample && <Row k="Muestra gratis" v={<span style={{ color: 'var(--green)' }}>$0.00</span>} />}
-            <Row k="Envío" v={shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`} />
+            <Row k={`Envío (${shippingResolved.eta})`} v={shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`} />
             <Row k="Impuestos" v={`$${tax.toFixed(2)}`} />
           </div>
           <div style={{ padding: '14px 0', borderTop: '1px solid var(--ink-06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

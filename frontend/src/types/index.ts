@@ -127,6 +127,10 @@ export interface Order {
   discountAmount?: number;
   tax: number;
   shipping: number;
+  shippingZone?: 'capital' | 'interior' | 'pickup';
+  shippingSpeed?: 'standard' | 'express';
+  shippingLabel?: string;
+  shippingEta?: string;
   total: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
