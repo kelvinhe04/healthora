@@ -4,8 +4,13 @@ import { enumerateStockCells } from './lowStock';
 describe('enumerateStockCells', () => {
   test('product without variants -> single product-level cell', () => {
     expect(enumerateStockCells({ id: 'aspirin', name: 'Aspirina', stock: 4 })).toEqual([
-      { productId: 'aspirin', productName: 'Aspirina', variantId: null, variantLabel: null, stock: 4 },
+      { productId: 'aspirin', productMongoId: null, productName: 'Aspirina', variantId: null, variantLabel: null, stock: 4 },
     ]);
+  });
+
+  test('carries the Mongo _id through as productMongoId, stringified', () => {
+    const cells = enumerateStockCells({ id: 'aspirin', name: 'Aspirina', stock: 4, _id: { toString: () => 'mongo123' } });
+    expect(cells[0].productMongoId).toBe('mongo123');
   });
 
   test('simple variants -> one cell per variant with its own stock', () => {
@@ -19,8 +24,8 @@ describe('enumerateStockCells', () => {
       ],
     });
     expect(cells).toEqual([
-      { productId: 'lipstick', productName: 'Labial', variantId: 'red', variantLabel: 'Rojo', stock: 3 },
-      { productId: 'lipstick', productName: 'Labial', variantId: 'pink', variantLabel: 'Rosa', stock: 7 },
+      { productId: 'lipstick', productMongoId: null, productName: 'Labial', variantId: 'red', variantLabel: 'Rojo', stock: 3 },
+      { productId: 'lipstick', productMongoId: null, productName: 'Labial', variantId: 'pink', variantLabel: 'Rosa', stock: 7 },
     ]);
   });
 
@@ -38,10 +43,10 @@ describe('enumerateStockCells', () => {
     });
     // vanilla:2lb -> override 2, vanilla:5lb -> override 40, choco:2lb -> size 9, choco:5lb -> size 8
     expect(cells).toEqual([
-      { productId: 'protein', productName: 'Proteína', variantId: 'vanilla:2lb', variantLabel: 'Vainilla · 2lb', stock: 2 },
-      { productId: 'protein', productName: 'Proteína', variantId: 'vanilla:5lb', variantLabel: 'Vainilla · 5lb', stock: 40 },
-      { productId: 'protein', productName: 'Proteína', variantId: 'choco:2lb', variantLabel: 'Choco · 2lb', stock: 9 },
-      { productId: 'protein', productName: 'Proteína', variantId: 'choco:5lb', variantLabel: 'Choco · 5lb', stock: 8 },
+      { productId: 'protein', productMongoId: null, productName: 'Proteína', variantId: 'vanilla:2lb', variantLabel: 'Vainilla · 2lb', stock: 2 },
+      { productId: 'protein', productMongoId: null, productName: 'Proteína', variantId: 'vanilla:5lb', variantLabel: 'Vainilla · 5lb', stock: 40 },
+      { productId: 'protein', productMongoId: null, productName: 'Proteína', variantId: 'choco:2lb', variantLabel: 'Choco · 2lb', stock: 9 },
+      { productId: 'protein', productMongoId: null, productName: 'Proteína', variantId: 'choco:5lb', variantLabel: 'Choco · 5lb', stock: 8 },
     ]);
   });
 

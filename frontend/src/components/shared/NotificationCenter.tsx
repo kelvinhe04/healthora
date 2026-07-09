@@ -148,6 +148,21 @@ export function NotificationCenter({ buttonStyle, iconSize = 18 }: NotificationC
               ))
             )}
           </div>
+
+          {notifications.length > 0 && (
+            <div
+              style={{
+                padding: '8px 16px',
+                borderTop: '1px solid var(--ink-06)',
+                fontSize: 10.5,
+                color: 'var(--ink-40)',
+                fontFamily: '"JetBrains Mono", monospace',
+                textAlign: 'center',
+              }}
+            >
+              Las notificaciones se eliminan automáticamente después de 60 días
+            </div>
+          )}
         </div>
       )}
     </div>

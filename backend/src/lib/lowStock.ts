@@ -24,6 +24,9 @@ interface ProductLike {
   name?: string;
   stock?: number;
   variants?: VariantLike[];
+  /** Mongo document id (ObjectId or its string form) - carried into the notification so the
+   * frontend can deep-link straight into the admin edit modal for this product. */
+  _id?: unknown;
 }
 
 /** Break a product into its stock cells: product-level, per simple variant, or per sabor×tamaño
@@ -31,9 +34,10 @@ interface ProductLike {
 export function enumerateStockCells(product: ProductLike): LowStockCell[] {
   const variants = product.variants;
   const productName = product.name ?? null;
+  const productMongoId = product._id != null ? String(product._id) : null;
 
   if (!variants?.length) {
-    return [{ productId: product.id, productName, variantId: null, variantLabel: null, stock: product.stock ?? 0 }];
+    return [{ productId: product.id, productMongoId, productName, variantId: null, variantLabel: null, stock: product.stock ?? 0 }];
   }
 
   const sizes = variants.filter((v) => v.type === 'size');
@@ -50,6 +54,7 @@ export function enumerateStockCells(product: ProductLike): LowStockCell[] {
         const stock = primary.stockBySize?.[size.id] ?? size.stock ?? 0;
         cells.push({
           productId: product.id,
+          productMongoId,
           productName,
           variantId: `${primary.id}:${size.id}`,
           variantLabel: `${primary.label} · ${size.label}`,
@@ -63,6 +68,7 @@ export function enumerateStockCells(product: ProductLike): LowStockCell[] {
   // One-dimensional: each variant owns its stock.
   return variants.map((variant) => ({
     productId: product.id,
+    productMongoId,
     productName,
     variantId: variant.id,
     variantLabel: variant.label,

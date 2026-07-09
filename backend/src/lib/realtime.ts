@@ -171,6 +171,9 @@ export function notifyEveryone(input: Omit<CreateNotificationInput, 'audience' |
  * product's healthy total (the reason the product-total approach missed low variants). */
 export interface LowStockCell {
   productId: string;
+  /** Mongo document id - lets the notification deep-link into the admin edit modal
+   * (`?productId=<mongoId>`), since the admin UI keys products by `_id`, not the slug `productId`. */
+  productMongoId?: string | null;
   productName?: string | null;
   /** null = product-level; `<id>` = simple variant; `<primary>:<size>` = combo. */
   variantId?: string | null;
@@ -201,14 +204,22 @@ export async function maybeNotifyLowStock(
 
   const label = cell.productName || cell.productId;
   const suffix = cell.variantLabel ? ` (${cell.variantLabel})` : '';
+  // Deep-link straight into the admin edit modal, positioned at the exact variant/combo, so the
+  // admin doesn't have to hunt for the product in the table. Falls back to the plain products list
+  // if we somehow don't have a Mongo id (shouldn't happen for a real product).
+  const link = cell.productMongoId
+    ? `/admin?section=products&modal=edit&productId=${encodeURIComponent(cell.productMongoId)}${
+        variantId ? `&highlightVariant=${encodeURIComponent(variantId)}` : ''
+      }`
+    : '/admin?section=products';
   return notifyAdmins({
     type: 'low_stock',
     title: 'Stock bajo',
     body: cell.stock <= 0
       ? `"${label}"${suffix} se quedó sin stock.`
       : `"${label}"${suffix} tiene ${cell.stock} unidad${cell.stock === 1 ? '' : 'es'} en stock.`,
-    link: '/admin',
-    data: { productId: cell.productId, variantId, stock: cell.stock, threshold },
+    link,
+    data: { productId: cell.productId, productMongoId: cell.productMongoId ?? null, variantId, stock: cell.stock, threshold },
   });
 }
 

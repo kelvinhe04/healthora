@@ -128,6 +128,22 @@ describe('realtime notification hub', () => {
     expect(serializeNotification(after, 'admin-2').read).toBe(false);
   });
 
+  test('maybeNotifyLowStock deep-links to the admin edit modal, positioned at the variant', async () => {
+    const cell = {
+      productId: 'olly',
+      productMongoId: 'mongo-olly-id',
+      productName: 'Olly',
+      variantId: 'vanilla:5lb',
+      variantLabel: 'Vainilla · 5lb',
+      stock: 3,
+    };
+    const result = await maybeNotifyLowStock(cell, { threshold: 5 });
+    expect(result?.notification.link).toBe(
+      '/admin?section=products&modal=edit&productId=mongo-olly-id&highlightVariant=vanilla%3A5lb',
+    );
+    expect(result?.notification.data).toMatchObject({ productMongoId: 'mongo-olly-id' });
+  });
+
   test('maybeNotifyLowStock fires once under threshold and dedupes per cell', async () => {
     const cell = { productId: 'olly', productName: 'Olly', variantId: 'vanilla:5lb', variantLabel: 'Vainilla · 5lb', stock: 3 };
     const first = await maybeNotifyLowStock(cell, { threshold: 5 });

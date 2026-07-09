@@ -87,6 +87,24 @@ en una ventana de 6 h, así una ráfaga de compras (o guardados repetidos en el 
 alerta por evento. Se dispara tras **cualquier** mutación de stock: venta (webhook), ajuste vía MCP
 o edición del producto en el panel admin.
 
+### Deep-link a la variante exacta desde la notificación
+
+La notificación de stock bajo lleva `link` apuntando directo al modal de edición del producto,
+posicionado en la variante/combo específico:
+
+```
+/admin?section=products&modal=edit&productId=<mongoId>&highlightVariant=<variantId>
+```
+
+- `useAdminPanel.ts` ya soportaba deep-link a `?section=products&modal=edit&productId=` (para
+  compartir enlaces al catálogo admin); se añadió `highlightVariant` sobre ese mismo mecanismo.
+- `ProductModal` recibe `highlightVariantId` y, al abrir, hace `scrollIntoView` + una animación de
+  resaltado (2.6s) sobre el elemento con `data-variant-anchor="<variantId>"` — presente tanto en las
+  celdas de `ProductVariantsMatrixEditor` (combo `primario:tamaño`) como en las filas de
+  `ProductVariantsEditor` (variante simple).
+- `useNotificationLink` (frontend) parsea el query string del `link` y navega preservándolo —
+  antes solo soportaba rutas planas sin parámetros.
+
 ## Endpoints
 
 | Método | Ruta | Auth | Descripción |
