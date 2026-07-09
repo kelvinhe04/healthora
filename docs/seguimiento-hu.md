@@ -55,6 +55,7 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
 | HU-080 | Optimización de imágenes (Cloudinary, lazy load) | `HU-080-optimizacion-imagenes-cloudinary-lazy-load` / PR #124 | Roy | `srcset`/`sizes` responsive con Cloudinary `f_auto,q_auto`, lazy por defecto y prioridad selectiva para LCP. Issue #84 cerrada; pendiente merge del PR a `main`. |
+| HU-041 | Devoluciones y reembolsos | `feat/hu-041-devoluciones-reembolsos` / PR #193 | Kelvin | Closes #45. Modelo `Return` (requested→approved→in_transit→refunded, o rejected), ventana de 30 días desde `order.createdAt`. Admin reembolsa vía Stripe Refunds API real sobre el `payment_intent` de la orden; cada cambio de estado envía email. Sin MCP tool `returns.approveReturn` todavía (mismo gap que HU-092). |
 
 ## Pendientes — nueva funcionalidad (sin iniciar)
 
