@@ -13,6 +13,7 @@ import { useMemo, useState, useEffect, memo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { useThemeStore } from "../../store/themeStore";
 import { Icon } from "../shared/Icon";
+import { formatPanamaDayMonth } from "../../lib/dates";
 
 let _adminSessionId = "";
 const _shownSkeletons = new Set<string>();
@@ -229,7 +230,7 @@ function formatDayLabel(date: string) {
   if (!date) return "";
   const d = new Date(date);
   if (isNaN(d.getTime())) return date;
-  return d.toLocaleDateString("es-MX", { day: "2-digit", month: "2-digit" });
+  return formatPanamaDayMonth(d);
 }
 
 function formatMoney(value: number) {
@@ -339,10 +340,7 @@ const BarChartInner = ({
               if (!date) return "";
               const d = new Date(date);
               if (isNaN(d.getTime())) return date;
-              return d.toLocaleDateString("es-MX", {
-                day: "2-digit",
-                month: "2-digit",
-              });
+              return formatPanamaDayMonth(d);
             }}
           />
           <YAxis

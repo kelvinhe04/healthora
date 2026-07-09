@@ -13,6 +13,7 @@ import { Icon } from '../../../components/shared/Icon';
 import { PaginationControls } from '../components/PaginationControls';
 import { useAdminPanelContext } from '../AdminPanelContext';
 import type { UserSortKey } from '../hooks/useAdminPanel';
+import { formatPanamaShortDate } from '../../../lib/dates';
 
 const USER_SORT_LABEL: Record<UserSortKey, string> = {
   orders: 'Órdenes',
@@ -328,7 +329,7 @@ export function UsersSection() {
                         }}
                       >
                         {user.createdAt
-                          ? new Date(user.createdAt).toLocaleDateString()
+                          ? formatPanamaShortDate(user.createdAt)
                           : "—"}
                       </td>
                     </tr>

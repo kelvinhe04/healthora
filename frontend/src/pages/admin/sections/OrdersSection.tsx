@@ -17,6 +17,7 @@ import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { PaginationControls } from '../components/PaginationControls';
 import { useAdminPanelContext } from '../AdminPanelContext';
 import type { OrderSortKey } from '../hooks/useAdminPanel';
+import { formatPanamaShortDate, formatPanamaTime } from '../../../lib/dates';
 
 const ORDER_SORT_LABEL: Record<OrderSortKey, string> = {
   total: 'Total',
@@ -567,20 +568,14 @@ export function OrdersSection() {
                         {order.createdAt ? (
                           <>
                             <div>
-                              {new Date(order.createdAt).toLocaleDateString()}
+                              {formatPanamaShortDate(order.createdAt)}
                             </div>
                             <div
                               style={{
                                 marginTop: 4,
                               }}
                             >
-                              {new Date(order.createdAt).toLocaleTimeString(
-                                [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
-                              )}
+                              {formatPanamaTime(order.createdAt)}
                             </div>
                           </>
                         ) : (
