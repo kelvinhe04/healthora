@@ -23,8 +23,9 @@ import { getNextFulfillmentStatus, paginateItems } from '../utils';
 import { useAdminToken } from './useAdminToken';
 import { broadcastProductsChanged } from '../../../lib/crossTabSync';
 import { getEffectivePrice, getTotalStock } from '../../../lib/productVariants';
+import { useReviewsSummary } from '../../../hooks/useReviews';
 
-export type ProductSortKey = 'price' | 'stock';
+export type ProductSortKey = 'price' | 'stock' | 'rating';
 export type ProductSort = { key: ProductSortKey | null; dir: 'asc' | 'desc' };
 
 export type AdminPanelState = ReturnType<typeof useAdminPanel>;
@@ -129,13 +130,16 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const [productCatFilter, setProductCatFilter] = useState("Todos");
   const [productSearch, setProductSearch] = useState("");
   const [productSort, setProductSort] = useState<ProductSort>({ key: null, dir: 'asc' });
+  // Cycles asc -> desc -> unsorted (back to the default order) on repeated clicks of the same
+  // column, so there's always a way back to "no sort" without a separate clear control.
   const toggleProductSort = useCallback((key: ProductSortKey) => {
-    setProductSort((current) =>
-      current.key === key
-        ? { key, dir: current.dir === 'asc' ? 'desc' : 'asc' }
-        : { key, dir: 'asc' },
-    );
+    setProductSort((current) => {
+      if (current.key !== key) return { key, dir: 'asc' };
+      if (current.dir === 'asc') return { key, dir: 'desc' };
+      return { key: null, dir: 'asc' };
+    });
   }, []);
+  const clearProductSort = useCallback(() => setProductSort({ key: null, dir: 'asc' }), []);
   const [productsPage, setProductsPage] = useState(1);
   const [usersPage, setUsersPage] = useState(1);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -183,6 +187,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     queryKey: ["admin-products-count"],
     queryFn: async () => api.admin.products.count(await getAdminToken()),
   });
+  const reviewsSummaryQuery = useReviewsSummary(page === "products");
+  const reviewsSummary = reviewsSummaryQuery.data ?? {};
 
   // Open modal from URL on deep-link (e.g. ?section=products&modal=edit&productId=xxx). A
   // low-stock notification additionally carries &highlightVariant=<id> so the modal can scroll to
@@ -548,9 +554,16 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       sorted.sort((a, b) => (getEffectivePrice(a) - getEffectivePrice(b)) * dirMul);
     } else if (productSort.key === 'stock') {
       sorted.sort((a, b) => (getTotalStock(a) - getTotalStock(b)) * dirMul);
+    } else if (productSort.key === 'rating') {
+      sorted.sort((a, b) => {
+        const ratingA = reviewsSummary[a.id]?.avgRating ?? 0;
+        const ratingB = reviewsSummary[b.id]?.avgRating ?? 0;
+        if (ratingA !== ratingB) return (ratingA - ratingB) * dirMul;
+        return ((reviewsSummary[a.id]?.count ?? 0) - (reviewsSummary[b.id]?.count ?? 0)) * dirMul;
+      });
     }
     return sorted;
-  }, [products, productCatFilter, productSearch, productSort]);
+  }, [products, productCatFilter, productSearch, productSort, reviewsSummary]);
 
   const displayedOrders = useMemo(() => {
     const term = orderSearch.toLowerCase();
@@ -641,6 +654,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     setProductSearch,
     productSort,
     toggleProductSort,
+    clearProductSort,
+    reviewsSummary,
     setProductModal,
     selectedProductIds,
     setSelectedProductIds,

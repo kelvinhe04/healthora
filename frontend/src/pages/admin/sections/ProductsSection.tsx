@@ -14,34 +14,32 @@ import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { ProductImage } from '../../../components/shared/ProductImage';
 import { Stars } from '../../../components/shared/Stars';
-import { useReviews } from '../../../hooks/useReviews';
 import { PaginationControls } from '../components/PaginationControls';
 import { ProductModal } from '../components/ProductModal';
 import { useAdminPanelContext } from '../AdminPanelContext';
 import { variantSummary } from '../utils';
 import type { ProductSortKey } from '../hooks/useAdminPanel';
 import { getTotalStock, getEffectivePrice, getEffectivePriceBefore } from '../../../lib/productVariants';
-import type { Product } from '../../../types';
 
-function ProductRatingCell({ product }: { product: Product }) {
-  const { data: reviews } = useReviews(product.id);
-  const count = reviews?.length ?? 0;
-  const rating = count > 0
-    ? Math.round((reviews!.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10
-    : 0;
+const PRODUCT_SORT_LABEL: Record<ProductSortKey, string> = {
+  price: 'Precio',
+  stock: 'Stock',
+  rating: 'Reseña',
+};
 
-  if (count === 0) {
+function ProductRatingCell({ summary }: { summary?: { avgRating: number; count: number } }) {
+  if (!summary || summary.count === 0) {
     return (
-      <span style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>
+      <span style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
         SIN RESEÑAS
       </span>
     );
   }
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <Stars value={rating} size={12} />
-      <span style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>
-        {rating} · {count}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+      <Stars value={summary.avgRating} size={12} />
+      <span style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', whiteSpace: 'nowrap' }}>
+        {summary.avgRating} · {summary.count}
       </span>
     </div>
   );
@@ -60,7 +58,7 @@ function SortableTh({
 }) {
   const active = activeSort.key === sortKey;
   return (
-    <th style={th}>
+    <th style={{ ...th, whiteSpace: 'nowrap' }}>
       <button
         onClick={() => onSort(sortKey)}
         style={{
@@ -75,6 +73,7 @@ function SortableTh({
           color: active ? 'var(--ink)' : 'var(--ink-60)',
           letterSpacing: 'inherit',
           textTransform: 'inherit',
+          whiteSpace: 'nowrap',
         }}
         title={`Ordenar por ${label.toLowerCase()}`}
       >
@@ -99,6 +98,8 @@ export function ProductsSection() {
   setProductSearch,
   productSort,
   toggleProductSort,
+  clearProductSort,
+  reviewsSummary,
   setProductModal,
   highlightVariantId,
   selectedProductIds,
@@ -308,16 +309,40 @@ export function ProductsSection() {
                   flexWrap: "wrap",
                 }}
               >
-                <div
-                  style={{
-                    fontSize: 12,
-                    fontFamily: '"Geist", sans-serif',
-                    color: "var(--ink-60)",
-                  }}
-                >
-                  {selectedDisplayedIds.length > 0
-                    ? `${selectedDisplayedIds.length} seleccionados en esta vista`
-                    : "Selecciona varios productos para borrado masivo."}
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontFamily: '"Geist", sans-serif',
+                      color: "var(--ink-60)",
+                    }}
+                  >
+                    {selectedDisplayedIds.length > 0
+                      ? `${selectedDisplayedIds.length} seleccionados en esta vista`
+                      : "Selecciona varios productos para borrado masivo."}
+                  </div>
+                  {productSort.key && (
+                    <button
+                      onClick={clearProductSort}
+                      title="Quitar orden"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "5px 10px",
+                        borderRadius: 999,
+                        border: "1px solid var(--ink-20)",
+                        background: "transparent",
+                        color: "var(--ink-60)",
+                        fontSize: 11,
+                        fontFamily: '"JetBrains Mono", monospace',
+                        cursor: "pointer",
+                      }}
+                    >
+                      Orden: {PRODUCT_SORT_LABEL[productSort.key]} {productSort.dir === "asc" ? "▲" : "▼"}
+                      <Icon name="x" size={11} />
+                    </button>
+                  )}
                 </div>
                 <div
                   style={{
@@ -506,7 +531,7 @@ export function ProductsSection() {
                     <th style={th}>Categoría</th>
                     <SortableTh label="Precio" sortKey="price" activeSort={productSort} onSort={toggleProductSort} />
                     <SortableTh label="Stock" sortKey="stock" activeSort={productSort} onSort={toggleProductSort} />
-                    <th style={th}>Reseña</th>
+                    <SortableTh label="Reseña" sortKey="rating" activeSort={productSort} onSort={toggleProductSort} />
                     <th style={th}>Estado</th>
                     <th style={th}></th>
                   </tr>
@@ -626,7 +651,7 @@ export function ProductsSection() {
                         {getTotalStock(product)}
                       </td>
                       <td style={td}>
-                        <ProductRatingCell product={product} />
+                        <ProductRatingCell summary={reviewsSummary[product.id]} />
                       </td>
                       <td style={td}>
                         <StatusPill

@@ -122,6 +122,8 @@ export const api = {
   reviews: {
     stats: () =>
       request<{ total: number; avgRating: number }>("/reviews/stats"),
+    summary: () =>
+      request<Record<string, { avgRating: number; count: number }>>("/reviews/summary"),
     list: (productId: string) =>
       request<Review[]>(`/reviews?productId=${encodeURIComponent(productId)}`),
     create: (

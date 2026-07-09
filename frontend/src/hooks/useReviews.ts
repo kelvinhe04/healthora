@@ -9,3 +9,14 @@ export function useReviews(productId: string) {
     enabled: !!productId,
   });
 }
+
+/** Per-product rating averages in one request - used by the admin products table (rating column
+ * + sort) instead of one useReviews() per row. */
+export function useReviewsSummary(enabled: boolean) {
+  return useQuery({
+    queryKey: ['reviews-summary'],
+    queryFn: () => api.reviews.summary(),
+    staleTime: 1000 * 60 * 2,
+    enabled,
+  });
+}

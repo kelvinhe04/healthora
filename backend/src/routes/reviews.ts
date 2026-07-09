@@ -39,6 +39,17 @@ export const reviewsRouter = new Hono<AppEnv>()
     const { total = 0, avgRating = 0 } = result[0] ?? {};
     return cacheableJson(c, { total, avgRating: Math.round(avgRating * 10) / 10 }, 'reviewList');
   })
+  // Per-product rating averages in a single query - used by the admin products table so it
+  // doesn't need one /reviews request per row (N+1) just to render/sort a rating column.
+  .get('/summary', async (c) => {
+    const result = await Review.aggregate([
+      { $group: { _id: '$productId', avgRating: { $avg: '$rating' }, count: { $sum: 1 } } },
+    ]);
+    const summary = Object.fromEntries(
+      result.map((entry) => [entry._id, { avgRating: Math.round(entry.avgRating * 10) / 10, count: entry.count }]),
+    );
+    return cacheableJson(c, summary, 'reviewList');
+  })
   .get('/', async (c) => {
     const parsed = parseQuery(c, reviewsQuerySchema);
     if (!parsed.success) return parsed.response;
