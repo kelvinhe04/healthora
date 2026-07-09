@@ -550,16 +550,24 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     if (!productSort.key) return filtered;
     const sorted = filtered.slice();
     const dirMul = productSort.dir === 'asc' ? 1 : -1;
+    // Final tiebreaker on the stable `id` (not multiplied by dirMul) so that fully-tied rows land
+    // in the same order regardless of which endpoint/query produced `products` - Mongo doesn't
+    // guarantee a stable order for docs whose sort key ties (e.g. same createdAt from a bulk
+    // insert), so without this the admin table and the public catalog could show a different
+    // order for the exact same tie.
     if (productSort.key === 'price') {
-      sorted.sort((a, b) => (getEffectivePrice(a) - getEffectivePrice(b)) * dirMul);
+      sorted.sort((a, b) => (getEffectivePrice(a) - getEffectivePrice(b)) * dirMul || a.id.localeCompare(b.id));
     } else if (productSort.key === 'stock') {
-      sorted.sort((a, b) => (getTotalStock(a) - getTotalStock(b)) * dirMul);
+      sorted.sort((a, b) => (getTotalStock(a) - getTotalStock(b)) * dirMul || a.id.localeCompare(b.id));
     } else if (productSort.key === 'rating') {
       sorted.sort((a, b) => {
         const ratingA = reviewsSummary[a.id]?.avgRating ?? 0;
         const ratingB = reviewsSummary[b.id]?.avgRating ?? 0;
         if (ratingA !== ratingB) return (ratingA - ratingB) * dirMul;
-        return ((reviewsSummary[a.id]?.count ?? 0) - (reviewsSummary[b.id]?.count ?? 0)) * dirMul;
+        const countA = reviewsSummary[a.id]?.count ?? 0;
+        const countB = reviewsSummary[b.id]?.count ?? 0;
+        if (countA !== countB) return (countA - countB) * dirMul;
+        return a.id.localeCompare(b.id);
       });
     }
     return sorted;
