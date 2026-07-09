@@ -12,7 +12,7 @@ import { ReviewSection } from '../components/shared/ReviewSection';
 import { RecentlyViewedSection } from '../components/shared/RecentlyViewedSection';
 import { RelatedProductsSection } from '../components/shared/RelatedProductsSection';
 import { getRelatedProducts } from '../lib/relatedProducts';
-import { PRIMARY_VARIANT_TYPES, pickDefaultPrimary, sizesFor, pickDefaultSize, getPrimaryVariantStock } from '../lib/productVariants';
+import { PRIMARY_VARIANT_TYPES, pickDefaultPrimary, sizesFor, pickDefaultSize, pickSizeKeepingCurrent, getPrimaryVariantStock } from '../lib/productVariants';
 import { renderInlineText, renderRichText } from '../lib/richText';
 
 interface ProductDetailProps {
@@ -409,14 +409,14 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                     {!isPrimaryColor && primaryVariants.length > DROPDOWN_THRESHOLD ? (
                       dropdown(primaryVariants, selectedVariant, (v) => {
                         setSelectedVariant(v);
-                        setSelectedSize(pickDefaultSize(product.variants, v));
+                        setSelectedSize(pickSizeKeepingCurrent(product.variants, v, selectedSize));
                         setQty(1);
                       }, primaryLabel)
                     ) : (
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         {primaryVariants.map((v) => (isPrimaryColor ? colorSwatchBtn : pillBtn)(v, selectedVariant?.id === v.id, () => {
                           setSelectedVariant(v);
-                          setSelectedSize(pickDefaultSize(product.variants, v));
+                          setSelectedSize(pickSizeKeepingCurrent(product.variants, v, selectedSize));
                           setQty(1);
                         }))}
                       </div>
