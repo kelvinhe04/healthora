@@ -25,8 +25,15 @@ import { broadcastProductsChanged } from '../../../lib/crossTabSync';
 import { getEffectivePrice, getTotalStock } from '../../../lib/productVariants';
 import { useReviewsSummary } from '../../../hooks/useReviews';
 
-export type ProductSortKey = 'price' | 'stock' | 'rating';
+export type ProductSortKey = 'price' | 'stock' | 'rating' | 'active';
 export type ProductSort = { key: ProductSortKey | null; dir: 'asc' | 'desc' };
+export type ProductStatusFilter = 'Todos' | 'Activo' | 'Inactivo';
+
+export type OrderSortKey = 'total' | 'date';
+export type OrderSort = { key: OrderSortKey | null; dir: 'asc' | 'desc' };
+
+export type UserSortKey = 'orders' | 'spend' | 'registered';
+export type UserSort = { key: UserSortKey | null; dir: 'asc' | 'desc' };
 
 export type AdminPanelState = ReturnType<typeof useAdminPanel>;
 
@@ -88,6 +95,26 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const [orderStatusDrafts, setOrderStatusDrafts] = useState<
     Record<string, FulfillmentStatus>
   >({});
+  const [orderSort, setOrderSort] = useState<OrderSort>({ key: null, dir: 'asc' });
+  const toggleOrderSort = useCallback((key: OrderSortKey) => {
+    setOrderSort((current) => {
+      if (current.key !== key) return { key, dir: 'asc' };
+      if (current.dir === 'asc') return { key, dir: 'desc' };
+      return { key: null, dir: 'asc' };
+    });
+  }, []);
+  const clearOrderSort = useCallback(() => setOrderSort({ key: null, dir: 'asc' }), []);
+
+  const [userSearch, setUserSearch] = useState("");
+  const [userSort, setUserSort] = useState<UserSort>({ key: null, dir: 'asc' });
+  const toggleUserSort = useCallback((key: UserSortKey) => {
+    setUserSort((current) => {
+      if (current.key !== key) return { key, dir: 'asc' };
+      if (current.dir === 'asc') return { key, dir: 'desc' };
+      return { key: null, dir: 'asc' };
+    });
+  }, []);
+  const clearUserSort = useCallback(() => setUserSort({ key: null, dir: 'asc' }), []);
 
   // Products state — URL-synced modal
   const [productModal, setProductModalState] = useState<{
@@ -128,6 +155,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     message: string;
   } | null>(null);
   const [productCatFilter, setProductCatFilter] = useState("Todos");
+  const [productStatusFilter, setProductStatusFilter] = useState<ProductStatusFilter>("Todos");
   const [productSearch, setProductSearch] = useState("");
   const [productSort, setProductSort] = useState<ProductSort>({ key: null, dir: 'asc' });
   // Cycles asc -> desc -> unsorted (back to the default order) on repeated clicks of the same
@@ -466,15 +494,15 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
 
   useEffect(() => {
     setOrdersPage(1);
-  }, [orderFulfillmentFilter, orderSearch]);
+  }, [orderFulfillmentFilter, orderSearch, orderSort]);
 
   useEffect(() => {
     setProductsPage(1);
-  }, [productCatFilter, productSearch, productSort]);
+  }, [productCatFilter, productStatusFilter, productSearch, productSort]);
 
   useEffect(() => {
     setUsersPage(1);
-  }, [users.length]);
+  }, [users.length, userSearch, userSort]);
 
   useEffect(() => {
     if (page === "users") {
@@ -536,16 +564,28 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     [categories, productsForCategoryCounts],
   );
 
+  const statusCounts = useMemo(
+    () => ({
+      Todos: productsForCategoryCounts.length,
+      Activo: productsForCategoryCounts.filter((p) => p.active).length,
+      Inactivo: productsForCategoryCounts.filter((p) => !p.active).length,
+    }),
+    [productsForCategoryCounts],
+  );
+
   const displayedProducts = useMemo(() => {
     const filtered = (products as Product[]).filter((p) => {
       const matchCat =
         productCatFilter === "Todos" || p.category === productCatFilter;
+      const matchStatus =
+        productStatusFilter === "Todos" ||
+        (productStatusFilter === "Activo" ? p.active : !p.active);
       const term = productSearch.toLowerCase();
       const matchSearch =
         !term ||
         p.name.toLowerCase().includes(term) ||
         p.brand.toLowerCase().includes(term);
-      return matchCat && matchSearch;
+      return matchCat && matchStatus && matchSearch;
     });
     if (!productSort.key) return filtered;
     const sorted = filtered.slice();
@@ -559,6 +599,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       sorted.sort((a, b) => (getEffectivePrice(a) - getEffectivePrice(b)) * dirMul || a.id.localeCompare(b.id));
     } else if (productSort.key === 'stock') {
       sorted.sort((a, b) => (getTotalStock(a) - getTotalStock(b)) * dirMul || a.id.localeCompare(b.id));
+    } else if (productSort.key === 'active') {
+      sorted.sort((a, b) => (Number(a.active) - Number(b.active)) * dirMul || a.id.localeCompare(b.id));
     } else if (productSort.key === 'rating') {
       sorted.sort((a, b) => {
         const ratingA = reviewsSummary[a.id]?.avgRating ?? 0;
@@ -571,11 +613,37 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       });
     }
     return sorted;
-  }, [products, productCatFilter, productSearch, productSort, reviewsSummary]);
+  }, [products, productCatFilter, productStatusFilter, productSearch, productSort, reviewsSummary]);
+
+  // Orders matching only the search term (not the fulfillment filter) — used to count how many
+  // orders each status pill would show if selected, same pattern as categoryCounts for products.
+  const ordersForFulfillmentCounts = useMemo(() => {
+    const term = orderSearch.toLowerCase();
+    if (!term) return orders || [];
+    return (orders || []).filter(
+      (o) =>
+        o._id.toLowerCase().includes(term) ||
+        o.customerName?.toLowerCase().includes(term) ||
+        o.customerEmail?.toLowerCase().includes(term),
+    );
+  }, [orders, orderSearch]);
+
+  const orderFulfillmentCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        fulfillmentStatusOptions.map((status) => [
+          status,
+          status
+            ? ordersForFulfillmentCounts.filter((o) => o.fulfillmentStatus === status).length
+            : ordersForFulfillmentCounts.length,
+        ]),
+      ),
+    [ordersForFulfillmentCounts],
+  );
 
   const displayedOrders = useMemo(() => {
     const term = orderSearch.toLowerCase();
-    return (orders || []).filter((o) => {
+    const filtered = (orders || []).filter((o) => {
       const matchSearch =
         !term ||
         o._id.toLowerCase().includes(term) ||
@@ -586,7 +654,20 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
         o.fulfillmentStatus === orderFulfillmentFilter;
       return matchSearch && matchFulfillment;
     });
-  }, [orders, orderSearch, orderFulfillmentFilter]);
+    if (!orderSort.key) return filtered;
+    const sorted = filtered.slice();
+    const dirMul = orderSort.dir === 'asc' ? 1 : -1;
+    if (orderSort.key === 'total') {
+      sorted.sort((a, b) => ((a.total ?? 0) - (b.total ?? 0)) * dirMul || a._id.localeCompare(b._id));
+    } else if (orderSort.key === 'date') {
+      sorted.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return (dateA - dateB) * dirMul || a._id.localeCompare(b._id);
+      });
+    }
+    return sorted;
+  }, [orders, orderSearch, orderFulfillmentFilter, orderSort]);
 
   const paginatedOrders = useMemo(
     () => paginateItems(displayedOrders, ordersPage),
@@ -598,9 +679,34 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     [displayedProducts, productsPage],
   );
 
+  const displayedUsers = useMemo(() => {
+    const term = userSearch.toLowerCase();
+    const filtered = customers.filter(
+      (u) =>
+        !term ||
+        u.name?.toLowerCase().includes(term) ||
+        u.email?.toLowerCase().includes(term),
+    );
+    if (!userSort.key) return filtered;
+    const sorted = filtered.slice();
+    const dirMul = userSort.dir === 'asc' ? 1 : -1;
+    if (userSort.key === 'orders') {
+      sorted.sort((a, b) => ((a.orderCount ?? 0) - (b.orderCount ?? 0)) * dirMul || a._id.localeCompare(b._id));
+    } else if (userSort.key === 'spend') {
+      sorted.sort((a, b) => ((a.ltv ?? 0) - (b.ltv ?? 0)) * dirMul || a._id.localeCompare(b._id));
+    } else if (userSort.key === 'registered') {
+      sorted.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return (dateA - dateB) * dirMul || a._id.localeCompare(b._id);
+      });
+    }
+    return sorted;
+  }, [customers, userSearch, userSort]);
+
   const paginatedUsers = useMemo(
-    () => paginateItems(customers, usersPage),
-    [customers, usersPage],
+    () => paginateItems(displayedUsers, usersPage),
+    [displayedUsers, usersPage],
   );
 
   const displayedProductIds = useMemo(
@@ -638,8 +744,12 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     setOrderSearch,
     orderFulfillmentFilter,
     setOrderFulfillmentFilter,
+    orderFulfillmentCounts,
     fulfillmentStatusOptions,
     fulfillmentStatusLabels,
+    orderSort,
+    toggleOrderSort,
+    clearOrderSort,
     displayedOrders,
     paginatedOrders,
     ordersPage,
@@ -656,6 +766,9 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     products,
     productCatFilter,
     setProductCatFilter,
+    productStatusFilter,
+    setProductStatusFilter,
+    statusCounts,
     categories,
     categoryCounts,
     productSearch,
@@ -695,6 +808,12 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     setDeleteError,
     showUsersSkeleton,
     users,
+    userSearch,
+    setUserSearch,
+    userSort,
+    toggleUserSort,
+    clearUserSort,
+    displayedUsers,
     paginatedUsers,
     usersPage,
     setUsersPage,
