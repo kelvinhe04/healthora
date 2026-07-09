@@ -55,6 +55,7 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
 | HU-080 | Optimización de imágenes (Cloudinary, lazy load) | `HU-080-optimizacion-imagenes-cloudinary-lazy-load` / PR #124 | Roy | `srcset`/`sizes` responsive con Cloudinary `f_auto,q_auto`, lazy por defecto y prioridad selectiva para LCP. Issue #84 cerrada; pendiente merge del PR a `main`. |
+| HU-057 | Página de perfil editable | `feat/hu-057-perfil-editable` / PR #189 | Kelvin | Closes #61. Nombre/foto delegados al modal nativo de Clerk (`openUserProfile()`, ya sincroniza a `User` vía `clerkAuth`); preferencia básica (suscripción a novedades) en `User.preferences.newsletterSubscribed`, guardado inmediato vía `GET`/`PATCH /account/preferences`. Nueva ruta `/profile`, entrada "Mi perfil" en el menú de cuenta. |
 
 ## Pendientes — nueva funcionalidad (sin iniciar)
 
