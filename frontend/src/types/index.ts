@@ -40,7 +40,9 @@ export interface Product {
   category: string;
   need: string;
   price: number;
-  priceBefore?: number;
+  priceBefore?: number | null;
+  discountStartsAt?: string | null;
+  discountEndsAt?: string | null;
   tag?: string;
   rating: number;
   reviews: number;

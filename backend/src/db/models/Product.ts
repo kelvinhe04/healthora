@@ -9,6 +9,8 @@ const ProductSchema = new Schema(
     need: String,
     price: { type: Number, required: true },
     priceBefore: Number,
+    discountStartsAt: Date,
+    discountEndsAt: Date,
     tag: String,
     rating: { type: Number, default: 0 },
     reviews: { type: Number, default: 0 },

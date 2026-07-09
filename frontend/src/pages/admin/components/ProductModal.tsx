@@ -495,6 +495,48 @@ export function ProductModal({
                   />
                 </div>
               </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: 16,
+                  marginBottom: 16,
+                }}
+              >
+                <div style={fieldS}>
+                  <label style={labelS}>Precio antes de descuento ($)</label>
+                  <input
+                    style={inputS}
+                    type="number"
+                    value={form.priceBefore}
+                    onChange={setF("priceBefore")}
+                    min={0}
+                    step={0.01}
+                    placeholder="Sin descuento"
+                  />
+                </div>
+                <div style={fieldS}>
+                  <label style={labelS}>Descuento vigente desde</label>
+                  <input
+                    style={inputS}
+                    type="date"
+                    value={form.discountStartsAt}
+                    onChange={setF("discountStartsAt")}
+                    disabled={!form.priceBefore}
+                  />
+                </div>
+                <div style={fieldS}>
+                  <label style={labelS}>Descuento vigente hasta</label>
+                  <input
+                    style={inputS}
+                    type="date"
+                    value={form.discountEndsAt}
+                    onChange={setF("discountEndsAt")}
+                    disabled={!form.priceBefore}
+                  />
+                </div>
+              </div>
             </>
           )}
 

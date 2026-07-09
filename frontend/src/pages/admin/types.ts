@@ -201,6 +201,8 @@ export type ProductForm = {
   short: string;
   price: string;
   priceBefore: string;
+  discountStartsAt: string;
+  discountEndsAt: string;
   tag: string;
   stock: string;
   active: boolean;
@@ -228,6 +230,8 @@ export const emptyForm: ProductForm = {
   short: "",
   price: "0",
   priceBefore: "",
+  discountStartsAt: "",
+  discountEndsAt: "",
   tag: "",
   stock: "0",
   active: true,

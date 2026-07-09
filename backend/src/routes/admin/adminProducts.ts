@@ -61,7 +61,9 @@ const productPayloadSchema = z.object({
   category: textField(120),
   need: optionalTextField(120),
   price: moneyFromInput(),
-  priceBefore: moneyFromInput().optional(),
+  priceBefore: moneyFromInput().nullable().optional(),
+  discountStartsAt: z.coerce.date().nullable().optional(),
+  discountEndsAt: z.coerce.date().nullable().optional(),
   tag: optionalTextField(80),
   rating: moneyFromInput(0, 5).optional(),
   reviews: z.coerce.number().int().min(0).max(999999).optional(),
@@ -105,6 +107,23 @@ const mongoIdParamsSchema = z.object({
   id: objectIdSchema,
 });
 
+const categoryDiscountApplySchema = z
+  .object({
+    category: textField(120),
+    discountType: z.enum(["percent", "fixed"]),
+    value: moneyFromInput(0.01, 999999),
+    discountStartsAt: z.coerce.date().optional(),
+    discountEndsAt: z.coerce.date().optional(),
+  })
+  .refine((body) => body.discountType !== "percent" || body.value <= 100, {
+    message: "El descuento porcentual no puede superar 100%",
+    path: ["value"],
+  });
+
+const categoryDiscountRemoveSchema = z.object({
+  category: textField(120),
+});
+
 export const adminProductsRouter = new Hono<AppEnv>()
   .use("*", requireAdmin)
   .get("/count", async (c) => c.json({ count: await Product.countDocuments() }))
@@ -134,6 +153,48 @@ export const adminProductsRouter = new Hono<AppEnv>()
         400,
       );
     }
+  })
+  .post("/discounts/apply-category", async (c) => {
+    const parsed = await parseJson(c, categoryDiscountApplySchema);
+    if (!parsed.success) return parsed.response;
+
+    const { category, discountType, value, discountStartsAt, discountEndsAt } = parsed.data;
+    const products = await Product.find({ category, active: true });
+    let updated = 0;
+
+    for (const product of products) {
+      const base = product.priceBefore ?? product.price;
+      const rawNewPrice = discountType === "percent" ? base * (1 - value / 100) : base - value;
+      const newPrice = Math.round(Math.max(0.01, rawNewPrice) * 100) / 100;
+      if (newPrice >= base) continue;
+
+      product.priceBefore = base;
+      product.price = newPrice;
+      product.discountStartsAt = discountStartsAt;
+      product.discountEndsAt = discountEndsAt;
+      await product.save();
+      updated++;
+    }
+
+    return c.json({ updated, total: products.length });
+  })
+  .post("/discounts/remove-category", async (c) => {
+    const parsed = await parseJson(c, categoryDiscountRemoveSchema);
+    if (!parsed.success) return parsed.response;
+
+    const products = await Product.find({ category: parsed.data.category, priceBefore: { $ne: null } });
+    let updated = 0;
+
+    for (const product of products) {
+      product.price = product.priceBefore as number;
+      product.priceBefore = undefined;
+      product.discountStartsAt = undefined;
+      product.discountEndsAt = undefined;
+      await product.save();
+      updated++;
+    }
+
+    return c.json({ updated });
   })
   .put("/:id", async (c) => {
     try {

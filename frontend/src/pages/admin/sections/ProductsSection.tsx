@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { useAuth } from '@clerk/clerk-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Card,
   PageHeader,
@@ -22,6 +25,104 @@ import { useAdminPanelContext } from '../AdminPanelContext';
 import { variantSummary } from '../utils';
 import type { ProductSortKey } from '../hooks/useAdminPanel';
 import { getTotalStock, getEffectivePrice, getEffectivePriceBefore } from '../../../lib/productVariants';
+import { api } from '../../../lib/api';
+
+const modalFieldLabel = { fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: 'var(--ink-60)', marginBottom: 6, display: 'block' };
+const modalInput = { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--ink-20)', background: 'var(--cream)', fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', boxSizing: 'border-box' as const };
+
+function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; onClose: () => void; categories: string[] }) {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+  const [category, setCategory] = useState('');
+  const [discountType, setDiscountType] = useState<'percent' | 'fixed'>('percent');
+  const [value, setValue] = useState('10');
+  const [startsAt, setStartsAt] = useState('');
+  const [endsAt, setEndsAt] = useState('');
+  const [message, setMessage] = useState('');
+
+  const invalidate = () => {
+    void queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+    void queryClient.invalidateQueries({ queryKey: ['products'] });
+    void queryClient.invalidateQueries({ queryKey: ['product'] });
+  };
+
+  const applyMut = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      return api.admin.products.applyCategoryDiscount(
+        {
+          category,
+          discountType,
+          value: parseFloat(value) || 0,
+          ...(startsAt ? { discountStartsAt: startsAt } : {}),
+          ...(endsAt ? { discountEndsAt: endsAt } : {}),
+        },
+        token!,
+      );
+    },
+    onSuccess: (data) => {
+      setMessage(`${data.updated} de ${data.total} producto(s) actualizados.`);
+      invalidate();
+    },
+  });
+
+  const removeMut = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      return api.admin.products.removeCategoryDiscount(category, token!);
+    },
+    onSuccess: (data) => {
+      setMessage(`Descuento quitado de ${data.updated} producto(s).`);
+      invalidate();
+    },
+  });
+
+  return (
+    <ModalOverlay open={open} onClose={onClose}>
+      <div style={{ width: '100%', maxWidth: 420, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: 24 }}>
+        <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 16px' }}>Descuento por categoría</h3>
+        <div style={{ marginBottom: 14 }}>
+          <label style={modalFieldLabel}>Categoría</label>
+          <select style={modalInput} value={category} onChange={(e) => { setCategory(e.target.value); setMessage(''); }}>
+            <option value="">Seleccionar categoría…</option>
+            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+          <div>
+            <label style={modalFieldLabel}>Tipo</label>
+            <select style={modalInput} value={discountType} onChange={(e) => setDiscountType(e.target.value as 'percent' | 'fixed')}>
+              <option value="percent">Porcentaje (%)</option>
+              <option value="fixed">Monto fijo ($)</option>
+            </select>
+          </div>
+          <div>
+            <label style={modalFieldLabel}>Valor</label>
+            <input style={modalInput} type="number" min={0} step={0.01} value={value} onChange={(e) => setValue(e.target.value)} />
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
+          <div>
+            <label style={modalFieldLabel}>Vigente desde (opcional)</label>
+            <input style={modalInput} type="date" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
+          </div>
+          <div>
+            <label style={modalFieldLabel}>Vigente hasta (opcional)</label>
+            <input style={modalInput} type="date" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
+          </div>
+        </div>
+        {message && <div style={{ marginBottom: 14, fontSize: 13, color: 'var(--green)' }}>{message}</div>}
+        {(applyMut.isError || removeMut.isError) && <div role="alert" style={{ marginBottom: 14, fontSize: 13, color: 'var(--coral)' }}>No se pudo completar la acción.</div>}
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button type="button" onClick={() => removeMut.mutate()} disabled={!category || removeMut.isPending} style={{ padding: '10px 16px', borderRadius: 10, background: 'transparent', border: '1px solid var(--ink-12)', color: 'var(--coral)', cursor: 'pointer', fontSize: 13 }}>
+            Quitar descuento
+          </button>
+          <AnimatedButton variant="primary" disabled={!category || (parseFloat(value) || 0) <= 0 || applyMut.isPending} onClick={() => applyMut.mutate()} text={applyMut.isPending ? 'Aplicando…' : 'Aplicar descuento'} />
+        </div>
+      </div>
+    </ModalOverlay>
+  );
+}
 
 const PRODUCT_SORT_LABEL: Record<ProductSortKey, string> = {
   price: 'Precio',
@@ -95,6 +196,8 @@ export function ProductsSection() {
   setDeleteError,
   } = useAdminPanelContext();
 
+  const [discountModalOpen, setDiscountModalOpen] = useState(false);
+
   return (
     <>
           <>
@@ -116,10 +219,20 @@ export function ProductsSection() {
                 showProductsSkeleton ? (
                   <Skeleton height={40} width={152} borderRadius={999} />
                 ) : (
-                  <AnimatedButton variant="primary" onClick={() => setProductModal({ mode: "add" })} text="+ Agregar producto" />
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setDiscountModalOpen(true)}
+                      style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif' }}
+                    >
+                      Descuento por categoría
+                    </button>
+                    <AnimatedButton variant="primary" onClick={() => setProductModal({ mode: "add" })} text="+ Agregar producto" />
+                  </>
                 )
               }
             />
+            <CategoryDiscountModal open={discountModalOpen} onClose={() => setDiscountModalOpen(false)} categories={categories} />
 
             {/* Filter bar */}
             {showProductsSkeleton ? (
