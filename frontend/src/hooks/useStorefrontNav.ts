@@ -5,7 +5,7 @@ import { useCartStore } from '../store/cartStore';
 import { useUiStore } from '../store/uiStore';
 import { normalizeCatalogFilter, rememberCatalogBrands, clearStoredCatalogBrands, type CatalogFilter } from '../lib/catalogFilter';
 
-export type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club' | 'orders' | 'sample-picker' | 'compare' | 'wishlist';
+export type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club' | 'orders' | 'profile' | 'sample-picker' | 'compare' | 'wishlist';
 
 // Remember where the landing was scrolled when we leave it via an in-app navigation, so the browser
 // back button can return to that spot (the landing reads this on mount). Only meaningful while we're
@@ -76,6 +76,9 @@ export function useStorefrontNav() {
         break;
       case 'orders':
         navigate({ to: '/orders' });
+        break;
+      case 'profile':
+        navigate({ to: '/profile' });
         break;
       case 'sample-picker':
         navigate({ to: '/sample-picker' });

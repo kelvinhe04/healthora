@@ -93,6 +93,23 @@ export const api = {
           token,
         ),
     },
+    preferences: {
+      get: (token: string) =>
+        request<{ newsletterSubscribed: boolean }>(
+          "/account/preferences",
+          undefined,
+          token,
+        ),
+      update: (
+        body: { newsletterSubscribed: boolean },
+        token: string,
+      ) =>
+        request<{ newsletterSubscribed: boolean }>(
+          "/account/preferences",
+          { method: "PATCH", body: JSON.stringify(body) },
+          token,
+        ),
+    },
   },
   cart: {
     get: (token: string) => request<CartItem[]>("/cart", undefined, token),
