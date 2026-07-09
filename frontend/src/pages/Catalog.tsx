@@ -43,6 +43,21 @@ const filterLabel: CSSProperties = {
 };
 const ITEMS_PER_PAGE = 12;
 
+// Deterministic per-id hash (xmur3-style) → a stable pseudo-random key. Used to give the
+// "Destacados" view a shuffled-looking-but-fixed order: same on every reload, on every
+// back-return, and for every user. Replaces a Math.random() shuffle that reshuffled on each
+// mount. Keyed on the product id so the order stays anchored to the product, not to array order.
+function stableShuffleKey(id: string): number {
+  let h = 1779033703 ^ id.length;
+  for (let i = 0; i < id.length; i++) {
+    h = Math.imul(h ^ id.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  h = Math.imul(h ^ (h >>> 16), 2246822507);
+  h = Math.imul(h ^ (h >>> 13), 3266489909);
+  return (h ^ (h >>> 16)) >>> 0;
+}
+
 let catalogInitialLoadDone = false;
 
 export function Catalog({
@@ -93,13 +108,14 @@ export function Catalog({
     isLoadingAll || (searchTerm.length > 0 && isLoadingSearch);
   const { data: categories = [] } = useCategories();
 
+  // Shuffled-looking but fixed order for the "Destacados" view: sort by a deterministic per-id
+  // key so the order is identical on every reload / back-return / user. Ties broken by id for a
+  // fully stable total order.
   const shuffledAll = useMemo(() => {
-    const arr = allProducts.slice();
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
+    return allProducts
+      .map((p) => ({ p, k: stableShuffleKey(p.id) }))
+      .sort((a, b) => a.k - b.k || (a.p.id < b.p.id ? -1 : a.p.id > b.p.id ? 1 : 0))
+      .map((x) => x.p);
   }, [allProducts]);
 
   // Show skeleton on every mount (navigation) — not just cold loads.
