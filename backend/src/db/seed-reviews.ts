@@ -1,6 +1,7 @@
 import { connectDB } from './connection';
 import { Product } from './models/Product';
 import { Review } from './models/Review';
+import { recomputeAllProductRatings } from '../lib/productRatings';
 
 const NAMES = [
   'Sofia Martinez', 'Diego Hernandez', 'Valentina Garcia', 'Mateo Rodriguez', 'Camila Lopez',
@@ -234,6 +235,12 @@ async function seedReviews() {
 
   await Review.insertMany(reviews);
   console.log(`✓ ${reviews.length} reseñas insertadas en ${selectedProducts.length} de ${products.length} productos`);
+
+  // Keep Product.rating/reviews as a mirror of the real Review data, not a copy that goes stale -
+  // recompute every product (not just selectedProducts) since deleteMany above may have cleared
+  // reviews for products this run didn't reselect.
+  const { updated } = await recomputeAllProductRatings();
+  console.log(`✓ ${updated} productos con rating/reviews sincronizado a partir de reseñas reales`);
   process.exit(0);
 }
 

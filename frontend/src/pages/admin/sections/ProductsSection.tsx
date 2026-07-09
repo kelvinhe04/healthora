@@ -13,11 +13,78 @@ import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { ProductImage } from '../../../components/shared/ProductImage';
+import { Stars } from '../../../components/shared/Stars';
 import { PaginationControls } from '../components/PaginationControls';
 import { ProductModal } from '../components/ProductModal';
 import { useAdminPanelContext } from '../AdminPanelContext';
 import { variantSummary } from '../utils';
+import type { ProductSortKey } from '../hooks/useAdminPanel';
 import { getTotalStock, getEffectivePrice, getEffectivePriceBefore } from '../../../lib/productVariants';
+
+const PRODUCT_SORT_LABEL: Record<ProductSortKey, string> = {
+  price: 'Precio',
+  stock: 'Stock',
+  rating: 'Reseña',
+};
+
+function ProductRatingCell({ summary }: { summary?: { avgRating: number; count: number } }) {
+  if (!summary || summary.count === 0) {
+    return (
+      <span style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
+        SIN RESEÑAS
+      </span>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+      <Stars value={summary.avgRating} size={12} />
+      <span style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', whiteSpace: 'nowrap' }}>
+        {summary.avgRating} · {summary.count}
+      </span>
+    </div>
+  );
+}
+
+function SortableTh({
+  label,
+  sortKey,
+  activeSort,
+  onSort,
+}: {
+  label: string;
+  sortKey: ProductSortKey;
+  activeSort: { key: ProductSortKey | null; dir: 'asc' | 'desc' };
+  onSort: (key: ProductSortKey) => void;
+}) {
+  const active = activeSort.key === sortKey;
+  return (
+    <th style={{ ...th, whiteSpace: 'nowrap' }}>
+      <button
+        onClick={() => onSort(sortKey)}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          border: 'none',
+          background: 'transparent',
+          padding: 0,
+          cursor: 'pointer',
+          font: 'inherit',
+          color: active ? 'var(--ink)' : 'var(--ink-60)',
+          letterSpacing: 'inherit',
+          textTransform: 'inherit',
+          whiteSpace: 'nowrap',
+        }}
+        title={`Ordenar por ${label.toLowerCase()}`}
+      >
+        {label}
+        <span style={{ fontSize: 9, opacity: active ? 1 : 0.35 }}>
+          {active ? (activeSort.dir === 'asc' ? '▲' : '▼') : '▲▼'}
+        </span>
+      </button>
+    </th>
+  );
+}
 
 export function ProductsSection() {
   const {
@@ -26,8 +93,13 @@ export function ProductsSection() {
   productCatFilter,
   setProductCatFilter,
   categories,
+  categoryCounts,
   productSearch,
   setProductSearch,
+  productSort,
+  toggleProductSort,
+  clearProductSort,
+  reviewsSummary,
   setProductModal,
   highlightVariantId,
   selectedProductIds,
@@ -170,6 +242,9 @@ export function ProductsSection() {
                       key={cat}
                       onClick={() => setProductCatFilter(cat)}
                       style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
                         padding: "7px 14px",
                         borderRadius: 999,
                         fontSize: 12,
@@ -191,7 +266,16 @@ export function ProductsSection() {
                         transition: "all 120ms",
                       }}
                     >
-                      {cat}
+                      <span>{cat}</span>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontFamily: '"JetBrains Mono", monospace',
+                          opacity: productCatFilter === cat ? 0.8 : 0.6,
+                        }}
+                      >
+                        {categoryCounts[cat] ?? 0}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -225,16 +309,40 @@ export function ProductsSection() {
                   flexWrap: "wrap",
                 }}
               >
-                <div
-                  style={{
-                    fontSize: 12,
-                    fontFamily: '"Geist", sans-serif',
-                    color: "var(--ink-60)",
-                  }}
-                >
-                  {selectedDisplayedIds.length > 0
-                    ? `${selectedDisplayedIds.length} seleccionados en esta vista`
-                    : "Selecciona varios productos para borrado masivo."}
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontFamily: '"Geist", sans-serif',
+                      color: "var(--ink-60)",
+                    }}
+                  >
+                    {selectedDisplayedIds.length > 0
+                      ? `${selectedDisplayedIds.length} seleccionados en esta vista`
+                      : "Selecciona varios productos para borrado masivo."}
+                  </div>
+                  {productSort.key && (
+                    <button
+                      onClick={clearProductSort}
+                      title="Quitar orden"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "5px 10px",
+                        borderRadius: 999,
+                        border: "1px solid var(--ink-20)",
+                        background: "transparent",
+                        color: "var(--ink-60)",
+                        fontSize: 11,
+                        fontFamily: '"JetBrains Mono", monospace',
+                        cursor: "pointer",
+                      }}
+                    >
+                      Orden: {PRODUCT_SORT_LABEL[productSort.key]} {productSort.dir === "asc" ? "▲" : "▼"}
+                      <Icon name="x" size={11} />
+                    </button>
+                  )}
                 </div>
                 <div
                   style={{
@@ -293,6 +401,12 @@ export function ProductsSection() {
                     </div>
                     <div style={{ flex: 0.6 }}>
                       <Skeleton height={9} width={38} borderRadius={3} />
+                    </div>
+                    <div style={{ flex: 0.8 }}>
+                      <Skeleton height={9} width={46} borderRadius={3} />
+                    </div>
+                    <div style={{ flex: 0.8 }}>
+                      <Skeleton height={9} width={50} borderRadius={3} />
                     </div>
                     <div style={{ flex: 0.8 }}>
                       <Skeleton height={9} width={46} borderRadius={3} />
@@ -367,6 +481,10 @@ export function ProductsSection() {
                       <div style={{ flex: 0.6 }}>
                         <Skeleton height={13} width={30} borderRadius={4} />
                       </div>
+                      {/* Reseña: stars + count */}
+                      <div style={{ flex: 0.8 }}>
+                        <Skeleton height={13} width={64} borderRadius={4} />
+                      </div>
                       {/* Estado: pill */}
                       <div style={{ flex: 0.8 }}>
                         <Skeleton height={22} width={62} borderRadius={999} />
@@ -411,8 +529,9 @@ export function ProductsSection() {
                     </th>
                     <th style={th}>Producto</th>
                     <th style={th}>Categoría</th>
-                    <th style={th}>Precio</th>
-                    <th style={th}>Stock</th>
+                    <SortableTh label="Precio" sortKey="price" activeSort={productSort} onSort={toggleProductSort} />
+                    <SortableTh label="Stock" sortKey="stock" activeSort={productSort} onSort={toggleProductSort} />
+                    <SortableTh label="Reseña" sortKey="rating" activeSort={productSort} onSort={toggleProductSort} />
                     <th style={th}>Estado</th>
                     <th style={th}></th>
                   </tr>
@@ -532,6 +651,9 @@ export function ProductsSection() {
                         {getTotalStock(product)}
                       </td>
                       <td style={td}>
+                        <ProductRatingCell summary={reviewsSummary[product.id]} />
+                      </td>
+                      <td style={td}>
                         <StatusPill
                           status={product.active ? "Activo" : "Inactivo"}
                         />
@@ -576,7 +698,7 @@ export function ProductsSection() {
                   {displayedProducts.length === 0 && (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={8}
                         style={{
                           ...td,
                           textAlign: "center",

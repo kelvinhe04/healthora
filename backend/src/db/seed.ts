@@ -58,8 +58,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 11.99,
-    rating: 4.7,
-    reviews: 2340,
     short: 'Vitamina D3 de alta potencia en softgel para apoyo diario.',
     benefits: [
       'Apoya la absorción de calcio para huesos y dientes fuertes',
@@ -96,8 +94,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 13.21,
-    rating: 4.7,
-    reviews: 1250,
     short: 'Multivitaminico diario completo para mujeres adultas.',
     benefits: [
       'Fórmula completa con más de 23 vitaminas y minerales esenciales para la mujer adulta',
@@ -138,8 +134,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 23.40,
-    rating: 4.7,
-    reviews: 396,
     short: 'Formula completa con vitaminas, minerales y alimentos verdes para mujeres.',
     benefits: [
       'Fórmula ultra completa con más de 20 vitaminas y minerales en dosis óptimas para la mujer',
@@ -182,8 +176,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 8.81,
-    rating: 4.6,
-    reviews: 890,
     short: 'Vitamina B12 sublingual para energia y metabolismo.',
     benefits: [
       'Aporta metilcobalamina, la forma activa y más biodisponible de vitamina B12',
@@ -222,8 +214,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 40.54,
-    rating: 4.7,
-    reviews: 1041,
     short: 'Multivitaminico integral con base de alimentos reales en capsulas vegetarianas.',
     benefits: [
       'Fórmula Whole Food: vitaminas derivadas de frutas y verduras reales, no sintéticas',
@@ -266,8 +256,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 18.49,
-    rating: 4.7,
-    reviews: 812,
     short: 'Gomitas multivitaminicas completas para rutina diaria femenina.',
     benefits: [
       'Fórmula avanzada diseñada específicamente para las necesidades nutricionales de la mujer adulta',
@@ -301,8 +289,6 @@ const PRODUCTS = [
     need: 'Energía y vitaminas',
     price: 11.68,
     priceBefore: 19.99,
-    rating: 4.7,
-    reviews: 524,
     short: 'Formula 50+ en gomitas para soporte diario y energia en presentacion de 84 gummies.',
     benefits: [
       'Fórmula 50+ adaptada a las necesidades nutricionales cambiantes tras la menopausia',
@@ -349,8 +335,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 9.79,
-    rating: 4.6,
-    reviews: 689,
     short: 'Multivitaminico en gomitas para soporte diario femenino.',
     benefits: [
       'Cubre las necesidades vitamínicas esenciales de la mujer adulta en un formato gomita de fácil consumo',
@@ -386,8 +370,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 17.79,
-    rating: 4.6,
-    reviews: 441,
     short: 'Gomitas multivitaminicas con omega-3 para soporte integral femenino.',
     benefits: [
       'Combina un multivitamínico completo con omega-3 DHA derivado de algas marinas en una sola gomita',
@@ -423,8 +405,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 10.99,
-    rating: 4.8,
-    reviews: 1433,
     short: 'Vitamina D3 de uso diario en dosis de 2000 IU para adultos.',
     benefits: [
       'Dosis diaria de 2000 IU (50 mcg) recomendada para el mantenimiento de niveles óptimos en adultos',
@@ -467,8 +447,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 17.49,
-    rating: 4.7,
-    reviews: 388,
     short: 'Combinacion de D3 y K2 para soporte oseo avanzado en presentacion de 30 softgels.',
     benefits: [
       'Sinergia D3+K2: la vitamina D aumenta la absorción de calcio y la K2 lo dirige hacia los huesos (no las arterias)',
@@ -501,8 +479,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 11.49,
-    rating: 4.7,
-    reviews: 633,
     short: 'Vitamina C en gomitas para soporte inmune diario en presentacion de 60 gummies.',
     benefits: [
       'Dosis de 500 mg de vitamina C por porción para un soporte inmunológico superior al diario básico',
@@ -545,8 +521,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 13.99,
-    rating: 4.6,
-    reviews: 1182,
     short: 'Gomitas multivitaminicas para hombres con sabor agradable.',
     benefits: [
       'Fórmula diseñada para los requerimientos específicos del hombre adulto, sin hierro añadido',
@@ -587,8 +561,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 14.99,
-    rating: 4.6,
-    reviews: 287,
     short: 'Multivitaminico para hombres en formato gummy con presentacion de 90 gummies.',
     benefits: [
       'Fórmula Power Plus enriquecida con vitaminas del complejo B en dosis superiores al multivitamínico estándar',
@@ -621,8 +593,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 18.49,
-    rating: 4.7,
-    reviews: 2031,
     short: 'Biotina de alta potencia para cabello, piel y unas en capsulas rapid release.',
     benefits: [
       'Alta potencia de 10,000 mcg (10 mg) de biotina para combatir la caída del cabello y el adelgazamiento del tallo capilar',
@@ -661,8 +631,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 12.89,
-    rating: 4.6,
-    reviews: 942,
     short: 'Complejo B clasico con vitamina C para apoyo diario en presentacion de 150 tabletas.',
     benefits: [
       'Complejo B completo (B1, B2, B3, B5, B6, B7, B9 y B12) en dosis terapéuticas para metabolismo energético óptimo',
@@ -697,8 +665,6 @@ const PRODUCTS = [
     category: 'Suplementos de Bienestar',
     need: 'Energía y vitaminas',
     price: 26.62,
-    rating: 4.8,
-    reviews: 890,
     short: 'Omega-3 de alta potencia con EPA y DHA en forma triglicerido para mejor absorcion. La marca #1 en venta de omega-3 en EE.UU., sin eructos con sabor a pescado.',
     benefits: [
       'Investigacion respalda que los acidos grasos esenciales EPA y DHA apoyan corazon, cerebro y funcion visual',
@@ -787,8 +753,6 @@ const PRODUCTS = [
     category: 'Suplementos de Bienestar',
     need: 'Energía y vitaminas',
     price: 9.94,
-    rating: 4.7,
-    reviews: 10914,
     short: 'Curcumina de turmeric estandarizada al 95%, con extracto de pimienta negra (BioPerine) para mejorar la absorcion. Apoyo antioxidante diario en capsula.',
     benefits: [
       'Soporte antioxidante: la curcumina y los flavonoides (curcuminoides) de la cúrcuma ayudan a combatir los radicales libres',
@@ -819,8 +783,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 24.34,
-    rating: 4.9,
-    reviews: 1347,
     short: 'Creatina monohidratada micronizada para mayor solubilidad y absorcion. Aporta 5 g de creatina facilmente absorbible por porcion para apoyar tu rutina de ejercicio y tu recuperacion despues de cada entrenamiento.',
     benefits: [
       'Apoya el aumento de masa muscular magra',
@@ -910,8 +872,6 @@ const PRODUCTS = [
     category: 'Suplementos de Bienestar',
     need: 'Energía y vitaminas',
     price: 36.79,
-    rating: 4.7,
-    reviews: 644,
     short: 'Probiotico Once Daily de Garden of Life formulado especificamente para mujeres: 50 mil millones de UFC de 16 cepas probioticas mas una mezcla de fibra prebiotica organica en una sola capsula al dia, para apoyar la salud digestiva, inmune y vaginal.',
     benefits: [
       '50 mil millones de UFC de 16 cepas probioticas, incluyendo L. reuteri y L. fermentum estudiadas clinicamente para apoyar la salud vaginal y el equilibrio del pH',
@@ -935,8 +895,6 @@ const PRODUCTS = [
     category: 'Suplementos de Bienestar',
     need: 'Energía y vitaminas',
     price: 7.49,
-    rating: 4.8,
-    reviews: 2619,
     short: 'Tabletas efervescentes Nuun Sport con 5 electrolitos esenciales (sodio, potasio, magnesio, calcio y cloruro) para una hidratacion completa durante el ejercicio. Sin sabores ni edulcorantes artificiales (solo stevia), Non-GMO y aptas para dieta keto. Cada tubo trae 10 porciones, disponibles en 10 sabores.',
     benefits: [
       'Sodio para la rehidratacion, potasio para el equilibrio hidrico, magnesio para musculos y nervios, y calcio y cloruro para mantener el pH e hidratacion adecuados',
@@ -1099,8 +1057,6 @@ const PRODUCTS = [
     category: 'Suplementos de Bienestar',
     need: 'Energía y vitaminas',
     price: 19.97,
-    rating: 4.6,
-    reviews: 1740,
     short: 'Gomitas OLLY Goodbye Stress con GABA, L-Teanina y extracto de toronjil (lemon balm) para mantenerte tranquilo y alerta en momentos de estrés ocasional. Sabor Berry Verbena, sin colores ni sabores sintéticos y libre de gluten.',
     benefits: [
       'GABA (100 mg): comienza a actuar en 30-60 minutos para apoyar un estado mental relajado en momentos de estrés ocasional',
@@ -1191,8 +1147,6 @@ const PRODUCTS = [
     category: 'Suplementos de Bienestar',
     need: 'Energía y vitaminas',
     price: 12.87,
-    rating: 4.6,
-    reviews: 1034,
     short: 'Gomitas OLLY Probiotic + Prebiotic con 500 millones de UFC de Bacillus coagulans (LactoSpore) mas una mezcla prebiotica (FOS e inulina) para apoyar un microbioma intestinal equilibrado. Sabor Peachy Peach, sin colores ni sabores sinteticos y libre de gluten.',
     benefits: [
       'Probiotico (500 millones de UFC): LactoSpore Bacillus coagulans, capaz de sobrevivir condiciones adversas para llegar vivo hasta el intestino',
@@ -1269,8 +1223,6 @@ const PRODUCTS = [
     category: 'Suplementos de Bienestar',
     need: 'Energía y vitaminas',
     price: 17.99,
-    rating: 4.2,
-    reviews: 1231,
     short: 'Gomitas OLLY Sleep sabor Blackberry Zen con melatonina, L-teanina y una mezcla de botanicos (manzanilla, pasiflora y toronjil) para ayudarte a relajar la mente, calmar los sentidos y apoyar un ciclo de sueño saludable.',
     benefits: [
       'Melatonina (3 mg): ayuda a tu cuerpo a conciliar el sueño y mantenerse dormido',
@@ -1359,8 +1311,6 @@ const PRODUCTS = [
     category: 'Suplementos de Bienestar',
     need: 'Energía y vitaminas',
     price: 13.99,
-    rating: 4.1,
-    reviews: 7866,
     short: 'Gomitas sabor berry tangerine con Ginseng, Alpha GPC y vitaminas B para potenciar el enfoque mental.',
     benefits: ['Enfoque', 'Ginseng', 'Alpha GPC'],
     usage: 'Tomar 2 gomitas al dia. Masticar bien antes de tragar; no requiere agua.',
@@ -1378,8 +1328,6 @@ const PRODUCTS = [
     category: 'Suplementos de Bienestar',
     need: 'Piel seca',
     price: 12.79,
-    rating: 4.5,
-    reviews: 6765,
     short: 'Gomitas sabor arandano y granada con Acido Hialuronico, Colageno y Espino Amarillo para hidratar la piel desde adentro.',
     benefits: ['Piel', 'Acido Hialuronico', 'Colageno'],
     usage: 'Tomar 2 gomitas al dia. Masticar bien antes de tragar.',
@@ -1397,8 +1345,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 33.00,
-    rating: 4.7,
-    reviews: 2210,
     short: 'Multinutriente premium de liberacion retardada para mujeres.',
     benefits: ['Premium', 'Mujeres 18+', 'Uso diario'],
     usage: 'Tomar 2 capsulas al dia.',
@@ -1416,8 +1362,6 @@ const PRODUCTS = [
     category: 'Suplementos de Bienestar',
     need: 'Energía y vitaminas',
     price: 54.00,
-    rating: 4.7,
-    reviews: 890,
     short: 'Sinbiotico premium para salud digestiva diaria.',
     benefits: ['Digestive health', 'Synbiotic', 'Capsulas'],
     usage: 'Tomar 1 capsula al dia.',
@@ -1435,8 +1379,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 45.00,
-    rating: 4.6,
-    reviews: 476,
     short: 'Magnesio premium para relajacion y soporte muscular.',
     benefits: ['Magnesio', 'Relajacion', 'Soporte muscular'],
     usage: 'Tomar 2 capsulas al dia por la tarde o noche.',
@@ -1454,8 +1396,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 43.00,
-    rating: 4.8,
-    reviews: 1302,
     short: 'Prenatal premium con DHA y folato de uso diario.',
     benefits: ['Prenatal', 'DHA', 'Folato'],
     usage: 'Tomar 2 capsulas al dia.',
@@ -1473,8 +1413,6 @@ const PRODUCTS = [
     category: 'Suplementos de Bienestar',
     need: 'Energía y vitaminas',
     price: 54.00,
-    rating: 4.6,
-    reviews: 154,
     short: 'Probiótico premium enfocado en etapa prenatal y posparto.',
     benefits: ['Prenatal', 'Probiotico', 'Uso diario'],
     usage: 'Tomar 1 capsula diaria.',
@@ -1493,8 +1431,6 @@ const PRODUCTS = [
     need: 'Energía y vitaminas',
     price: 15.99,
     imageUrl: '/products/suplementos/olly-mens-multi-120ct-1.jpg',
-    rating: 4.6,
-    reviews: 14825,
     short: 'Gomitas sabor blackberry con 16 vitaminas y minerales esenciales mas CoQ10 para la salud general del hombre.',
     benefits: [
       'Mezcla multitasking de vitaminas A, C, D, E, complejo B y Zinc',
@@ -1524,8 +1460,6 @@ const PRODUCTS = [
     need: 'Energía y vitaminas',
     price: 17.99,
     imageUrl: '/products/suplementos/culturelle-digestive-daily-probiotic-1.jpg',
-    rating: 4.7,
-    reviews: 1200,
     short: 'Probiotico clinicamente estudiado (Lactobacillus rhamnosus GG) con prebioticos que reduce gases, hinchazon y diarrea ocasional.',
     benefits: [
       'Ayuda a reducir diarrea, gases e hinchazon ocasionales',
@@ -1554,8 +1488,6 @@ const PRODUCTS = [
     need: 'Energía y vitaminas',
     price: 45.00,
     imageUrl: '/products/suplementos/lmnt-recharge-citrus-salt/citrus-salt/1.jpg',
-    rating: 4.9,
-    reviews: 3400,
     short: 'Mezcla de electrolitos sin azucar: 1000mg de sodio, 200mg de potasio y 60mg de magnesio por sobre.',
     benefits: [
       'Formula cientifica de electrolitos: 1000mg sodio, 200mg potasio, 60mg magnesio por sobre',
@@ -1592,8 +1524,6 @@ const PRODUCTS = [
     need: 'Fitness y recuperación',
     price: 34.15,
     imageUrl: '/products/suplementos/orgain-organic-protein-superfoods-powder-chocolate-1.jpg',
-    rating: 4.6,
-    reviews: 9682,
     short: 'Proteina vegetal organica (21g) con mezcla de 50 superalimentos, sin lactosa y sin azucar agregada.',
     benefits: [
       '21g de proteina vegetal organica y 9g de fibra prebiotica por porcion',
@@ -1622,8 +1552,6 @@ const PRODUCTS = [
     need: 'Energía y vitaminas',
     price: 29.98,
     imageUrl: '/products/suplementos/vital-proteins-collagen-peptides-advanced/strawberry-lemon/1.jpg',
-    rating: 4.4,
-    reviews: 815,
     short: 'Colageno hidrolizado avanzado con 120mg de acido hialuronico y 100% VD de vitamina C para piel, cabello, unas y articulaciones.',
     benefits: [
       '20g de peptidos de colageno por porcion',
@@ -1669,8 +1597,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 20.20,
-    rating: 4.6,
-    reviews: 863,
     short: 'Tratamiento topico con adapaleno para acne.',
     benefits: ['Acne', 'Uso nocturno', 'Textura'],
     usage: 'Aplicar una capa fina por la noche en piel limpia.',
@@ -1689,8 +1615,6 @@ const PRODUCTS = [
     need: 'Piel seca',
     price: 7.69,
     imageUrl: '/products/salud-piel/panoxyl-acne-foaming-wash-1.jpg',
-    rating: 4.6,
-    reviews: 1314,
     short: 'Limpiador facial y corporal con 10% de peroxido de benzoilo, la marca de peroxido de benzoilo mas recomendada por dermatologos.',
     benefits: [
       'Tratamiento contra el acne con 10% de Peroxido de Benzoilo',
@@ -1718,8 +1642,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 14.69,
-    rating: 4.6,
-    reviews: 1303,
     short: 'Exfoliante quimico para piel con imperfecciones.',
     benefits: ['Poros', 'Textura', 'Acido salicilico'],
     usage: 'Aplicar con algodon o manos sobre piel limpia.',
@@ -1737,8 +1659,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 9.90,
-    rating: 4.5,
-    reviews: 1256,
     short: 'Serum de retinol en escualano para rutina nocturna.',
     benefits: ['Retinol', 'Escualano', 'Presupuesto accesible'],
     usage: 'Aplicar por la noche despues de limpiar la piel.',
@@ -1763,8 +1683,6 @@ const PRODUCTS = [
       { url: '/products/salud-piel/the-ordinary-hyaluronic-acid-2-b5/3.jpg', alt: 'Hyaluronic Acid 2% + B5 - antes y despues' },
       { url: '/products/salud-piel/the-ordinary-hyaluronic-acid-2-b5/4.jpg', alt: 'Hyaluronic Acid 2% + B5 - beneficios' },
     ],
-    rating: 4.4,
-    reviews: 1872,
     short: 'Serum de acido hialuronico de segunda generacion con ceramidas para hidratacion instantanea y prolongada.',
     benefits: [
       'Hidratacion inmediata y efecto plumping',
@@ -1794,8 +1712,6 @@ const PRODUCTS = [
     need: 'Piel seca',
     price: 18.96,
     priceBefore: 20.49,
-    rating: 4.8,
-    reviews: 4567,
     short: 'Crema con 3 ceramidas esenciales y tecnologia MVE de hidratacion 48 horas.',
     benefits: [
       'Tecnologia MVE que libera humectantes de forma continua por 48 horas',
@@ -1830,8 +1746,6 @@ const PRODUCTS = [
     need: 'Piel seca',
     price: 14.97,
     priceBefore: 19.99,
-    rating: 4.6,
-    reviews: 892,
     short: 'Locion nocturna ultraligera con niacinamida calmante y 3 ceramidas.',
     benefits: [
       'Niacinamida 4% que calma la piel y ayuda a reducir el enrojecimiento',
@@ -1859,8 +1773,6 @@ const PRODUCTS = [
     category: 'Hidratantes',
     need: 'Piel seca',
     price: 24.99,
-    rating: 4.7,
-    reviews: 2589,
     short: 'Hidratante con ceramida-3 y niacinamida que repara la barrera en 1 hora.',
     benefits: [
       'Restaura la barrera protectora de la piel en tan solo 1 hora',
@@ -1889,8 +1801,6 @@ const PRODUCTS = [
     need: 'Piel seca',
     price: 19.97,
     priceBefore: 26.79,
-    rating: 4.6,
-    reviews: 1234,
     short: 'Gel acuoso con acido hialuronico que hidrata 24 horas sin sensacion grasa.',
     benefits: [
       'Acido hialuronico que atrae y retiene hasta 1000 veces su peso en agua',
@@ -1918,8 +1828,6 @@ const PRODUCTS = [
     category: 'Hidratantes',
     need: 'Piel seca',
     price: 15.97,
-    rating: 4.7,
-    reviews: 1130,
     short: 'Crema intensiva con glicerina, niacinamida y pantenol para piel seca a muy seca.',
     benefits: [
       'Hidratacion intensa de 48 horas que restaura la barrera cutanea',
@@ -1953,8 +1861,6 @@ const PRODUCTS = [
     category: 'Hidratantes',
     need: 'Piel seca',
     price: 12.50,
-    rating: 4.7,
-    reviews: 1890,
     short: 'Hidratante con NMF identicos a los de la piel mas acido hialuronico.',
     benefits: [
       'NMF (urea, aminoacidos y PCA) identicos a los factores hidratantes naturales de la piel',
@@ -1987,8 +1893,6 @@ const PRODUCTS = [
     category: 'Hidratantes',
     need: 'Piel seca',
     price: 42.00,
-    rating: 4.7,
-    reviews: 722,
     short: 'Crema con omegas 3, 6 y 9 de chia y linaza que renutre la piel seca y opaca.',
     benefits: [
       'Omegas 3, 6 y 9 de semillas de chia y linaza que reponen los lipidos de la piel',
@@ -2017,8 +1921,6 @@ const PRODUCTS = [
     need: 'Piel seca',
     price: 19.97,
     priceBefore: 26.68,
-    rating: 4.6,
-    reviews: 864,
     short: 'Gel de avena prebiotica y feverfew que calma la piel sensible en 1 dia.',
     benefits: [
       'Avena prebiotica que nutre el microbioma natural de la piel',
@@ -2052,8 +1954,6 @@ const PRODUCTS = [
     category: 'Hidratantes',
     need: 'Piel seca',
     price: 38.00,
-    rating: 4.7,
-    reviews: 951,
     short: 'Crema K-beauty con acido hialuronico azul micronizado que repara en 30 minutos.',
     benefits: [
       'Acido hialuronico azul micronizado que penetra mas profundo que el HA comun',
@@ -2087,8 +1987,6 @@ const PRODUCTS = [
     need: 'Piel seca',
     price: 19.99,
     priceBefore: 26.00,
-    rating: 4.8,
-    reviews: 1412,
     short: '92% de mucina de caracol que hidrata, repara y devuelve elasticidad.',
     benefits: [
       '92% de filtrado de mucina de caracol de origen etico y cruelty-free',
@@ -2116,8 +2014,6 @@ const PRODUCTS = [
     category: 'Hidratantes',
     need: 'Piel seca',
     price: 48.00,
-    rating: 4.7,
-    reviews: 403,
     short: 'Hidratante matutino con niacinamida que unifica el tono y atenua manchas.',
     benefits: [
       'Niacinamida que aclara el tono y atenua manchas por daño solar',
@@ -2150,8 +2046,6 @@ const PRODUCTS = [
     category: 'Hidratantes',
     need: 'Piel seca',
     price: 60.00,
-    rating: 4.7,
-    reviews: 587,
     short: 'Crema rica con escualano de caña de azucar y omegas que rellena lineas finas.',
     benefits: [
       'Escualano 100% derivado de caña de azucar, identico al de la piel',
@@ -2186,8 +2080,6 @@ const PRODUCTS = [
     need: 'Piel seca',
     price: 20.00,
     priceBefore: 24.99,
-    rating: 4.6,
-    reviews: 339,
     short: 'Crema rica con ceramidas vegetales y escualano que suaviza lineas en 8 semanas.',
     benefits: [
       'Ceramidas de origen vegetal que refuerzan la barrera contra la deshidratacion',
@@ -2220,8 +2112,6 @@ const PRODUCTS = [
     category: 'Hidratantes',
     need: 'Piel seca',
     price: 26.99,
-    rating: 4.6,
-    reviews: 251,
     short: 'Crema con polipeptidos y planta de la resurreccion para firmeza y rebote.',
     benefits: [
       'Complejo de polipeptidos que apoya la firmeza y elasticidad de la piel',
@@ -2249,8 +2139,6 @@ const PRODUCTS = [
     category: 'Hidratantes',
     need: 'Piel seca',
     price: 38.00,
-    rating: 4.6,
-    reviews: 611,
     short: 'Gel-crema con hialuronico, agua de coco y cereza para efecto dewy.',
     benefits: [
       'Complejo de acido hialuronico que rellena la piel de hidratacion',
@@ -2284,8 +2172,6 @@ const PRODUCTS = [
     need: 'Piel seca',
     price: 14.99,
     priceBefore: 15.99,
-    rating: 4.6,
-    reviews: 428,
     short: 'Crema rica con tri-lipidos de barrera, bakuchiol y karite a precio accesible.',
     benefits: [
       'Complejo tri-lipido (ceramidas + colesterol + acidos grasos) que replica la barrera cutanea',
@@ -2315,8 +2201,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 21.64,
-    rating: 4.7,
-    reviews: 679,
     short:
       'Pomada tipo “skin protectant” para bebés y piel sensible. Forma una barrera oclusiva que ayuda a proteger contra la humedad (rozaduras del pañal), alivia resequedad intensa y ayuda a reparar zonas irritadas por fricción.',
     benefits: [
@@ -2369,8 +2253,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 14.82,
-    rating: 4.7,
-    reviews: 479,
     short:
       'Loción corporal de uso diario para bebé con avena coloidal (calmante) y dimeticona (protección ligera). Ayuda a hidratar por horas sin sensación pegajosa, ideal para piel sensible y para usar justo después del baño.',
     benefits: [
@@ -2406,8 +2288,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 13.72,
-    rating: 4.6,
-    reviews: 920,
     short:
       'Loción hidratante diaria para bebé con textura ligera y cómoda. Pensada para piel sensible: ayuda a mantener la barrera cutánea hidratada y suave, ideal para rutina diaria después del baño o cuando el clima reseca.',
     benefits: [
@@ -2454,8 +2334,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 12.49,
-    rating: 4.8,
-    reviews: 389,
     short:
       'Crema hidratante para bebé enfocada en reforzar la barrera cutánea. Con ceramidas (barrera) y ácido hialurónico (hidratación), es una opción ideal para piel seca o sensible y para mantener la suavidad durante el día.',
     benefits: [
@@ -2502,8 +2380,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 7.97,
-    rating: 4.8,
-    reviews: 1234,
     short:
       'Pasta para dermatitis del pañal con 40% óxido de zinc (barrera). Diseñada para proteger la piel de la humedad y la fricción, y para ayudar a calmar y recuperar la zona irritada con uso constante en cada cambio.',
     benefits: [
@@ -2541,8 +2417,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 96.28,
-    rating: 4.7,
-    reviews: 2749,
     short: 'Proteina whey clasica para recuperacion post entrenamiento. Disponible en 25 sabores y 12 presentaciones de tamano.',
     benefits: [
       '24 g de proteina whey y 5.5 g de BCAA por scoop para reparacion muscular',
@@ -2614,8 +2488,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 40.48,
-    rating: 4.6,
-    reviews: 2100,
     short: 'Aminoacidos con cafeina para energia pre entreno. Disponible en 12 sabores y 3 presentaciones de tamano.',
     benefits: [
       '5 g de amino blend (BCAA + EAA) para apoyar sintesis de proteina',
@@ -2664,8 +2536,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 63.99,
-    rating: 4.7,
-    reviews: 1800,
     short: 'Blend de proteinas para batidos densos y recuperacion. Disponible en 12 sabores y 6 presentaciones de tamano.',
     benefits: [
       '22 g de proteina de 6 fuentes (whey, caseina y proteina de huevo) para liberacion prolongada',
@@ -2717,8 +2587,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 29.99,
-    rating: 4.6,
-    reviews: 3200,
     short: 'Pre entreno clasico para energia y enfoque. Disponible en 8 sabores y 2 presentaciones de tamano.',
     benefits: [
       '150 mg de cafeina por porcion para energia inmediata',
@@ -2762,8 +2630,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 55.98,
-    rating: 4.6,
-    reviews: 1600,
     short: 'Batido listo para tomar con alto contenido de proteina. Disponible en 4 sabores y 2 presentaciones de tamano.',
     benefits: [
       '25 g de proteina de alta calidad por botella, lista para tomar',
@@ -2804,8 +2670,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 10.97,
-    rating: 4.8,
-    reviews: 1567,
     short: 'Analgesico de acetaminofen para dolor y fiebre, marca #1 recomendada por doctores.',
     benefits: [
       'Alivio rapido de dolor de cabeza, muscular, de espalda y fiebre',
@@ -2840,8 +2704,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 10.48,
-    rating: 4.7,
-    reviews: 2341,
     short: 'Ibuprofeno para dolor, fiebre e inflamacion, con accion antiinflamatoria.',
     benefits: [
       'Alivia dolor, fiebre e inflamacion en un solo caplet',
@@ -2875,8 +2737,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 14.97,
-    rating: 4.8,
-    reviews: 980,
     short: 'Cetirizina para sintomas comunes de alergia, con 24 horas de alivio continuo.',
     benefits: [
       'Alivio de 24 horas para alergias de interior y exterior',
@@ -2910,8 +2770,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 14.47,
-    rating: 4.4,
-    reviews: 740,
     short: 'Tableta bicapa de 12 horas que afloja el moco y controla la tos.',
     benefits: [
       'Alivia congestion de pecho y tos durante 12 horas con una sola tableta',
@@ -2946,8 +2804,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 5.47,
-    rating: 4.8,
-    reviews: 1120,
     short: 'Liquido clasico rosado para malestar estomacal, nausea, indigestion y diarrea.',
     benefits: [
       'Alivia 5 sintomas: nausea, acidez, indigestion, malestar estomacal y diarrea',
@@ -2980,8 +2836,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 10.47,
-    rating: 4.7,
-    reviews: 2104,
     short: 'Triple accion contra dolor de cabeza: acetaminofen, aspirina y cafeina.',
     benefits: [
       'Formula de triple accion: acetaminofen 250 mg + aspirina 250 mg + cafeina 65 mg',
@@ -3015,8 +2869,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 10.97,
-    rating: 4.7,
-    reviews: 1180,
     short: 'Softgels con simeticona 125 mg para alivio rapido de gases y distension.',
     benefits: [
       'Simeticona 125 mg rompe las burbujas de gas atrapadas en estomago e intestino',
@@ -3048,8 +2900,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 10.48,
-    rating: 4.8,
-    reviews: 846,
     short: 'La dosis mas alta de simeticona de Gas-X: 250 mg por softgel.',
     benefits: [
       'Maxima potencia: 250 mg de simeticona, el doble que la version Extra Strength',
@@ -3081,8 +2931,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 9.98,
-    rating: 4.8,
-    reviews: 1662,
     short: 'Antiacido masticable de carbonato de calcio que neutraliza la acidez al contacto.',
     benefits: [
       'Empieza a neutralizar la acidez en segundos, directamente en el esofago y estomago',
@@ -3116,8 +2964,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 7.99,
-    rating: 4.6,
-    reviews: 690,
     short: 'Crema con 4 activos que alivia dolor, picazon, ardor e hinchazon hemorroidal.',
     benefits: [
       'Formula multi-sintoma: anestesico, vasoconstrictor y protectores de la piel',
@@ -3150,8 +2996,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 8.48,
-    rating: 4.6,
-    reviews: 913,
     short: 'Bebida caliente sabor miel-limon que alivia el resfriado severo y ayuda a dormir.',
     benefits: [
       'Alivia dolor, fiebre, congestion nasal, estornudos y secrecion en una sola dosis',
@@ -3183,8 +3027,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 11.69,
-    rating: 4.7,
-    reviews: 532,
     short: 'Capsula mini de esomeprazol que bloquea el acido 24 horas para acidez frecuente.',
     benefits: [
       'Inhibidor de bomba de protones: bloquea el acido en su origen por 24 horas',
@@ -3216,8 +3058,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 18.66,
-    rating: 4.7,
-    reviews: 1206,
     short: 'Parche con 3 analgesicos topicos para dolor muscular y articular hasta 12 horas.',
     benefits: [
       'Triple accion topica: metil salicilato 10%, mentol 6% y alcanfor 3.1%',
@@ -3250,8 +3090,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 14.99,
-    rating: 4.7,
-    reviews: 1748,
     short: 'Corticoide nasal de 24 horas que bloquea 6 sustancias inflamatorias de la alergia.',
     benefits: [
       'Alivio de 24 horas para congestion, estornudos, picazon nasal y ojos llorosos',
@@ -3284,8 +3122,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 8.48,
-    rating: 4.6,
-    reviews: 802,
     short: 'Jarabe de maxima potencia que controla la tos y afloja la congestion del pecho.',
     benefits: [
       'Doble accion: controla el reflejo de la tos y afloja el moco del pecho',
@@ -3318,8 +3154,6 @@ const PRODUCTS = [
     need: 'Energía y vitaminas',
     price: 6.48,
     priceBefore: 8.46,
-    rating: 4.5,
-    reviews: 311,
     short: 'Gel refrescante con difenhidramina 2% que corta la picazon en la piel.',
     benefits: [
       'Difenhidramina 2% (potencia extra) bloquea la histamina directamente en la piel',
@@ -3349,8 +3183,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Piel seca',
     price: 10.97,
-    rating: 4.8,
-    reviews: 2200,
     short: 'Gel de bano humectante para uso diario.',
     benefits: [
       'Fórmula con NutriumMoisture™ que deposita nutrientes esenciales en la piel durante el baño',
@@ -3381,8 +3213,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Piel seca',
     price: 13.97,
-    rating: 4.4,
-    reviews: 1100,
     short: 'Desodorante sin aluminio con aroma coco vainilla.',
     benefits: [
       'Sin aluminio ni parabenos: fórmula limpia que elimina el olor sin bloquear los poros de las axilas',
@@ -3421,8 +3251,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Energía y vitaminas',
     price: 9.22,
-    rating: 4.8,
-    reviews: 900,
     short: 'Pasta dental para limpieza diaria y aliento fresco.',
     benefits: [
       'Fórmula Total con fluoruro estannoso al 0.454% que protege dientes y encías en una sola pasta',
@@ -3453,8 +3281,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Energía y vitaminas',
     price: 6.99,
-    rating: 4.7,
-    reviews: 3456,
     short: 'Enjuague bucal antiseptico con sabor menta.',
     benefits: [
       'Fórmula antiséptica con 4 aceites esenciales (eucaliptol, mentol, metil salicilato, timol) con acción clínicamente probada',
@@ -3497,8 +3323,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Energía y vitaminas',
     price: 12.29,
-    rating: 4.7,
-    reviews: 840,
     short: 'Rasuradora manual para afeitado diario.',
     benefits: [
       '5 hojas de acero alemán con lubricante FlexBall que se adaptan a los contornos del rostro y cuello',
@@ -3531,8 +3355,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 132.94,
-    rating: 4.5,
-    reviews: 980,
     short: 'El best-seller masculino de Dior: bergamota fresca sobre ambroxan mineral.',
     benefits: [
       'Salida de bergamota de Calabria jugosa y pimienta de Sichuan vibrante',
@@ -3567,8 +3389,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 64.98,
-    rating: 4.7,
-    reviews: 720,
     short: 'Floral frutal luminoso con granada, yuzu y peonia en el icono rosado de Versace.',
     benefits: [
       'Salida chispeante de granada y yuzu helado que refresca al instante',
@@ -3603,8 +3423,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 52.99,
-    rating: 4.6,
-    reviews: 640,
     short: 'El frutal floral #1 de Victoria\'s Secret: peonia, maracuya y orquidea vainilla.',
     benefits: [
       'Peonia Shangri-La como corazon floral fresco y femenino',
@@ -3637,8 +3455,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 39.00,
-    rating: 4.8,
-    reviews: 1500,
     short: 'El mist gourmand viral: pistacho, caramelo salado y vainilla con energia de Rio.',
     benefits: [
       'Acorde adictivo de pistacho y caramelo salado que huele a verano',
@@ -3717,8 +3533,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 72.00,
-    rating: 4.7,
-    reviews: 890,
     short: 'Gourmand cremoso de lavanda, coco y praline; dupe famoso de Baccarat Rouge.',
     benefits: [
       'Salida suave de lavanda, pera jugosa y bergamota',
@@ -3754,8 +3568,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 10.82,
-    rating: 4.5,
-    reviews: 2500,
     short: 'Máscara de alargamiento extremo con cepillo flexible que llega hasta las pestañas más cortas. Fórmula enriquecida con aceite de argán que alarga, separa y define sin apelmazar, resistente al agua para uso diario.',
     benefits: [
       'Cepillo flexible con cerdas de diferentes longitudes que alcanza hasta los canthus internos y las pestañas baby',
@@ -3803,8 +3615,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 14.96,
-    rating: 4.5,
-    reviews: 1600,
     short: 'Booster iluminador multiusos que imita el filtro de belleza de las redes sociales: piel unificada, luminosa y con efecto "glass skin" en un solo producto. Se usa solo, mezclado con base o como primer.',
     benefits: [
       'Cobertura buildable ligera que unifica el tono sin enmascarar la textura natural de la piel',
@@ -3858,8 +3668,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 25.22,
-    rating: 4.5,
-    reviews: 2100,
     short: 'El corrector icónico de NARS: cobertura total buildable con acabado luminoso cremoso que no se cuartea ni acumula en líneas finas. Fórmula enriquecida con vitamina E para el contorno del ojo más delicado.',
     benefits: [
       'Cobertura buildable de media a total que oculta ojeras, manchas, rojeces y granitos con una o dos pasadas',
@@ -3907,8 +3715,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 29.00,
-    rating: 4.4,
-    reviews: 1900,
     short: 'La máscara más vendida en Sephora durante varios años consecutivos. Cepillo de colágeno en forma de reloj de arena para volumen extremo y curvatura dramática en una sola pasada.',
     benefits: [
       'Cepillo con fibras de colágeno en forma de reloj de arena que envuelve la pestaña para volumen 360° uniforme',
@@ -3951,8 +3757,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 28.95,
-    rating: 4.7,
-    reviews: 1700,
     short: 'El gloss labial más icónico de Fenty Beauty: tono universal "Fenty Glow" que adapta su acabado al subtono de cada persona para un brillo nude personalizado. Hidratante, no pegajoso y con fragancia a vainilla suave.',
     benefits: [
       'Tono universal Fenty Glow con pigmento champagne dorado que adapta su apariencia al subtono labial individual',
@@ -3998,8 +3802,6 @@ const PRODUCTS = [
     need: 'Energía y vitaminas',
     price: 11.47,
     imageUrl: '/products/vitaminas/olly-womens-multi-90ct-1.jpg',
-    rating: 4.5,
-    reviews: 620,
     short: 'Multivitaminico completo en gomitas para rutina diaria de la mujer activa.',
     benefits: [
       'Fórmula completa con vitaminas A, C, D3, E, B6, B12 y ácido fólico para la mujer activa',
@@ -4035,8 +3837,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 38.32,
-    rating: 4.6,
-    reviews: 540,
     short: 'Multivitaminico con omegas en formato gomita con sabores frutales naturales en presentacion de 120 gummies.',
     benefits: [
       'Fórmula orgánica 2-en-1: multivitamínico completo + omega-3 EPA y DHA de aceite de pescado en una sola gomita',
@@ -4068,8 +3868,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 12.98,
-    rating: 4.6,
-    reviews: 880,
     short: 'Sobres efervescentes con 1000 mg de vitamina C, complejo B y electrolitos. 30 sobres por caja.',
     benefits: [
       'Alta dosis de 1000 mg de vitamina C por sobre para un soporte inmunológico de acción rápida',
@@ -4108,8 +3906,6 @@ const PRODUCTS = [
     category: 'Vitaminas',
     need: 'Energía y vitaminas',
     price: 6.92,
-    rating: 4.7,
-    reviews: 255,
     short: 'Multivitaminico economico para uso diario en presentacion de 100 tabletas.',
     benefits: [
       'Relación calidad-precio excepcional: multivitamínico completo a menos de $0.07 por tableta diaria',
@@ -4141,8 +3937,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 12.99,
-    rating: 4.6,
-    reviews: 184436,
     short: 'Parche hidrocoloide #1 en ventas para granitos: absorbe el fluido de la espinilla y la reduce en una sola aplicacion sin necesidad de reventarla.',
     benefits: [
       'Hidrocoloide de grado medico que absorbe el fluido de la espinilla y acelera la sanacion',
@@ -4217,8 +4011,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 37.00,
-    rating: 4.5,
-    reviews: 115097,
     short: 'Exfoliante leave-on con acido salicilico 2% (BHA), clinicamente probado para reducir puntos negros, poros dilatados y lineas finas.',
     benefits: [
       'Formula liquida ligera que se absorbe rapido, sin dejar residuo',
@@ -4293,8 +4085,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 6.00,
-    rating: 4.7,
-    reviews: 59504,
     short: 'Serum de alta concentracion con niacinamida 10% y zinc 1% para piel con tendencia a imperfecciones, reduce brillo y desequilibrios en la textura.',
     benefits: [
       'Formulacion clinica de alta concentracion (10% niacinamida + 1% zinc PCA)',
@@ -4324,8 +4114,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 12.37,
-    rating: 4.7,
-    reviews: 82432,
     short: 'Limpiador facial con acido salicilico que exfolia suavemente y suaviza la piel, formulado con ceramidas, niacinamida y acido hialuronico.',
     benefits: [
       'Acido salicilico exfolia y suaviza la textura rugosa de la piel',
@@ -4386,8 +4174,6 @@ const PRODUCTS = [
     category: 'Hidratantes',
     need: 'Piel seca',
     price: 13.97,
-    rating: 4.6,
-    reviews: 430,
     short: 'Hidratante minimalista con ceramidas y HA, sin ninguno de los irritantes comunes.',
     benefits: [
       'Formulado sin fragancia, colorantes, lanolina, parabenos ni formaldehido',
@@ -4416,8 +4202,6 @@ const PRODUCTS = [
     need: 'Piel seca',
     price: 13.99,
     priceBefore: 15.79,
-    rating: 4.6,
-    reviews: 610,
     short: 'Crema corporal con urea y ceramidas que hidrata 48h y previene la resequedad.',
     benefits: [
       'Enriquecida con urea y NMF que exfolian suavemente y retienen humedad',
@@ -4451,8 +4235,6 @@ const PRODUCTS = [
     category: 'Hidratantes',
     need: 'Piel seca',
     price: 50.00,
-    rating: 4.5,
-    reviews: 1400,
     short: 'Crema de avena coloidal para piel muy seca, con eczema o irritada.',
     benefits: [
       'Avena coloidal que calma picazon, eczema y dermatitis leve al instante',
@@ -4490,8 +4272,6 @@ const PRODUCTS = [
     category: 'Hidratantes',
     need: 'Piel seca',
     price: 74.00,
-    rating: 4.6,
-    reviews: 870,
     short: 'Crema japonesa premium con purple rice y hialuronico para glow inmediato.',
     benefits: [
       'Arroz morado japones (Okinawa) rico en antioxidantes anti-edad',
@@ -4526,8 +4306,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 21.00,
-    rating: 4.6,
-    reviews: 320,
     short:
       'Gel de baño 2-en-1 (cuerpo + cabello) para bebé, pensado para uso diario. Limpia sin resecar en exceso y facilita la rutina del baño con una espuma suave y un enjuague rápido.',
     benefits: [
@@ -4563,8 +4341,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 9.00,
-    rating: 4.7,
-    reviews: 760,
     short:
       'Pasta barrera de máxima resistencia para irritación del pañal. Ayuda a proteger la piel contra la humedad prolongada y la fricción, formando una capa densa que actúa como escudo durante cada cambio.',
     benefits: [
@@ -4611,8 +4387,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 17.00,
-    rating: 4.6,
-    reviews: 410,
     short:
       'Bálsamo nocturno pensado para piel muy seca y con tendencia a eczema. Su textura más rica ayuda a reducir la sensación de tirantez y a “sellar” la hidratación durante la noche, cuando suele aumentar la resequedad y el rascado.',
     benefits: [
@@ -4648,8 +4422,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 19.69,
-    rating: 4.7,
-    reviews: 669,
     short:
       'Loción sin fragancia para hidratar piel delicada y sensible. Diseñada para uso diario, especialmente útil cuando el bebé presenta resequedad por clima, baño frecuente o tendencia a irritación por productos perfumados.',
     benefits: [
@@ -4685,8 +4457,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 26.99,
-    rating: 4.6,
-    reviews: 590,
     short: 'BCAA en polvo para hidratacion y recuperacion. Disponible en 12 sabores y 5 presentaciones de tamano.',
     benefits: [
       '7 g de BCAA en ratio 2:1:1 por porcion para reducir fatiga muscular',
@@ -4737,8 +4507,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 31.98,
-    rating: 4.7,
-    reviews: 1300,
     short: 'Batido listo para tomar con alto contenido de proteina. Disponible en 17 sabores y 4 presentaciones de tamano.',
     benefits: [
       '30 g de proteina y solo 1 g de azucar por botella',
@@ -4793,8 +4561,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 64.99,
-    rating: 4.8,
-    reviews: 445,
     short: 'Proteina whey premium de vacas alimentadas con pasto. Disponible en 20 sabores y 3 presentaciones de tamano.',
     benefits: [
       '22 g de whey isolate de vacas alimentadas con pasto (grass-fed) por scoop',
@@ -4851,8 +4617,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 48.99,
-    rating: 4.6,
-    reviews: 310,
     short: 'Proteina blend orientada a recuperacion deportiva. Disponible en 10 sabores y 4 presentaciones de tamano.',
     benefits: [
       '25 g de proteina nativa (native whey) por scoop, procesada directo de leche fresca sin pasar por queso',
@@ -4900,8 +4664,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 17.99,
-    rating: 4.6,
-    reviews: 410,
     short: 'Famotidina 20 mg que previene y alivia la acidez hasta por 12 horas.',
     benefits: [
       'Famotidina 20 mg (potencia maxima OTC) controla el acido hasta 12 horas',
@@ -4935,8 +4697,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 11.98,
-    rating: 4.6,
-    reviews: 770,
     short: 'Gel AINE con diclofenaco 1% que penetra la piel para tratar el dolor de artritis.',
     benefits: [
       'Unico gel AINE recetado convertido a venta libre para dolor de artritis',
@@ -4968,8 +4728,6 @@ const PRODUCTS = [
     category: 'Medicamentos',
     need: 'Energía y vitaminas',
     price: 19.83,
-    rating: 4.7,
-    reviews: 690,
     short: 'Loratadina 10 mg sin somnolencia: un dia completo de alivio con una tableta.',
     benefits: [
       'Alivio de 24 horas para estornudos, secrecion nasal, picazon de ojos y garganta',
@@ -5003,8 +4761,6 @@ const PRODUCTS = [
     need: 'Energía y vitaminas',
     price: 11.48,
     priceBefore: 16.23,
-    rating: 4.6,
-    reviews: 360,
     short: 'Loperamida 2 mg que controla la diarrea con frecuencia desde la primera dosis.',
     benefits: [
       'Empieza a controlar la diarrea en tan solo 1 hora',
@@ -5038,8 +4794,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Energía y vitaminas',
     price: 46.00,
-    rating: 4.5,
-    reviews: 690,
     short: 'Tiras blanqueadoras para rutina dental en casa.',
     benefits: [
       'Resultados de blanqueamiento profesional visibles desde el primer uso, sin visitar al dentista',
@@ -5070,8 +4824,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Piel seca',
     price: 7.00,
-    rating: 4.7,
-    reviews: 730,
     short: 'Sales de epsom para bano y relajacion corporal.',
     benefits: [
       'Sales de Epsom puras (sulfato de magnesio) que al disolverse en agua caliente liberan iones de magnesio absorbibles por la piel',
@@ -5115,8 +4867,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Piel seca',
     price: 18.00,
-    rating: 4.7,
-    reviews: 560,
     short: 'Jabon liquido multiuso muy conocido de origen vegetal.',
     benefits: [
       'Jabón de castilla 100% vegano certificado con 18 usos posibles: cuerpo, cabello, hogar, mascotas y más',
@@ -5162,8 +4912,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Piel seca',
     price: 9.99,
-    rating: 4.7,
-    reviews: 860,
     short: 'Exfoliante corporal con aroma floral muy popular.',
     benefits: [
       'Doble acción: exfolia mecánicamente con azúcar de caña e hidrata intensamente con manteca de karité y aceites',
@@ -5207,8 +4955,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 82.00,
-    rating: 4.7,
-    reviews: 430,
     short: 'Gourmand ambarado de vainilla, cacao y petalos azucarados en frasco escultural.',
     benefits: [
       'Salida de petalos azucarados y mandarina dulce',
@@ -5242,8 +4988,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 82.00,
-    rating: 4.5,
-    reviews: 300,
     short: 'El "skin scent" viral: iris, ambrette y ambrox que huelen a tu piel mejorada.',
     benefits: [
       'Diseñado para fundirse con tu quimica: huele diferente en cada persona',
@@ -5277,8 +5021,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 115.99,
-    rating: 4.8,
-    reviews: 980,
     short: 'Floral oriental de jazmin y triple vainilla con actitud couture romana.',
     benefits: [
       'Bouquet de jazmin de perfil elegante y moderno',
@@ -5311,8 +5053,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 114.93,
-    rating: 4.6,
-    reviews: 820,
     short: 'La tension perfecta: lavanda francesa masculina sobre azahar y vainilla sensual.',
     benefits: [
       'Lavanda de Francia (nota clasica masculina) reinterpretada en clave femenina',
@@ -5346,8 +5086,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 24.00,
-    rating: 4.7,
-    reviews: 1600,
     short: 'El rubor líquido viral de Selena Gomez: fórmula ultraconcentrada que requiere una sola gota para un flush natural de color. Disponible en acabado mate y satinado con 14 tonos que duran todo el día sin retoques.',
     benefits: [
       'Fórmula ultraconcentrada: una sola gota cubre ambas mejillas — el más rendidor de su categoría',
@@ -5393,8 +5131,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 9.00,
-    rating: 4.6,
-    reviews: 920,
     short: 'Aceite labial de tendencia con acabado glossy jugoso y textura aceitosa no pegajosa. Combina hidratación real con color buildable para un look "juicy lips" muy popular en redes sociales.',
     benefits: [
       'Base de aceite de semilla de frambuesa + aceite de maracuyá que trata activamente los labios secos',
@@ -5452,8 +5188,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 11.00,
-    rating: 4.6,
-    reviews: 1340,
     short: 'El primer en gel de textura tacky que agarra literalmente la base y la mantiene en su lugar hasta 12 horas. Comparado favorablemente con primers de lujo de $40+, ha ganado múltiples premios de belleza accesible.',
     benefits: [
       'Textura gel táctil que actúa como doble cara para la base, incrementando significativamente su durabilidad',
@@ -5497,8 +5231,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 6.00,
-    rating: 4.5,
-    reviews: 1500,
     short: 'El gloss labial más accesible del mercado con textura cremosa no pegajosa inspirada en postres. Más de 30 tonos con acabado sheer a semi-opaco y fragancia suave a vainilla-mantequilla.',
     benefits: [
       'Fórmula cremosa no pegajosa (non-sticky) con textura deslizante que no se adhiere al pelo ni entre labios',
@@ -5543,8 +5275,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Piel seca',
     price: 7.99,
-    rating: 4.6,
-    reviews: 840,
     short: 'Desodorante de larga duracion con aroma fresco.',
     imageUrl: '/products/cuidado-personal/old-spice-fiji-deodorant-stick/beatdrop-with-green-bergamot/1.jpg',
     images: [
@@ -5689,8 +5419,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Piel seca',
     price: 13.49,
-    rating: 4.6,
-    reviews: 620,
     short: 'Antitranspirante de alta proteccion para rutina diaria.',
     imageUrl: '/products/cuidado-personal/secret-clinical-strength-clean-lavender/completely-clean/1.jpg',
     images: [
@@ -5861,8 +5589,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Piel seca',
     price: 8.99,
-    rating: 4.5,
-    reviews: 540,
     short: 'Antitranspirante para proteger ropa oscura y clara.',
     benefits: [
       'Tecnología UltraClear que previene las marcas blancas sobre ropa oscura Y las manchas amarillas sobre ropa blanca',
@@ -5893,8 +5619,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Piel seca',
     price: 6.49,
-    rating: 4.8,
-    reviews: 1310,
     short: 'Barra limpiadora suave para piel sensible.',
     benefits: [
       'Formulada con 1/4 de crema humectante que se deposita en la piel durante el lavado, previniendo la sequedad',
@@ -5938,8 +5662,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Piel seca',
     price: 16.93,
-    rating: 4.6,
-    reviews: 470,
     short: 'Gel de bano de origen vegetal con aroma calido.',
     benefits: [
       'Base limpiadora 100% de origen vegetal biodegradable que limpia sin tensioactivos petroquímicos',
@@ -5982,8 +5704,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Energía y vitaminas',
     price: 5.99,
-    rating: 4.7,
-    reviews: 900,
     short: 'Hilo dental suave para limpieza interdental diaria.',
     benefits: [
       'Tecnología Glide con recubrimiento de politetrafluoroetileno (PTFE) que desliza suavemente entre dientes apretados sin romperse ni deshilacharse',
@@ -6014,8 +5734,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Energía y vitaminas',
     price: 49.99,
-    rating: 4.6,
-    reviews: 510,
     short: 'Cepillo electrico sonico para cuidado oral avanzado.',
     benefits: [
       'Tecnología sónica con hasta 31,000 movimientos por minuto que eliminan hasta 7 veces más placa que un cepillo manual',
@@ -6058,8 +5776,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Piel seca',
     price: 11.99,
-    rating: 4.5,
-    reviews: 430,
     short: 'Rasuradora con hidratacion para piel suave.',
     benefits: [
       '5 cuchillas ultrafinas con recubrimiento de cerámica que reducen la fricción para un deslizamiento suave y preciso',
@@ -6090,8 +5806,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Piel seca',
     price: 9.99,
-    rating: 4.6,
-    reviews: 760,
     short: 'Shampoo en seco para refrescar cabello entre lavados.',
     benefits: [
       'Absorbe el exceso de grasa y sebo del cuero cabelludo al instante, dejando el cabello con aspecto limpio y fresco sin necesidad de agua',
@@ -6123,8 +5837,6 @@ const PRODUCTS = [
     need: 'Piel seca',
     price: 9.97,
     priceBefore: 10.99,
-    rating: 4.7,
-    reviews: 680,
     short: 'Locion corporal con manteca de karite y aroma dulce.',
     benefits: [
       'Hidratación profunda de 24 horas gracias a la manteca de karité pura combinada con 5 aceites naturales que restauran la barrera cutánea',
@@ -6172,8 +5884,6 @@ const PRODUCTS = [
     category: 'Cuidado personal',
     need: 'Energía y vitaminas',
     price: 79.99,
-    rating: 4.6,
-    reviews: 345,
     short: 'Irrigador dental portatil para higiene oral profunda.',
     benefits: [
       'Elimina hasta 99.9% de la placa en zonas tratadas y es hasta 50% más eficaz que el hilo dental tradicional para mejorar la salud de las encías según estudios clínicos',
@@ -6218,8 +5928,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 18.99,
-    rating: 4.5,
-    reviews: 1055,
     short: 'Gel limpiador medicado con 2% de acido salicilico y 0.05% de LHA micro-exfoliante que ataca el exceso de grasa y ayuda a despejar brotes de acne.',
     benefits: [
       '2% acido salicilico (medicamento anti-acne) + 0.05% LHA micro-exfoliante',
@@ -6294,8 +6002,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 17.82,
-    rating: 4.6,
-    reviews: 9561,
     short: 'Gel tratante con 2% de acido salicilico, AHA (glicolico y lactico) y niacinamida que ayuda a despejar el acne y prevenir nuevos brotes sin resecar en exceso.',
     benefits: [
       '2% acido salicilico como tratamiento activo contra el acne',
@@ -6325,8 +6031,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 12.85,
-    rating: 4.5,
-    reviews: 1508,
     short: 'Limpiador facial diario con acido salicilico, 4% acido glicolico y acidos polihidroxi (PHA) para suavizar textura irregular y bultos.',
     benefits: [
       'Acido salicilico como tratamiento activo contra el acne',
@@ -6356,8 +6060,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 19.97,
-    rating: 4.5,
-    reviews: 4922,
     short: 'Serum ligero e hidratante con avena prebiotica y feverfew para calmar piel sensible y suavizar la textura al instante.',
     benefits: [
       'Avena prebiotica + feverfew calman y restauran la piel sensible',
@@ -6387,8 +6089,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 6.99,
-    rating: 4.7,
-    reviews: 1540,
     short: 'Parches hidrocoloides discretos para granos activos.',
     benefits: ['Parches', 'Acne', 'Uso puntual'],
     usage: 'Aplicar sobre zona limpia y retirar al blanquear.',
@@ -6406,8 +6106,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 19.99,
-    rating: 4.7,
-    reviews: 58473,
     short: 'El agua micelar original de Bioderma: limpia, desmaquilla y calma rostro y ojos en un solo paso, sin necesidad de enjuagar.',
     benefits: [
       'Tecnologia micelar que limpia, desmaquilla y calma en un solo paso',
@@ -6481,8 +6179,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 14.97,
-    rating: 4.7,
-    reviews: 27046,
     short: 'Crema clinicamente probada para reducir brotes de eczema y calmar piel seca y con picazon, con 1% de avena coloidal.',
     benefits: [
       '1% avena coloidal (skin protectant) con ceramida y licochalcone A',
@@ -6512,8 +6208,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 39.00,
-    rating: 4.6,
-    reviews: 3639,
     short: 'Pads exfoliantes diarios con acidos glicolico y lactico (AHA) que afinan poros, iluminan el tono y preparan la piel para el maquillaje en un solo paso.',
     benefits: [
       'AHA (acidos glicolico y lactico) exfolian suavemente a diario',
@@ -6588,8 +6282,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 39.00,
-    rating: 4.6,
-    reviews: 10058,
     short: 'Limpiador gel antioxidante con kale, te verde, espinaca y vitaminas que limpia sin resecar y deja la piel suave y luminosa.',
     benefits: [
       'Antioxidantes de kale, te verde y espinaca',
@@ -6660,8 +6352,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 14.00,
-    rating: 4.5,
-    reviews: 2451,
     short: 'Limpiador exfoliante diario con 2% acido salicilico y zinc PCA que ayuda a reducir puntos negros y brotes sin resecar en exceso.',
     benefits: [
       '2% acido salicilico + zinc PCA desobstruyen poros',
@@ -6691,8 +6381,6 @@ const PRODUCTS = [
     category: 'Salud de la piel',
     need: 'Piel seca',
     price: 14.29,
-    rating: 4.7,
-    reviews: 20951,
     short: 'Balsamo multiuso con 5% pantenol, madecassoside y tribioma que protege y ayuda a aliviar piel agrietada, resquebrajada e irritada.',
     benefits: [
       '5% pantenol + madecassoside + Tribioma con agua termal de La Roche-Posay',
@@ -6722,8 +6410,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 34.99,
-    rating: 4.8,
-    reviews: 2150,
     short:
       'Pañales talla 1 con núcleo absorbente y ajuste suave, pensados para mantener la piel seca y reducir fugas. Ideales para rutina diaria: combinan comodidad, absorción y un ajuste que acompaña el movimiento del bebé.',
     benefits: [
@@ -6765,8 +6451,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 17.99,
-    rating: 4.8,
-    reviews: 1840,
     short:
       'Toallitas húmedas sin fragancia para piel sensible. Útiles para cambios de pañal, limpieza de manos/cara y rutina diaria fuera de casa. Formato grande (560) para alto consumo familiar.',
     benefits: [
@@ -6802,8 +6486,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 8.99,
-    rating: 4.7,
-    reviews: 1520,
     short:
       'Shampoo + gel de baño “head-to-toe” con fórmula suave para uso diario. Pensado para limpiar sin resecar y para que el baño sea rápido y cómodo, con enjuague fácil.',
     benefits: [
@@ -6851,8 +6533,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 7.49,
-    rating: 4.7,
-    reviews: 860,
     short:
       'Loción ligera para rostro y cuerpo, enfocada en piel delicada de recién nacido. Hidrata sin dejar sensación pesada y funciona bien como paso diario después del baño o cuando notes resequedad leve.',
     benefits: [
@@ -6888,8 +6568,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 10.99,
-    rating: 4.5,
-    reviews: 640,
     short:
       'Protector solar mineral SPF 50 en formato spray, pensado para piel sensible. Los filtros minerales (como óxido de zinc) ayudan a proteger contra rayos UVA/UVB formando una barrera física en la superficie de la piel.',
     benefits: [
@@ -6936,8 +6614,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 15.99,
-    rating: 4.7,
-    reviews: 1310,
     short:
       'Aspirador nasal manual que ayuda a retirar mucosidad cuando el bebé está congestionado. Incluye barrera/filtro para mantener el uso higiénico y facilitar la respiración y la alimentación, especialmente en resfriados.',
     benefits: [
@@ -6979,8 +6655,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 24.99,
-    rating: 4.7,
-    reviews: 990,
     short:
       'Set de biberones “anti-cólicos” con sistema de ventilación interna para ayudar a reducir entrada de aire durante la toma. Ideal como kit de inicio: incluye piezas para transicionar según la etapa del bebé.',
     benefits: [
@@ -7033,8 +6707,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 11.99,
-    rating: 4.6,
-    reviews: 870,
     short:
       'Biberón de 4 oz con tetina “Natural Response” pensado para que el bebé controle el flujo. Útil para transición y para tomas cortas, ayudando a reducir derrames y a mantener un ritmo más parecido a la lactancia.',
     benefits: [
@@ -7114,8 +6786,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 13.99,
-    rating: 4.8,
-    reviews: 720,
     short:
       'Crema de lanolina para lactancia, pensada para ayudar con resequedad y sensibilidad en pezones. La lanolina forma una capa protectora que reduce fricción y ayuda a mantener la hidratación de la piel.',
     benefits: [
@@ -7151,8 +6821,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 12.99,
-    rating: 4.7,
-    reviews: 430,
     short:
       'Bálsamo para zona del pañal con enfoque botánico, pensado para prevención de irritación por humedad y fricción. Funciona como capa protectora ligera, ideal para uso diario cuando la piel está sana o apenas sensible.',
     benefits: [
@@ -7188,8 +6856,6 @@ const PRODUCTS = [
     category: 'Cuidado del bebé',
     need: 'Cuidado del bebé',
     price: 27.99,
-    rating: 4.6,
-    reviews: 610,
     short:
       'Pañales talla 1 con enfoque en suavidad y comodidad, en formato club box (78). Diseñados para uso diario con ajuste flexible y buena absorción, pensados para piel sensible y para reducir fugas con colocación correcta.',
     benefits: [
@@ -7225,8 +6891,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 108.99,
-    rating: 4.8,
-    reviews: 1880,
     short: 'Proteina aislada e hidrolizada para recuperacion rapida. Disponible en 11 sabores y 5 presentaciones de tamano.',
     benefits: [
       '25 g de whey isolate hidrolizada por scoop, de absorcion mas rapida que un concentrado',
@@ -7276,8 +6940,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 44.99,
-    rating: 4.6,
-    reviews: 790,
     short: 'Pre entreno con enfoque, energia y sabores populares. Disponible en 8 sabores reales de Amazon.',
     benefits: [
       '250 mg de cafeina de multiples fuentes para energia sostenida sin caida brusca',
@@ -7317,8 +6979,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 39.99,
-    rating: 4.6,
-    reviews: 620,
     short: 'Pre entreno ligero con cafeina para sesiones intensas. Disponible en 10 sabores reales de Amazon.',
     benefits: [
       '200 mg de cafeina natural para energia limpia sin nerviosismo excesivo',
@@ -7360,8 +7020,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 39.99,
-    rating: 4.6,
-    reviews: 1120,
     short: 'Proteina whey accesible para metas de fuerza. Disponible en 5 sabores y 2 presentaciones de tamano.',
     benefits: [
       '21 g de proteina por scoop a uno de los mejores precios por gramo del mercado',
@@ -7402,8 +7060,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 21.24,
-    rating: 4.7,
-    reviews: 680,
     short: 'Creatina micronizada para fuerza y potencia muscular. Disponible en 2 presentaciones de tamano.',
     benefits: [
       '5 g de creatina monohidratada pura, micronizada para mejor disolucion',
@@ -7437,8 +7093,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 56.99,
-    rating: 4.6,
-    reviews: 930,
     short: 'Ganador de peso con calorias y proteina por porcion. Disponible en 5 sabores y 3 presentaciones de tamano.',
     benefits: [
       '1250 calorias y 50 g de proteina por porcion de 2 scoops para ganar masa muscular',
@@ -7480,8 +7134,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 34.99,
-    rating: 4.5,
-    reviews: 540,
     short: 'Pre entreno sin azucar con enfoque en energia y quema de grasa.',
     benefits: [
       '150 mg de cafeina mas L-carnitina y CLA para apoyar la perdida de grasa',
@@ -7517,8 +7169,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 24.99,
-    rating: 4.5,
-    reviews: 450,
     short: 'Aminoacidos para hidratacion y recuperacion intraworkout, en 8 sabores reales.',
     benefits: [
       '5 g de BCAA en ratio 2:1:1 para reducir la fatiga muscular',
@@ -7558,8 +7208,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 29.99,
-    rating: 4.7,
-    reviews: 1560,
     short: 'Barras altas en proteina para snack post entrenamiento, en 8 sabores reales.',
     benefits: [
       '21 g de proteina y solo 1 g de azucar por barra',
@@ -7599,8 +7247,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 35.99,
-    rating: 4.8,
-    reviews: 1380,
     short: 'Batido listo para tomar con alta proteina y bajo azucar, hecho con leche ultrafiltrada.',
     benefits: [
       '30 g de proteina de alta calidad por botella con solo 150 calorias',
@@ -7628,8 +7274,6 @@ const PRODUCTS = [
     category: 'Fitness',
     need: 'Fitness y recuperación',
     price: 24.99,
-    rating: 4.4,
-    reviews: 410,
     short: 'Formula pre entreno de America\'s #1 selling sports nutrition brand para energia, enfoque y bombeo.',
     benefits: [
       '320 mg de cafeina para hasta 5 horas de energia sostenida',
@@ -7666,8 +7310,6 @@ const PRODUCTS = [
     need: 'Piel seca',
     price: 108.69,
     priceBefore: 115.48,
-    rating: 4.7,
-    reviews: 760,
     short: 'Floral ambarado de neroli y ambar blanco en el frasco triangulo recargable.',
     benefits: [
       'Neroli y flor de naranjo que abren con luz mediterranea',
@@ -7695,8 +7337,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 99.45,
-    rating: 4.7,
-    reviews: 1120,
     short: 'El icónico tacon azul: nardo luminoso sobre cacao y haba tonka oscuros.',
     benefits: [
       'Contraste "it\'s so good to be bad": flores blancas vs fondo oscuro',
@@ -7731,8 +7371,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 148.00,
-    rating: 4.6,
-    reviews: 980,
     short: 'El citrico mediterraneo definitivo: manzana verde y limon siciliano sobre cedro.',
     benefits: [
       'Salida jugosa de manzana granny smith y limon de Sicilia',
@@ -7766,8 +7404,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 155.00,
-    rating: 4.7,
-    reviews: 810,
     short: '"El mar capturado en un frasco": notas marinas profundas sobre lavandin y romero.',
     benefits: [
       'Mandarina verde y bergamota que abren con frescura marina inmediata',
@@ -7802,8 +7438,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 118.00,
-    rating: 4.7,
-    reviews: 620,
     short: 'Version intensa del torso marinero: cardamomo y lavanda sobre vainilla ambarada.',
     benefits: [
       'Cardamomo y lavanda que abren con frescura especiada masculina',
@@ -7837,8 +7471,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 170.00,
-    rating: 4.6,
-    reviews: 540,
     short: 'La chimenea encendida en un frasco: castañas asadas, humo y vainilla calida.',
     benefits: [
       'Acorde de humo y madera quemada que recrea una chimenea real',
@@ -7871,8 +7503,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 105.00,
-    rating: 4.7,
-    reviews: 690,
     short: 'Vainilla intensidad "28": haba tonka y sandalo en un gourmand sensual y capeable.',
     benefits: [
       'Escala de intensidad Kayali: el "28" indica concentracion de vainilla alta',
@@ -7905,8 +7535,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 150.00,
-    rating: 4.6,
-    reviews: 730,
     short: 'Frutal floral londinense con moras oscuras, jazmin y almizcle callejero.',
     benefits: [
       'Mora negra y pimienta que abren con un frutal oscuro poco convencional',
@@ -7940,8 +7568,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 165.00,
-    rating: 4.7,
-    reviews: 560,
     short: 'Cuero suave envuelto en flor de ciruela y especias; unisex y de firma potente.',
     benefits: [
       'Acorde de cuero suavizado, sin la aspereza de los cueros clasicos',
@@ -7974,8 +7600,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 109.99,
-    rating: 4.7,
-    reviews: 1200,
     short: 'El gourmand adictivo: cafe negro y vainilla con flores blancas de fondo.',
     benefits: [
       'Acorde de cafe negro (una de las primeras fragancias en usarlo asi) que engancha desde la salida',
@@ -8010,8 +7634,6 @@ const PRODUCTS = [
     category: 'Fragancias',
     need: 'Piel seca',
     price: 120.00,
-    rating: 4.6,
-    reviews: 860,
     short: 'Frescor dulce y viril: menta y manzana verde sobre haba tonka y vainilla.',
     benefits: [
       'Menta y limon de Sicilia que abren con un frescor intenso y vibrante',
@@ -8045,8 +7667,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 49.0,
-    rating: 4.6,
-    reviews: 980,
     short: 'Base de larga duración con tecnología de micropartículas que difumina la luz para un acabado airbrush que borra visualmente los poros y líneas finas. Cobertura media-total buildable con acabado natural-mate en 44 tonos.',
     benefits: [
       'Tecnología Soft Focus de micropartículas de silicona esférica que difuminan la luz y minimizan poros visualmente',
@@ -8099,8 +7719,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 52.0,
-    rating: 4.7,
-    reviews: 1730,
     short: 'La base de larga duración más icónica del mercado premium: 24 horas sin retoques, resistente al calor, humedad y transferencia. Cobertura uniforme media-alta con acabado mate natural para pieles mixtas y grasas en más de 55 tonos.',
     benefits: [
       'Tecnología Stay-in-Place de 24 horas certificada en pruebas clínicas de resistencia al calor y humedad',
@@ -8154,8 +7772,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 39.0,
-    rating: 4.6,
-    reviews: 1240,
     short: 'Polvo suelto ultrafino para sellar el maquillaje mediante la técnica baking: aplicar generosamente sobre el corrector húmedo, dejar actuar 5–10 minutos y retirar el exceso para un acabado suave, fotogénico y de larga duración.',
     benefits: [
       'Partículas ultrafinas micronizadas que sellan sin añadir peso ni efecto "empolvado" visible',
@@ -8205,8 +7821,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 42.0,
-    rating: 4.6,
-    reviews: 1400,
     short: 'La base que revolucionó la industria en 2017 con su gama de 50 tonos inclusivos. Acabado soft matte de larga duración con cobertura media-alta buildable y control de sebo para pieles mixtas y grasas.',
     benefits: [
       'Disponible en 50 tonos con la representación más completa de pieles oscuras y muy oscuras del mercado',
@@ -8260,8 +7874,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 25.0,
-    rating: 4.6,
-    reviews: 1090,
     short: 'El lápiz de cejas de precisión más reconocido del mercado, con punta ultrafina de 0.08mm que imita trazos de cabello real para un acabado natural sin efecto "dibujado". Incluye cepillo spoolie integrado en el extremo opuesto.',
     benefits: [
       'Punta ultrafina de 0.08 mm que permite trazar micro-pelos que imitan el vello natural de la ceja',
@@ -8313,8 +7925,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 36.0,
-    rating: 4.6,
-    reviews: 980,
     short: 'El bronzer más vendido de Benefit: tono marrón-avellana cálido 100% mate sin mica ni iridiscencia que imita el bronceado natural de sol. Universal para pieles claras a medias; multiusos como bronzer, contorno suave y sombra de nariz.',
     benefits: [
       'Acabado 100% mate sin partículas iridiscentes — imita el bronceado natural de sol, no el efecto brillante',
@@ -8361,8 +7971,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 36.0,
-    rating: 4.7,
-    reviews: 2100,
     short: 'El spray fijador de maquillaje de referencia en la industria: prolonga el maquillaje hasta 16 horas con un acabado natural que ablanda el look de polvo y une todas las capas del maquillaje en una sola película cohesiva y uniforme.',
     benefits: [
       'Tecnología Temperature Control que combate el calor corporal para prevenir la fusión y corrido del maquillaje',
@@ -8402,8 +8010,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 35.0,
-    rating: 4.6,
-    reviews: 890,
     short: 'El tono más icónico de Charlotte Tilbury: Pillow Talk, un nude rosado de subtono cálido universalmente favorecedor. Fórmula Matte Revolution de larga duración con hidratación activa de aceite de espino marino que no reseca los labios.',
     benefits: [
       'Tono Pillow Talk: nude rosado translúcido que adapta su apariencia según el subtono labial natural de cada persona',
@@ -8452,8 +8058,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 9.99,
-    rating: 4.5,
-    reviews: 2500,
     short: 'La base más accesible del mercado con rendimiento de farmacia sorprendente: acabado mate que minimiza poros y controla el brillo durante horas. Disponible en 40 tonos incluyendo la gama más completa de pieles latinas a precio económico.',
     benefits: [
       'Precio accesible de farmacia con rendimiento de primer nivel en control de brillo y acabado mate',
@@ -8507,8 +8111,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 12.99,
-    rating: 4.6,
-    reviews: 1870,
     short: 'Máscara de volumen extremo con el cepillo más denso del mercado masivo: 200 cerdas blandas en forma de cono que envuelven cada pestaña para un volumen paradisíaco. Fórmula con aceite de flores de cerezo que acondiciona sin apelmazar.',
     benefits: [
       'Cepillo cónico con 200 cerdas blandas que atrapa y recubre cada pestaña para volumen uniforme y extremo',
@@ -8554,8 +8156,6 @@ const PRODUCTS = [
     category: 'Maquillaje',
     need: 'Piel seca',
     price: 32.0,
-    rating: 4.6,
-    reviews: 1500,
     short: 'El corrector de mayor cobertura en su categoría de precio: cobertura total de ojeras, manchas y granitos con una sola capa. Fórmula con extracto de aguacate y manteca de mango que hidrata el contorno del ojo mientras cubre.',
     benefits: [
       'Cobertura total (full coverage) que oculta ojeras profundas, hiperpigmentación y manchas en una sola pasada',

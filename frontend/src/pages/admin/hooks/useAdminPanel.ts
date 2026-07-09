@@ -22,6 +22,11 @@ import {
 import { getNextFulfillmentStatus, paginateItems } from '../utils';
 import { useAdminToken } from './useAdminToken';
 import { broadcastProductsChanged } from '../../../lib/crossTabSync';
+import { getEffectivePrice, getTotalStock } from '../../../lib/productVariants';
+import { useReviewsSummary } from '../../../hooks/useReviews';
+
+export type ProductSortKey = 'price' | 'stock' | 'rating';
+export type ProductSort = { key: ProductSortKey | null; dir: 'asc' | 'desc' };
 
 export type AdminPanelState = ReturnType<typeof useAdminPanel>;
 
@@ -124,6 +129,17 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   } | null>(null);
   const [productCatFilter, setProductCatFilter] = useState("Todos");
   const [productSearch, setProductSearch] = useState("");
+  const [productSort, setProductSort] = useState<ProductSort>({ key: null, dir: 'asc' });
+  // Cycles asc -> desc -> unsorted (back to the default order) on repeated clicks of the same
+  // column, so there's always a way back to "no sort" without a separate clear control.
+  const toggleProductSort = useCallback((key: ProductSortKey) => {
+    setProductSort((current) => {
+      if (current.key !== key) return { key, dir: 'asc' };
+      if (current.dir === 'asc') return { key, dir: 'desc' };
+      return { key: null, dir: 'asc' };
+    });
+  }, []);
+  const clearProductSort = useCallback(() => setProductSort({ key: null, dir: 'asc' }), []);
   const [productsPage, setProductsPage] = useState(1);
   const [usersPage, setUsersPage] = useState(1);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -171,6 +187,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     queryKey: ["admin-products-count"],
     queryFn: async () => api.admin.products.count(await getAdminToken()),
   });
+  const reviewsSummaryQuery = useReviewsSummary(page === "products");
+  const reviewsSummary = reviewsSummaryQuery.data ?? {};
 
   // Open modal from URL on deep-link (e.g. ?section=products&modal=edit&productId=xxx). A
   // low-stock notification additionally carries &highlightVariant=<id> so the modal can scroll to
@@ -452,7 +470,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
 
   useEffect(() => {
     setProductsPage(1);
-  }, [productCatFilter, productSearch]);
+  }, [productCatFilter, productSearch, productSort]);
 
   useEffect(() => {
     setUsersPage(1);
@@ -495,8 +513,31 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     return Array.from(allCategories).sort();
   }, [products]);
 
+  // Products matching only the search term (not the category filter) — used to count how many
+  // products each category pill would show if selected, so the count reflects the active search
+  // instead of always the full unfiltered catalog.
+  const productsForCategoryCounts = useMemo(() => {
+    const term = productSearch.toLowerCase();
+    if (!term) return products as Product[];
+    return (products as Product[]).filter(
+      (p) => p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term),
+    );
+  }, [products, productSearch]);
+
+  const categoryCounts = useMemo(
+    () =>
+      Object.fromEntries([
+        ["Todos", productsForCategoryCounts.length],
+        ...categories.map((cat) => [
+          cat,
+          productsForCategoryCounts.filter((p) => p.category === cat).length,
+        ]),
+      ]),
+    [categories, productsForCategoryCounts],
+  );
+
   const displayedProducts = useMemo(() => {
-    return (products as Product[]).filter((p) => {
+    const filtered = (products as Product[]).filter((p) => {
       const matchCat =
         productCatFilter === "Todos" || p.category === productCatFilter;
       const term = productSearch.toLowerCase();
@@ -506,7 +547,31 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
         p.brand.toLowerCase().includes(term);
       return matchCat && matchSearch;
     });
-  }, [products, productCatFilter, productSearch]);
+    if (!productSort.key) return filtered;
+    const sorted = filtered.slice();
+    const dirMul = productSort.dir === 'asc' ? 1 : -1;
+    // Final tiebreaker on the stable `id` (not multiplied by dirMul) so that fully-tied rows land
+    // in the same order regardless of which endpoint/query produced `products` - Mongo doesn't
+    // guarantee a stable order for docs whose sort key ties (e.g. same createdAt from a bulk
+    // insert), so without this the admin table and the public catalog could show a different
+    // order for the exact same tie.
+    if (productSort.key === 'price') {
+      sorted.sort((a, b) => (getEffectivePrice(a) - getEffectivePrice(b)) * dirMul || a.id.localeCompare(b.id));
+    } else if (productSort.key === 'stock') {
+      sorted.sort((a, b) => (getTotalStock(a) - getTotalStock(b)) * dirMul || a.id.localeCompare(b.id));
+    } else if (productSort.key === 'rating') {
+      sorted.sort((a, b) => {
+        const ratingA = reviewsSummary[a.id]?.avgRating ?? 0;
+        const ratingB = reviewsSummary[b.id]?.avgRating ?? 0;
+        if (ratingA !== ratingB) return (ratingA - ratingB) * dirMul;
+        const countA = reviewsSummary[a.id]?.count ?? 0;
+        const countB = reviewsSummary[b.id]?.count ?? 0;
+        if (countA !== countB) return (countA - countB) * dirMul;
+        return a.id.localeCompare(b.id);
+      });
+    }
+    return sorted;
+  }, [products, productCatFilter, productSearch, productSort, reviewsSummary]);
 
   const displayedOrders = useMemo(() => {
     const term = orderSearch.toLowerCase();
@@ -592,8 +657,13 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     productCatFilter,
     setProductCatFilter,
     categories,
+    categoryCounts,
     productSearch,
     setProductSearch,
+    productSort,
+    toggleProductSort,
+    clearProductSort,
+    reviewsSummary,
     setProductModal,
     selectedProductIds,
     setSelectedProductIds,
