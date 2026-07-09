@@ -86,6 +86,18 @@ export function pickDefaultCombo(product: Product): { variant: ProductVariant | 
   return { variant: primary, size: null };
 }
 
+/** The variant to attach when a product is added to the cart without going through a variant
+ * picker (e.g. the quick-add "+" on a catalog card). Without this, a product with variants would
+ * land in the cart as a bare line with no variant at all - unable to show or edit sabor/tamaño
+ * later, since the cart UI only offers that for lines that already carry a variant. Resolves to
+ * the same composite id (`primary:size`) a real selection would produce. */
+export function pickDefaultCartVariant(product: Product): ProductVariant | undefined {
+  const { variant, size } = pickDefaultCombo(product);
+  if (!variant) return undefined;
+  if (size) return resolveVariantById(product.variants, `${variant.id}:${size.id}`);
+  return variant;
+}
+
 /** Cover image for the default sabor×tamaño combo (or single default variant). Mirrors the
  * combo-image priority used for cart/order line items (`resolveVariantById`): a combo-specific
  * photo first, then the sabor's own photos, then the tamaño's. Used by catalog cards / product

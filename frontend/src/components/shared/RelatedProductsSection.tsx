@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { Product } from '../../types';
+import type { Product, ProductVariant } from '../../types';
 import { ProductCard } from './ProductCard';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 
@@ -8,7 +8,7 @@ interface RelatedProductsSectionProps {
   subtitle?: string;
   products: Product[];
   onOpenProduct: (p: Product) => void;
-  onAdd: (p: Product) => void;
+  onAdd: (p: Product, qty?: number, variant?: ProductVariant) => void;
 }
 
 export function RelatedProductsSection({
