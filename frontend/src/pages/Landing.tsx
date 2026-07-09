@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useMemo, createContext, useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Parallax } from 'react-scroll-parallax';
 import gsap from 'gsap';
@@ -18,6 +18,26 @@ import { useCategories } from '../hooks/useCategories';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { api } from '../lib/api';
 import { NEEDS } from '../lib/needs';
+
+// Runs before paint on the client (so a scroll correction is never visible as a flash) while
+// safely degrading to useEffect during SSR, where layout effects don't run.
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+// When true, we're restoring scroll after coming back to the landing (from a product, the catalog,
+// the club, etc.). The reveal animations (RevealSection/StaggerItem) start hidden and fade in on
+// scroll, which would leave the restored viewport blank for a beat; while restoring they render
+// already-visible instead.
+const RestoringContext = createContext(false);
+
+// Flipped true once the landing has mounted at least once this session. Guards the very first
+// (fresh) page load from restoring a stale saved position - only genuine back-returns restore.
+let landingHasMounted = false;
+
+// Where to restore to on a back-return: a precise per-card anchor (product cards) or the generic
+// landing scroll position saved on any other outbound navigation.
+type RestoreTarget =
+  | { kind: 'anchor'; id: string; top: number }
+  | { kind: 'scroll'; y: number };
 
 type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin' | 'club';
 
@@ -161,11 +181,12 @@ interface RevealSectionProps extends HTMLAttributes<HTMLElement> {
 }
 
 function StaggerItem({ children, index, baseDelay = 0 }: { children: ReactNode; index: number; baseDelay?: number }) {
+  const restoring = useContext(RestoringContext);
   const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(restoring);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || restoring) return;
     const node = ref.current;
     if (!node) return;
     const obs = new IntersectionObserver(
@@ -178,7 +199,7 @@ function StaggerItem({ children, index, baseDelay = 0 }: { children: ReactNode; 
     );
     obs.observe(node);
     return () => obs.disconnect();
-  }, []);
+  }, [restoring]);
 
   return (
     <div
@@ -195,11 +216,12 @@ function StaggerItem({ children, index, baseDelay = 0 }: { children: ReactNode; 
 }
 
 function RevealSection({ children, style, delay = 0, ...props }: RevealSectionProps) {
+  const restoring = useContext(RestoringContext);
   const ref = useRef<HTMLElement | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(restoring);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || restoring) return;
 
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (mediaQuery.matches) {
@@ -225,7 +247,7 @@ function RevealSection({ children, style, delay = 0, ...props }: RevealSectionPr
     observer.observe(node);
 
     return () => observer.disconnect();
-  }, []);
+  }, [restoring]);
 
   return (
     <section
@@ -356,6 +378,25 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   const showProductsSkeleton = productsLoading || isMounting;
   const showCategoriesSkeleton = categoriesLoading || isMounting;
 
+  // Captured once at mount: are we returning to the landing with a saved scroll position (a product
+  // card anchor, or the generic landing scroll from any other outbound click)? Drives
+  // RestoringContext so the reveal animations don't blank out the restored viewport. Never true on
+  // the first mount of a fresh load (landingHasMounted guard), so initial visits still animate.
+  const [isRestoring] = useState(() => {
+    if (typeof window === 'undefined' || !landingHasMounted) return false;
+    try {
+      return !!(sessionStorage.getItem('lastProductAnchor') || sessionStorage.getItem('landingScrollY'));
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    landingHasMounted = true;
+  }, []);
+  // Caches the resolved restore target once read, so the hold loop survives effect re-runs.
+  // `undefined` = not read yet; `null` = nothing to restore.
+  const restoreTargetRef = useRef<RestoreTarget | null | undefined>(undefined);
+
   const heroRef = useRef<HTMLDivElement>(null);
   const cinematicRef = useRef<HTMLDivElement>(null);
   const [activeHeroIdx, setActiveHeroIdx] = useState(0);
@@ -445,6 +486,105 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     return () => cancelAnimationFrame(rafId);
   }, [products.length]);
 
+  // When returning to the landing (from a product, the catalog, the club, a footer link, ...) put
+  // the page back where it was - directly, with no visible detour through the top. On back
+  // navigation the products are already cached (so cards exist on the first render) and each product
+  // tile has a fixed height, so the layout is stable and we can correct the scroll inside a layout
+  // effect, before the browser paints.
+  //
+  // Several actors fight over the scroll right after this page mounts: TanStack Router's scroll
+  // restoration first resets to the top (and may then restore), and this page's
+  // ScrollTrigger.refresh() briefly scrolls to 0 while it remeasures. Instead of waiting them out
+  // with a delay (what made the old version show the top for ~900ms and then jump), we re-assert
+  // the target position every frame for a short window, so any stray reset is undone on the very
+  // next frame rather than being seen. A genuine user gesture cancels the hold. Meanwhile
+  // RestoringContext keeps the reveal animations from blanking the restored viewport.
+  useIsomorphicLayoutEffect(() => {
+    if (!isRestoring || showProductsSkeleton || products.length === 0) return;
+
+    // Resolve the restore target once and cache it in a ref. Reading it via the ref (rather than
+    // re-reading sessionStorage each run) lets the hold loop be torn down and restarted - by a
+    // dependency change or React StrictMode's double-invoke - without the one-shot removals below
+    // making a later run find nothing. A precise per-card anchor (product cards) wins over the
+    // generic scroll position saved for any other outbound click (categories, promos, brands, ...).
+    if (restoreTargetRef.current === undefined) {
+      let target: RestoreTarget | null = null;
+      try {
+        const rawAnchor = sessionStorage.getItem('lastProductAnchor');
+        if (rawAnchor) {
+          // One-shot, and it supersedes the generic position for this return.
+          sessionStorage.removeItem('lastProductAnchor');
+          sessionStorage.removeItem('landingScrollY');
+          const a = JSON.parse(rawAnchor);
+          if (a && typeof a.id === 'string' && typeof a.top === 'number') {
+            target = { kind: 'anchor', id: a.id, top: a.top };
+          }
+        }
+        if (!target) {
+          // Kept (not removed) so back/forward between the landing and another page keeps working;
+          // it's overwritten on the next outbound navigation and cleared when going Home.
+          const rawY = sessionStorage.getItem('landingScrollY');
+          if (rawY != null) {
+            const y = Number(rawY);
+            if (Number.isFinite(y)) target = { kind: 'scroll', y };
+          }
+        }
+      } catch {
+        target = null;
+      }
+      restoreTargetRef.current = target;
+    }
+    const target = restoreTargetRef.current;
+    if (!target) return;
+
+    const applyOnce = () => {
+      if (target.kind === 'anchor') {
+        const el = document.getElementById(target.id);
+        if (!el) return;
+        const delta = el.getBoundingClientRect().top - target.top;
+        if (Math.abs(delta) > 1) {
+          window.scrollTo({ top: window.scrollY + delta, behavior: 'instant' });
+        }
+      } else if (Math.abs(window.scrollY - target.y) > 1) {
+        window.scrollTo({ top: target.y, behavior: 'instant' });
+      }
+    };
+
+    // Correct before the first paint so the reset-to-top is never shown.
+    applyOnce();
+
+    let cancelled = false;
+    let rafId = 0;
+    const start = performance.now();
+    const stop = () => {
+      cancelled = true;
+      window.removeEventListener('wheel', stop);
+      window.removeEventListener('touchmove', stop);
+      window.removeEventListener('keydown', stop);
+    };
+    // Only user-initiated scrolling should end the hold early - not our own programmatic scrolls.
+    window.addEventListener('wheel', stop, { passive: true });
+    window.addEventListener('touchmove', stop, { passive: true });
+    window.addEventListener('keydown', stop);
+
+    const HOLD_MS = 900; // outlasts the router reset (~200ms) and ScrollTrigger.refresh (~600ms)
+    const tick = () => {
+      if (cancelled) return;
+      applyOnce();
+      if (performance.now() - start < HOLD_MS) {
+        rafId = requestAnimationFrame(tick);
+      } else {
+        stop();
+      }
+    };
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      stop();
+    };
+  }, [isRestoring, showProductsSkeleton, products.length]);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveHeroIdx((prev) => (prev + 1) % HERO_CONTENT.length);
@@ -519,6 +659,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   const promoHydrationProduct = products.find(p => p.name.includes('Toleriane Double Repair Face Moisturizer')) || products.find(p => p.category === 'Hidratantes' && (p.imageUrl || p.images?.length)) || products[6];
 
   return (
+    <RestoringContext.Provider value={isRestoring}>
     <div>
       {/* HERO */}
       <RevealSection style={{ padding: isMobile ? '16px 16px 0' : isTablet ? '24px 24px 0' : '32px 40px 0' }}>
@@ -725,7 +866,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
             : bestSellers.map((p, i) => (
                 <StaggerItem key={p.id} index={i}>
-                  <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} priority={i < (isMobile ? 2 : 4)} />
+                  <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} priority={i < (isMobile ? 2 : 4)} sectionKey="bestsellers" />
                 </StaggerItem>
               ))
           }
@@ -950,7 +1091,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
             : featured.map((p, i) => (
                 <StaggerItem key={p.id} index={i}>
-                  <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} />
+                  <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} sectionKey="nuevos" />
                 </StaggerItem>
               ))
           }
@@ -966,5 +1107,6 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
         <BrandsMarquee onNav={onNav} />
       </RevealSection>
     </div>
+    </RestoringContext.Provider>
   );
 }
