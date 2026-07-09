@@ -31,15 +31,20 @@ const notificationIdParamsSchema = z.object({
   id: objectIdSchema,
 });
 
-/** Build the Mongo filter for a requester's inbox: their own `user` rows, every `all` broadcast,
- * and - only if they're an admin - the shared `admin` rows. */
-function inboxFilter(clerkId: string, role: string) {
+/** Audiences a requester can see: their own `user` rows, every `all` broadcast, and - only if
+ * they're an admin - the shared `admin` rows. */
+function audienceFilter(clerkId: string, role: string) {
   const or: Record<string, unknown>[] = [
     { audience: 'user', recipientId: clerkId },
     { audience: 'all' },
   ];
   if (role === 'admin') or.push({ audience: 'admin' });
   return { $or: or };
+}
+
+/** Full inbox filter: audiences the requester can see, minus the rows they've dismissed. */
+function inboxFilter(clerkId: string, role: string) {
+  return { ...audienceFilter(clerkId, role), dismissedBy: { $ne: clerkId } };
 }
 
 /** Resolve a Clerk session token (passed as a WS query param, since browsers can't set an
@@ -107,6 +112,31 @@ export const notificationsRouter = new Hono<AppEnv>()
       { $addToSet: { readBy: user.clerkId } },
     );
     return c.json({ updated: result.modifiedCount ?? 0 });
+  })
+
+  // "Delete" for a user = dismiss (hide from their inbox). Shared admin/all rows stay for other
+  // users; personal rows just get hidden. Matches on audience membership so re-deleting is a no-op.
+  .delete('/:id', clerkAuth, async (c) => {
+    const parsed = parseParams(c, notificationIdParamsSchema);
+    if (!parsed.success) return parsed.response;
+
+    const user = c.get('user');
+    const updated = await Notification.findOneAndUpdate(
+      { _id: parsed.data.id, ...audienceFilter(user.clerkId, user.role) },
+      { $addToSet: { dismissedBy: user.clerkId } },
+    ).lean();
+    if (!updated) return c.json({ error: 'Not found' }, 404);
+    return c.json({ success: true });
+  })
+
+  // Clear every notification currently in the requester's inbox (dismiss all).
+  .delete('/', clerkAuth, async (c) => {
+    const user = c.get('user');
+    const result = await Notification.updateMany(
+      inboxFilter(user.clerkId, user.role),
+      { $addToSet: { dismissedBy: user.clerkId } },
+    );
+    return c.json({ cleared: result.modifiedCount ?? 0 });
   })
 
   // WebSocket channel. The Clerk token arrives as `?token=` (no auth header on WS handshakes). We

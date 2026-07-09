@@ -162,6 +162,18 @@ export const api = {
         { method: "POST" },
         token,
       ),
+    dismiss: (id: string, token: string) =>
+      request<{ success: boolean }>(
+        `/notifications/${id}`,
+        { method: "DELETE" },
+        token,
+      ),
+    clearAll: (token: string) =>
+      request<{ cleared: number }>(
+        "/notifications",
+        { method: "DELETE" },
+        token,
+      ),
   },
   admin: {
     access: (token: string) =>

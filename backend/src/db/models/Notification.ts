@@ -39,6 +39,10 @@ const NotificationSchema = new Schema(
     // Free-form payload for the client (orderId, productId, rating, etc.).
     data: { type: Schema.Types.Mixed, default: {} },
     readBy: { type: [String], default: [] },
+    // Per-user "delete": a user dismisses a notification by adding their Clerk id here. Shared
+    // `admin`/`all` rows can't be row-deleted for one user without hiding them from the rest, so
+    // the inbox simply excludes rows the requester has dismissed (same pattern as `readBy`).
+    dismissedBy: { type: [String], default: [] },
   },
   { timestamps: true }
 );
@@ -47,5 +51,12 @@ NotificationSchema.index({ recipientId: 1, createdAt: -1 });
 NotificationSchema.index({ audience: 1, createdAt: -1 });
 // Supports the low-stock dedupe lookup (recent notification for a given product).
 NotificationSchema.index({ type: 1, 'data.productId': 1, createdAt: -1 });
+// Auto-retention: notifications self-expire after NOTIFICATION_TTL_DAYS (default 60) so the
+// collection doesn't grow unbounded - the notification center is a recent-activity feed, not an
+// archive. TTL is coarse (Mongo's background sweep runs ~every 60s); that's fine here.
+NotificationSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: Number(process.env.NOTIFICATION_TTL_DAYS || 60) * 24 * 60 * 60 },
+);
 
 export const Notification = model('Notification', NotificationSchema);

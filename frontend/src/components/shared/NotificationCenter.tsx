@@ -14,7 +14,7 @@ interface NotificationCenterProps {
 /** Bell trigger + dropdown panel: the persistent notification center (HU-061). Reads from the
  * shared inbox cache that the WebSocket also feeds, so it updates in real time and after a reload. */
 export function NotificationCenter({ buttonStyle, iconSize = 18 }: NotificationCenterProps) {
-  const { notifications, unread, markRead, markAllRead } = useNotifications();
+  const { notifications, unread, markRead, markAllRead, dismiss, clearAll } = useNotifications();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -101,22 +101,24 @@ export function NotificationCenter({ buttonStyle, iconSize = 18 }: NotificationC
             <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20, color: 'var(--ink)' }}>
               Notificaciones
             </span>
-            {unread > 0 && (
-              <button
-                onClick={() => markAllRead()}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--green)',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  fontFamily: '"Geist", sans-serif',
-                }}
-              >
-                Marcar todas leídas
-              </button>
-            )}
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              {unread > 0 && (
+                <button
+                  onClick={() => markAllRead()}
+                  style={headerActionStyle('var(--green)')}
+                >
+                  Marcar leídas
+                </button>
+              )}
+              {notifications.length > 0 && (
+                <button
+                  onClick={() => clearAll()}
+                  style={headerActionStyle('var(--ink-40)')}
+                >
+                  Borrar todas
+                </button>
+              )}
+            </div>
           </div>
 
           <div style={{ overflowY: 'auto', flex: 1 }}>
@@ -140,6 +142,7 @@ export function NotificationCenter({ buttonStyle, iconSize = 18 }: NotificationC
                   key={notification.id}
                   notification={notification}
                   onRead={() => markRead(notification.id)}
+                  onDismiss={() => dismiss(notification.id)}
                   onClose={() => setOpen(false)}
                 />
               ))
@@ -151,19 +154,34 @@ export function NotificationCenter({ buttonStyle, iconSize = 18 }: NotificationC
   );
 }
 
+function headerActionStyle(color: string): CSSProperties {
+  return {
+    background: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    color,
+    fontSize: 12,
+    fontWeight: 600,
+    fontFamily: '"Geist", sans-serif',
+    padding: 0,
+  };
+}
+
 function NotificationRow({
   notification,
   onRead,
+  onDismiss,
   onClose,
 }: {
   notification: AppNotification;
   onRead: () => void;
+  onDismiss: () => void;
   onClose: () => void;
 }) {
   const go = useNotificationLink();
   const { icon, accent } = notificationPresentation(notification.type);
 
-  const handleClick = () => {
+  const handleActivate = () => {
     if (!notification.read) onRead();
     if (notification.link) {
       go(notification.link);
@@ -172,64 +190,100 @@ function NotificationRow({
   };
 
   return (
-    <button
-      onClick={handleClick}
+    <div
       style={{
+        position: 'relative',
         display: 'flex',
         gap: 12,
         alignItems: 'flex-start',
-        width: '100%',
-        textAlign: 'left',
-        padding: '12px 16px',
-        border: 'none',
         borderBottom: '1px solid var(--ink-04)',
         background: notification.read ? 'transparent' : 'var(--ink-04)',
-        cursor: 'pointer',
       }}
     >
-      <span
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={handleActivate}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleActivate();
+          }
+        }}
         style={{
-          flexShrink: 0,
-          width: 32,
-          height: 32,
-          borderRadius: 999,
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'var(--cream-2)',
-          color: accent,
+          gap: 12,
+          alignItems: 'flex-start',
+          flex: 1,
+          minWidth: 0,
+          padding: '12px 8px 12px 16px',
+          cursor: notification.link ? 'pointer' : 'default',
         }}
       >
-        <Icon name={icon} size={16} stroke={accent} />
-      </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: notification.read ? 500 : 700,
-            color: 'var(--ink)',
-            marginBottom: 2,
-          }}
-        >
-          {notification.title}
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--ink-60)', lineHeight: 1.35 }}>{notification.body}</div>
-        <div style={{ fontSize: 11, color: 'var(--ink-40)', marginTop: 4, fontFamily: '"JetBrains Mono", monospace' }}>
-          {relativeTime(notification.createdAt)}
-        </div>
-      </div>
-      {!notification.read && (
         <span
           style={{
             flexShrink: 0,
-            width: 8,
-            height: 8,
+            width: 32,
+            height: 32,
             borderRadius: 999,
-            background: 'var(--coral)',
-            marginTop: 6,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'var(--cream-2)',
+            color: accent,
           }}
-        />
-      )}
-    </button>
+        >
+          <Icon name={icon} size={16} stroke={accent} />
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: notification.read ? 500 : 700,
+              color: 'var(--ink)',
+              marginBottom: 2,
+            }}
+          >
+            {notification.title}
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--ink-60)', lineHeight: 1.35 }}>{notification.body}</div>
+          <div style={{ fontSize: 11, color: 'var(--ink-40)', marginTop: 4, fontFamily: '"JetBrains Mono", monospace' }}>
+            {relativeTime(notification.createdAt)}
+          </div>
+        </div>
+        {!notification.read && (
+          <span
+            style={{
+              flexShrink: 0,
+              width: 8,
+              height: 8,
+              borderRadius: 999,
+              background: 'var(--coral)',
+              marginTop: 6,
+            }}
+          />
+        )}
+      </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDismiss();
+        }}
+        aria-label="Borrar notificación"
+        style={{
+          flexShrink: 0,
+          alignSelf: 'stretch',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          color: 'var(--ink-40)',
+          padding: '0 12px',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <Icon name="x" size={14} />
+      </button>
+    </div>
   );
 }

@@ -76,6 +76,48 @@ export function useNotifications() {
     },
   });
 
+  const dismiss = useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getToken();
+      if (!token) return;
+      await api.notifications.dismiss(id, token);
+    },
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+      const previous = queryClient.getQueryData<NotificationInbox>(NOTIFICATIONS_QUERY_KEY);
+      queryClient.setQueryData<NotificationInbox>(NOTIFICATIONS_QUERY_KEY, (current) =>
+        removeFromInbox(current ?? EMPTY_INBOX, id),
+      );
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(NOTIFICATIONS_QUERY_KEY, context.previous);
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+    },
+  });
+
+  const clearAll = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) return;
+      await api.notifications.clearAll(token);
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+      const previous = queryClient.getQueryData<NotificationInbox>(NOTIFICATIONS_QUERY_KEY);
+      queryClient.setQueryData<NotificationInbox>(NOTIFICATIONS_QUERY_KEY, EMPTY_INBOX);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(NOTIFICATIONS_QUERY_KEY, context.previous);
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+    },
+  });
+
   const refresh = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
   }, [queryClient]);
@@ -86,6 +128,8 @@ export function useNotifications() {
     isLoading: query.isLoading,
     markRead: markRead.mutate,
     markAllRead: markAllRead.mutate,
+    dismiss: dismiss.mutate,
+    clearAll: clearAll.mutate,
     refresh,
   };
 }
@@ -100,5 +144,10 @@ export function mergePushedNotification(inbox: NotificationInbox, incoming: AppN
 
 function markOneReadInInbox(inbox: NotificationInbox, id: string): NotificationInbox {
   const notifications = inbox.notifications.map((n) => (n.id === id ? { ...n, read: true } : n));
+  return { notifications, unread: notifications.filter((n) => !n.read).length };
+}
+
+function removeFromInbox(inbox: NotificationInbox, id: string): NotificationInbox {
+  const notifications = inbox.notifications.filter((n) => n.id !== id);
   return { notifications, unread: notifications.filter((n) => !n.read).length };
 }

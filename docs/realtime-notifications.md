@@ -61,11 +61,18 @@ o edición del producto en el panel admin.
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| `GET` | `/notifications?limit=` | Clerk | Bandeja del usuario (propias + `all` + `admin` si es admin) con `unread` |
+| `GET` | `/notifications?limit=` | Clerk | Bandeja del usuario (propias + `all` + `admin` si es admin, sin las descartadas) con `unread` |
 | `PATCH` | `/notifications/:id/read` | Clerk | Marca una como leída (para el solicitante) |
 | `POST` | `/notifications/read-all` | Clerk | Marca todas como leídas |
+| `DELETE` | `/notifications/:id` | Clerk | Descarta una (la oculta de la bandeja del solicitante) |
+| `DELETE` | `/notifications` | Clerk | Descarta todas las de la bandeja del solicitante |
 | `GET` | `/notifications/ws?token=<jwt>` | Clerk (token en query) | Upgrade a WebSocket |
 | `GET` | `/notifications/ws/status` | pública | Conteo de sockets conectados (observabilidad) |
+
+**Borrado y retención.** "Borrar" es **por usuario** (`dismissedBy`): una fila compartida `admin`/`all`
+se oculta para quien la descarta sin desaparecer para el resto; las personales simplemente se ocultan.
+Además, cada notificación **se auto-expira** por un índice TTL de Mongo a los `NOTIFICATION_TTL_DAYS`
+días (por defecto **60**) — el centro es un feed de actividad reciente, no un archivo.
 
 El token de Clerk viaja en el query param porque el handshake WebSocket del navegador no permite
 cabecera `Authorization`. Se verifica en el upgrade; un token inválido cierra con código `1008`.
@@ -97,3 +104,4 @@ el socket directo al backend con **una** de estas:
 ## Backend — variables de entorno
 
 - `LOW_STOCK_THRESHOLD` (opcional, default `5`): umbral para el aviso de stock bajo a admins.
+- `NOTIFICATION_TTL_DAYS` (opcional, default `60`): días tras los cuales una notificación se auto-elimina (índice TTL).

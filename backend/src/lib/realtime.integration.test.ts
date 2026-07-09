@@ -223,6 +223,35 @@ describe('notifications router', () => {
     expect(after.json.unread).toBe(0);
   });
 
+  test('dismiss hides a notification per-user without affecting others', async () => {
+    await notifyEveryone({ type: 'broadcast', title: 'g', body: 'b' });
+    const list = await authedRequest('/', {}, customerHeaders);
+    const id = list.json.notifications[0].id;
+
+    const del = await authedRequest(`/${id}`, { method: 'DELETE' }, customerHeaders);
+    expect(del.status).toBe(200);
+
+    const custAfter = await authedRequest('/', {}, customerHeaders);
+    expect(custAfter.json.notifications).toHaveLength(0); // gone for this user
+
+    const otherCustomer = await authedRequest('/', {}, { ...customerHeaders, 'x-test-clerk-id': 'cust-9' });
+    expect(otherCustomer.json.notifications).toHaveLength(1); // still there for everyone else
+  });
+
+  test('clear-all empties the requester inbox only', async () => {
+    await notifyUser('cust-1', { type: 'order_paid', title: 'a', body: 'b' });
+    await notifyEveryone({ type: 'broadcast', title: 'c', body: 'd' });
+
+    const cleared = await authedRequest('/', { method: 'DELETE' }, customerHeaders);
+    expect(cleared.json.cleared).toBe(2);
+
+    const after = await authedRequest('/', {}, customerHeaders);
+    expect(after.json.notifications).toHaveLength(0);
+
+    const otherCustomer = await authedRequest('/', {}, { ...customerHeaders, 'x-test-clerk-id': 'cust-9' });
+    expect(otherCustomer.json.notifications).toHaveLength(1); // broadcast still visible to others
+  });
+
   test('ws/status exposes connection counts (observability)', async () => {
     registerSocket({ clerkId: 'admin-1', role: 'admin' }, fakeSocket());
     const res = await authedRequest('/ws/status', {}, {});
