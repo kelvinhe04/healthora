@@ -5,6 +5,7 @@ import { useCompareStore } from "../../store/compareStore";
 import { useWishlistStore } from "../../store/wishlistStore";
 import { useThemeStore } from "../../store/themeStore";
 import { Icon } from "../shared/Icon";
+import { NotificationCenter } from "../shared/NotificationCenter";
 import { AnimatedButton } from "../shared/AnimatedButton";
 import { useAuth, useUser, useClerk } from "@clerk/clerk-react";
 import { api } from "../../lib/api";
@@ -1219,6 +1220,8 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
           </span>
         </button>
+
+        {isSignedIn && <NotificationCenter buttonStyle={headerIconBtn} />}
 
         <button
           style={{ ...headerIconBtn, position: "relative" }}

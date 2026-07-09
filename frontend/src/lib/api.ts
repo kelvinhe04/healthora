@@ -7,6 +7,8 @@ import type {
   SavedAddress,
   Review,
   ErrorReport,
+  AppNotification,
+  NotificationInbox,
 } from "../types";
 import type { CartItem } from "../types";
 
@@ -140,6 +142,26 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ email }),
       }),
+  },
+  notifications: {
+    list: (token: string, limit?: number) =>
+      request<NotificationInbox>(
+        `/notifications${limit ? `?limit=${limit}` : ""}`,
+        undefined,
+        token,
+      ),
+    markRead: (id: string, token: string) =>
+      request<AppNotification>(
+        `/notifications/${id}/read`,
+        { method: "PATCH" },
+        token,
+      ),
+    markAllRead: (token: string) =>
+      request<{ updated: number }>(
+        "/notifications/read-all",
+        { method: "POST" },
+        token,
+      ),
   },
   admin: {
     access: (token: string) =>

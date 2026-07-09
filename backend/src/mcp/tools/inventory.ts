@@ -4,6 +4,7 @@ import { Product } from '../../db/models/Product';
 import { productIdSchema, textField } from '../../lib/validation';
 import { errorResult, jsonResult } from '../toolHelpers';
 import { getTotalStock } from '../../lib/productVariants';
+import { maybeNotifyLowStock } from '../../lib/realtime';
 
 export function registerInventoryTools(server: McpServer) {
   server.registerTool(
@@ -67,6 +68,17 @@ export function registerInventoryTools(server: McpServer) {
       apply();
       await product.save();
       const newStock = Math.max(0, current + (delta ?? 0));
+
+      // A reducing adjustment can push a product under the low-stock threshold - alert admins in
+      // real time (HU-061), deduped so repeated adjustments don't spam. Best-effort.
+      if ((delta ?? 0) < 0) {
+        try {
+          await maybeNotifyLowStock(product);
+        } catch (notifyError) {
+          console.error('[MCP inventory.adjustStock] low_stock notification failed:', notifyError);
+        }
+      }
+
       return jsonResult({ productId, variantId: variantId ?? null, previousStock: current, delta, stock: newStock });
     },
   );

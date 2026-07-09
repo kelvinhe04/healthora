@@ -9,6 +9,7 @@ import { recalculateBestsellers } from '../lib/bestsellers';
 import { addressSchema, cartItemSchema, emailField, moneyFromInput, optionalTextField, textField } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
 import { decrementStock, validateCartStock } from '../lib/inventory';
+import { notifyUser, maybeNotifyLowStock } from '../lib/realtime';
 
 type CheckoutAddress = {
   name: string;
@@ -170,6 +171,30 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
             if (!ok) {
               console.error('[WEBHOOK] Stock decrement failed for', item.productId, item.variantId);
             }
+          }
+
+          // Real-time notifications (HU-061). Best-effort: a notification failure must never break
+          // the paid-order flow, so each push is guarded independently.
+          try {
+            await notifyUser(metadata.customerId, {
+              type: 'order_paid',
+              title: 'Pago confirmado',
+              body: `Recibimos tu pago de $${total.toFixed(2)}. Tu pedido está en preparación.`,
+              link: '/orders',
+              data: { orderId: order._id.toString(), total },
+            });
+          } catch (notifyError) {
+            console.error('[WEBHOOK] order_paid notification failed:', notifyError);
+          }
+
+          try {
+            const soldProductIds = [...new Set(lineItems.filter((i) => !i.isSample).map((i) => i.productId))];
+            const soldProducts = await Product.find({ id: { $in: soldProductIds } }).lean();
+            for (const product of soldProducts) {
+              await maybeNotifyLowStock(product);
+            }
+          } catch (notifyError) {
+            console.error('[WEBHOOK] low_stock notification failed:', notifyError);
           }
         }
       } catch (error) {

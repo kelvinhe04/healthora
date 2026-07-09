@@ -6,6 +6,8 @@ import { ParallaxProvider } from 'react-scroll-parallax';
 import { PostHogProvider } from '@posthog/react';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { PostHogIdentity } from '../components/PostHogIdentity';
+import { NotificationsRealtime } from '../components/shared/NotificationsRealtime';
+import { NotificationToaster } from '../components/shared/NotificationToaster';
 import { installGlobalErrorTracking, isPostHogConfigured, posthogOptions, posthogToken } from '../lib/posthog';
 import { subscribeToProductChanges } from '../lib/crossTabSync';
 import appCss from '../index.css?url';
@@ -56,11 +58,13 @@ function RootComponent() {
         <PostHogIdentity />
         <QueryClientProvider client={queryClient}>
           <CrossTabProductSync />
+          <NotificationsRealtime />
           <ParallaxProvider>
             <ErrorBoundary>
               <Outlet />
             </ErrorBoundary>
           </ParallaxProvider>
+          <NotificationToaster />
         </QueryClientProvider>
       </ClerkProvider>
     </ErrorBoundary>
