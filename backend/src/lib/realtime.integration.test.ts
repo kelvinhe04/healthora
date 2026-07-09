@@ -160,6 +160,22 @@ describe('realtime notification hub', () => {
     expect(await Notification.countDocuments({ type: 'low_stock' })).toBe(2);
   });
 
+  test('maybeNotifyLowStock re-alerts within the window when stock drops further (e.g. down to 0)', async () => {
+    const cell = { productId: 'olly', productName: 'Olly', variantId: 'vanilla:5lb', variantLabel: 'Vainilla · 5lb', stock: 3 };
+    const first = await maybeNotifyLowStock(cell, { threshold: 5 });
+    expect(first).not.toBeNull();
+
+    // Same stock level again -> still deduped.
+    expect(await maybeNotifyLowStock(cell, { threshold: 5 })).toBeNull();
+
+    // Customer keeps buying, stock drops further -> fresh alert even inside the dedupe window.
+    const soldOut = await maybeNotifyLowStock({ ...cell, stock: 0 }, { threshold: 5 });
+    expect(soldOut).not.toBeNull();
+    expect(soldOut?.notification.body).toContain('se quedó sin stock');
+
+    expect(await Notification.countDocuments({ type: 'low_stock' })).toBe(2);
+  });
+
   test('maybeNotifyLowStock ignores cells above threshold', async () => {
     const result = await maybeNotifyLowStock({ productId: 'plenty', productName: 'Plenty', stock: 40 }, { threshold: 5 });
     expect(result).toBeNull();

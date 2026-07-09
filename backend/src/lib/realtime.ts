@@ -182,8 +182,11 @@ export interface LowStockCell {
 }
 
 /** Emit a low-stock admin alert for a single stock cell that is at/under the threshold. Deduped
- * per product+variant: skips if an alert for the same cell already fired within `dedupeWindowMs`,
- * so a burst of purchases (or repeated admin saves) doesn't spam admins. */
+ * per product+variant: skips only if the *exact same stock value* for this cell already alerted
+ * within `dedupeWindowMs`, so re-saving a product (or a retried webhook) without an actual stock
+ * change doesn't spam admins. Any change in the stock number - lower (a customer keeps buying,
+ * e.g. down to 0) or higher (a partial restock that's still under threshold) - fires a fresh
+ * alert, since either is a new, distinct state the admin hasn't been told about yet. */
 export async function maybeNotifyLowStock(
   cell: LowStockCell,
   opts: { threshold?: number; dedupeWindowMs?: number } = {},
@@ -198,6 +201,7 @@ export async function maybeNotifyLowStock(
     type: 'low_stock',
     'data.productId': cell.productId,
     'data.variantId': variantId,
+    'data.stock': cell.stock,
     createdAt: { $gte: since },
   }).lean();
   if (recent) return null;

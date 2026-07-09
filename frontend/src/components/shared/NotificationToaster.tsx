@@ -62,7 +62,6 @@ function ToastCard({ toast }: { toast: Toast }) {
         alignItems: 'flex-start',
         background: 'var(--cream)',
         border: '1px solid var(--ink-12)',
-        borderLeft: `3px solid ${accent}`,
         borderRadius: 14,
         padding: '12px 14px',
         boxShadow: '0 18px 40px -18px rgba(0,0,0,0.35)',
