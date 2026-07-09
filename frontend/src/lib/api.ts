@@ -6,6 +6,8 @@ import type {
   ProductFilters,
   SavedAddress,
   Review,
+  AdminReview,
+  ReviewStatus,
   ErrorReport,
   AppNotification,
   NotificationInbox,
@@ -225,6 +227,26 @@ export const api = {
       removeAll: (token: string) =>
         request<{ deletedCount: number; categoriesCount: number }>(
           "/admin/products",
+          { method: "DELETE" },
+          token,
+        ),
+    },
+    reviews: {
+      list: (token: string, status?: ReviewStatus) =>
+        request<{ items: AdminReview[]; total: number; page: number; limit: number }>(
+          `/admin/reviews${status ? `?status=${status}` : ""}`,
+          undefined,
+          token,
+        ),
+      updateStatus: (id: string, status: ReviewStatus, token: string) =>
+        request<AdminReview>(
+          `/admin/reviews/${id}`,
+          { method: "PATCH", body: JSON.stringify({ status }) },
+          token,
+        ),
+      remove: (id: string, token: string) =>
+        request<{ success: boolean }>(
+          `/admin/reviews/${id}`,
           { method: "DELETE" },
           token,
         ),

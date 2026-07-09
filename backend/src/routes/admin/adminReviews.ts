@@ -1,0 +1,71 @@
+import { Hono } from 'hono';
+import { z } from 'zod';
+import { Review } from '../../db/models/Review';
+import { Product } from '../../db/models/Product';
+import { requireAdmin } from '../../middleware/requireAdmin';
+import type { AppEnv } from '../../types/hono';
+import { intFromInput, objectIdSchema, parseJson, parseParams, parseQuery } from '../../lib/validation';
+import { recomputeProductRating } from '../../lib/productRatings';
+
+const reviewStatusSchema = z.enum(['pending', 'published', 'hidden']);
+
+const listQuerySchema = z.object({
+  status: reviewStatusSchema.optional(),
+  page: intFromInput(1, 10000).default(1),
+  limit: intFromInput(1, 100).default(20),
+});
+
+const idParamsSchema = z.object({ id: objectIdSchema });
+
+const updateStatusSchema = z.object({ status: reviewStatusSchema });
+
+export const adminReviewsRouter = new Hono<AppEnv>()
+  .use('*', requireAdmin)
+  .get('/', async (c) => {
+    const parsed = parseQuery(c, listQuerySchema);
+    if (!parsed.success) return parsed.response;
+
+    const { status, page, limit } = parsed.data;
+    const filter = status ? { status } : {};
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      Review.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Review.countDocuments(filter),
+    ]);
+
+    const productIds = [...new Set(items.map((item) => item.productId))];
+    const products = await Product.find({ id: { $in: productIds } }).select('id name').lean();
+    const nameById = new Map(products.map((product) => [product.id, product.name]));
+    const enriched = items.map((item) => ({ ...item, productName: nameById.get(item.productId) || item.productId }));
+
+    return c.json({ items: enriched, total, page, limit });
+  })
+  .patch('/:id', async (c) => {
+    const paramsParsed = parseParams(c, idParamsSchema);
+    if (!paramsParsed.success) return paramsParsed.response;
+
+    const bodyParsed = await parseJson(c, updateStatusSchema);
+    if (!bodyParsed.success) return bodyParsed.response;
+
+    const review = await Review.findByIdAndUpdate(
+      paramsParsed.data.id,
+      { status: bodyParsed.data.status },
+      { new: true }
+    ).lean();
+
+    if (!review) return c.json({ error: 'Reseña no encontrada' }, 404);
+
+    await recomputeProductRating(review.productId);
+    return c.json(review);
+  })
+  .delete('/:id', async (c) => {
+    const parsed = parseParams(c, idParamsSchema);
+    if (!parsed.success) return parsed.response;
+
+    const review = await Review.findByIdAndDelete(parsed.data.id).lean();
+    if (!review) return c.json({ error: 'Reseña no encontrada' }, 404);
+
+    await recomputeProductRating(review.productId);
+    return c.json({ success: true });
+  });

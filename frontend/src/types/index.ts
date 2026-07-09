@@ -147,6 +147,8 @@ export interface User {
   createdAt: string;
 }
 
+export type ReviewStatus = 'pending' | 'published' | 'hidden';
+
 export interface Review {
   _id: string;
   productId: string;
@@ -157,8 +159,13 @@ export interface Review {
   body: string;
   userAvatar?: string;
   helpfulVoters: string[];
+  status?: ReviewStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AdminReview extends Review {
+  productName: string;
 }
 
 export interface ErrorReport {
