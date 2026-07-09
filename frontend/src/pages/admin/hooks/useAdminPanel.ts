@@ -22,6 +22,10 @@ import {
 import { getNextFulfillmentStatus, paginateItems } from '../utils';
 import { useAdminToken } from './useAdminToken';
 import { broadcastProductsChanged } from '../../../lib/crossTabSync';
+import { getEffectivePrice, getTotalStock } from '../../../lib/productVariants';
+
+export type ProductSortKey = 'price' | 'stock';
+export type ProductSort = { key: ProductSortKey | null; dir: 'asc' | 'desc' };
 
 export type AdminPanelState = ReturnType<typeof useAdminPanel>;
 
@@ -124,6 +128,14 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   } | null>(null);
   const [productCatFilter, setProductCatFilter] = useState("Todos");
   const [productSearch, setProductSearch] = useState("");
+  const [productSort, setProductSort] = useState<ProductSort>({ key: null, dir: 'asc' });
+  const toggleProductSort = useCallback((key: ProductSortKey) => {
+    setProductSort((current) =>
+      current.key === key
+        ? { key, dir: current.dir === 'asc' ? 'desc' : 'asc' }
+        : { key, dir: 'asc' },
+    );
+  }, []);
   const [productsPage, setProductsPage] = useState(1);
   const [usersPage, setUsersPage] = useState(1);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -452,7 +464,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
 
   useEffect(() => {
     setProductsPage(1);
-  }, [productCatFilter, productSearch]);
+  }, [productCatFilter, productSearch, productSort]);
 
   useEffect(() => {
     setUsersPage(1);
@@ -495,8 +507,31 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     return Array.from(allCategories).sort();
   }, [products]);
 
+  // Products matching only the search term (not the category filter) — used to count how many
+  // products each category pill would show if selected, so the count reflects the active search
+  // instead of always the full unfiltered catalog.
+  const productsForCategoryCounts = useMemo(() => {
+    const term = productSearch.toLowerCase();
+    if (!term) return products as Product[];
+    return (products as Product[]).filter(
+      (p) => p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term),
+    );
+  }, [products, productSearch]);
+
+  const categoryCounts = useMemo(
+    () =>
+      Object.fromEntries([
+        ["Todos", productsForCategoryCounts.length],
+        ...categories.map((cat) => [
+          cat,
+          productsForCategoryCounts.filter((p) => p.category === cat).length,
+        ]),
+      ]),
+    [categories, productsForCategoryCounts],
+  );
+
   const displayedProducts = useMemo(() => {
-    return (products as Product[]).filter((p) => {
+    const filtered = (products as Product[]).filter((p) => {
       const matchCat =
         productCatFilter === "Todos" || p.category === productCatFilter;
       const term = productSearch.toLowerCase();
@@ -506,7 +541,16 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
         p.brand.toLowerCase().includes(term);
       return matchCat && matchSearch;
     });
-  }, [products, productCatFilter, productSearch]);
+    if (!productSort.key) return filtered;
+    const sorted = filtered.slice();
+    const dirMul = productSort.dir === 'asc' ? 1 : -1;
+    if (productSort.key === 'price') {
+      sorted.sort((a, b) => (getEffectivePrice(a) - getEffectivePrice(b)) * dirMul);
+    } else if (productSort.key === 'stock') {
+      sorted.sort((a, b) => (getTotalStock(a) - getTotalStock(b)) * dirMul);
+    }
+    return sorted;
+  }, [products, productCatFilter, productSearch, productSort]);
 
   const displayedOrders = useMemo(() => {
     const term = orderSearch.toLowerCase();
@@ -592,8 +636,11 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     productCatFilter,
     setProductCatFilter,
     categories,
+    categoryCounts,
     productSearch,
     setProductSearch,
+    productSort,
+    toggleProductSort,
     setProductModal,
     selectedProductIds,
     setSelectedProductIds,

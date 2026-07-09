@@ -13,11 +13,79 @@ import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { ProductImage } from '../../../components/shared/ProductImage';
+import { Stars } from '../../../components/shared/Stars';
+import { useReviews } from '../../../hooks/useReviews';
 import { PaginationControls } from '../components/PaginationControls';
 import { ProductModal } from '../components/ProductModal';
 import { useAdminPanelContext } from '../AdminPanelContext';
 import { variantSummary } from '../utils';
+import type { ProductSortKey } from '../hooks/useAdminPanel';
 import { getTotalStock, getEffectivePrice, getEffectivePriceBefore } from '../../../lib/productVariants';
+import type { Product } from '../../../types';
+
+function ProductRatingCell({ product }: { product: Product }) {
+  const { data: reviews } = useReviews(product.id);
+  const count = reviews?.length ?? 0;
+  const rating = count > 0
+    ? Math.round((reviews!.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10
+    : 0;
+
+  if (count === 0) {
+    return (
+      <span style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>
+        SIN RESEÑAS
+      </span>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <Stars value={rating} size={12} />
+      <span style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>
+        {rating} · {count}
+      </span>
+    </div>
+  );
+}
+
+function SortableTh({
+  label,
+  sortKey,
+  activeSort,
+  onSort,
+}: {
+  label: string;
+  sortKey: ProductSortKey;
+  activeSort: { key: ProductSortKey | null; dir: 'asc' | 'desc' };
+  onSort: (key: ProductSortKey) => void;
+}) {
+  const active = activeSort.key === sortKey;
+  return (
+    <th style={th}>
+      <button
+        onClick={() => onSort(sortKey)}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          border: 'none',
+          background: 'transparent',
+          padding: 0,
+          cursor: 'pointer',
+          font: 'inherit',
+          color: active ? 'var(--ink)' : 'var(--ink-60)',
+          letterSpacing: 'inherit',
+          textTransform: 'inherit',
+        }}
+        title={`Ordenar por ${label.toLowerCase()}`}
+      >
+        {label}
+        <span style={{ fontSize: 9, opacity: active ? 1 : 0.35 }}>
+          {active ? (activeSort.dir === 'asc' ? '▲' : '▼') : '▲▼'}
+        </span>
+      </button>
+    </th>
+  );
+}
 
 export function ProductsSection() {
   const {
@@ -26,8 +94,11 @@ export function ProductsSection() {
   productCatFilter,
   setProductCatFilter,
   categories,
+  categoryCounts,
   productSearch,
   setProductSearch,
+  productSort,
+  toggleProductSort,
   setProductModal,
   highlightVariantId,
   selectedProductIds,
@@ -170,6 +241,9 @@ export function ProductsSection() {
                       key={cat}
                       onClick={() => setProductCatFilter(cat)}
                       style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
                         padding: "7px 14px",
                         borderRadius: 999,
                         fontSize: 12,
@@ -191,7 +265,16 @@ export function ProductsSection() {
                         transition: "all 120ms",
                       }}
                     >
-                      {cat}
+                      <span>{cat}</span>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontFamily: '"JetBrains Mono", monospace',
+                          opacity: productCatFilter === cat ? 0.8 : 0.6,
+                        }}
+                      >
+                        {categoryCounts[cat] ?? 0}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -297,6 +380,12 @@ export function ProductsSection() {
                     <div style={{ flex: 0.8 }}>
                       <Skeleton height={9} width={46} borderRadius={3} />
                     </div>
+                    <div style={{ flex: 0.8 }}>
+                      <Skeleton height={9} width={50} borderRadius={3} />
+                    </div>
+                    <div style={{ flex: 0.8 }}>
+                      <Skeleton height={9} width={46} borderRadius={3} />
+                    </div>
                     <div style={{ width: 66, flexShrink: 0 }} />
                   </div>
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((i) => (
@@ -367,6 +456,10 @@ export function ProductsSection() {
                       <div style={{ flex: 0.6 }}>
                         <Skeleton height={13} width={30} borderRadius={4} />
                       </div>
+                      {/* Reseña: stars + count */}
+                      <div style={{ flex: 0.8 }}>
+                        <Skeleton height={13} width={64} borderRadius={4} />
+                      </div>
                       {/* Estado: pill */}
                       <div style={{ flex: 0.8 }}>
                         <Skeleton height={22} width={62} borderRadius={999} />
@@ -411,8 +504,9 @@ export function ProductsSection() {
                     </th>
                     <th style={th}>Producto</th>
                     <th style={th}>Categoría</th>
-                    <th style={th}>Precio</th>
-                    <th style={th}>Stock</th>
+                    <SortableTh label="Precio" sortKey="price" activeSort={productSort} onSort={toggleProductSort} />
+                    <SortableTh label="Stock" sortKey="stock" activeSort={productSort} onSort={toggleProductSort} />
+                    <th style={th}>Reseña</th>
                     <th style={th}>Estado</th>
                     <th style={th}></th>
                   </tr>
@@ -532,6 +626,9 @@ export function ProductsSection() {
                         {getTotalStock(product)}
                       </td>
                       <td style={td}>
+                        <ProductRatingCell product={product} />
+                      </td>
+                      <td style={td}>
                         <StatusPill
                           status={product.active ? "Activo" : "Inactivo"}
                         />
@@ -576,7 +673,7 @@ export function ProductsSection() {
                   {displayedProducts.length === 0 && (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={8}
                         style={{
                           ...td,
                           textAlign: "center",
