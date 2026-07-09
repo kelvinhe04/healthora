@@ -1,5 +1,4 @@
 import { Notification, type NotificationAudience, type NotificationType } from '../db/models/Notification';
-import { getTotalStock } from './productVariants';
 import { logger } from './logger';
 
 /** In-memory WebSocket hub for real-time notifications (HU-061).
@@ -167,37 +166,49 @@ export function notifyEveryone(input: Omit<CreateNotificationInput, 'audience' |
   return createNotification({ ...input, audience: 'all' });
 }
 
-type LowStockProduct = Parameters<typeof getTotalStock>[0] & { id: string; name?: string };
+/** One concrete stock "cell": a product without variants, a simple variant, or a sabor×tamaño
+ * combo. Low-stock alerts operate at this granularity so a critical combo isn't masked by the
+ * product's healthy total (the reason the product-total approach missed low variants). */
+export interface LowStockCell {
+  productId: string;
+  productName?: string | null;
+  /** null = product-level; `<id>` = simple variant; `<primary>:<size>` = combo. */
+  variantId?: string | null;
+  variantLabel?: string | null;
+  stock: number;
+}
 
-/** Emit a low-stock admin alert when a product's total stock is at/under the threshold. Deduped:
- * skips if a low-stock notification for the same product already fired within `dedupeWindowMs`, so
- * a burst of purchases doesn't spam admins with one alert per unit sold. */
+/** Emit a low-stock admin alert for a single stock cell that is at/under the threshold. Deduped
+ * per product+variant: skips if an alert for the same cell already fired within `dedupeWindowMs`,
+ * so a burst of purchases (or repeated admin saves) doesn't spam admins. */
 export async function maybeNotifyLowStock(
-  product: LowStockProduct,
+  cell: LowStockCell,
   opts: { threshold?: number; dedupeWindowMs?: number } = {},
 ) {
   const threshold = opts.threshold ?? LOW_STOCK_THRESHOLD;
-  const dedupeWindowMs = opts.dedupeWindowMs ?? 6 * 60 * 60 * 1000;
-  const stock = getTotalStock(product);
-  if (stock > threshold) return null;
+  if (cell.stock > threshold) return null;
 
+  const dedupeWindowMs = opts.dedupeWindowMs ?? 6 * 60 * 60 * 1000;
+  const variantId = cell.variantId ?? null;
   const since = new Date(Date.now() - dedupeWindowMs);
   const recent = await Notification.findOne({
     type: 'low_stock',
-    'data.productId': product.id,
+    'data.productId': cell.productId,
+    'data.variantId': variantId,
     createdAt: { $gte: since },
   }).lean();
   if (recent) return null;
 
-  const label = product.name || product.id;
+  const label = cell.productName || cell.productId;
+  const suffix = cell.variantLabel ? ` (${cell.variantLabel})` : '';
   return notifyAdmins({
     type: 'low_stock',
     title: 'Stock bajo',
-    body: stock <= 0
-      ? `"${label}" se quedo sin stock.`
-      : `"${label}" tiene ${stock} unidad${stock === 1 ? '' : 'es'} en stock.`,
+    body: cell.stock <= 0
+      ? `"${label}"${suffix} se quedó sin stock.`
+      : `"${label}"${suffix} tiene ${cell.stock} unidad${cell.stock === 1 ? '' : 'es'} en stock.`,
     link: '/admin',
-    data: { productId: product.id, stock, threshold },
+    data: { productId: cell.productId, variantId, stock: cell.stock, threshold },
   });
 }
 

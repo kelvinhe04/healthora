@@ -17,6 +17,7 @@ import {
   type RealtimeSocket,
   type NotificationDoc,
 } from './realtime';
+import { scanAndNotifyLowStock } from './lowStock';
 import { notificationsRouter } from '../routes/notifications';
 
 let mongo: MongoMemoryServer;
@@ -127,21 +128,47 @@ describe('realtime notification hub', () => {
     expect(serializeNotification(after, 'admin-2').read).toBe(false);
   });
 
-  test('maybeNotifyLowStock fires once under threshold and dedupes bursts', async () => {
-    const product = { id: 'olly', name: 'Olly', stock: 3 };
-    const first = await maybeNotifyLowStock(product, { threshold: 5 });
+  test('maybeNotifyLowStock fires once under threshold and dedupes per cell', async () => {
+    const cell = { productId: 'olly', productName: 'Olly', variantId: 'vanilla:5lb', variantLabel: 'Vainilla · 5lb', stock: 3 };
+    const first = await maybeNotifyLowStock(cell, { threshold: 5 });
     expect(first).not.toBeNull();
+    expect(first?.notification.body).toContain('Vainilla · 5lb');
 
-    const second = await maybeNotifyLowStock(product, { threshold: 5 });
+    const second = await maybeNotifyLowStock(cell, { threshold: 5 });
     expect(second).toBeNull(); // deduped within the window
 
-    expect(await Notification.countDocuments({ type: 'low_stock' })).toBe(1);
+    // A *different* variant of the same product is a distinct cell and still alerts.
+    const other = await maybeNotifyLowStock({ ...cell, variantId: 'choco:5lb', variantLabel: 'Choco · 5lb' }, { threshold: 5 });
+    expect(other).not.toBeNull();
+
+    expect(await Notification.countDocuments({ type: 'low_stock' })).toBe(2);
   });
 
-  test('maybeNotifyLowStock ignores products above threshold', async () => {
-    const result = await maybeNotifyLowStock({ id: 'plenty', name: 'Plenty', stock: 40 }, { threshold: 5 });
+  test('maybeNotifyLowStock ignores cells above threshold', async () => {
+    const result = await maybeNotifyLowStock({ productId: 'plenty', productName: 'Plenty', stock: 40 }, { threshold: 5 });
     expect(result).toBeNull();
     expect(await Notification.countDocuments({ type: 'low_stock' })).toBe(0);
+  });
+
+  test('scanAndNotifyLowStock alerts only the critical combo of a matrix product', async () => {
+    // Vainilla·5lb is low (2); Choco·5lb is healthy (30). Total would be 32 - the old product-total
+    // check would have missed the critical combo entirely.
+    const product = {
+      id: 'protein',
+      name: 'Proteína',
+      stock: 32,
+      variants: [
+        { id: 'vanilla', label: 'Vainilla', type: 'flavor', stock: 0, stockBySize: { '5lb': 2 } },
+        { id: 'choco', label: 'Choco', type: 'flavor', stock: 0, stockBySize: { '5lb': 30 } },
+        { id: '5lb', label: '5lb', type: 'size', stock: 0 },
+      ],
+    };
+    const triggered = await scanAndNotifyLowStock(product, { threshold: 5 });
+    expect(triggered).toHaveLength(1);
+    expect(triggered[0].variantId).toBe('vanilla:5lb');
+
+    const alert = await Notification.findOne({ type: 'low_stock' }).lean();
+    expect((alert as { data: { variantId: string } }).data.variantId).toBe('vanilla:5lb');
   });
 });
 

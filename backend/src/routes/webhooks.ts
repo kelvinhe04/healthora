@@ -9,7 +9,8 @@ import { recalculateBestsellers } from '../lib/bestsellers';
 import { addressSchema, cartItemSchema, emailField, moneyFromInput, optionalTextField, textField } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
 import { decrementStock, validateCartStock } from '../lib/inventory';
-import { notifyUser, maybeNotifyLowStock } from '../lib/realtime';
+import { notifyUser } from '../lib/realtime';
+import { scanAndNotifyLowStock } from '../lib/lowStock';
 
 type CheckoutAddress = {
   name: string;
@@ -183,6 +184,7 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
               link: '/orders',
               data: { orderId: order._id.toString(), total },
             });
+            console.log('[WEBHOOK] order_paid notification created for', metadata.customerId);
           } catch (notifyError) {
             console.error('[WEBHOOK] order_paid notification failed:', notifyError);
           }
@@ -191,7 +193,7 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
             const soldProductIds = [...new Set(lineItems.filter((i) => !i.isSample).map((i) => i.productId))];
             const soldProducts = await Product.find({ id: { $in: soldProductIds } }).lean();
             for (const product of soldProducts) {
-              await maybeNotifyLowStock(product);
+              await scanAndNotifyLowStock(product);
             }
           } catch (notifyError) {
             console.error('[WEBHOOK] low_stock notification failed:', notifyError);
@@ -213,6 +215,23 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
             stripePaymentIntentId: session.payment_intent,
           }
         );
+
+        // An order that existed as pending and just flipped to paid still deserves the customer
+        // notification (HU-061). Best-effort. The !existingOrder branch above handles the common
+        // path where the webhook creates the paid order outright.
+        if (existingOrder.customerId) {
+          try {
+            await notifyUser(existingOrder.customerId, {
+              type: 'order_paid',
+              title: 'Pago confirmado',
+              body: `Recibimos tu pago de $${(existingOrder.total ?? 0).toFixed(2)}. Tu pedido está en preparación.`,
+              link: '/orders',
+              data: { orderId: existingOrder._id.toString(), total: existingOrder.total ?? 0 },
+            });
+          } catch (notifyError) {
+            console.error('[WEBHOOK] order_paid (existing) notification failed:', notifyError);
+          }
+        }
       }
     }
   }

@@ -45,12 +45,17 @@ recargar. Como **Admin**, enterarse en el momento de **stock bajo** y **nuevas r
 | Pago confirmado | `routes/webhooks.ts` (Stripe `checkout.session.completed`) | cliente | `order_paid` |
 | Cambio de fulfillment (enviado, entregado…) | `routes/admin/adminOrders.ts` | cliente | `order_shipped` / `order_status` |
 | Nueva reseña | `routes/reviews.ts` | admins | `new_review` |
-| Stock bajo (venta o ajuste) | `webhooks.ts` + `mcp/tools/inventory.ts` | admins | `low_stock` |
+| Stock bajo (venta, ajuste MCP o edición admin) | `webhooks.ts` + `mcp/tools/inventory.ts` + `routes/admin/adminProducts.ts` | admins | `low_stock` |
 | Difusión manual / agente | MCP `notifications.broadcast` | según `audience` | `broadcast` |
 
-El aviso de stock bajo usa el umbral `LOW_STOCK_THRESHOLD` (por defecto **5**, igual que el
-dashboard admin) y está **deduplicado**: no repite el aviso del mismo producto dentro de una
-ventana de 6 h, para que una ráfaga de compras no genere una alerta por unidad vendida.
+El aviso de stock bajo se evalúa **por celda de stock** (`lib/lowStock.ts`): producto sin variantes,
+variante simple, o cada combo **sabor×tamaño** (respetando `availableFor`). Esto es clave porque un
+combo crítico no debe quedar enmascarado por el total saludable del producto — el mismo punto ciego
+que el conteo "existencias bajas" del dashboard (ver #153), que sí agrupa por producto entero.
+Usa el umbral `LOW_STOCK_THRESHOLD` (por defecto **5**) y está **deduplicado por producto+variante**
+en una ventana de 6 h, así una ráfaga de compras (o guardados repetidos en el admin) no genera una
+alerta por evento. Se dispara tras **cualquier** mutación de stock: venta (webhook), ajuste vía MCP
+o edición del producto en el panel admin.
 
 ## Endpoints
 
