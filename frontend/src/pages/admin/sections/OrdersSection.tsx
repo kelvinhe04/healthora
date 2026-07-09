@@ -7,7 +7,6 @@ import {
   td,
   th,
   trStyle,
-  iconBtnAd,
 } from '../../../components/admin';
 import type { FulfillmentStatus } from '../../../types';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
@@ -28,7 +27,6 @@ export function OrdersSection() {
   fulfillmentStatusLabels,
   displayedOrders,
   paginatedOrders,
-  ordersPage,
   setOrdersPage,
   orderStatusDrafts,
   setOrderStatusDrafts,

@@ -2,15 +2,11 @@ import {
   Card,
   PageHeader,
   Skeleton,
-  StatusPill,
   tableStyle,
   td,
   th,
   trStyle,
-  iconBtnAd,
 } from '../../../components/admin';
-import { AnimatedButton } from '../../../components/shared/AnimatedButton';
-import { Icon } from '../../../components/shared/Icon';
 import { PaginationControls } from '../components/PaginationControls';
 import { useAdminPanelContext } from '../AdminPanelContext';
 
@@ -20,9 +16,7 @@ export function UsersSection() {
   customers,
   users,
   paginatedUsers,
-  usersPage,
   setUsersPage,
-  setConfirmUserDelete,
   } = useAdminPanelContext();
 
   return (

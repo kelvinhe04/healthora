@@ -1,7 +1,6 @@
 import {
   Card,
   KpiCard,
-  LineChart,
   PageHeader,
   Skeleton,
   tableStyle,
@@ -15,8 +14,6 @@ export function EarningsSection() {
   const {
   showEarningsSkeleton,
   earnings,
-  isMobile,
-  isTablet,
   } = useAdminPanelContext();
 
   return (

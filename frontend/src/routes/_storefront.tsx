@@ -5,7 +5,6 @@ import { Topbar } from "../components/chrome/Topbar";
 import { Header } from "../components/chrome/Header";
 import { Footer } from "../components/chrome/Footer";
 import { CartDrawer } from "../pages/CartDrawer";
-import { CustomCursor } from "../components/shared/CustomCursor";
 import { SkipToContent } from "../components/shared/SkipToContent";
 import { useCartStore } from "../store/cartStore";
 import { useUiStore } from "../store/uiStore";

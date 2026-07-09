@@ -36,7 +36,6 @@ export function ProductsSection() {
   displayedProductIds,
   displayedProducts,
   paginatedProducts,
-  productsPage,
   setProductsPage,
   setConfirmDeleteId,
   setConfirmBulkDelete,
