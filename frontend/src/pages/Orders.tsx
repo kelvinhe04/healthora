@@ -1,12 +1,12 @@
 import type { CSSProperties } from 'react';
 import { useState, useEffect } from 'react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-react';
 import { useOrders } from '../hooks/useOrders';
 import { Icon } from '../components/shared/Icon';
 import { api } from '../lib/api';
-import type { Order, OrderAddress } from '../types';
+import type { Order, OrderAddress, ReturnStatus } from '../types';
 import { useOnceLoading, Skeleton } from '../components/admin';
 import { useCartStore } from '../store/cartStore';
 import { useUiStore } from '../store/uiStore';
@@ -83,6 +83,121 @@ function FulfillmentTimeline({ status }: { status: string }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+const RETURN_WINDOW_DAYS = 30;
+
+const RETURN_STATUS_LABELS: Record<ReturnStatus, string> = {
+  requested: 'Solicitada',
+  approved: 'Aprobada',
+  in_transit: 'En tránsito',
+  refunded: 'Reembolsada',
+  rejected: 'Rechazada',
+};
+
+function ReturnPanel({ order }: { order: Order }) {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState('');
+
+  const returnsQuery = useQuery({
+    queryKey: ['returns'],
+    queryFn: async () => {
+      const token = await getToken();
+      return api.returns.list(token!);
+    },
+  });
+
+  const existingReturn = returnsQuery.data?.find((r) => r.orderId === order._id);
+
+  const createMut = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      return api.returns.create(
+        {
+          orderId: order._id,
+          reason,
+          items: order.items.filter((i) => !i.isSample).map((i) => ({ productId: i.productId, qty: i.qty })),
+        },
+        token!,
+      );
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['returns'] });
+      setOpen(false);
+      setReason('');
+      setError('');
+    },
+    onError: (err: Error) => setError(err.message || 'No se pudo enviar la solicitud'),
+  });
+
+  const [now] = useState(() => Date.now());
+  const withinWindow = now - new Date(order.createdAt).getTime() <= RETURN_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  const eligible = order.paymentStatus === 'paid'
+    && ['shipped', 'delivered'].includes(order.fulfillmentStatus)
+    && withinWindow
+    && order.items.some((item) => !item.isSample);
+
+  if (existingReturn) {
+    return (
+      <div style={{ padding: '14px 16px', borderRadius: 14, border: '1px solid var(--ink-06)', background: 'var(--cream-2)' }}>
+        <div style={{ fontSize: 13, fontFamily: '"Geist", sans-serif', fontWeight: 500, color: 'var(--ink)' }}>
+          Devolución {RETURN_STATUS_LABELS[existingReturn.status]}
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--ink-60)', marginTop: 4, fontFamily: '"Geist", sans-serif' }}>
+          {existingReturn.status === 'refunded'
+            ? `Reembolso de $${existingReturn.refundAmount.toFixed(2)} procesado.`
+            : existingReturn.reason}
+        </div>
+      </div>
+    );
+  }
+
+  if (!eligible) return null;
+
+  return (
+    <div>
+      {!open ? (
+        <button
+          onClick={() => setOpen(true)}
+          style={{ padding: '10px 20px', borderRadius: 10, background: 'transparent', color: 'var(--ink-60)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: '1px solid var(--ink-12)', cursor: 'pointer' }}
+        >
+          Solicitar devolución
+        </button>
+      ) : (
+        <div style={{ padding: 16, borderRadius: 14, border: '1px solid var(--ink-06)', background: 'var(--cream-2)' }}>
+          <label style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 6, display: 'block' }}>
+            Motivo de la devolución
+          </label>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={3}
+            placeholder="Cuéntanos qué pasó…"
+            style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--ink-20)', background: 'var(--cream)', fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', boxSizing: 'border-box', resize: 'vertical' }}
+          />
+          {error && <div role="alert" style={{ marginTop: 8, fontSize: 12, color: 'var(--coral)' }}>{error}</div>}
+          <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+            <button
+              onClick={() => createMut.mutate()}
+              disabled={!reason.trim() || createMut.isPending}
+              style={{ padding: '10px 20px', borderRadius: 10, background: 'oklch(0.28 0.055 155)', color: 'var(--lime)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: 'none', cursor: 'pointer', fontWeight: 500 }}
+            >
+              {createMut.isPending ? 'Enviando…' : 'Enviar solicitud'}
+            </button>
+            <button
+              onClick={() => { setOpen(false); setError(''); }}
+              style={{ padding: '10px 20px', borderRadius: 10, background: 'transparent', color: 'var(--ink-60)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: '1px solid var(--ink-12)', cursor: 'pointer' }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -329,6 +444,9 @@ function OrderDetail({
           </div>
         ) : null}
       </div>
+
+      {divider}
+      <ReturnPanel order={order} />
 
       {/* Cancel section — only if order is in a cancellable state */}
       {(canCancel || showCancelConfirm) && (

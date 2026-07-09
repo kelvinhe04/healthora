@@ -39,6 +39,14 @@ export const stripe = process.env.NODE_ENV === 'test'
       coupons: {
         create: async () => ({ id: 'coupon_test_healthora' }),
       },
+      refunds: {
+        create: async (payload: { payment_intent?: string; amount?: number }) => ({
+          id: 'refund_test_healthora',
+          payment_intent: payload.payment_intent,
+          amount: payload.amount,
+          status: 'succeeded',
+        }),
+      },
       webhooks: {
         constructEvent: (rawBody: string) => JSON.parse(rawBody),
         constructEventAsync: async (rawBody: string) => JSON.parse(rawBody),

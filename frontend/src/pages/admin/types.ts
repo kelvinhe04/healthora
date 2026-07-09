@@ -51,7 +51,8 @@ export type AdminPage =
   | "sales"
   | "earnings"
   | "performance"
-  | "errors";
+  | "errors"
+  | "returns";
 export interface AdminAppProps {
   onGoToStore: () => void;
 }

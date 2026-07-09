@@ -776,3 +776,97 @@ export async function sendNewsletterSubscriptionEmail(data: NewsletterEmailData)
 
   console.log('[EMAIL] Newsletter subscription sent to:', data.email, 'MessageId:', info.messageId);
 }
+
+const RETURN_STATUS_COPY: Record<string, { label: string; message: string }> = {
+  requested: { label: 'Solicitud recibida', message: 'recibimos tu solicitud de devolución y la estamos revisando.' },
+  approved: { label: 'Devolución aprobada', message: 'aprobamos tu devolución. Te avisaremos cuando recibamos el producto de vuelta.' },
+  in_transit: { label: 'Producto en tránsito', message: 'registramos que tu producto está en camino de vuelta a nuestro almacén.' },
+  refunded: { label: 'Reembolso procesado', message: 'procesamos tu reembolso. Debería reflejarse en tu método de pago en los próximos días.' },
+  rejected: { label: 'Devolución rechazada', message: 'no pudimos aprobar tu solicitud de devolución. Contáctanos si tienes preguntas.' },
+};
+
+export interface ReturnStatusEmailData {
+  customerName: string;
+  customerEmail: string;
+  orderId: string;
+  status: 'requested' | 'approved' | 'in_transit' | 'refunded' | 'rejected';
+  refundAmount: number;
+}
+
+export async function sendReturnStatusEmail(data: ReturnStatusEmailData): Promise<void> {
+  const { customerName, customerEmail, orderId, status, refundAmount } = data;
+  if (!customerEmail) {
+    console.error('[EMAIL] No customer email provided, skipping return status email');
+    return;
+  }
+
+  const copy = RETURN_STATUS_COPY[status];
+  const safeCustomerName = escapeHtml(customerName || 'cliente');
+  const safeOrderNumber = escapeHtml(orderId.slice(-8).toUpperCase());
+  const ordersUrl = `${getFrontendUrl()}/?view=orders`;
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ${EMAIL_FONT_HEAD}
+  <title>Actualización de tu devolución - Healthora</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #eef6ef; font-family: ${EMAIL_SANS_FONT};">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #eef6ef;">
+    <tr>
+      <td align="center" style="padding: 34px 14px;">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 24px; overflow: hidden; border: 1px solid #dce9df;">
+          <tr>
+            <td style="background-color: #213a27; background-image: linear-gradient(135deg, #213a27 0%, #0f7c59 62%, #c8ee2e 160%); padding: 34px 38px;">
+              <p class="healthora-serif" style="margin: 0; font-family: ${EMAIL_SERIF_FONT}; font-size: 28px; font-weight: 400; color: #ffffff;">Healthora</p>
+              <h1 style="margin: 20px 0 0 0; font-size: 26px; line-height: 34px; font-weight: 800; color: #ffffff;">${escapeHtml(copy.label)}</h1>
+              <p style="margin: 10px 0 0 0; font-size: 15px; line-height: 23px; color: #e4f7e9;">Hola ${safeCustomerName}, ${escapeHtml(copy.message)}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 28px 38px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4fbef; border-radius: 18px; border: 1px solid #cfeac5;">
+                <tr>
+                  <td style="padding: 20px 22px;">
+                    <p style="margin: 0; font-size: 11px; color: #53725e; text-transform: uppercase; letter-spacing: 1.4px; font-weight: 800;">Pedido</p>
+                    <p style="margin: 6px 0 0 0; font-size: 18px; font-weight: 800; color: #213a27;">#${safeOrderNumber}</p>
+                    ${status === 'refunded' ? `<p style="margin: 10px 0 0 0; font-size: 14px; color: #64756a;">Monto reembolsado: <strong>${formatPrice(refundAmount)}</strong></p>` : ''}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 38px 32px 38px;" align="center">
+              <a href="${ordersUrl}" style="display: inline-block; background-color: #213a27; color: #c8ee2e; text-decoration: none; padding: 16px 34px; border-radius: 999px; font-size: 15px; font-weight: 800;">Ver mi pedido</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 28px 40px; background-color: #213a27;" align="center">
+              <p class="healthora-serif" style="margin: 0 0 6px 0; font-family: ${EMAIL_SERIF_FONT}; font-size: 24px; color: #ffffff;">Healthora</p>
+              <p style="margin: 0; font-size: 12px; color: #aebdaf;">© 2026 Healthora. Todos los derechos reservados.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+
+  try {
+    const info = await transporter.sendMail({
+      from: getSmtpFrom(),
+      to: customerEmail,
+      subject: `${copy.label}: pedido #${orderId.slice(-8).toUpperCase()} - Healthora`,
+      html,
+    });
+    console.log('[EMAIL] Return status update sent to:', customerEmail, 'MessageId:', info.messageId);
+  } catch (err) {
+    console.error('[EMAIL] Error sending return status email:', err);
+  }
+}

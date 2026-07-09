@@ -376,19 +376,23 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; darkBg: string; da
   "Pendiente de pago":  { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
   unfulfilled:                  { bg: "oklch(0.95 0.04 85)", fg: "oklch(0.45 0.05 85)", darkBg: "oklch(0.26 0.05 85)",  darkFg: "oklch(0.82 0.07 85)"  },
   "Pendiente de preparación":   { bg: "oklch(0.95 0.04 85)", fg: "oklch(0.45 0.05 85)", darkBg: "oklch(0.26 0.05 85)",  darkFg: "oklch(0.82 0.07 85)"  },
+  requested:                    { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
   // Blue — processing / in-prep / scheduled
   processing:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   Preparando:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   "En preparación":{ bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   Programado:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
+  approved:        { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   // Teal — shipped
-  shipped: { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
-  Enviada: { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  shipped:     { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  Enviada:     { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  in_transit:  { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   // Coral — cancelled / inactive
   cancelled: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Cancelado: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Cancelada: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Inactivo:  { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
+  rejected:  { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   // Purple — refunded
   refunded:    { bg: "oklch(0.92 0.08 300)", fg: "oklch(0.4 0.1 300)",  darkBg: "oklch(0.27 0.08 300)", darkFg: "oklch(0.82 0.11 300)" },
   Reembolsado: { bg: "oklch(0.92 0.08 300)", fg: "oklch(0.4 0.1 300)",  darkBg: "oklch(0.27 0.08 300)", darkFg: "oklch(0.82 0.11 300)" },
@@ -1079,7 +1083,8 @@ type AdminPage =
   | "sales"
   | "earnings"
   | "performance"
-  | "errors";
+  | "errors"
+  | "returns";
 interface SidebarProps {
   page: AdminPage;
   setPage: (p: AdminPage) => void;
@@ -1115,6 +1120,7 @@ export function Sidebar({
       count: counts?.products,
     },
     { id: "users", label: "Clientes", icon: "user", count: counts?.users },
+    { id: "returns", label: "Devoluciones", icon: "arrow-left", count: counts?.returns },
     { id: "sales", label: "Ventas", icon: "truck" },
     { id: "earnings", label: "Ganancias", icon: "percent" },
     { id: "performance", label: "Rendimiento", icon: "activity" },

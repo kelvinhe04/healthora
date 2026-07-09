@@ -138,6 +138,29 @@ export interface Order {
   updatedAt: string;
 }
 
+export type ReturnStatus = 'requested' | 'approved' | 'in_transit' | 'refunded' | 'rejected';
+
+export interface ReturnItem {
+  productId: string;
+  productName: string;
+  qty: number;
+}
+
+export interface OrderReturn {
+  _id: string;
+  orderId: string;
+  customerId: string;
+  customerName?: string;
+  customerEmail?: string;
+  reason: string;
+  items: ReturnItem[];
+  refundAmount: number;
+  status: ReturnStatus;
+  stripeRefundId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface User {
   _id: string;
   clerkId: string;

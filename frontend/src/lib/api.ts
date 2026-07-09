@@ -6,6 +6,8 @@ import type {
   ProductFilters,
   SavedAddress,
   Review,
+  OrderReturn,
+  ReturnStatus,
   ErrorReport,
   AppNotification,
   NotificationInbox,
@@ -79,6 +81,18 @@ export const api = {
       request<Order>(
         `/orders/${id}/address`,
         { method: "PATCH", body: JSON.stringify(address) },
+        token,
+      ),
+  },
+  returns: {
+    list: (token: string) => request<OrderReturn[]>("/returns", undefined, token),
+    create: (
+      body: { orderId: string; reason: string; items: { productId: string; qty: number }[] },
+      token: string,
+    ) =>
+      request<OrderReturn>(
+        "/returns",
+        { method: "POST", body: JSON.stringify(body) },
         token,
       ),
   },
@@ -203,6 +217,20 @@ export const api = {
         { method: "PATCH", body: JSON.stringify(body) },
         token,
       ),
+    returns: {
+      list: (token: string, status?: ReturnStatus) =>
+        request<OrderReturn[]>(
+          `/admin/returns${status ? `?status=${status}` : ""}`,
+          undefined,
+          token,
+        ),
+      updateStatus: (id: string, status: ReturnStatus, token: string) =>
+        request<OrderReturn>(
+          `/admin/returns/${id}/status`,
+          { method: "PATCH", body: JSON.stringify({ status }) },
+          token,
+        ),
+    },
     products: {
       list: (token: string) =>
         request<Product[]>("/admin/products", undefined, token),
