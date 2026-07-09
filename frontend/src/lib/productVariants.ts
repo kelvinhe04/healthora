@@ -25,6 +25,20 @@ export function pickDefaultSize(variants: ProductVariant[] | undefined, primary:
   return sizes.find((v) => v.isDefault) ?? sizes[0] ?? null;
 }
 
+/** Size to show after switching the primary (sabor/aroma/…) selection. Keeps `currentSize` if it's
+ * still offered for the new primary (respecting `availableFor`), so picking a different flavor
+ * doesn't yank an already-chosen tamaño back to the default. Falls back to the default size only
+ * when the current one isn't available for the new primary. */
+export function pickSizeKeepingCurrent(
+  variants: ProductVariant[] | undefined,
+  primary: ProductVariant | null,
+  currentSize: ProductVariant | null,
+): ProductVariant | null {
+  const sizes = sizesFor(variants, primary);
+  const stillAvailable = currentSize && sizes.find((v) => v.id === currentSize.id);
+  return stillAvailable || pickDefaultSize(variants, primary);
+}
+
 /** Stock to show for a primary (sabor/aroma/…) option in a two-dimension matrix product.
  * The primary variant's own top-level `stock` isn't editable in the matrix editor and stays 0 -
  * actual stock lives per combo (`stockBySize`, falling back to the tamaño's own stock). Summing

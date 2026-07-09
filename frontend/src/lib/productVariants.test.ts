@@ -8,6 +8,7 @@ import {
   pickDefaultCombo,
   pickDefaultPrimary,
   pickDefaultSize,
+  pickSizeKeepingCurrent,
   resolveVariantById,
   sizesFor,
 } from './productVariants';
@@ -59,6 +60,24 @@ describe('productVariants', () => {
   it('elige el tamano default disponible para la variante primaria', () => {
     expect(pickDefaultSize([small, large, universal], chocolate)).toBe(large);
     expect(pickDefaultSize([small, universal], chocolate)).toBe(universal);
+  });
+
+  it('al cambiar de sabor, mantiene el tamano actual si sigue disponible para el nuevo sabor', () => {
+    const variants = [vanilla, chocolate, small, large, universal];
+    // `large` esta disponible para chocolate y para vanilla no (solo `small`/`universal`).
+    expect(pickSizeKeepingCurrent(variants, chocolate, universal)).toBe(universal);
+    expect(pickSizeKeepingCurrent(variants, vanilla, universal)).toBe(universal);
+  });
+
+  it('al cambiar de sabor, cae al tamano default si el actual no esta disponible para el nuevo sabor', () => {
+    const variants = [vanilla, chocolate, small, large, universal];
+    // `large` no esta disponible para vanilla -> cae al default de vanilla (small, el unico ademas de universal).
+    expect(pickSizeKeepingCurrent(variants, vanilla, large)).toBe(small);
+  });
+
+  it('sin tamano actual, elige el default como pickDefaultSize', () => {
+    const variants = [vanilla, chocolate, small, large, universal];
+    expect(pickSizeKeepingCurrent(variants, chocolate, null)).toBe(pickDefaultSize(variants, chocolate));
   });
 
   it('detecta productos con dimensiones primaria y tamano', () => {
