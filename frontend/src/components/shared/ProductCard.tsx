@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
-import type { Product } from '../../types';
+import type { Product, ProductVariant } from '../../types';
 import { ProductImage } from './ProductImage';
 import { Stars } from './Stars';
 import { Icon } from './Icon';
 import { useReviews } from '../../hooks/useReviews';
 import { useThemeStore } from '../../store/themeStore';
-import { pickDefaultCombo, getEffectivePrice, getEffectivePriceBefore } from '../../lib/productVariants';
+import { pickDefaultCombo, pickDefaultCartVariant, getEffectivePrice, getEffectivePriceBefore } from '../../lib/productVariants';
 import { useCompareStore } from '../../store/compareStore';
 import { useWishlistStore } from '../../store/wishlistStore';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
@@ -72,7 +72,7 @@ export function ProductCardSkeleton() {
 interface ProductCardProps {
   product: Product;
   onClick: (p: Product) => void;
-  onAdd: (p: Product) => void;
+  onAdd: (p: Product, qty?: number, variant?: ProductVariant) => void;
   priority?: boolean;
   showCompare?: boolean;
   showWishlist?: boolean;
@@ -239,7 +239,7 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
         {/* Add to cart button */}
         {product.stock > 0 && (
           <button
-            onClick={(e) => { e.stopPropagation(); onAdd(product); }}
+            onClick={(e) => { e.stopPropagation(); onAdd(product, 1, pickDefaultCartVariant(product)); }}
             style={{ position: 'absolute', bottom: 12, right: 12, width: 40, height: 40, borderRadius: 999, background: 'oklch(0.18 0.03 155)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hover ? 'scale(1.1) rotate(180deg)' : 'scale(0.85) rotate(0deg)', opacity: hover ? 1 : 0.8, transition: 'all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: hover ? '0 8px 20px rgba(0,0,0,0.15)' : 'none', zIndex: 2 }}
             aria-label="Agregar al carrito"
           >

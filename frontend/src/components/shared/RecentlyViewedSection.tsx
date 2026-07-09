@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Product } from '../../types';
+import type { Product, ProductVariant } from '../../types';
 import { useRecentlyViewedStore } from '../../store/recentlyViewedStore';
 import { useProducts } from '../../hooks/useProducts';
 import { ProductCard } from './ProductCard';
@@ -7,7 +7,7 @@ import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 interface RecentlyViewedSectionProps {
   onOpenProduct: (p: Product) => void;
-  onAdd: (p: Product) => void;
+  onAdd: (p: Product, qty?: number, variant?: ProductVariant) => void;
   excludeProductId?: string;
 }
 

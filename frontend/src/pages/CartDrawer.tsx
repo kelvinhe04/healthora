@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { useCartStore } from '../store/cartStore';
 import { ModalOverlay } from '../components/shared/ModalOverlay';
 import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import type { Product, ProductVariant } from '../types';
+import { PRIMARY_VARIANT_TYPES, hasTwoDimensions, pickSizeKeepingCurrent, resolveVariantById, sizesFor } from '../lib/productVariants';
 
 interface CartDrawerProps {
   open: boolean;
@@ -24,10 +27,108 @@ function _Row({ k, v }: { k: ReactNode; v: ReactNode }) {
 
 const iconBtn = { background: 'transparent', border: 'none', cursor: 'pointer', padding: 6, color: 'var(--ink)', display: 'flex' } as const;
 const qtyBtn = { width: 28, height: 28, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' } as const;
+const variantSelectStyle = {
+  fontSize: 12,
+  fontFamily: '"Geist", sans-serif',
+  color: 'var(--ink)',
+  background: 'var(--cream-2)',
+  border: '1px solid var(--ink-12)',
+  borderRadius: 8,
+  padding: '5px 6px',
+  flex: 1,
+  minWidth: 0,
+} as const;
+
+/** Inline sabor/tamaño (or single-dimension) picker for an existing cart line, so a wrong
+ * variant/combo doesn't require removing the line and re-adding the product from scratch. Reuses
+ * the same combo-resolution helpers as ProductDetail/reorder instead of re-deriving price & stock. */
+function CartItemVariantEditor({
+  product,
+  currentVariantId,
+  onChange,
+}: {
+  product: Product;
+  currentVariantId: string;
+  onChange: (next: ProductVariant) => void;
+}) {
+  const variants = product.variants;
+  if (!variants?.length) return null;
+
+  if (hasTwoDimensions(variants)) {
+    const [currentPrimaryId, currentSizeId] = currentVariantId.split(':');
+    const primaryVariants = variants.filter((v) => PRIMARY_VARIANT_TYPES.includes(v.type));
+    const currentPrimary = primaryVariants.find((v) => v.id === currentPrimaryId) ?? primaryVariants[0] ?? null;
+    const sizeOptions = sizesFor(variants, currentPrimary);
+    const currentSize = sizeOptions.find((v) => v.id === currentSizeId) ?? sizeOptions[0] ?? null;
+
+    return (
+      <div style={{ display: 'flex', gap: 6, marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
+        <select
+          aria-label="Cambiar sabor"
+          value={currentPrimary?.id ?? ''}
+          onChange={(e) => {
+            const nextPrimary = primaryVariants.find((v) => v.id === e.target.value);
+            if (!nextPrimary) return;
+            const nextSize = pickSizeKeepingCurrent(variants, nextPrimary, currentSize);
+            if (!nextSize) return;
+            const nextVariant = resolveVariantById(variants, `${nextPrimary.id}:${nextSize.id}`);
+            if (nextVariant) onChange(nextVariant);
+          }}
+          style={variantSelectStyle}
+        >
+          {primaryVariants.map((v) => (
+            <option key={v.id} value={v.id}>{v.label}</option>
+          ))}
+        </select>
+        <select
+          aria-label="Cambiar tamaño"
+          value={currentSize?.id ?? ''}
+          onChange={(e) => {
+            if (!currentPrimary) return;
+            const nextVariant = resolveVariantById(variants, `${currentPrimary.id}:${e.target.value}`);
+            if (nextVariant) onChange(nextVariant);
+          }}
+          style={variantSelectStyle}
+        >
+          {sizeOptions.map((v) => {
+            const stock = currentPrimary?.stockBySize?.[v.id] ?? v.stock;
+            return (
+              <option key={v.id} value={v.id} disabled={stock <= 0}>
+                {v.label}{stock <= 0 ? ' (agotado)' : ''}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
+      <select
+        aria-label="Cambiar variante"
+        value={currentVariantId}
+        onChange={(e) => {
+          const next = variants.find((v) => v.id === e.target.value);
+          if (next) onChange(next);
+        }}
+        style={variantSelectStyle}
+      >
+        {variants.map((v) => (
+          <option key={v.id} value={v.id} disabled={v.stock <= 0}>
+            {v.label}{v.stock <= 0 ? ' (agotado)' : ''}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
 export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: CartDrawerProps) {
-  const { items, update, remove, clear, freeSample, setFreeSample } = useCartStore();
+  const { items, update, remove, clear, changeVariant, freeSample, setFreeSample } = useCartStore();
+  const navigate = useNavigate();
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const drawerPad = isMobile ? '16px' : '28px';
@@ -38,7 +139,10 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
   const qualifiesForSample = subtotal >= 200;
 
   useEffect(() => {
-    if (!open) setConfirmClearOpen(false);
+    if (!open) {
+      setConfirmClearOpen(false);
+      setEditingKey(null);
+    }
   }, [open]);
 
   useEffect(() => {
@@ -128,25 +232,57 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
               </div>
               {items.map((it) => {
                 const effectivePrice = it.variant?.price ?? it.product.price;
+                const itemKey = it.product.id + (it.variant?.id ?? '');
+                const isEditing = editingKey === itemKey;
+                const goToProduct = () => {
+                  onClose();
+                  navigate({ to: '/product/$productId', params: { productId: it.product.id } });
+                };
                 return (
-                <div key={it.product.id + (it.variant?.id ?? '')} style={{ display: 'flex', gap: 14, padding: '18px 0', borderBottom: '1px solid var(--ink-06)' }}>
-                  <div style={{ width: 80, height: 90, background: 'white', borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--ink-06)', overflow: 'hidden' }}>
+                <div key={itemKey} style={{ display: 'flex', gap: 14, padding: '18px 0', borderBottom: '1px solid var(--ink-06)' }}>
+                  <div
+                    onClick={goToProduct}
+                    style={{ cursor: 'pointer', width: 80, height: 90, background: 'white', borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--ink-06)', overflow: 'hidden' }}
+                  >
                     <div style={{ transform: 'scale(1.18)' }}>
                       <ProductImage product={it.product} size="xs" imageUrl={it.variant?.images?.[0] ?? it.variant?.imageUrl} />
                     </div>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{it.product.brand}</div>
-                    <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 500, lineHeight: 1.3 }}>{it.product.name}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div onClick={goToProduct} style={{ cursor: 'pointer' }}>
+                      <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{it.product.brand}</div>
+                      <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 500, lineHeight: 1.3 }}>{it.product.name}</div>
+                    </div>
                     {it.variant && (
-                      <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', letterSpacing: '0.06em', marginTop: 3, marginBottom: 6 }}>
-                        {it.variant.type === 'color' && it.variant.color && (
-                          <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: it.variant.color, border: '1px solid var(--ink-10)', marginRight: 5, verticalAlign: 'middle' }} />
-                        )}
-                        {it.variant.label.toUpperCase()}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3, marginBottom: 6 }}>
+                        <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', letterSpacing: '0.06em' }}>
+                          {it.variant.type === 'color' && it.variant.color && (
+                            <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: it.variant.color, border: '1px solid var(--ink-10)', marginRight: 5, verticalAlign: 'middle' }} />
+                          )}
+                          {it.variant.label.toUpperCase()}
+                        </div>
+                        {it.product.variants?.length ? (
+                          <button
+                            type="button"
+                            onClick={() => setEditingKey(isEditing ? null : itemKey)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--green)', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', textDecoration: 'underline' }}
+                          >
+                            {isEditing ? 'CERRAR' : 'CAMBIAR'}
+                          </button>
+                        ) : null}
                       </div>
                     )}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: it.variant ? 0 : 8 }}>
+                    {isEditing && it.variant && (
+                      <CartItemVariantEditor
+                        product={it.product}
+                        currentVariantId={it.variant.id}
+                        onChange={(nextVariant) => {
+                          changeVariant(it.product.id, it.variant?.id, nextVariant);
+                          setEditingKey(null);
+                        }}
+                      />
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
                       <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--ink-20)', borderRadius: 999 }}>
                         <button onClick={() => update(it.product.id, it.qty - 1, it.variant?.id)} style={qtyBtn} aria-label={`Reducir cantidad de ${it.product.name}`}><Icon name="minus" size={12} /></button>
                         <span style={{ fontSize: 13, minWidth: 24, textAlign: 'center' }} aria-label={`Cantidad: ${it.qty}`}>{it.qty}</span>

@@ -5,6 +5,7 @@ import {
   getEffectivePrice,
   getEffectivePriceBefore,
   hasTwoDimensions,
+  pickDefaultCartVariant,
   pickDefaultCombo,
   pickDefaultPrimary,
   pickDefaultSize,
@@ -95,6 +96,28 @@ describe('productVariants', () => {
     expect(pickDefaultCombo(testProduct)).toEqual({ variant: chocolate, size: large });
     expect(getEffectivePrice(testProduct)).toBe(32);
     expect(getEffectivePriceBefore(testProduct)).toBe(28);
+  });
+
+  it('resuelve el combo default como variante de carrito real (id compuesto), para el quick-add sin selector', () => {
+    const testProduct = product({
+      price: 20,
+      variants: [vanilla, chocolate, small, large, universal],
+    });
+
+    const cartVariant = pickDefaultCartVariant(testProduct);
+    expect(cartVariant?.id).toBe('chocolate:large');
+    expect(cartVariant?.label).toBe('Chocolate · 24 oz');
+    expect(cartVariant?.price).toBe(32);
+  });
+
+  it('sin dimension de tamano, la variante de carrito por defecto es la variante simple', () => {
+    const testProduct = product({ price: 20, variants: [chocolate, vanilla] });
+    expect(pickDefaultCartVariant(testProduct)?.id).toBe('chocolate');
+  });
+
+  it('sin variantes, no hay variante de carrito por defecto', () => {
+    const testProduct = product({ price: 20 });
+    expect(pickDefaultCartVariant(testProduct)).toBeUndefined();
   });
 
   it('usa el precio override de la combinacion en vez de sumar sabor + tamano', () => {

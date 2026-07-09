@@ -543,7 +543,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
 
       <RecentlyViewedSection
         onOpenProduct={onOpenProduct}
-        onAdd={(p) => onAdd(p, 1)}
+        onAdd={onAdd}
         excludeProductId={product.id}
       />
 
@@ -552,7 +552,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
         title={<>Productos <em style={{ color: 'var(--green)' }}>relacionados</em></>}
         products={related}
         onOpenProduct={onOpenProduct}
-        onAdd={(p) => onAdd(p, 1)}
+        onAdd={onAdd}
       />
 
       <ReviewSection productId={product.id} />
