@@ -22,6 +22,7 @@ interface CartState {
   replaceItems: (items: CartItem[]) => void;
   add: (product: Product, qty?: number, variant?: ProductVariant) => void;
   update: (productId: string, qty: number, variantId?: string) => void;
+  changeVariant: (productId: string, oldVariantId: string | undefined, newVariant: ProductVariant) => void;
   remove: (productId: string, variantId?: string) => void;
   clear: () => void;
   count: () => number;
@@ -80,6 +81,38 @@ export const useCartStore = create<CartState>()(
           const nextItems = qty <= 0
             ? ownerItems.filter((i) => !matchItem(i, productId, variantId))
             : ownerItems.map((i) => matchItem(i, productId, variantId) ? { ...i, qty: Math.min(qty, stock) } : i);
+
+          return {
+            items: nextItems,
+            cartsByOwner: { ...s.cartsByOwner, [s.ownerId]: nextItems },
+          };
+        }),
+      // Swaps the variant/combo of an existing line (e.g. wrong sabor/tamaño picked at add-to-cart
+      // time). If the target variant is already a separate line in the cart, merge quantities into
+      // it (capped at the new variant's stock) instead of ending up with two lines for the same
+      // combo.
+      changeVariant: (productId, oldVariantId, newVariant) =>
+        set((s) => {
+          const ownerItems = s.cartsByOwner[s.ownerId] || [];
+          const existing = ownerItems.find((i) => matchItem(i, productId, oldVariantId));
+          if (!existing || newVariant.stock <= 0) return s;
+
+          const mergeTarget = ownerItems.find(
+            (i) => !matchItem(i, productId, oldVariantId) && matchItem(i, productId, newVariant.id),
+          );
+
+          let nextItems: CartItem[];
+          if (mergeTarget) {
+            const mergedQty = Math.min(existing.qty + mergeTarget.qty, newVariant.stock);
+            nextItems = ownerItems
+              .filter((i) => !matchItem(i, productId, oldVariantId))
+              .map((i) => (matchItem(i, productId, newVariant.id) ? { ...i, qty: mergedQty } : i));
+          } else {
+            const clampedQty = Math.min(existing.qty, newVariant.stock);
+            nextItems = ownerItems.map((i) =>
+              matchItem(i, productId, oldVariantId) ? { ...i, variant: newVariant, qty: clampedQty } : i,
+            );
+          }
 
           return {
             items: nextItems,
