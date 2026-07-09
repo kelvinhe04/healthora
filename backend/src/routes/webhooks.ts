@@ -62,7 +62,11 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
   let event;
   try {
     const rawBody = await c.req.text();
-    event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+    // constructEvent (sync) picks a SubtleCrypto-based provider under Bun, which throws
+    // "SubtleCryptoProvider cannot be used in a synchronous context" on every call - the async
+    // variant is required here, not a style preference. Without this every real Stripe webhook
+    // was rejected with 400 "Invalid signature" and never reached order creation.
+    event = await stripe.webhooks.constructEventAsync(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET!);
   } catch (err) {
     console.error('[WEBHOOK] Signature verification failed:', err);
     return c.json({ error: 'Invalid signature' }, 400);

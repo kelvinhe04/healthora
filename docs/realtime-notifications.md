@@ -42,11 +42,41 @@ recargar. Como **Admin**, enterarse en el momento de **stock bajo** y **nuevas r
 
 | Evento | Origen | Audiencia | Tipo |
 |---|---|---|---|
-| Pago confirmado | `routes/webhooks.ts` (Stripe `checkout.session.completed`) | cliente | `order_paid` |
+| Pago confirmado | `routes/webhooks.ts` (Stripe `checkout.session.completed`) **y** `routes/orders.ts` (fallback, ver abajo) | cliente | `order_paid` |
 | Cambio de fulfillment (enviado, entregado…) | `routes/admin/adminOrders.ts` | cliente | `order_shipped` / `order_status` |
 | Nueva reseña | `routes/reviews.ts` | admins | `new_review` |
-| Stock bajo (venta, ajuste MCP o edición admin) | `webhooks.ts` + `mcp/tools/inventory.ts` + `routes/admin/adminProducts.ts` | admins | `low_stock` |
+| Stock bajo (venta, ajuste MCP o edición admin) | `webhooks.ts` + `routes/orders.ts` + `mcp/tools/inventory.ts` + `routes/admin/adminProducts.ts` | admins | `low_stock` |
 | Difusión manual / agente | MCP `notifications.broadcast` | según `audience` | `broadcast` |
+
+### Dos caminos crean una orden pagada — ambos deben notificar
+
+Una orden puede pasar a `paid` por **dos** rutas independientes, y ambas necesitan disparar
+`order_paid`/`low_stock`:
+
+1. **El webhook de Stripe** (`POST /webhooks/stripe`, `checkout.session.completed`) — el camino
+   "oficial", asíncrono, dispara cuando Stripe confirma el pago.
+2. **El fallback de `GET /orders?stripeSessionId=`** (`createOrderFromPaidSession` en
+   `routes/orders.ts`) — cuando el frontend llega a `/success` y el webhook aún no ha creado la
+   orden, este endpoint la crea directamente consultando la sesión vía la API de Stripe. En
+   desarrollo local (latencia de red variable, o sin `stripe listen` corriendo) **este es con
+   frecuencia el camino que realmente crea la orden**, no el webhook.
+
+Ambos caminos decrementan stock, envían el email y ahora ambos disparan las notificaciones — antes
+solo el webhook las tenía, así que si el fallback ganaba la carrera (el caso común en local), la
+orden se creaba y el correo llegaba, pero **ninguna notificación se disparaba nunca**. También se
+agregó la notificación a la rama donde una orden ya existente pasa a pagada
+(`syncOrderPaymentFromStripe`), simétrica a la del webhook.
+
+### Bug de plataforma: `stripe.webhooks.constructEvent` no funciona en Bun
+
+Se descubrió que `stripe.webhooks.constructEvent` (**síncrono**) lanza
+`SubtleCryptoProvider cannot be used in a synchronous context` en el runtime de Bun — el SDK de
+Stripe detecta el proveedor de criptografía disponible y elige uno basado en Web Crypto (async-only)
+en vez del de Node. Esto significa que **todo webhook real de Stripe era rechazado con 400 "Invalid
+signature"** antes de llegar a crear la orden, en cualquier entorno corriendo sobre Bun (no es
+específico de este PR). El fix es usar `await stripe.webhooks.constructEventAsync(...)` en su lugar
+(`routes/webhooks.ts`) — verificado end-to-end contra el servidor real. El stub de Stripe usado en
+tests (`lib/stripe.ts`, `NODE_ENV === 'test'`) se actualizó con el mismo método.
 
 El aviso de stock bajo se evalúa **por celda de stock** (`lib/lowStock.ts`): producto sin variantes,
 variante simple, o cada combo **sabor×tamaño** (respetando `availableFor`). Esto es clave porque un
