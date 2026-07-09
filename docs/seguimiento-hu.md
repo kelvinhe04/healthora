@@ -78,6 +78,24 @@ En pausa hasta que variantes/UI se estabilicen: HU-081 (HTTP cache — toca API/
 
 ---
 
+## Nota: drift de numeración HU (detectado 2026-07-09)
+
+El `.docx` fuente (`deliverables/Healthora-Historias-de-Usuario.docx`) tiene, desde la sección 3.5 en adelante, dos historias nuevas insertadas (HU-061 "Suscripción de reposición automática" e HU-062 "Recordatorio de recompra", issues #95/#96) que corrieron +2 la numeración de todo lo posterior **en el documento**. Ese corrimiento nunca se propagó a este archivo ni a los títulos de issues ya creados/cerrados, así que hay dos numeraciones en paralelo para el mismo trabajo:
+
+| Feature | Número usado aquí / en el issue | Número actual en el `.docx` |
+|---|---|---|
+| Notificaciones en tiempo real (WebSockets) | HU-061 (issue #65, PR #170) | HU-063 |
+| Rate limiting (pendiente, Roy) | HU-062 | HU-064 |
+| Validación y saneamiento Zod | HU-063 (PR #101) | HU-065 |
+| Security headers (pendiente, Roy) | HU-064 | HU-066 |
+| Logs de auditoría de seguridad | HU-065 (PR #104) | HU-067 |
+| Logging estructurado | HU-066 (PR #105) | HU-068 |
+| Error tracking PostHog | HU-067 (PR #107) | HU-069 |
+| APM y métricas | HU-068 (PR #108) | ~HU-070 (no confirmado) |
+| Alertas y monitoreo de uptime (pendiente, Roy) | HU-069 | ~HU-071 (no confirmado) |
+
+No se renumeró nada de lo ya mergeado (bajo valor, alto riesgo para trabajo con historial/PRs ya cerrados). Si se quiere resolver de raíz, decidir entre: (a) renumerar el `.docx` para que HU-061/062 nuevas se muevan al final (ej. HU-101/102) y todo lo demás vuelva a su número original, o (b) adoptar la numeración nueva del `.docx` y actualizar las filas de esta tabla + títulos de issues abiertos de Roy. Mientras tanto, usar el número de **issue de GitHub** (no el HU-XXX) como identificador sin ambigüedad.
+
 ## Bugs abiertos
 
 _(ninguno pendiente por ahora)_
