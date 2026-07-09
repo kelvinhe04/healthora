@@ -52,6 +52,7 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
 | HU-080 | Optimización de imágenes (Cloudinary, lazy load) | `HU-080-optimizacion-imagenes-cloudinary-lazy-load` / PR #124 | Roy | `srcset`/`sizes` responsive con Cloudinary `f_auto,q_auto`, lazy por defecto y prioridad selectiva para LCP. Issue #84 cerrada; pendiente merge del PR a `main`. |
+| — | Admin: ordenar por precio/stock, conteo por categoría y columna de reseña | `feat/admin-products-sort-and-rating-column` / PR #180 | Kelvin | Cierra issue #179. Headers "Precio"/"Stock" clicables (asc/desc) en la tabla de Gestión de productos, conteo de productos por categoría en los filtros pill, y columna "Reseña" (Stars + promedio/cantidad vía `useReviews`, mismo patrón que `ProductCard`). Pendiente merge del PR a `main`. |
 
 ## Pendientes — asignadas a Roy (infra, sin tocar código de producto/variantes)
 
