@@ -109,6 +109,7 @@ export function ProductVariantsEditor({
           {variants.map((row, idx) => (
             <div
               key={idx}
+              data-variant-anchor={row.id}
               style={{
                 padding: '12px',
                 borderRadius: 10,

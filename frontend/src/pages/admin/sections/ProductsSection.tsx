@@ -29,6 +29,7 @@ export function ProductsSection() {
   productSearch,
   setProductSearch,
   setProductModal,
+  highlightVariantId,
   selectedProductIds,
   setSelectedProductIds,
   allDisplayedSelected,
@@ -605,6 +606,7 @@ export function ProductsSection() {
               mode={productModal?.mode ?? "add"}
               product={productModal?.product}
               categories={categories}
+              highlightVariantId={highlightVariantId}
               onClose={() => setProductModal(null)}
               onSave={(data) => {
                 if (productModal?.mode === "add") {

@@ -14,6 +14,7 @@ import {
   textField,
 } from '../lib/validation';
 import { cacheableJson } from '../lib/httpCache';
+import { notifyAdmins } from '../lib/realtime';
 
 const reviewsQuerySchema = z.object({
   productId: productIdSchema,
@@ -68,10 +69,25 @@ export const reviewsRouter = new Hono<AppEnv>()
 
     const allReviews = await Review.find({ productId }).lean();
     const newRating = allReviews.reduce((sum, reviewEntry) => sum + reviewEntry.rating, 0) / allReviews.length;
-    await Product.updateOne(
+    const product = await Product.findOneAndUpdate(
       { id: productId },
-      { rating: Math.round(newRating * 10) / 10, reviews: allReviews.length }
-    );
+      { rating: Math.round(newRating * 10) / 10, reviews: allReviews.length },
+      { returnDocument: 'after' }
+    ).lean();
+
+    // Real-time alert to admins (HU-061). Best-effort - a notification failure must not fail the
+    // review creation itself.
+    try {
+      await notifyAdmins({
+        type: 'new_review',
+        title: 'Nueva reseña',
+        body: `${user.name || 'Un cliente'} dejó ${rating}★ en "${product?.name || productId}".`,
+        link: `/product/${productId}`,
+        data: { productId, reviewId: review._id.toString(), rating },
+      });
+    } catch (notifyError) {
+      console.error('[REVIEWS] Failed to push new_review notification:', notifyError);
+    }
 
     return c.json(review, 201);
   })

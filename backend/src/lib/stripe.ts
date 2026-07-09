@@ -41,6 +41,7 @@ export const stripe = process.env.NODE_ENV === 'test'
       },
       webhooks: {
         constructEvent: (rawBody: string) => JSON.parse(rawBody),
+        constructEventAsync: async (rawBody: string) => JSON.parse(rawBody),
       },
     }
   : new Stripe(process.env.STRIPE_SECRET_KEY!);

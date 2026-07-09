@@ -189,3 +189,29 @@ export interface ProductFilters {
   inStock?: boolean;
   search?: string;
 }
+
+export type NotificationType =
+  | 'order_paid'
+  | 'order_shipped'
+  | 'order_status'
+  | 'low_stock'
+  | 'new_review'
+  | 'broadcast';
+
+/** A real-time notification (HU-061) as delivered by the REST inbox and the WebSocket channel. */
+export interface AppNotification {
+  id: string;
+  type: NotificationType;
+  audience: 'user' | 'admin' | 'all';
+  title: string;
+  body: string;
+  link: string | null;
+  data: Record<string, unknown>;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface NotificationInbox {
+  notifications: AppNotification[];
+  unread: number;
+}

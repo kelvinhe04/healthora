@@ -4,7 +4,8 @@ import { requireAdmin } from '../../middleware/requireAdmin';
 import type { AppEnv } from '../../types/hono';
 import { Order } from '../../db/models/Order';
 import { sendOrderStatusUpdateEmail } from '../../lib/email';
-import { combineOrderStatus, normalizeOrder } from '../../lib/orderStatus';
+import { combineOrderStatus, normalizeOrder, type FulfillmentStatus } from '../../lib/orderStatus';
+import { notifyUser } from '../../lib/realtime';
 import { objectIdSchema, parseJson, parseParams, parseQuery } from '../../lib/validation';
 
 const paymentStatusSchema = z.enum(['pending_payment', 'paid', 'cancelled', 'refunded']);
@@ -25,6 +26,15 @@ const adminOrderStatusSchema = z.object({
 const orderIdParamsSchema = z.object({
   id: objectIdSchema,
 });
+
+/** Customer-facing copy for the real-time notification pushed on each fulfillment transition. */
+const fulfillmentLabels: Record<FulfillmentStatus, { title: string; body: string }> = {
+  unfulfilled: { title: 'Pedido recibido', body: 'Tu pedido fue registrado y está pendiente de preparación.' },
+  processing: { title: 'Pedido en preparación', body: 'Estamos preparando tu pedido para el envío.' },
+  shipped: { title: 'Pedido enviado', body: 'Tu pedido va en camino. Te avisaremos cuando sea entregado.' },
+  delivered: { title: 'Pedido entregado', body: 'Tu pedido fue entregado. ¡Gracias por comprar en Healthora!' },
+  cancelled: { title: 'Pedido cancelado', body: 'Tu pedido fue cancelado. Si tienes dudas, contáctanos.' },
+};
 
 export const adminOrdersRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
@@ -93,19 +103,36 @@ export const adminOrdersRouter = new Hono<AppEnv>()
 
     if (!order) return c.json({ error: 'Not found' }, 404);
 
-    if (normalizedCurrent.fulfillmentStatus !== fulfillmentStatus && order.customerEmail) {
-      try {
-        await sendOrderStatusUpdateEmail({
-          customerName: order.customerName || 'cliente',
-          customerEmail: order.customerEmail,
-          orderId: order._id.toString(),
-          fulfillmentStatus,
-          items: order.items || [],
-          total: order.total || 0,
-          address: order.address,
-        });
-      } catch (emailError) {
-        console.error('[ADMIN_ORDERS] Failed to send status update email:', emailError);
+    if (normalizedCurrent.fulfillmentStatus !== fulfillmentStatus) {
+      if (order.customerEmail) {
+        try {
+          await sendOrderStatusUpdateEmail({
+            customerName: order.customerName || 'cliente',
+            customerEmail: order.customerEmail,
+            orderId: order._id.toString(),
+            fulfillmentStatus,
+            items: order.items || [],
+            total: order.total || 0,
+            address: order.address,
+          });
+        } catch (emailError) {
+          console.error('[ADMIN_ORDERS] Failed to send status update email:', emailError);
+        }
+      }
+
+      // Real-time push to the customer (HU-061), mirroring the status email.
+      if (order.customerId) {
+        try {
+          await notifyUser(order.customerId, {
+            type: fulfillmentStatus === 'shipped' ? 'order_shipped' : 'order_status',
+            title: fulfillmentLabels[fulfillmentStatus].title,
+            body: fulfillmentLabels[fulfillmentStatus].body,
+            link: '/orders',
+            data: { orderId: order._id.toString(), fulfillmentStatus },
+          });
+        } catch (notifyError) {
+          console.error('[ADMIN_ORDERS] Failed to push status notification:', notifyError);
+        }
       }
     }
 

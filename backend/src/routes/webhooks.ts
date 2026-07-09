@@ -9,6 +9,8 @@ import { recalculateBestsellers } from '../lib/bestsellers';
 import { addressSchema, cartItemSchema, emailField, moneyFromInput, optionalTextField, textField } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
 import { decrementStock, validateCartStock } from '../lib/inventory';
+import { notifyUser } from '../lib/realtime';
+import { scanAndNotifyLowStock } from '../lib/lowStock';
 
 type CheckoutAddress = {
   name: string;
@@ -60,7 +62,11 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
   let event;
   try {
     const rawBody = await c.req.text();
-    event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+    // constructEvent (sync) picks a SubtleCrypto-based provider under Bun, which throws
+    // "SubtleCryptoProvider cannot be used in a synchronous context" on every call - the async
+    // variant is required here, not a style preference. Without this every real Stripe webhook
+    // was rejected with 400 "Invalid signature" and never reached order creation.
+    event = await stripe.webhooks.constructEventAsync(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET!);
   } catch (err) {
     console.error('[WEBHOOK] Signature verification failed:', err);
     return c.json({ error: 'Invalid signature' }, 400);
@@ -171,6 +177,31 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
               console.error('[WEBHOOK] Stock decrement failed for', item.productId, item.variantId);
             }
           }
+
+          // Real-time notifications (HU-061). Best-effort: a notification failure must never break
+          // the paid-order flow, so each push is guarded independently.
+          try {
+            await notifyUser(metadata.customerId, {
+              type: 'order_paid',
+              title: 'Pago confirmado',
+              body: `Recibimos tu pago de $${total.toFixed(2)}. Tu pedido está en preparación.`,
+              link: '/orders',
+              data: { orderId: order._id.toString(), total },
+            });
+            console.log('[WEBHOOK] order_paid notification created for', metadata.customerId);
+          } catch (notifyError) {
+            console.error('[WEBHOOK] order_paid notification failed:', notifyError);
+          }
+
+          try {
+            const soldProductIds = [...new Set(lineItems.filter((i) => !i.isSample).map((i) => i.productId))];
+            const soldProducts = await Product.find({ id: { $in: soldProductIds } }).lean();
+            for (const product of soldProducts) {
+              await scanAndNotifyLowStock(product);
+            }
+          } catch (notifyError) {
+            console.error('[WEBHOOK] low_stock notification failed:', notifyError);
+          }
         }
       } catch (error) {
         console.error('[WEBHOOK] Failed to create paid order:', error);
@@ -188,6 +219,23 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
             stripePaymentIntentId: session.payment_intent,
           }
         );
+
+        // An order that existed as pending and just flipped to paid still deserves the customer
+        // notification (HU-061). Best-effort. The !existingOrder branch above handles the common
+        // path where the webhook creates the paid order outright.
+        if (existingOrder.customerId) {
+          try {
+            await notifyUser(existingOrder.customerId, {
+              type: 'order_paid',
+              title: 'Pago confirmado',
+              body: `Recibimos tu pago de $${(existingOrder.total ?? 0).toFixed(2)}. Tu pedido está en preparación.`,
+              link: '/orders',
+              data: { orderId: existingOrder._id.toString(), total: existingOrder.total ?? 0 },
+            });
+          } catch (notifyError) {
+            console.error('[WEBHOOK] order_paid (existing) notification failed:', notifyError);
+          }
+        }
       }
     }
   }

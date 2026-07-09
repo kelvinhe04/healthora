@@ -89,9 +89,13 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     mode: "add" | "edit";
     product?: Product;
   } | null>(null);
+  // Set only by the low-stock deep-link effect below; cleared whenever the modal is opened/closed
+  // through any other path so a stale highlight never carries over to an unrelated edit.
+  const [highlightVariantId, setHighlightVariantId] = useState<string | null>(null);
 
   const openProductModal = useCallback((modal: { mode: "add" | "edit"; product?: Product } | null) => {
     setProductModalState(modal);
+    setHighlightVariantId(null);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       if (!modal) {
@@ -168,7 +172,9 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     queryFn: async () => api.admin.products.count(await getAdminToken()),
   });
 
-  // Open modal from URL on deep-link (e.g. ?section=products&modal=edit&productId=xxx)
+  // Open modal from URL on deep-link (e.g. ?section=products&modal=edit&productId=xxx). A
+  // low-stock notification additionally carries &highlightVariant=<id> so the modal can scroll to
+  // and highlight the exact variant/combo the admin needs to restock.
   const urlModalHandledRef = useRef(false);
   useEffect(() => {
     if (urlModalHandledRef.current) return;
@@ -185,6 +191,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       if (product) {
         urlModalHandledRef.current = true;
         setProductModalState({ mode: "edit", product });
+        setHighlightVariantId(searchParams.get("highlightVariant"));
       }
     }
   }, [searchParams, productsQuery.data]);
@@ -606,6 +613,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     confirmUserDelete,
     setConfirmUserDelete,
     productModal,
+    highlightVariantId,
     isSaving,
     productUpdateMutation,
     productCreateMutation,

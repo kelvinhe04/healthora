@@ -21,6 +21,8 @@ import {
 } from '../lib/validation';
 import { buildPaidLineItem, resolveVariantImage } from '../lib/productVariants';
 import { decrementStock } from '../lib/inventory';
+import { notifyUser } from '../lib/realtime';
+import { scanAndNotifyLowStock } from '../lib/lowStock';
 
 const ordersQuerySchema = z.object({
   stripeSessionId: textField(255).optional(),
@@ -178,6 +180,32 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
     }
   }
 
+  // Real-time notifications (HU-061). This is the path that actually creates the order in local
+  // dev today (see webhooks.ts's constructEventAsync fix - the fallback here used to be the only
+  // one that ever ran), so it needs the same hooks the webhook has. Best-effort, independent
+  // try/catches so a notification failure never breaks order confirmation.
+  try {
+    await notifyUser(metadata.customerId, {
+      type: 'order_paid',
+      title: 'Pago confirmado',
+      body: `Recibimos tu pago de $${total.toFixed(2)}. Tu pedido está en preparación.`,
+      link: '/orders',
+      data: { orderId: createdOrder._id.toString(), total },
+    });
+  } catch (notifyError) {
+    console.error('[ORDERS] order_paid notification failed:', notifyError);
+  }
+
+  try {
+    const soldProductIds = [...new Set(lineItems.filter((i) => !i.isSample).map((i) => i.productId))];
+    const soldProducts = await Product.find({ id: { $in: soldProductIds } }).lean();
+    for (const product of soldProducts) {
+      await scanAndNotifyLowStock(product);
+    }
+  } catch (notifyError) {
+    console.error('[ORDERS] low_stock notification failed:', notifyError);
+  }
+
   return normalizeOrder(createdOrder.toObject());
 }
 
@@ -201,6 +229,20 @@ async function syncOrderPaymentFromStripe(order: Record<string, unknown>) {
         },
         { returnDocument: 'after' }
       ).lean();
+
+      if (updatedOrder?.customerId) {
+        try {
+          await notifyUser(updatedOrder.customerId, {
+            type: 'order_paid',
+            title: 'Pago confirmado',
+            body: `Recibimos tu pago de $${(updatedOrder.total ?? 0).toFixed(2)}. Tu pedido está en preparación.`,
+            link: '/orders',
+            data: { orderId: updatedOrder._id.toString(), total: updatedOrder.total ?? 0 },
+          });
+        } catch (notifyError) {
+          console.error('[ORDERS] order_paid (sync) notification failed:', notifyError);
+        }
+      }
 
       return updatedOrder ? normalizeOrder(updatedOrder) : normalizedOrder;
     }

@@ -17,9 +17,9 @@ No es un servicio aparte: corre dentro del mismo proceso Bun/Hono que ya está d
 Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`Healthora-Historias-de-Usuario.docx`, sección 6). No se construyó ninguna feature nueva solo para tener una tool — de las 24 tools documentadas en el `.docx`, se implementaron las **13 que corresponden a una HU ya implementada** (ver `docs/seguimiento-hu.md`). Quedó afuera:
 
 - `wishlist.getUserWishlist` (HU-044): la wishlist es 100% client-side (`frontend/src/store/wishlistStore.ts`, Zustand + localStorage) — no existe ningún dato de servidor que un MCP tool pueda consultar. Requeriría migrar la wishlist a persistencia en base de datos primero (fuera de alcance de esta tarea).
-- Las 11 tools restantes del doc (cupones, devoluciones, categorías CRUD, exportación CSV, audit trail, analítica de cohortes/producto, moderación de reseñas, notificaciones, descuentos masivos) — sus HU siguen "Pendiente", no tienen UI equivalente todavía.
+- Las 10 tools restantes del doc (cupones, devoluciones, categorías CRUD, exportación CSV, audit trail, analítica de cohortes/producto, moderación de reseñas, descuentos masivos) — sus HU siguen "Pendiente", no tienen UI equivalente todavía.
 
-## Tools implementadas (12)
+## Tools implementadas (13)
 
 | Tool | HU | Qué hace | Auth |
 |---|---|---|---|
@@ -35,6 +35,7 @@ Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`He
 | `analytics.getSalesReport` | HU-019 | Revenue, ticket promedio, unidades y top 5 productos en N días | Servicio |
 | `reviews.listReviews` | HU-010 | Reseñas de un producto | Servicio |
 | `recommendations.getRelatedProducts` | HU-045 | Productos relacionados (misma categoría/necesidad/marca/tag) | Servicio |
+| `notifications.broadcast` | HU-061 | Difunde una notificación en tiempo real (WebSockets) a todos, admins o un cliente; queda persistida en el centro de notificaciones | Servicio |
 
 Código en `backend/src/mcp/` — un archivo por módulo bajo `tools/`, más `server.ts` (arma el `McpServer` y el transporte) y `auth.ts` (middleware de autenticación).
 

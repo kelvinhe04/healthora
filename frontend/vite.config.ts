@@ -12,6 +12,9 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3002',
         changeOrigin: true,
+        // ws:true lets the notification WebSocket (/api/notifications/ws) tunnel through the same
+        // dev proxy the REST API uses, so the browser talks to a single origin (HU-061).
+        ws: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },

@@ -25,6 +25,7 @@ import { handleMcpRequest } from './mcp/server';
 import { sendOrderConfirmationEmail } from './lib/email';
 import { recalculateBestsellers, recalculateNew } from './lib/bestsellers';
 import { reviewsRouter } from './routes/reviews';
+import { notificationsRouter, websocket } from './routes/notifications';
 import { newsletterRouter } from './routes/newsletter';
 import { ipRateLimit } from './middleware/rateLimit';
 import { errorReportsRouter } from './routes/errorReports';
@@ -83,6 +84,7 @@ app.route('/categories', categoriesRouter);
 app.route('/orders', ordersRouter);
 app.route('/account', accountRouter);
 app.route('/reviews', reviewsRouter);
+app.route('/notifications', notificationsRouter);
 app.route('/newsletter', newsletterRouter);
 app.route('/error-reports', errorReportsRouter);
 app.route('/cart', cartRouter);
@@ -151,6 +153,7 @@ const port = Number(process.env.PORT) || 3002;
 
 Bun.serve({
   fetch: app.fetch,
+  websocket,
   port,
   maxRequestBodySize: 20 * 1024 * 1024,
 });

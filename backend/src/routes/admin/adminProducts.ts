@@ -5,6 +5,7 @@ import type { AppEnv } from "../../types/hono";
 import { Product } from "../../db/models/Product";
 import { Category } from "../../db/models/Category";
 import { recalculateNew } from "../../lib/bestsellers";
+import { scanAndNotifyLowStock } from "../../lib/lowStock";
 import {
   moneyFromInput,
   objectIdSchema,
@@ -146,6 +147,14 @@ export const adminProductsRouter = new Hono<AppEnv>()
         returnDocument: "after",
       }).lean();
       if (!product) return c.json({ error: "Not found" }, 404);
+
+      // An admin editing stock down (per producto, variante o combo) should alert the team in real
+      // time (HU-061). Deduped in scanAndNotifyLowStock, so re-saving an already-low product is a
+      // no-op. Best-effort - never fail the save over a notification.
+      scanAndNotifyLowStock(product as Parameters<typeof scanAndNotifyLowStock>[0]).catch((notifyError) =>
+        console.error("[ADMIN_PRODUCTS] low_stock notification failed:", notifyError),
+      );
+
       return c.json(product);
     } catch (error: unknown) {
       if (

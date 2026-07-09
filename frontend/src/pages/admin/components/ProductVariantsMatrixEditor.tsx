@@ -376,7 +376,11 @@ export function ProductVariantsMatrixEditor({
                           const imagesInherited = !cell?.imagesTouched && p.images.length > 0;
                           const effectiveImages = cell?.imagesTouched ? cell.images : p.images;
                           return (
-                            <td key={s.key} style={{ padding: 8, verticalAlign: 'top', border: '1px solid var(--ink-06)' }}>
+                            <td
+                              key={s.key}
+                              data-variant-anchor={cellKey(p.key, s.key)}
+                              style={{ padding: 8, verticalAlign: 'top', border: '1px solid var(--ink-06)' }}
+                            >
                               <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginBottom: active ? 8 : 0 }}>
                                 <input
                                   type="checkbox"

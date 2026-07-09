@@ -1,4 +1,4 @@
-import { type ChangeEvent, useEffect, useState, type CSSProperties } from 'react';
+import { type ChangeEvent, useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Product } from '../../../types';
 import { iconBtnAd } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
@@ -17,6 +17,7 @@ export function ProductModal({
   mode,
   product,
   categories,
+  highlightVariantId,
   onClose,
   onSave,
   saving,
@@ -26,6 +27,10 @@ export function ProductModal({
   mode: "add" | "edit";
   product?: Product;
   categories: string[];
+  /** Set from a low-stock notification's deep link - scrolls to and briefly highlights the exact
+   * variant/combo row (matches `data-variant-anchor` on the variant/matrix editors) so the admin
+   * doesn't have to hunt for it among the product's other variants. */
+  highlightVariantId?: string | null;
   onClose: () => void;
   onSave: (data: Partial<Product>) => void;
   saving: boolean;
@@ -35,6 +40,7 @@ export function ProductModal({
     product ? productToForm(product) : { ...emptyForm },
   );
   const [validationError, setValidationError] = useState("");
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -42,6 +48,23 @@ export function ProductModal({
       setValidationError("");
     }
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !highlightVariantId) return;
+    // Wait a tick for the variant editor (matrix/simple) to render its rows off the freshly-set
+    // form state before querying the DOM.
+    const timer = window.setTimeout(() => {
+      const target = contentRef.current?.querySelector<HTMLElement>(
+        `[data-variant-anchor="${highlightVariantId}"]`,
+      );
+      if (!target) return;
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.classList.add("admin-variant-highlight");
+      const clear = window.setTimeout(() => target.classList.remove("admin-variant-highlight"), 2600);
+      return () => window.clearTimeout(clear);
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [open, highlightVariantId]);
 
   const setF =
     (key: keyof ProductForm) =>
@@ -201,6 +224,13 @@ export function ProductModal({
 
   return (
     <ModalOverlay open={open} onClose={onClose} zIndex={1000} overlayColor="rgba(0,0,0,0.45)">
+      <style>{`
+        @keyframes admin-variant-highlight-pulse {
+          0%, 100% { box-shadow: 0 0 0 3px transparent; background-color: transparent; }
+          15%, 70% { box-shadow: 0 0 0 3px var(--coral); background-color: color-mix(in oklab, var(--coral) 14%, transparent); }
+        }
+        .admin-variant-highlight { animation: admin-variant-highlight-pulse 2.6s ease; border-radius: 8px; }
+      `}</style>
       <div
         style={{
           background: "var(--cream)",
@@ -333,7 +363,7 @@ export function ProductModal({
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflowY: "auto", padding: 28 }}>
+        <div ref={contentRef} style={{ flex: 1, overflowY: "auto", padding: 28 }}>
           {/* Información básica */}
           <div style={sectionS}>Información básica</div>
           <div
