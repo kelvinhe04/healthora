@@ -7,7 +7,12 @@ export function getRouter() {
   return createRouter({
     routeTree,
     defaultPreload: 'intent',
-    scrollRestoration: true,
+    // The landing restores its own scroll on back-return (see Landing.tsx: a pre-paint hold-loop
+    // anchored to the exact card/position). The router's built-in restoration fires a second,
+    // redundant window scroll ~1s later (after our hold-loop has ended), which the user sees as the
+    // page jumping to place twice. Opt the landing ('/') out so our handler is the single authority;
+    // every other route keeps normal router scroll restoration.
+    scrollRestoration: ({ location }) => location.pathname !== '/',
     defaultNotFoundComponent: NotFoundView,
     defaultErrorComponent: RouteErrorView,
   });

@@ -76,9 +76,18 @@ interface ProductCardProps {
   priority?: boolean;
   showCompare?: boolean;
   showWishlist?: boolean;
+  /**
+   * Identifies which section/list this card is rendered in (e.g. "bestsellers", "nuevos",
+   * "recientes"). The same product can appear in more than one section on a page, so the
+   * DOM id can't be based on product.id alone - that would collide and make
+   * getElementById resolve to the wrong section when restoring scroll position after
+   * visiting the product detail page. Defaults to "card" for callers that don't care.
+   */
+  sectionKey?: string;
 }
 
-export function ProductCard({ product, onClick, onAdd, priority = false, showCompare = true, showWishlist = true }: ProductCardProps) {
+export function ProductCard({ product, onClick, onAdd, priority = false, showCompare = true, showWishlist = true, sectionKey = 'card' }: ProductCardProps) {
+  const domId = `product-card-${sectionKey}-${product.id}`;
   const [hover, setHover] = useState(false);
   const [compareHint, setCompareHint] = useState('');
   const bp = useBreakpoint();
@@ -114,7 +123,16 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
 
   return (
     <div
-      onClick={() => onClick(product)}
+      id={domId}
+      onClick={(e) => {
+        try {
+          const top = e.currentTarget.getBoundingClientRect().top;
+          sessionStorage.setItem('lastProductAnchor', JSON.stringify({ id: domId, top }));
+        } catch {
+          // sessionStorage unavailable (e.g. private mode) - scroll restoration just falls back to default
+        }
+        onClick(product);
+      }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{ cursor: 'pointer', background: 'var(--cream)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--ink-06)', transition: 'all 220ms cubic-bezier(.2,.8,.2,1)', transform: hover ? 'translateY(-2px)' : 'none', boxShadow: hover ? '0 18px 40px -20px rgba(0,0,0,0.15)' : '0 2px 6px -4px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}
