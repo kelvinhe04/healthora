@@ -18,6 +18,7 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 |---|---|---|---|---|
 | HU-005 | Selector de variantes en la ficha | `feat/product-variants` / PR #98 | Kelvin | Selector completo (tamaño/sabor/conteo/color), precio e imagen reactivos. Falta reseed de categorías restantes (contenido, no bloquea — ver Backlog de contenido). |
 | HU-035 | Variante seleccionada persistida en el carrito | `feat/product-variants` / PR #98 | Kelvin | `cartStore`/`CartDrawer` soportan `productId+variantId`. Bug de imagen (no reflejaba la variante en carrito/checkout) corregido en el mismo PR. |
+| HU-057 | Página de perfil editable | `feat/hu-057-perfil-editable` / PR #189 | Kelvin | Closes #61. Nombre/foto delegados al modal nativo de Clerk (`openUserProfile()`, ya sincroniza a `User` vía `clerkAuth`). Nueva ruta `/profile`, entrada "Mi perfil" en el menú de cuenta. Se quitó la preferencia de newsletter (`User.preferences.newsletterSubscribed`) que se había agregado inicialmente: no hay ninguna funcionalidad de admin que envíe campañas/novedades filtradas por esa preferencia, así que el campo quedaba guardado pero sin ningún consumidor real. |
 | HU-099 | Completar variantes de producto en categorías restantes del catálogo | `feat/variantes-contenido-categorias` / PR #100 | Kelvin | Variantes (con imágenes) puestas en todos los productos del catálogo que las necesitaban. Maquillaje llega a 20/20; el resto de productos por debajo de ese número son de presentación única y no requieren selector de variante. |
 | HU-063 | Validación y saneamiento de inputs con Zod | `HU-063-validacion-y-saneamiento-inputs-zod` / PR #101 | Roy | Zod implementado en rutas de backend: productos, carrito, checkout, órdenes, reseñas, webhooks, admin. |
 | HU-085 | Búsqueda simple de productos | `feat/hu-085-busqueda` / PR #102 | EiJassiel | Búsqueda por nombre, marca, categoría, descripción corta y necesidad con escapeRegex. Incluye validación Zod. |
@@ -56,7 +57,6 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
 | HU-080 | Optimización de imágenes (Cloudinary, lazy load) | `HU-080-optimizacion-imagenes-cloudinary-lazy-load` / PR #124 | Roy | `srcset`/`sizes` responsive con Cloudinary `f_auto,q_auto`, lazy por defecto y prioridad selectiva para LCP. Issue #84 cerrada; pendiente merge del PR a `main`. |
-
 ## Pendientes — nueva funcionalidad (sin iniciar)
 
 _(ninguna en este momento)_

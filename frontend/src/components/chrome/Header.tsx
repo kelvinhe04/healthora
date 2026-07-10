@@ -22,6 +22,7 @@ type View =
   | "success"
   | "admin"
   | "orders"
+  | "profile"
   | "compare"
   | "wishlist";
 
@@ -1133,6 +1134,25 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               >
                 <Icon name="receipt" size={14} style={{ marginRight: 8 }} /> Mis
                 pedidos
+              </button>
+              <button
+                style={{
+                  ...iconBtn,
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  justifyContent: "flex-start",
+                  color: "var(--ink)",
+                  fontSize: 13,
+                  whiteSpace: "nowrap",
+                }}
+                onClick={() => {
+                  onNav("profile");
+                  setUserMenuOpen(false);
+                }}
+              >
+                <Icon name="user" size={14} style={{ marginRight: 8 }} /> Mi
+                perfil
               </button>
               <button
                 style={{
