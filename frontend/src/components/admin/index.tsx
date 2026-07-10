@@ -9,7 +9,7 @@ import {
   Line,
   CartesianGrid,
 } from "recharts";
-import { useMemo, useState, useEffect, memo } from "react";
+import { useMemo, useState, useEffect, useRef, memo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { useThemeStore } from "../../store/themeStore";
 import { Icon } from "../shared/Icon";
@@ -47,6 +47,120 @@ export function useOnceLoading(key: string, isLoading: boolean): boolean {
 
   return locked && loadingStarted;
 }
+
+function digitsFromISO(iso: string): string {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-");
+  if (!y || !m || !d) return "";
+  return `${d}${m}${y}`;
+}
+
+function isoFromDigits(digits: string): string | null {
+  if (digits.length !== 8) return null;
+  const day = parseInt(digits.slice(0, 2), 10);
+  const month = parseInt(digits.slice(2, 4), 10);
+  const year = parseInt(digits.slice(4, 8), 10);
+  if (month < 1 || month > 12) return null;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  if (day < 1 || day > daysInMonth) return null;
+  if (year < 1900 || year > 2200) return null;
+  return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function formatDigitsAsDDMMYYYY(digits: string): string {
+  let out = digits.slice(0, 2);
+  if (digits.length > 2) out += "/" + digits.slice(2, 4);
+  if (digits.length > 4) out += "/" + digits.slice(4, 8);
+  return out;
+}
+
+/** Date field that always reads/types as DD/MM/AAAA, regardless of the browser or OS locale.
+ * `<input type="date">`'s visible format follows the user's locale (often MM/DD/YYYY), which is
+ * silently wrong for admins reading it as day-first — the same class of surprise this codebase
+ * already hand-rolls around for display formatting (`lib/dates.ts`), just on the input side. A
+ * hidden native date input (synced to the same ISO value) sits behind the calendar icon so
+ * clicking it still opens the OS date picker; typing digits is the primary path and is masked
+ * with "/" as you go. Value/onChange are always ISO `yyyy-mm-dd` (or `''`), matching what the
+ * rest of the form/backend already expects from a plain `<input type="date">`. */
+export function DateInputDDMMYYYY({
+  value,
+  onChange,
+  disabled,
+  style,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  style?: CSSProperties;
+}) {
+  const [digits, setDigits] = useState(() => digitsFromISO(value));
+  const nativeRef = useRef<HTMLInputElement>(null);
+
+  // Re-derive the visible digits whenever the ISO value actually changes - including when it
+  // changes from *this* component's own commit (e.g. picking a date via the hidden native
+  // calendar below), not just from the outside. Re-deriving digits from the just-committed ISO
+  // always reproduces the same digits, so this never clobbers in-progress typing: the effect
+  // only re-runs when `value` (a primitive string) truly changes, which typing alone doesn't do
+  // until a complete valid date is committed.
+  useEffect(() => {
+    setDigits(digitsFromISO(value));
+  }, [value]);
+
+  const commit = (iso: string) => onChange(iso);
+
+  return (
+    <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+      <input
+        type="text"
+        inputMode="numeric"
+        value={formatDigitsAsDDMMYYYY(digits)}
+        onChange={(e) => {
+          const next = e.target.value.replace(/\D/g, "").slice(0, 8);
+          setDigits(next);
+          if (next.length === 8) {
+            const iso = isoFromDigits(next);
+            if (iso) commit(iso);
+          } else if (next.length === 0) {
+            commit("");
+          }
+        }}
+        placeholder="dd/mm/aaaa"
+        disabled={disabled}
+        style={{ ...style, paddingRight: 34 }}
+      />
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={() => nativeRef.current?.showPicker?.()}
+        disabled={disabled}
+        aria-label="Elegir fecha en calendario"
+        style={{
+          position: "absolute",
+          right: 8,
+          background: "transparent",
+          border: "none",
+          cursor: disabled ? "default" : "pointer",
+          color: "var(--ink-40)",
+          display: "flex",
+          padding: 0,
+        }}
+      >
+        <Icon name="calendar" size={14} />
+      </button>
+      <input
+        ref={nativeRef}
+        type="date"
+        value={value}
+        onChange={(e) => commit(e.target.value)}
+        disabled={disabled}
+        tabIndex={-1}
+        aria-hidden="true"
+        style={{ position: "absolute", top: "100%", left: 0, width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+      />
+    </div>
+  );
+}
+
 const Ctx = ({
   active,
   payload,

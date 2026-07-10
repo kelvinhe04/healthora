@@ -231,6 +231,27 @@ export const api = {
           { method: "DELETE" },
           token,
         ),
+      applyCategoryDiscount: (
+        body: {
+          category: string;
+          discountType: "percent" | "fixed";
+          value: number;
+          discountStartsAt?: string;
+          discountEndsAt?: string;
+        },
+        token: string,
+      ) =>
+        request<{ updated: number; total: number; skippedMatrix: number }>(
+          "/admin/products/discounts/apply-category",
+          { method: "POST", body: JSON.stringify(body) },
+          token,
+        ),
+      removeCategoryDiscount: (category: string, token: string) =>
+        request<{ updated: number }>(
+          "/admin/products/discounts/remove-category",
+          { method: "POST", body: JSON.stringify({ category }) },
+          token,
+        ),
     },
     reviews: {
       list: (

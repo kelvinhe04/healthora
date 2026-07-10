@@ -3,6 +3,9 @@ type ProductVariant = {
   label: string;
   type: string;
   price: number;
+  priceBefore?: number | null;
+  discountStartsAt?: Date | string | null;
+  discountEndsAt?: Date | string | null;
   stock: number;
   imageUrl?: string;
   images?: string[];
@@ -15,6 +18,9 @@ type ProductLike = {
   id: string;
   name: string;
   price: number;
+  priceBefore?: number | null;
+  discountStartsAt?: Date | string | null;
+  discountEndsAt?: Date | string | null;
   stock: number;
   category: string;
   imageUrl?: string;
@@ -38,6 +44,8 @@ export type ResolvedVariantPricing = {
 
 export function resolveVariantPricing(product: ProductLike, variantId?: string): ResolvedVariantPricing {
   if (!variantId?.trim() || !product.variants?.length) {
+    // No variant selected: `price` is always the real, current selling price - `priceBefore`/
+    // vigencia only control whether the "was $X" badge shows, never what's actually charged.
     return { price: product.price, stock: product.stock };
   }
 

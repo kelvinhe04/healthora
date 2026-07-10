@@ -58,6 +58,7 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
 | HU-080 | Optimización de imágenes (Cloudinary, lazy load) | `HU-080-optimizacion-imagenes-cloudinary-lazy-load` / PR #124 | Roy | `srcset`/`sizes` responsive con Cloudinary `f_auto,q_auto`, lazy por defecto y prioridad selectiva para LCP. Issue #84 cerrada; pendiente merge del PR a `main`. |
+| HU-092 | Descuentos automáticos por producto y categoría | `feat/hu-092-descuentos-automaticos` / PR #192 | Kelvin | Closes #126. `backend/src/lib/discounts.ts` resuelve vigencia (fecha inicio/fin) sin cron job — se conecta en `products.ts` (catálogo/ficha) y `resolveVariantPricing` (precio cobrado en checkout, sin tocar `checkout.ts`). Nuevo modal admin "Descuento por categoría" + inputs de `priceBefore`/vigencia en `ProductModal` (antes `priceBefore` no era editable desde la UI). |
 
 ## Pendientes — nueva funcionalidad (sin iniciar)
 

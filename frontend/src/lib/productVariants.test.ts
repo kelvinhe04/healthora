@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { afterEach, describe, expect, it, setSystemTime } from 'bun:test';
 import type { Product, ProductVariant } from '../types';
 import {
   getDefaultComboImage,
@@ -143,6 +143,62 @@ describe('productVariants', () => {
     expect(pickDefaultCombo(testProduct)).toEqual({ variant: null, size: null });
     expect(getEffectivePrice(testProduct)).toBe(19);
     expect(getEffectivePriceBefore(testProduct)).toBe(25);
+  });
+
+  it('un descuento vencido oculta el tachado, pero el precio cobrado no cambia (price siempre manda)', () => {
+    const testProduct = product({ price: 19, priceBefore: 25, discountEndsAt: '2020-01-01' });
+
+    expect(getEffectivePrice(testProduct)).toBe(19);
+    expect(getEffectivePriceBefore(testProduct)).toBeUndefined();
+  });
+
+  it('un descuento que aun no empieza oculta el tachado, pero el precio cobrado no cambia', () => {
+    const testProduct = product({ price: 19, priceBefore: 25, discountStartsAt: '2999-01-01' });
+
+    expect(getEffectivePrice(testProduct)).toBe(19);
+    expect(getEffectivePriceBefore(testProduct)).toBeUndefined();
+  });
+
+  it('respeta el descuento propio de la variante para el tachado, sin afectar el precio cobrado', () => {
+    const discountedVariant = variant({ id: 'vanilla', label: 'Vanilla', type: 'flavor', price: 15, priceBefore: 22, discountEndsAt: '2020-01-01' });
+    const testProduct = product({ price: 19, priceBefore: 25, variants: [discountedVariant] });
+
+    // El precio cobrado es siempre el de la variante (15) - vencido o no, nunca "sube" a 22.
+    expect(getEffectivePrice(testProduct)).toBe(15);
+    expect(getEffectivePriceBefore(testProduct)).toBeUndefined();
+  });
+
+  describe('vigencia (dia calendario de Panama, no medianoche UTC) solo controla el tachado, nunca el precio', () => {
+    afterEach(() => setSystemTime());
+
+    it('el tachado sigue mostrandose durante todo el dia de "vigente hasta" en Panama, no solo su primer instante UTC', () => {
+      const testProduct = product({ price: 8, priceBefore: 10, discountEndsAt: '2026-07-10' });
+
+      // 2026-07-10T16:40:00Z son las 11:40am en Panama del 10 de julio - todavia el ultimo dia configurado.
+      setSystemTime(new Date('2026-07-10T16:40:00Z'));
+      expect(getEffectivePriceBefore(testProduct)).toBe(10);
+      expect(getEffectivePrice(testProduct)).toBe(8);
+
+      // 2026-07-11T05:00:00Z es medianoche en Panama del 11 de julio - ya vencido: se oculta el
+      // tachado, pero el precio cobrado (8) no cambia.
+      setSystemTime(new Date('2026-07-11T05:00:00Z'));
+      expect(getEffectivePriceBefore(testProduct)).toBeUndefined();
+      expect(getEffectivePrice(testProduct)).toBe(8);
+    });
+
+    it('el tachado no aparece hasta que "vigente desde" realmente empieza en Panama', () => {
+      const testProduct = product({ price: 8, priceBefore: 10, discountStartsAt: '2026-07-11' });
+
+      // 2026-07-10T23:00:00Z son las 6pm en Panama del 10 de julio - el dia anterior, aun sin tachado.
+      setSystemTime(new Date('2026-07-10T23:00:00Z'));
+      expect(getEffectivePriceBefore(testProduct)).toBeUndefined();
+      expect(getEffectivePrice(testProduct)).toBe(8);
+
+      // 2026-07-11T05:00:00Z es medianoche en Panama del 11 de julio - ya aparece el tachado.
+      setSystemTime(new Date('2026-07-11T05:00:00Z'));
+      expect(getEffectivePriceBefore(testProduct)).toBe(10);
+      expect(getEffectivePrice(testProduct)).toBe(8);
+    });
   });
 
   it('usa la foto especifica del combo default (sabor+tamano), no solo la del sabor', () => {

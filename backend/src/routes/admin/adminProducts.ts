@@ -6,6 +6,8 @@ import { Product } from "../../db/models/Product";
 import { Category } from "../../db/models/Category";
 import { recalculateNew } from "../../lib/bestsellers";
 import { scanAndNotifyLowStock } from "../../lib/lowStock";
+import { applyCategoryDiscount, isVigenciaRangeValid, removeCategoryDiscount } from "../../lib/discounts";
+import { clearCatalogCache } from "../../lib/cache";
 import {
   moneyFromInput,
   objectIdSchema,
@@ -33,23 +35,29 @@ const extraTabSchema = z.object({
   content: textField(4000),
 });
 
-const productVariantSchema = z.object({
-  id: productIdSchema,
-  label: textField(160),
-  type: z.enum(["size", "color", "weight", "count", "flavor", "scent"]),
-  price: moneyFromInput(),
-  priceBefore: moneyFromInput().optional(),
-  stock: z.coerce.number().int().min(0).max(999999),
-  sku: optionalTextField(120),
-  color: optionalTextField(80),
-  imageUrl: optionalTextField(400),
-  images: z.array(textField(400)).max(20).optional(),
-  imagesBySize: z.record(z.string(), z.array(textField(400)).max(20)).optional(),
-  stockBySize: z.record(z.string(), z.coerce.number().int().min(0).max(999999)).optional(),
-  priceBySize: z.record(z.string(), moneyFromInput()).optional(),
-  isDefault: z.coerce.boolean().default(false),
-  availableFor: z.array(productIdSchema).max(50).optional(),
-});
+const discountVigenciaMessage = { message: '"Vigente hasta" no puede ser anterior a "Vigente desde".', path: ["discountEndsAt"] };
+
+const productVariantSchema = z
+  .object({
+    id: productIdSchema,
+    label: textField(160),
+    type: z.enum(["size", "color", "weight", "count", "flavor", "scent"]),
+    price: moneyFromInput(),
+    priceBefore: moneyFromInput().nullable().optional(),
+    discountStartsAt: z.coerce.date().nullable().optional(),
+    discountEndsAt: z.coerce.date().nullable().optional(),
+    stock: z.coerce.number().int().min(0).max(999999),
+    sku: optionalTextField(120),
+    color: optionalTextField(80),
+    imageUrl: optionalTextField(400),
+    images: z.array(textField(400)).max(20).optional(),
+    imagesBySize: z.record(z.string(), z.array(textField(400)).max(20)).optional(),
+    stockBySize: z.record(z.string(), z.coerce.number().int().min(0).max(999999)).optional(),
+    priceBySize: z.record(z.string(), moneyFromInput()).optional(),
+    isDefault: z.coerce.boolean().default(false),
+    availableFor: z.array(productIdSchema).max(50).optional(),
+  })
+  .refine((v) => isVigenciaRangeValid(v.discountStartsAt, v.discountEndsAt), discountVigenciaMessage);
 
 const stockSchema = z.coerce.number().int().min(0).max(999999);
 const sortOrderSchema = z.coerce.number().int().min(-999999).max(999999);
@@ -61,7 +69,9 @@ const productPayloadSchema = z.object({
   category: textField(120),
   need: optionalTextField(120),
   price: moneyFromInput(),
-  priceBefore: moneyFromInput().optional(),
+  priceBefore: moneyFromInput().nullable().optional(),
+  discountStartsAt: z.coerce.date().nullable().optional(),
+  discountEndsAt: z.coerce.date().nullable().optional(),
   tag: optionalTextField(80),
   rating: moneyFromInput(0, 5).optional(),
   reviews: z.coerce.number().int().min(0).max(999999).optional(),
@@ -90,6 +100,11 @@ const productPayloadSchema = z.object({
   sortOrder: sortOrderSchema.default(0),
 });
 
+const productCreateSchema = productPayloadSchema.refine(
+  (p) => isVigenciaRangeValid(p.discountStartsAt, p.discountEndsAt),
+  discountVigenciaMessage,
+);
+
 const productUpdateSchema = productPayloadSchema
   .extend({
     stock: stockSchema.optional(),
@@ -99,10 +114,29 @@ const productUpdateSchema = productPayloadSchema
   .partial()
   .refine((body) => Object.keys(body).length > 0, {
     message: "Debe enviar al menos un campo para actualizar",
-  });
+  })
+  .refine((body) => isVigenciaRangeValid(body.discountStartsAt, body.discountEndsAt), discountVigenciaMessage);
 
 const mongoIdParamsSchema = z.object({
   id: objectIdSchema,
+});
+
+const categoryDiscountApplySchema = z
+  .object({
+    category: textField(120),
+    discountType: z.enum(["percent", "fixed"]),
+    value: moneyFromInput(0.01, 999999),
+    discountStartsAt: z.coerce.date().optional(),
+    discountEndsAt: z.coerce.date().optional(),
+  })
+  .refine((body) => body.discountType !== "percent" || body.value <= 100, {
+    message: "El descuento porcentual no puede superar 100%",
+    path: ["value"],
+  })
+  .refine((body) => isVigenciaRangeValid(body.discountStartsAt, body.discountEndsAt), discountVigenciaMessage);
+
+const categoryDiscountRemoveSchema = z.object({
+  category: textField(120),
 });
 
 export const adminProductsRouter = new Hono<AppEnv>()
@@ -111,11 +145,12 @@ export const adminProductsRouter = new Hono<AppEnv>()
   .get("/", async (c) => c.json(await Product.find().sort({ createdAt: -1 }).lean()))
   .post("/", async (c) => {
     try {
-      const parsed = await parseJson(c, productPayloadSchema);
+      const parsed = await parseJson(c, productCreateSchema);
       if (!parsed.success) return parsed.response;
 
       const product = await Product.create(parsed.data);
       recalculateNew().catch((e) => console.error('[new-products] recalc error:', e));
+      await clearCatalogCache();
       return c.json(product.toObject(), 201);
     } catch (error: unknown) {
       if (
@@ -134,6 +169,22 @@ export const adminProductsRouter = new Hono<AppEnv>()
         400,
       );
     }
+  })
+  .post("/discounts/apply-category", async (c) => {
+    const parsed = await parseJson(c, categoryDiscountApplySchema);
+    if (!parsed.success) return parsed.response;
+
+    const result = await applyCategoryDiscount(parsed.data);
+    await clearCatalogCache();
+    return c.json(result);
+  })
+  .post("/discounts/remove-category", async (c) => {
+    const parsed = await parseJson(c, categoryDiscountRemoveSchema);
+    if (!parsed.success) return parsed.response;
+
+    const result = await removeCategoryDiscount(parsed.data.category);
+    await clearCatalogCache();
+    return c.json(result);
   })
   .put("/:id", async (c) => {
     try {
@@ -155,6 +206,7 @@ export const adminProductsRouter = new Hono<AppEnv>()
         console.error("[ADMIN_PRODUCTS] low_stock notification failed:", notifyError),
       );
 
+      await clearCatalogCache();
       return c.json(product);
     } catch (error: unknown) {
       if (
@@ -180,6 +232,7 @@ export const adminProductsRouter = new Hono<AppEnv>()
 
     await Product.findByIdAndDelete(parsedParams.data.id);
     recalculateNew().catch((e) => console.error('[new-products] recalc error:', e));
+    await clearCatalogCache();
     return c.body(null, 204);
   })
   .delete("/", async (c) => {
@@ -248,6 +301,7 @@ export const adminProductsRouter = new Hono<AppEnv>()
     ];
     await Category.deleteMany({});
     await Category.insertMany(CATEGORIES);
+    await clearCatalogCache();
     return c.json({
       deletedCount: result.deletedCount,
       categoriesCount: CATEGORIES.length,

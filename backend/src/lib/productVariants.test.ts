@@ -53,6 +53,36 @@ describe('resolveVariantPricing', () => {
     });
   });
 
+  test('always charges the variant\'s own price, regardless of priceBefore/vigencia - those only control the "was $X" badge, never what\'s billed', () => {
+    const productWithDiscount = {
+      ...product,
+      variants: [
+        { id: 'vanilla', label: 'Vainilla', type: 'flavor', price: 9, priceBefore: 12, stock: 3 },
+        { id: 'small', label: '30 ct', type: 'size', price: 2, stock: 4 },
+      ],
+    };
+    expect(resolveVariantPricing(productWithDiscount, 'vanilla')).toEqual({
+      price: 9,
+      stock: 3,
+      label: 'Vainilla',
+      stockVariantId: 'vanilla',
+    });
+
+    const productWithExpiredDiscount = {
+      ...product,
+      variants: [
+        { id: 'vanilla', label: 'Vainilla', type: 'flavor', price: 9, priceBefore: 12, discountEndsAt: '2020-01-01', stock: 3 },
+        { id: 'small', label: '30 ct', type: 'size', price: 2, stock: 4 },
+      ],
+    };
+    expect(resolveVariantPricing(productWithExpiredDiscount, 'vanilla')).toEqual({
+      price: 9,
+      stock: 3,
+      label: 'Vainilla',
+      stockVariantId: 'vanilla',
+    });
+  });
+
   test('falls back to shared size stock when stockBySize has no entry for that size', () => {
     const productWithOverride = {
       ...product,
