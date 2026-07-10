@@ -232,10 +232,15 @@ export const api = {
         ),
     },
     reviews: {
-      list: (token: string, status?: ReviewStatus, page = 1) => {
+      list: (
+        token: string,
+        filters: { status?: ReviewStatus; rating?: number; search?: string; page?: number } = {},
+      ) => {
         const params = new URLSearchParams();
-        if (status) params.set("status", status);
-        if (page > 1) params.set("page", String(page));
+        if (filters.status) params.set("status", filters.status);
+        if (filters.rating) params.set("rating", String(filters.rating));
+        if (filters.search?.trim()) params.set("search", filters.search.trim());
+        if (filters.page && filters.page > 1) params.set("page", String(filters.page));
         const query = params.toString();
         return request<{ items: AdminReview[]; total: number; page: number; limit: number }>(
           `/admin/reviews${query ? `?${query}` : ""}`,

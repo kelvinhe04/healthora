@@ -34,9 +34,11 @@ describe('adminReviewsRouter', () => {
     await Product.deleteMany({});
     await Review.deleteMany({});
     await Product.create({ id: 'combo-product', name: 'Combo Product', brand: 'Healthora', category: 'Vitaminas', need: 'Test', price: 10, stock: 5, active: true });
+    await Product.create({ id: 'other-product', name: 'Vitamina D3', brand: 'Healthora', category: 'Vitaminas', need: 'Test', price: 8, stock: 5, active: true });
 
     // A review created through the current schema gets `status: 'published'` stored explicitly.
     await Review.create({ productId: 'combo-product', userId: 'user-new', userName: 'Nueva', rating: 5, body: 'Buenísimo' });
+    await Review.create({ productId: 'other-product', userId: 'user-other', userName: 'Otra Persona', rating: 3, body: 'Regular nomás' });
 
     // Simulate a review seeded/created before the `status` field existed - no `status` key at all
     // in the stored document, which is what every pre-HU-056 review actually looks like in Mongo
@@ -68,7 +70,7 @@ describe('adminReviewsRouter', () => {
   test('status=published includes legacy reviews that never had the status field stored', async () => {
     const { json } = await adminRequest('/?status=published');
     const names = json.items.map((r: { userName: string }) => r.userName).sort();
-    expect(names).toEqual(['Legacy', 'Nueva']);
+    expect(names).toEqual(['Legacy', 'Nueva', 'Otra Persona']);
   });
 
   test('status=hidden only returns explicitly hidden reviews', async () => {
@@ -79,6 +81,26 @@ describe('adminReviewsRouter', () => {
 
   test('no filter returns every review regardless of status', async () => {
     const { json } = await adminRequest('/');
-    expect(json.total).toBe(3);
+    expect(json.total).toBe(4);
+  });
+
+  test('rating filters to an exact star count', async () => {
+    const { json } = await adminRequest('/?rating=5');
+    const names = json.items.map((r: { userName: string }) => r.userName);
+    expect(names).toEqual(['Nueva']);
+  });
+
+  test('search matches review text and product name', async () => {
+    const byBody = await adminRequest('/?search=Buenísimo');
+    expect(byBody.json.items.map((r: { userName: string }) => r.userName)).toEqual(['Nueva']);
+
+    const byProductName = await adminRequest('/?search=Vitamina');
+    expect(byProductName.json.items.map((r: { userName: string }) => r.userName)).toEqual(['Otra Persona']);
+
+    const byUserName = await adminRequest('/?search=Legacy');
+    expect(byUserName.json.items.map((r: { userName: string }) => r.userName)).toEqual(['Legacy']);
+
+    const noMatch = await adminRequest('/?search=zzz-nomatch');
+    expect(noMatch.json.items).toEqual([]);
   });
 });

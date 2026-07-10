@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -28,19 +28,37 @@ const STATUS_LABELS: Record<'' | ReviewStatus, string> = {
 };
 
 const FILTERABLE_STATUSES = ['', 'published', 'hidden'] as const;
+const RATING_OPTIONS = [0, 5, 4, 3, 2, 1] as const;
 
 export function ReviewsSection() {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<'' | ReviewStatus>('');
+  const [ratingFilter, setRatingFilter] = useState(0);
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
+  // Debounced: evita un request por cada tecla mientras se escribe.
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [searchInput]);
+
   const reviewsQuery = useQuery({
-    queryKey: ['admin', 'reviews', statusFilter, page],
+    queryKey: ['admin', 'reviews', statusFilter, ratingFilter, search, page],
     queryFn: async () => {
       const token = await getToken();
-      return api.admin.reviews.list(token!, statusFilter || undefined, page);
+      return api.admin.reviews.list(token!, {
+        status: statusFilter || undefined,
+        rating: ratingFilter || undefined,
+        search: search || undefined,
+        page,
+      });
     },
   });
 
@@ -80,26 +98,67 @@ export function ReviewsSection() {
         }
         sub="Aprueba, oculta o elimina reseñas para mantener contenido apropiado y confiable en las fichas de producto."
         actions={
-          <select
-            value={statusFilter}
-            onChange={(event) => {
-              setStatusFilter(event.target.value as '' | ReviewStatus);
-              setPage(1);
-            }}
-            aria-label="Filtrar reseñas por estado"
-            style={{
-              border: '1px solid var(--ink-10)',
-              borderRadius: 999,
-              background: 'var(--cream)',
-              color: 'var(--ink)',
-              padding: '10px 14px',
-              fontSize: 13,
-            }}
-          >
-            {FILTERABLE_STATUSES.map((value) => (
-              <option key={value} value={value}>{STATUS_LABELS[value]}</option>
-            ))}
-          </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative' }}>
+              <Icon name="search" size={13} stroke="var(--ink-40)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                placeholder="Producto, texto o autor..."
+                aria-label="Buscar reseñas por producto, texto o autor"
+                style={{
+                  border: '1px solid var(--ink-10)',
+                  borderRadius: 999,
+                  background: 'var(--cream)',
+                  color: 'var(--ink)',
+                  padding: '10px 14px 10px 32px',
+                  fontSize: 13,
+                  width: 220,
+                }}
+              />
+            </div>
+            <select
+              value={ratingFilter}
+              onChange={(event) => {
+                setRatingFilter(Number(event.target.value));
+                setPage(1);
+              }}
+              aria-label="Filtrar reseñas por cantidad de estrellas"
+              style={{
+                border: '1px solid var(--ink-10)',
+                borderRadius: 999,
+                background: 'var(--cream)',
+                color: 'var(--ink)',
+                padding: '10px 14px',
+                fontSize: 13,
+              }}
+            >
+              {RATING_OPTIONS.map((value) => (
+                <option key={value} value={value}>{value === 0 ? 'Todas las estrellas' : `${value} estrella${value === 1 ? '' : 's'}`}</option>
+              ))}
+            </select>
+            <select
+              value={statusFilter}
+              onChange={(event) => {
+                setStatusFilter(event.target.value as '' | ReviewStatus);
+                setPage(1);
+              }}
+              aria-label="Filtrar reseñas por estado"
+              style={{
+                border: '1px solid var(--ink-10)',
+                borderRadius: 999,
+                background: 'var(--cream)',
+                color: 'var(--ink)',
+                padding: '10px 14px',
+                fontSize: 13,
+              }}
+            >
+              {FILTERABLE_STATUSES.map((value) => (
+                <option key={value} value={value}>{STATUS_LABELS[value]}</option>
+              ))}
+            </select>
+          </div>
         }
       />
 
