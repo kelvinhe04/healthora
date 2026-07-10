@@ -207,6 +207,16 @@ export const api = {
         { method: "PATCH", body: JSON.stringify(body) },
         token,
       ),
+    patchOrderTracking: (
+      id: string,
+      body: { carrier?: string; trackingNumber?: string },
+      token: string,
+    ) =>
+      request<unknown>(
+        `/admin/orders/${id}/tracking`,
+        { method: "PATCH", body: JSON.stringify(body) },
+        token,
+      ),
     products: {
       list: (token: string) =>
         request<Product[]>("/admin/products", undefined, token),

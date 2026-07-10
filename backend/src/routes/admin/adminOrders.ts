@@ -6,10 +6,17 @@ import { Order } from '../../db/models/Order';
 import { sendOrderStatusUpdateEmail } from '../../lib/email';
 import { combineOrderStatus, normalizeOrder, type FulfillmentStatus } from '../../lib/orderStatus';
 import { notifyUser } from '../../lib/realtime';
-import { objectIdSchema, parseJson, parseParams, parseQuery } from '../../lib/validation';
+import { objectIdSchema, optionalTextField, parseJson, parseParams, parseQuery } from '../../lib/validation';
 
 const paymentStatusSchema = z.enum(['pending_payment', 'paid', 'cancelled', 'refunded']);
 const fulfillmentStatusSchema = z.enum(['unfulfilled', 'processing', 'shipped', 'delivered', 'cancelled']);
+
+const orderTrackingSchema = z.object({
+  carrier: optionalTextField(60),
+  trackingNumber: optionalTextField(120),
+}).refine((body) => body.carrier !== undefined || body.trackingNumber !== undefined, {
+  message: 'Debe enviar carrier o numero de tracking',
+});
 
 const adminOrdersQuerySchema = z.object({
   paymentStatus: paymentStatusSchema.optional(),
@@ -147,6 +154,22 @@ export const adminOrdersRouter = new Hono<AppEnv>()
         }
       }
     }
+
+    return c.json(normalizeOrder(order));
+  })
+  .patch('/:id/tracking', async (c) => {
+    const parsedParams = parseParams(c, orderIdParamsSchema);
+    if (!parsedParams.success) return parsedParams.response;
+
+    const parsedBody = await parseJson(c, orderTrackingSchema);
+    if (!parsedBody.success) return parsedBody.response;
+
+    const update: Record<string, string> = {};
+    if (parsedBody.data.carrier !== undefined) update.carrier = parsedBody.data.carrier;
+    if (parsedBody.data.trackingNumber !== undefined) update.trackingNumber = parsedBody.data.trackingNumber;
+
+    const order = await Order.findByIdAndUpdate(parsedParams.data.id, update, { returnDocument: 'after' }).lean();
+    if (!order) return c.json({ error: 'Not found' }, 404);
 
     return c.json(normalizeOrder(order));
   });

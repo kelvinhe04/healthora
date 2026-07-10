@@ -19,6 +19,7 @@ import { useAdminPanelContext } from '../AdminPanelContext';
 import type { OrderSortKey } from '../hooks/useAdminPanel';
 import { formatPanamaShortDate, formatPanamaTime } from '../../../lib/dates';
 import { getFulfillmentStatusLabel, orderShippingMethodLabels } from '../types';
+import { CARRIER_OPTIONS, carrierLabel, getTrackingUrl } from '../../../lib/tracking';
 
 const ORDER_SORT_LABEL: Record<OrderSortKey, string> = {
   total: 'Total',
@@ -52,6 +53,9 @@ export function OrdersSection() {
   confirmOrderStatus,
   orderStatusesMutation,
   getNextFulfillmentStatus,
+  orderTrackingDrafts,
+  setOrderTrackingDrafts,
+  orderTrackingMutation,
   } = useAdminPanelContext();
 
   return (
@@ -535,6 +539,77 @@ export function OrdersSection() {
                             orderShippingMethodLabels[order.shippingMethod || "delivery"]
                           }
                         />
+                        {order.shippingMethod !== "pickup" && (() => {
+                          const draft = orderTrackingDrafts[order._id] ?? {
+                            carrier: order.carrier || "",
+                            trackingNumber: order.trackingNumber || "",
+                          };
+                          const dirty =
+                            draft.carrier !== (order.carrier || "") ||
+                            draft.trackingNumber !== (order.trackingNumber || "");
+                          const trackingUrl = getTrackingUrl(order.carrier, order.trackingNumber);
+                          return (
+                            <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+                              {order.trackingNumber && !dirty && (
+                                <div style={{ fontSize: 11, color: "var(--ink-60)" }}>
+                                  {carrierLabel(order.carrier) || "Sin courier"} ·{" "}
+                                  {trackingUrl ? (
+                                    <a href={trackingUrl} target="_blank" rel="noreferrer" style={{ color: "var(--green)" }}>
+                                      {order.trackingNumber}
+                                    </a>
+                                  ) : (
+                                    order.trackingNumber
+                                  )}
+                                </div>
+                              )}
+                              <div style={{ display: "flex", gap: 4 }}>
+                                <select
+                                  aria-label="Courier"
+                                  value={draft.carrier}
+                                  onChange={(e) =>
+                                    setOrderTrackingDrafts((current) => ({
+                                      ...current,
+                                      [order._id]: { ...draft, carrier: e.target.value },
+                                    }))
+                                  }
+                                  style={{ fontSize: 11, padding: "5px 6px", borderRadius: 6, border: "1px solid var(--ink-12)", background: "var(--cream-2)", color: "var(--ink)" }}
+                                >
+                                  <option value="">Courier…</option>
+                                  {CARRIER_OPTIONS.map((c) => (
+                                    <option key={c.id} value={c.id}>{c.label}</option>
+                                  ))}
+                                </select>
+                                <input
+                                  aria-label="Número de tracking"
+                                  value={draft.trackingNumber}
+                                  onChange={(e) =>
+                                    setOrderTrackingDrafts((current) => ({
+                                      ...current,
+                                      [order._id]: { ...draft, trackingNumber: e.target.value },
+                                    }))
+                                  }
+                                  placeholder="N° de guía"
+                                  style={{ fontSize: 11, padding: "5px 6px", borderRadius: 6, border: "1px solid var(--ink-12)", background: "var(--cream-2)", color: "var(--ink)", width: 90 }}
+                                />
+                                {dirty && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      orderTrackingMutation.mutate({
+                                        id: order._id,
+                                        carrier: draft.carrier || undefined,
+                                        trackingNumber: draft.trackingNumber || undefined,
+                                      })
+                                    }
+                                    style={{ fontSize: 11, padding: "5px 8px", borderRadius: 6, border: "none", background: "var(--green)", color: "#fff", cursor: "pointer" }}
+                                  >
+                                    Guardar
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td style={td}>
                         <div

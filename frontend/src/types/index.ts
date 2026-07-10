@@ -134,6 +134,8 @@ export interface Order {
   shippingMethod?: 'delivery' | 'pickup';
   shippingLabel?: string;
   shippingEta?: string;
+  carrier?: string;
+  trackingNumber?: string;
   total: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;

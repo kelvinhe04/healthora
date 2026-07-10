@@ -97,6 +97,9 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const [orderStatusDrafts, setOrderStatusDrafts] = useState<
     Record<string, FulfillmentStatus>
   >({});
+  const [orderTrackingDrafts, setOrderTrackingDrafts] = useState<
+    Record<string, { carrier: string; trackingNumber: string }>
+  >({});
   const [orderSort, setOrderSort] = useState<OrderSort>({ key: null, dir: 'asc' });
   const toggleOrderSort = useCallback((key: OrderSortKey) => {
     setOrderSort((current) => {
@@ -330,6 +333,31 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       void queryClient.invalidateQueries({ queryKey: ["admin-sales"] });
       void queryClient.invalidateQueries({
         queryKey: ["admin-earnings"],
+      });
+    },
+  });
+
+  const orderTrackingMutation = useMutation({
+    mutationFn: async ({
+      id,
+      carrier,
+      trackingNumber,
+    }: {
+      id: string;
+      carrier?: string;
+      trackingNumber?: string;
+    }) =>
+      api.admin.patchOrderTracking(
+        id,
+        { carrier, trackingNumber },
+        await getAdminToken(),
+      ),
+    onSuccess: (_data, variables) => {
+      void queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      setOrderTrackingDrafts((current) => {
+        const next = { ...current };
+        delete next[variables.id];
+        return next;
       });
     },
   });
@@ -783,6 +811,9 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     setConfirmOrderStatus,
     orderStatusesMutation,
     getNextFulfillmentStatus,
+    orderTrackingDrafts,
+    setOrderTrackingDrafts,
+    orderTrackingMutation,
     productSuccess,
     setProductSuccess,
     showProductsSkeleton,
