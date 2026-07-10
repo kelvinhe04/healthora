@@ -10,6 +10,7 @@ import {
   td,
   th,
   trStyle,
+  useOnceLoading,
 } from '../../../components/admin';
 import { Icon } from '../../../components/shared/Icon';
 import { Stars } from '../../../components/shared/Stars';
@@ -29,6 +30,22 @@ const STATUS_LABELS: Record<'' | ReviewStatus, string> = {
 
 const FILTERABLE_STATUSES = ['', 'published', 'hidden'] as const;
 const RATING_OPTIONS = [0, 5, 4, 3, 2, 1] as const;
+
+function pillButtonStyle(active: boolean) {
+  return {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '7px 14px',
+    borderRadius: 999,
+    fontSize: 12,
+    cursor: 'pointer' as const,
+    border: '1px solid ' + (active ? 'var(--ink)' : 'var(--ink-20)'),
+    background: active ? 'var(--ink)' : 'transparent',
+    color: active ? 'var(--cream)' : 'var(--ink)',
+    fontFamily: '"Geist", sans-serif',
+  };
+}
 
 export function ReviewsSection() {
   const { getToken } = useAuth();
@@ -84,7 +101,8 @@ export function ReviewsSection() {
   });
 
   const items = reviewsQuery.data?.items ?? [];
-  const isLoading = reviewsQuery.isLoading;
+  const isLoading = useOnceLoading('section_reviews', reviewsQuery.isLoading);
+  const total = reviewsQuery.data?.total ?? 0;
 
   return (
     <>
@@ -97,89 +115,139 @@ export function ReviewsSection() {
           </>
         }
         sub="Aprueba, oculta o elimina reseñas para mantener contenido apropiado y confiable en las fichas de producto."
-        actions={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <div style={{ position: 'relative' }}>
-              <Icon name="search" size={13} stroke="var(--ink-40)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(event) => setSearchInput(event.target.value)}
-                placeholder="Producto, texto o autor..."
-                aria-label="Buscar reseñas por producto, texto o autor"
-                style={{
-                  border: '1px solid var(--ink-10)',
-                  borderRadius: 999,
-                  background: 'var(--cream)',
-                  color: 'var(--ink)',
-                  padding: '10px 14px 10px 32px',
-                  fontSize: 13,
-                  width: 220,
-                }}
-              />
-            </div>
-            <select
-              value={ratingFilter}
-              onChange={(event) => {
-                setRatingFilter(Number(event.target.value));
-                setPage(1);
-              }}
-              aria-label="Filtrar reseñas por cantidad de estrellas"
-              style={{
-                border: '1px solid var(--ink-10)',
-                borderRadius: 999,
-                background: 'var(--cream)',
-                color: 'var(--ink)',
-                padding: '10px 14px',
-                fontSize: 13,
-              }}
-            >
-              {RATING_OPTIONS.map((value) => (
-                <option key={value} value={value}>{value === 0 ? 'Todas las estrellas' : `${value} estrella${value === 1 ? '' : 's'}`}</option>
-              ))}
-            </select>
-            <select
-              value={statusFilter}
-              onChange={(event) => {
-                setStatusFilter(event.target.value as '' | ReviewStatus);
-                setPage(1);
-              }}
-              aria-label="Filtrar reseñas por estado"
-              style={{
-                border: '1px solid var(--ink-10)',
-                borderRadius: 999,
-                background: 'var(--cream)',
-                color: 'var(--ink)',
-                padding: '10px 14px',
-                fontSize: 13,
-              }}
-            >
-              {FILTERABLE_STATUSES.map((value) => (
-                <option key={value} value={value}>{STATUS_LABELS[value]}</option>
-              ))}
-            </select>
-          </div>
-        }
       />
 
+      {isLoading ? (
+        <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' }}>
+          <Skeleton height={36} width={296} borderRadius={999} />
+          {[110, 90, 80, 70, 60].map((w, i) => (
+            <Skeleton key={i} height={32} width={w} borderRadius={999} />
+          ))}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              background: 'var(--cream)',
+              borderRadius: 999,
+              padding: '9px 16px',
+              border: '1px solid var(--ink-06)',
+              flexShrink: 0,
+              width: 296,
+              boxSizing: 'border-box',
+            }}
+          >
+            <Icon name="search" size={14} stroke="var(--ink-40)" />
+            <input
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Producto, texto o autor..."
+              aria-label="Buscar reseñas por producto, texto o autor"
+              style={{
+                border: 'none',
+                outline: 'none',
+                background: 'transparent',
+                fontSize: 13,
+                fontFamily: '"Geist", sans-serif',
+                width: '100%',
+                color: 'var(--ink)',
+              }}
+            />
+            {searchInput && (
+              <button
+                onClick={() => setSearchInput('')}
+                aria-label="Limpiar búsqueda"
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  padding: '2px 4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: 'var(--ink-40)',
+                  borderRadius: 4,
+                  flexShrink: 0,
+                }}
+              >
+                <Icon name="x" size={13} />
+              </button>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Filtrar por estrellas">
+            {RATING_OPTIONS.map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => {
+                  setRatingFilter(value);
+                  setPage(1);
+                }}
+                style={pillButtonStyle(ratingFilter === value)}
+              >
+                {value === 0 ? 'Todas' : `${value}★`}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Filtrar por estado">
+            {FILTERABLE_STATUSES.map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => {
+                  setStatusFilter(value);
+                  setPage(1);
+                }}
+                style={pillButtonStyle(statusFilter === value)}
+              >
+                {STATUS_LABELS[value]}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <Card
-        title="Reseñas"
-        sub={`${reviewsQuery.data?.total ?? 0} reseña(s)${statusFilter ? ` · ${STATUS_LABELS[statusFilter]}` : ''}`}
         pad={0}
         loading={isLoading}
         skeletonContent={
           <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '14px 24px', borderBottom: '1px solid var(--ink-06)', display: 'flex', alignItems: 'center' }}>
+              <Skeleton height={12} width={110} borderRadius={4} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 24px', borderBottom: '1px solid var(--ink-06)' }}>
+              <div style={{ flex: 1.6 }}><Skeleton height={9} width={54} borderRadius={3} /></div>
+              <div style={{ flex: 1 }}><Skeleton height={9} width={62} borderRadius={3} /></div>
+              <div style={{ flexShrink: 0, width: 90 }}><Skeleton height={9} width={48} borderRadius={3} /></div>
+              <div style={{ flexShrink: 0, width: 110 }}><Skeleton height={9} width={38} borderRadius={3} /></div>
+              <div style={{ flexShrink: 0, width: 80 }}><Skeleton height={9} width={58} borderRadius={3} /></div>
+            </div>
             {[0, 1, 2, 3, 4].map((i) => (
-              <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 200px 120px 160px', gap: 16, padding: '16px 24px', borderBottom: '1px solid var(--ink-06)' }}>
-                <Skeleton height={18} borderRadius={4} />
-                <Skeleton height={18} borderRadius={4} />
-                <Skeleton height={18} borderRadius={4} />
-                <Skeleton height={18} borderRadius={4} />
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 24px', borderBottom: '1px solid var(--ink-06)' }}>
+                <div style={{ flex: 1.6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <Skeleton height={12} width="40%" borderRadius={4} />
+                  <Skeleton height={11} width="80%" borderRadius={4} />
+                </div>
+                <div style={{ flex: 1 }}><Skeleton height={12} width="65%" borderRadius={4} /></div>
+                <div style={{ flexShrink: 0, width: 90 }}><Skeleton height={18} width={70} borderRadius={999} /></div>
+                <div style={{ flexShrink: 0, width: 110 }}><Skeleton height={11} width={95} borderRadius={4} /></div>
+                <div style={{ flexShrink: 0, width: 80 }}><Skeleton height={24} width={72} borderRadius={8} /></div>
               </div>
             ))}
           </div>
         }
       >
+        <div style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--ink-06)' }}>
+          <div style={{ fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}>
+            {search || ratingFilter || statusFilter
+              ? `${total} resultado${total !== 1 ? 's' : ''}`
+              : `${total} reseña${total !== 1 ? 's' : ''}`}
+          </div>
+        </div>
         <div style={{ overflowX: 'auto', width: '100%' }}>
           <table style={{ ...tableStyle, minWidth: 960 }}>
             <thead>
@@ -204,31 +272,31 @@ export function ReviewsSection() {
                   </td>
                   <td style={td}>{review.productName}</td>
                   <td style={td}>
-                    <StatusPill status={review.status || 'published'} />
+                    <StatusPill status={STATUS_LABELS[review.status || 'published']} />
                   </td>
                   <td style={{ ...td, fontFamily: '"JetBrains Mono", monospace', fontSize: 12 }}>
                     {formatPanamaDateTime(review.createdAt)}
                   </td>
                   <td style={td}>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      {review.status !== 'published' && (
+                      {(review.status || 'published') !== 'published' && (
                         <button
                           type="button"
                           title="Aprobar / publicar"
                           onClick={() => updateStatusMut.mutate({ id: review._id, status: 'published' })}
                           disabled={updateStatusMut.isPending}
-                          style={{ background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--green)' }}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--green)' }}
                         >
                           <Icon name="check" size={14} />
                         </button>
                       )}
-                      {review.status !== 'hidden' && (
+                      {(review.status || 'published') !== 'hidden' && (
                         <button
                           type="button"
                           title="Ocultar"
                           onClick={() => updateStatusMut.mutate({ id: review._id, status: 'hidden' })}
                           disabled={updateStatusMut.isPending}
-                          style={{ background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--ink-60)' }}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--ink-60)' }}
                         >
                           <Icon name="x" size={14} />
                         </button>
@@ -256,7 +324,7 @@ export function ReviewsSection() {
                           type="button"
                           title="Eliminar"
                           onClick={() => setConfirmDeleteId(review._id)}
-                          style={{ background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--coral)' }}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--coral)' }}
                         >
                           <Icon name="trash" size={14} />
                         </button>
@@ -277,8 +345,8 @@ export function ReviewsSection() {
         </div>
         <PaginationControls
           page={reviewsQuery.data?.page ?? page}
-          totalPages={Math.max(1, Math.ceil((reviewsQuery.data?.total ?? 0) / (reviewsQuery.data?.limit ?? 20)))}
-          totalItems={reviewsQuery.data?.total ?? 0}
+          totalPages={Math.max(1, Math.ceil(total / (reviewsQuery.data?.limit ?? 20)))}
+          totalItems={total}
           start={reviewsQuery.data ? (reviewsQuery.data.page - 1) * reviewsQuery.data.limit + (items.length ? 1 : 0) : 0}
           end={reviewsQuery.data ? (reviewsQuery.data.page - 1) * reviewsQuery.data.limit + items.length : 0}
           onPageChange={setPage}
