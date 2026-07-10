@@ -131,6 +131,9 @@ export interface Order {
   discountAmount?: number;
   tax: number;
   shipping: number;
+  shippingMethod?: 'delivery' | 'pickup';
+  shippingLabel?: string;
+  shippingEta?: string;
   total: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
@@ -151,6 +154,8 @@ export interface User {
   createdAt: string;
 }
 
+export type ReviewStatus = 'pending' | 'published' | 'hidden';
+
 export interface Review {
   _id: string;
   productId: string;
@@ -161,8 +166,13 @@ export interface Review {
   body: string;
   userAvatar?: string;
   helpfulVoters: string[];
+  status?: ReviewStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AdminReview extends Review {
+  productName: string;
 }
 
 export interface ErrorReport {
@@ -198,6 +208,7 @@ export type NotificationType =
   | 'order_paid'
   | 'order_shipped'
   | 'order_status'
+  | 'new_order'
   | 'low_stock'
   | 'new_review'
   | 'broadcast';

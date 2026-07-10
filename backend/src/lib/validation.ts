@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { z, ZodError, type ZodType } from 'zod';
+import { z, ZodError, type RefinementCtx, type ZodType } from 'zod';
 
 type ValidationResult<T> =
   | { success: true; data: T }
@@ -68,6 +68,23 @@ export const cartItemSchema = z.object({
   qty: intFromInput(1, 999),
   variantId: optionalTextField(180),
 });
+
+export const shippingMethodSchema = z.enum(['delivery', 'pickup']);
+
+/** Retiro en tienda solo necesita nombre + telefono para contactar al cliente, no una direccion postal. */
+export const orderAddressSchema = z.object({
+  name: textField(120),
+  phone: textField(40),
+  address: optionalTextField(240),
+  city: optionalTextField(120),
+  postal: optionalTextField(40),
+});
+
+export function requireFullAddress(ctx: RefinementCtx, address: { address?: string; city?: string; postal?: string }, path: (string | number)[] = ['address']) {
+  if (!address.address) ctx.addIssue({ code: 'custom', path: [...path, 'address'], message: 'La direccion es requerida' });
+  if (!address.city) ctx.addIssue({ code: 'custom', path: [...path, 'city'], message: 'La ciudad es requerida' });
+  if (!address.postal) ctx.addIssue({ code: 'custom', path: [...path, 'postal'], message: 'El codigo postal es requerido' });
+}
 
 function formatZodError(error: ZodError) {
   return error.issues.map((issue) => ({

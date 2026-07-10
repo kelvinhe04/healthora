@@ -6,6 +6,8 @@ import type {
   ProductFilters,
   SavedAddress,
   Review,
+  AdminReview,
+  ReviewStatus,
   ErrorReport,
   AppNotification,
   NotificationInbox,
@@ -110,6 +112,7 @@ export const api = {
         address: object;
         promoCode?: string;
         freeSampleId?: string;
+        shippingMethod: "delivery" | "pickup";
       },
       token: string,
     ) =>
@@ -247,6 +250,36 @@ export const api = {
         request<{ updated: number }>(
           "/admin/products/discounts/remove-category",
           { method: "POST", body: JSON.stringify({ category }) },
+          token,
+        ),
+    },
+    reviews: {
+      list: (
+        token: string,
+        filters: { status?: ReviewStatus; rating?: number; search?: string; page?: number } = {},
+      ) => {
+        const params = new URLSearchParams();
+        if (filters.status) params.set("status", filters.status);
+        if (filters.rating) params.set("rating", String(filters.rating));
+        if (filters.search?.trim()) params.set("search", filters.search.trim());
+        if (filters.page && filters.page > 1) params.set("page", String(filters.page));
+        const query = params.toString();
+        return request<{ items: AdminReview[]; total: number; page: number; limit: number }>(
+          `/admin/reviews${query ? `?${query}` : ""}`,
+          undefined,
+          token,
+        );
+      },
+      updateStatus: (id: string, status: ReviewStatus, token: string) =>
+        request<AdminReview>(
+          `/admin/reviews/${id}`,
+          { method: "PATCH", body: JSON.stringify({ status }) },
+          token,
+        ),
+      remove: (id: string, token: string) =>
+        request<{ success: boolean }>(
+          `/admin/reviews/${id}`,
+          { method: "DELETE" },
           token,
         ),
     },

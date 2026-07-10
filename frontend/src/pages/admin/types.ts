@@ -57,7 +57,8 @@ export type AdminPage =
   | "sales"
   | "earnings"
   | "performance"
-  | "errors";
+  | "errors"
+  | "reviews";
 export interface AdminAppProps {
   onGoToStore: () => void;
 }
@@ -89,6 +90,9 @@ export type AdminOrder = {
   status?: string;
   paymentStatus?: PaymentStatus;
   fulfillmentStatus?: FulfillmentStatus;
+  shippingMethod?: "delivery" | "pickup";
+  shippingLabel?: string;
+  shippingEta?: string;
   address?: OrderAddress;
   createdAt?: string;
 };
@@ -193,10 +197,25 @@ export const fulfillmentStatusOptions: (FulfillmentStatus | "")[] = [
   "delivered",
 ];
 
+export const orderShippingMethodOptions: ("" | "delivery" | "pickup")[] = ["", "delivery", "pickup"];
+
+export const orderShippingMethodLabels: Record<"" | "delivery" | "pickup", string> = {
+  "": "Todos",
+  delivery: "Envío a domicilio",
+  pickup: "Retiro en tienda",
+};
+
 export const fulfillmentStatusSequence: FulfillmentStatus[] = [
   "unfulfilled",
   "processing",
   "shipped",
+  "delivered",
+];
+
+// Retiro en tienda no pasa por "Enviada": se prepara y queda listo para retirar.
+export const pickupFulfillmentStatusSequence: FulfillmentStatus[] = [
+  "unfulfilled",
+  "processing",
   "delivered",
 ];
 
@@ -266,3 +285,12 @@ export const fulfillmentStatusLabels: Record<FulfillmentStatus | "", string> = {
   delivered: "Entregada",
   cancelled: "Cancelada",
 };
+
+/** "Entregada" no aplica a retiro en tienda: no se entrega nada, el cliente lo recoge. */
+export function getFulfillmentStatusLabel(
+  status: FulfillmentStatus | "",
+  shippingMethod?: "delivery" | "pickup",
+): string {
+  if (status === "delivered" && shippingMethod === "pickup") return "Listo para retirar";
+  return fulfillmentStatusLabels[status];
+}

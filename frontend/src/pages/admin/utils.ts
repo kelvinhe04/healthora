@@ -1,6 +1,6 @@
 import type { FulfillmentStatus, Product, ProductVariant } from '../../types';
 import type { ProductForm, VariantFormRow } from './types';
-import { fulfillmentStatusSequence } from './types';
+import { fulfillmentStatusSequence, pickupFulfillmentStatusSequence } from './types';
 import { getDefaultComboImage, getEffectivePrice, hasTwoDimensions, PRIMARY_VARIANT_TYPES, sizesFor } from '../../lib/productVariants';
 import { composeFromMatrix, decomposeToMatrix, emptyMatrixState } from './variantMatrix';
 import { CATEGORY_TO_NEED } from '../../lib/needs';
@@ -9,10 +9,12 @@ export const ADMIN_PAGE_SIZE = 10;
 
 export function getNextFulfillmentStatus(
   current: FulfillmentStatus | undefined,
+  shippingMethod?: 'delivery' | 'pickup',
 ): FulfillmentStatus | null {
-  const idx = fulfillmentStatusSequence.indexOf(current || 'unfulfilled');
-  return idx >= 0 && idx < fulfillmentStatusSequence.length - 1
-    ? fulfillmentStatusSequence[idx + 1]
+  const sequence = shippingMethod === 'pickup' ? pickupFulfillmentStatusSequence : fulfillmentStatusSequence;
+  const idx = sequence.indexOf(current || 'unfulfilled');
+  return idx >= 0 && idx < sequence.length - 1
+    ? sequence[idx + 1]
     : null;
 }
 

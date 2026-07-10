@@ -34,6 +34,7 @@ const reviewIdParamsSchema = z.object({
 export const reviewsRouter = new Hono<AppEnv>()
   .get('/stats', async (c) => {
     const result = await Review.aggregate([
+      { $match: { status: { $ne: 'hidden' } } },
       { $group: { _id: null, total: { $sum: 1 }, avgRating: { $avg: '$rating' } } },
     ]);
     const { total = 0, avgRating = 0 } = result[0] ?? {};
@@ -43,6 +44,7 @@ export const reviewsRouter = new Hono<AppEnv>()
   // doesn't need one /reviews request per row (N+1) just to render/sort a rating column.
   .get('/summary', async (c) => {
     const result = await Review.aggregate([
+      { $match: { status: { $ne: 'hidden' } } },
       { $group: { _id: '$productId', avgRating: { $avg: '$rating' }, count: { $sum: 1 } } },
     ]);
     const summary = Object.fromEntries(
@@ -54,7 +56,7 @@ export const reviewsRouter = new Hono<AppEnv>()
     const parsed = parseQuery(c, reviewsQuerySchema);
     if (!parsed.success) return parsed.response;
 
-    const reviews = await Review.find({ productId: parsed.data.productId }).sort({ createdAt: -1 }).lean();
+    const reviews = await Review.find({ productId: parsed.data.productId, status: { $ne: 'hidden' } }).sort({ createdAt: -1 }).lean();
     return cacheableJson(c, reviews, 'reviewList');
   })
   .post('/', clerkAuth, async (c) => {
@@ -78,7 +80,7 @@ export const reviewsRouter = new Hono<AppEnv>()
       body,
     });
 
-    const allReviews = await Review.find({ productId }).lean();
+    const allReviews = await Review.find({ productId, status: { $ne: 'hidden' } }).lean();
     const newRating = allReviews.reduce((sum, reviewEntry) => sum + reviewEntry.rating, 0) / allReviews.length;
     const product = await Product.findOneAndUpdate(
       { id: productId },
