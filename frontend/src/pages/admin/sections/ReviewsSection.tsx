@@ -17,12 +17,16 @@ import { api } from '../../../lib/api';
 import type { ReviewStatus } from '../../../types';
 import { formatPanamaDateTime } from '../../../lib/dates';
 
+// 'pending' existe en el schema pero ningún flujo lo asigna hoy (las reseñas nacen 'published' -
+// post-moderación, no pre-aprobación) - se omite del filtro para no mostrar una opción sin datos.
 const STATUS_LABELS: Record<'' | ReviewStatus, string> = {
   '': 'Todos',
   pending: 'Pendiente',
   published: 'Publicada',
   hidden: 'Oculta',
 };
+
+const FILTERABLE_STATUSES = ['', 'published', 'hidden'] as const;
 
 export function ReviewsSection() {
   const { getToken } = useAuth();
@@ -87,7 +91,7 @@ export function ReviewsSection() {
               fontSize: 13,
             }}
           >
-            {(['', 'pending', 'published', 'hidden'] as const).map((value) => (
+            {FILTERABLE_STATUSES.map((value) => (
               <option key={value} value={value}>{STATUS_LABELS[value]}</option>
             ))}
           </select>
