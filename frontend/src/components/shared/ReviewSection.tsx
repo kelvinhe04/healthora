@@ -286,6 +286,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
   const [signInOpen, setSignInOpen] = useState(false);
   const [formError, setFormError] = useState('');
   const [justSubmitted, setJustSubmitted] = useState(false);
+  const [starFilter, setStarFilter] = useState(0);
 
   useEffect(() => {
     setShowForm(false);
@@ -294,14 +295,18 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
     setFormTitle('');
     setFormBody('');
     setFormError('');
+    setStarFilter(0);
   }, [productId]);
 
   const total = reviews.length;
   const avg = total > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / total : 0;
+  // El desglose siempre refleja el total real (no filtrado) - es lo que deja ver de un vistazo
+  // qué tan comunes son las reseñas de 1-2 estrellas aunque el filtro esté activo en otra.
   const dist = [5, 4, 3, 2, 1].map((star) => {
     const count = reviews.filter((r) => r.rating === star).length;
     return { star, count, pct: total > 0 ? (count / total) * 100 : 0 };
   });
+  const visibleReviews = starFilter ? reviews.filter((r) => r.rating === starFilter) : reviews;
 
   const hasReviewed = isSignedIn && reviews.some((r) => r.userId === user?.id);
 
@@ -487,55 +492,78 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
             {total} {total === 1 ? 'reseña' : 'reseñas'}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {dist.map(({ star, count, pct }) => (
-              <div key={star} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }} role="group" aria-label="Filtrar reseñas por estrellas">
+            {dist.map(({ star, count, pct }) => {
+              const active = starFilter === star;
+              return (
+                <button
+                  key={star}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setStarFilter(active ? 0 : star)}
                   style={{
-                    fontFamily: '"JetBrains Mono", monospace',
-                    fontSize: 11,
-                    color: 'var(--ink-60)',
-                    width: 10,
-                    textAlign: 'right',
-                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    border: 'none',
+                    background: active ? 'var(--ink-06)' : 'transparent',
+                    borderRadius: 8,
+                    padding: '3px 6px',
+                    margin: '0 -6px',
+                    cursor: 'pointer',
+                    width: 'calc(100% + 12px)',
+                    font: 'inherit',
+                    textAlign: 'left',
+                    transition: 'background 0.15s',
                   }}
                 >
-                  {star}
-                </span>
-                <Icon name="star" size={11} stroke={starColor} />
-                <div
-                  style={{
-                    flex: 1,
-                    height: 7,
-                    background: 'var(--ink-06)',
-                    borderRadius: 999,
-                    overflow: 'hidden',
-                  }}
-                >
+                  <span
+                    style={{
+                      fontFamily: '"JetBrains Mono", monospace',
+                      fontSize: 11,
+                      color: active ? 'var(--ink)' : 'var(--ink-60)',
+                      width: 10,
+                      textAlign: 'right',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {star}
+                  </span>
+                  <Icon name="star" size={11} stroke={starColor} />
                   <div
                     style={{
-                      width: `${pct}%`,
-                      height: '100%',
-                      background: starColor,
+                      flex: 1,
+                      height: 7,
+                      background: 'var(--ink-06)',
                       borderRadius: 999,
-                      transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                      overflow: 'hidden',
                     }}
-                  />
-                </div>
-                <span
-                  style={{
-                    fontFamily: '"JetBrains Mono", monospace',
-                    fontSize: 11,
-                    color: 'var(--ink-40)',
-                    width: 18,
-                    textAlign: 'right',
-                    flexShrink: 0,
-                  }}
-                >
-                  {count}
-                </span>
-              </div>
-            ))}
+                  >
+                    <div
+                      style={{
+                        width: `${pct}%`,
+                        height: '100%',
+                        background: starColor,
+                        borderRadius: 999,
+                        transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                      }}
+                    />
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: '"JetBrains Mono", monospace',
+                      fontSize: 11,
+                      color: active ? 'var(--ink)' : 'var(--ink-40)',
+                      width: 18,
+                      textAlign: 'right',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -801,6 +829,32 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
             </div>
           )}
 
+          {/* Filtro activo */}
+          {!isLoading && total > 0 && starFilter > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                fontFamily: '"Geist", sans-serif',
+                fontSize: 13,
+                color: 'var(--ink-60)',
+              }}
+            >
+              <span>
+                Mostrando {visibleReviews.length} reseña{visibleReviews.length !== 1 ? 's' : ''} de {starFilter}★
+              </span>
+              <button
+                type="button"
+                onClick={() => setStarFilter(0)}
+                style={{ border: 'none', background: 'none', color: 'var(--ink)', fontWeight: 600, cursor: 'pointer', padding: 0, fontFamily: 'inherit', fontSize: 'inherit' }}
+              >
+                Ver todas
+              </button>
+            </div>
+          )}
+
           {/* Reviews list */}
           {isLoading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -818,7 +872,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                 />
               ))}
             </div>
-          ) : reviews.length === 0 ? (
+          ) : total === 0 ? (
             <div
               style={{
                 textAlign: 'center',
@@ -849,9 +903,39 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                 Aún no hay reseñas para este producto.
               </p>
             </div>
+          ) : visibleReviews.length === 0 ? (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '56px 24px',
+                border: '1.5px dashed var(--ink-20)',
+                borderRadius: 24,
+              }}
+            >
+              <p
+                style={{
+                  margin: '0 0 6px',
+                  fontFamily: '"Instrument Serif", serif',
+                  fontSize: 22,
+                  color: 'var(--ink)',
+                }}
+              >
+                Sin reseñas de {starFilter}★
+              </p>
+              <p
+                style={{
+                  margin: 0,
+                  fontFamily: '"Geist", sans-serif',
+                  fontSize: 14,
+                  color: 'var(--ink-60)',
+                }}
+              >
+                Nadie calificó este producto con {starFilter} estrella{starFilter !== 1 ? 's' : ''} todavía.
+              </p>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {reviews.map((review) => (
+              {visibleReviews.map((review) => (
                 <ReviewCard key={review._id} review={review} onSignInRequired={() => setSignInOpen(true)} />
               ))}
             </div>
