@@ -9,6 +9,7 @@ import { Review } from '../db/models/Review';
  */
 export async function recomputeAllProductRatings(): Promise<{ updated: number; total: number }> {
   const summary = await Review.aggregate([
+    { $match: { status: { $ne: 'hidden' } } },
     { $group: { _id: '$productId', avgRating: { $avg: '$rating' }, count: { $sum: 1 } } },
   ]);
   const byProductId = new Map(
@@ -26,4 +27,18 @@ export async function recomputeAllProductRatings(): Promise<{ updated: number; t
   }
 
   return { updated, total: products.length };
+}
+
+/**
+ * Recomputes rating/reviews for a single product. Used after an admin moderation action
+ * (hide/publish/delete a review) so the change reflects immediately without rescanning every
+ * product like recomputeAllProductRatings does.
+ */
+export async function recomputeProductRating(productId: string): Promise<void> {
+  const summary = await Review.aggregate([
+    { $match: { productId, status: { $ne: 'hidden' } } },
+    { $group: { _id: '$productId', avgRating: { $avg: '$rating' }, count: { $sum: 1 } } },
+  ]);
+  const { avgRating = 0, count = 0 } = summary[0] ?? {};
+  await Product.updateOne({ id: productId }, { rating: Math.round(avgRating * 10) / 10, reviews: count });
 }

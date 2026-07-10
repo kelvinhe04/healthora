@@ -9,6 +9,17 @@ import type { AppNotification, NotificationInbox } from '../../types';
 const EMPTY_INBOX: NotificationInbox = { notifications: [], unread: 0 };
 const MAX_BACKOFF_MS = 30_000;
 
+/** Which admin list/dashboard queries to refresh when a given notification type arrives, so the
+ * panel updates live instead of waiting for a manual reload. Only wired for the events that
+ * actually carry an admin audience today (`new_review`, `low_stock`, `new_order`) — invalidating
+ * query keys that aren't mounted (e.g. a customer's browser) is a harmless no-op, so this list is
+ * safe to grow as more admin-facing events get their own notification type. */
+const ADMIN_INVALIDATION_BY_TYPE: Partial<Record<AppNotification['type'], string[][]>> = {
+  new_review: [['admin', 'reviews'], ['admin-dashboard']],
+  low_stock: [['admin-products'], ['admin-products-count'], ['admin-dashboard']],
+  new_order: [['admin-orders'], ['admin-dashboard']],
+};
+
 /** Headless component (mounted once at the app root) that keeps a live WebSocket to the backend
  * notification channel (HU-061). Incoming events are folded into the shared React Query cache so
  * the bell and dropdown update instantly, and a transient toast is raised. Reconnects with
@@ -42,13 +53,8 @@ export function NotificationsRealtime() {
         mergePushedNotification(current ?? EMPTY_INBOX, notification),
       );
       pushToastRef.current(notification);
-
-      // A new order only ever reaches an admin socket (server-side audience routing), so no role
-      // check is needed here - refresh the admin orders table + dashboard KPIs so a just-placed
-      // order shows up without a manual page reload.
-      if (notification.type === 'new_order') {
-        void queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-        void queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+      for (const queryKey of ADMIN_INVALIDATION_BY_TYPE[notification.type] ?? []) {
+        void queryClient.invalidateQueries({ queryKey });
       }
     };
 
