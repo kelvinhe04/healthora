@@ -8,6 +8,7 @@ import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 import type { Product } from '../types';
 import { getEffectivePrice } from '../lib/productVariants';
+import { isLowStock } from '../lib/stock';
 
 interface CompareProps {
   onBack: () => void;
@@ -80,7 +81,17 @@ export function Compare({ onBack, onOpenProduct, onAdd }: CompareProps) {
                 { label: 'Categoría', render: (p: Product) => p.category },
                 { label: 'Precio', render: (p: Product) => `$${getEffectivePrice(p).toFixed(2)}` },
                 { label: 'Rating', render: (p: Product) => <Stars value={p.rating} size={12} /> },
-                { label: 'Stock', render: (p: Product) => (p.stock > 0 ? `${p.stock} uds.` : 'Agotado') },
+                {
+                  label: 'Stock',
+                  render: (p: Product) =>
+                    p.stock === 0 ? (
+                      'Agotado'
+                    ) : isLowStock(p.stock) ? (
+                      <span style={{ color: 'var(--coral)' }}>Solo quedan {p.stock}</span>
+                    ) : (
+                      'En stock'
+                    ),
+                },
                 { label: 'Descripción', render: (p: Product) => p.short },
               ].map((row) => (
                 <tr key={row.label}>
