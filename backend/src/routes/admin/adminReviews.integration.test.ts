@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Product } from '../../db/models/Product';
 import { Review } from '../../db/models/Review';
+import { ReviewBan } from '../../db/models/ReviewBan';
 import { adminReviewsRouter } from './adminReviews';
 
 let mongo: MongoMemoryServer;
@@ -102,5 +103,59 @@ describe('adminReviewsRouter', () => {
 
     const noMatch = await adminRequest('/?search=zzz-nomatch');
     expect(noMatch.json.items).toEqual([]);
+  });
+});
+
+describe('adminReviewsRouter — banear autor por producto', () => {
+  beforeEach(async () => {
+    await Product.deleteMany({});
+    await Review.deleteMany({});
+    await ReviewBan.deleteMany({});
+    await Product.create({ id: 'combo-product', name: 'Combo Product', brand: 'Healthora', category: 'Vitaminas', need: 'Test', price: 10, stock: 5, active: true });
+  });
+
+  test('POST /:id/ban elimina la reseña y crea el baneo para ese producto', async () => {
+    const review = await Review.create({ productId: 'combo-product', userId: 'user-spam', userName: 'Spammer', rating: 1, body: 'Contenido inapropiado' });
+
+    const { status, json } = await adminRequest(`/${review._id}/ban`, { method: 'POST' });
+
+    expect(status).toBe(200);
+    expect(json.success).toBe(true);
+    expect(await Review.findById(review._id)).toBeNull();
+
+    const ban = await ReviewBan.findOne({ productId: 'combo-product', userId: 'user-spam' }).lean();
+    expect(ban).not.toBeNull();
+    expect(ban?.bannedBy).toBe('admin-1');
+  });
+
+  test('POST /:id/ban con un id inexistente devuelve 404', async () => {
+    const { status } = await adminRequest('/64b000000000000000000000/ban', { method: 'POST' });
+    expect(status).toBe(404);
+  });
+
+  test('GET /bans lista los baneos activos con el nombre del producto', async () => {
+    await ReviewBan.create({ productId: 'combo-product', userId: 'user-spam', userName: 'Spammer', bannedBy: 'admin-1' });
+
+    const { status, json } = await adminRequest('/bans');
+
+    expect(status).toBe(200);
+    expect(json).toHaveLength(1);
+    expect(json[0].productName).toBe('Combo Product');
+    expect(json[0].userName).toBe('Spammer');
+  });
+
+  test('DELETE /bans/:id quita el baneo', async () => {
+    const ban = await ReviewBan.create({ productId: 'combo-product', userId: 'user-spam', userName: 'Spammer', bannedBy: 'admin-1' });
+
+    const { status, json } = await adminRequest(`/bans/${ban._id}`, { method: 'DELETE' });
+
+    expect(status).toBe(200);
+    expect(json.success).toBe(true);
+    expect(await ReviewBan.findById(ban._id)).toBeNull();
+  });
+
+  test('DELETE /bans/:id con un id inexistente devuelve 404', async () => {
+    const { status } = await adminRequest('/bans/64b000000000000000000000', { method: 'DELETE' });
+    expect(status).toBe(404);
   });
 });

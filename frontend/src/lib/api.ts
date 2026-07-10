@@ -8,6 +8,7 @@ import type {
   Review,
   AdminReview,
   ReviewStatus,
+  ReviewBan,
   ErrorReport,
   AppNotification,
   NotificationInbox,
@@ -279,6 +280,20 @@ export const api = {
       remove: (id: string, token: string) =>
         request<{ success: boolean }>(
           `/admin/reviews/${id}`,
+          { method: "DELETE" },
+          token,
+        ),
+      ban: (id: string, token: string) =>
+        request<{ success: boolean }>(
+          `/admin/reviews/${id}/ban`,
+          { method: "POST" },
+          token,
+        ),
+      listBans: (token: string) =>
+        request<ReviewBan[]>("/admin/reviews/bans", undefined, token),
+      unban: (id: string, token: string) =>
+        request<{ success: boolean }>(
+          `/admin/reviews/bans/${id}`,
           { method: "DELETE" },
           token,
         ),
