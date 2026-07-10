@@ -31,6 +31,31 @@ export interface ResolvedShipping {
   eta: string;
 }
 
+// Distritos/corregimientos del área metropolitana (ciudad de Panamá + San Miguelito + Panamá Oeste
+// cercano) - lo que no matchea se asume interior. Heurística simple para autocompletar la zona a
+// partir de la ciudad que el cliente ya escribió, no un catálogo geográfico exhaustivo.
+const CAPITAL_AREA_KEYWORDS = [
+  'san miguelito', 'arraijan', 'la chorrera', 'chorrera',
+  'tocumen', 'juan diaz', 'pedregal', 'ancon', 'albrook', 'condado del rey', 'el dorado',
+  'bethania', 'betania', 'parque lefevre', 'rio abajo', 'chorrillo', 'calidonia', 'bella vista',
+  'obarrio', 'punta pacifica', 'costa del este', 'clayton',
+];
+
+function normalizeForMatch(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .trim();
+}
+
+export function guessZoneFromCity(city: string): Exclude<ShippingZone, 'pickup'> {
+  const normalized = normalizeForMatch(city);
+  if (!normalized) return 'capital';
+  if (normalized === 'panama' || normalized.includes('panama')) return 'capital';
+  return CAPITAL_AREA_KEYWORDS.some((keyword) => normalized.includes(keyword)) ? 'capital' : 'interior';
+}
+
 export function resolveShipping(zone: ShippingZone, speed: ShippingSpeed, discountedSubtotal: number): ResolvedShipping {
   if (zone === 'pickup') {
     return { cost: 0, label: 'Retiro en tienda', eta: 'Listo en 24h' };

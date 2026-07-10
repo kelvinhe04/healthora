@@ -12,7 +12,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { canApplyPromotion, getAvailablePromotionCodes, getPromotion, normalizePromotionCode } from '../lib/promotions';
 import { useCartStore } from '../store/cartStore';
 import { getE2EAuthToken, getE2EUser } from '../lib/e2eAuth';
-import { resolveShipping, SHIPPING_SPEED_OPTIONS, SHIPPING_ZONE_OPTIONS, type ShippingSpeed, type ShippingZone } from '../lib/shipping';
+import { guessZoneFromCity, resolveShipping, SHIPPING_SPEED_OPTIONS, SHIPPING_ZONE_OPTIONS, type ShippingSpeed, type ShippingZone } from '../lib/shipping';
 
 interface CheckoutProps {
   items: CartItem[];
@@ -100,6 +100,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
 
   const [address, setAddress] = useState<OrderAddress>({ name: '', phone: '', address: '', city: '', postal: '' });
   const [shippingZone, setShippingZone] = useState<ShippingZone>('capital');
+  const [zoneAutoDetected, setZoneAutoDetected] = useState(true);
   const [shippingSpeed, setShippingSpeed] = useState<ShippingSpeed>('standard');
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [processing, setProcessing] = useState(false);
@@ -180,6 +181,11 @@ export function Checkout({ items, onBack }: CheckoutProps) {
       cancelled = true;
     };
   }, [appliedPromoCode, getEffectiveToken, isSignedIn]);
+
+  useEffect(() => {
+    if (!zoneAutoDetected) return;
+    setShippingZone(guessZoneFromCity(address.city));
+  }, [address.city, zoneAutoDetected]);
 
   const subtotal = roundMoney(items.reduce((s, it) => s + (it.variant?.price ?? it.product.price) * it.qty, 0));
   const appliedPromo = appliedPromoCode ? getPromotion(appliedPromoCode, items) : null;
@@ -356,7 +362,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             )}
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginTop: 20 }}>
               <FormInput label="Nombre completo" value={address.name} onChange={(v) => { setAddress({ ...address, name: v }); setAddressError(''); }} placeholder="María Gómez" required />
-              <FormInput label="Teléfono" value={address.phone} onChange={(v) => { setAddress({ ...address, phone: v }); setAddressError(''); }} placeholder="+1 555 000 000" required />
+              <FormInput label="Teléfono" value={address.phone} onChange={(v) => { setAddress({ ...address, phone: v }); setAddressError(''); }} placeholder="+507 6123-4567" required />
               <FormInput label="Dirección" value={address.address} onChange={(v) => { setAddress({ ...address, address: v }); setAddressError(''); }} placeholder="Calle, número, apto" full required />
               <FormInput label="Ciudad" value={address.city} onChange={(v) => { setAddress({ ...address, city: v }); setAddressError(''); }} placeholder="Ciudad" required />
               <FormInput label="Código postal" value={address.postal} onChange={(v) => { setAddress({ ...address, postal: v.replace(/\D/g, '') }); setAddressError(''); }} placeholder="10001" required />
@@ -364,13 +370,15 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             {addressError && <div role="alert" style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{addressError}</div>}
 
             <div style={{ marginTop: 20 }}>
-              <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>Zona de entrega</span>
+              <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>
+                Zona de entrega {zoneAutoDetected && address.city.trim() && <span style={{ color: 'var(--green)', textTransform: 'none', letterSpacing: 0 }}>· detectada por tu ciudad</span>}
+              </span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
                 {SHIPPING_ZONE_OPTIONS.map((option) => (
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => setShippingZone(option.value)}
+                    onClick={() => { setShippingZone(option.value); setZoneAutoDetected(false); }}
                     style={{
                       border: shippingZone === option.value ? '1px solid var(--green)' : '1px solid var(--ink-20)',
                       background: shippingZone === option.value ? 'var(--ink-06)' : 'var(--cream)',
