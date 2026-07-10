@@ -13,6 +13,7 @@ import {
   iconBtnAd,
   SortableTh,
   SortClearChip,
+  DateInputDDMMYYYY,
 } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { Icon } from '../../../components/shared/Icon';
@@ -39,6 +40,7 @@ function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; o
   const [startsAt, setStartsAt] = useState('');
   const [endsAt, setEndsAt] = useState('');
   const [message, setMessage] = useState('');
+  const invalidRange = Boolean(startsAt && endsAt && endsAt < startsAt);
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ['admin-products'] });
@@ -61,7 +63,10 @@ function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; o
       );
     },
     onSuccess: (data) => {
-      setMessage(`${data.updated} de ${data.total} producto(s) actualizados.`);
+      const skippedNote = data.skippedMatrix
+        ? ` ${data.skippedMatrix} con variante×tamaño no se tocaron (aún sin soporte para ese modo).`
+        : '';
+      setMessage(`${data.updated} de ${data.total} producto(s) actualizados.${skippedNote}`);
       invalidate();
     },
   });
@@ -104,20 +109,21 @@ function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; o
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
           <div>
             <label style={modalFieldLabel}>Vigente desde (opcional)</label>
-            <input style={modalInput} type="date" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
+            <DateInputDDMMYYYY style={modalInput} value={startsAt} onChange={setStartsAt} />
           </div>
           <div>
             <label style={modalFieldLabel}>Vigente hasta (opcional)</label>
-            <input style={modalInput} type="date" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
+            <DateInputDDMMYYYY style={modalInput} value={endsAt} onChange={setEndsAt} />
           </div>
         </div>
+        {invalidRange && <div role="alert" style={{ marginBottom: 14, fontSize: 13, color: 'var(--coral)' }}>"Vigente hasta" no puede ser anterior a "Vigente desde".</div>}
         {message && <div style={{ marginBottom: 14, fontSize: 13, color: 'var(--green)' }}>{message}</div>}
         {(applyMut.isError || removeMut.isError) && <div role="alert" style={{ marginBottom: 14, fontSize: 13, color: 'var(--coral)' }}>No se pudo completar la acción.</div>}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <button type="button" onClick={() => removeMut.mutate()} disabled={!category || removeMut.isPending} style={{ padding: '10px 16px', borderRadius: 10, background: 'transparent', border: '1px solid var(--ink-12)', color: 'var(--coral)', cursor: 'pointer', fontSize: 13 }}>
             Quitar descuento
           </button>
-          <AnimatedButton variant="primary" disabled={!category || (parseFloat(value) || 0) <= 0 || applyMut.isPending} onClick={() => applyMut.mutate()} text={applyMut.isPending ? 'Aplicando…' : 'Aplicar descuento'} />
+          <AnimatedButton variant="primary" disabled={!category || (parseFloat(value) || 0) <= 0 || invalidRange || applyMut.isPending} onClick={() => applyMut.mutate()} text={applyMut.isPending ? 'Aplicando…' : 'Aplicar descuento'} />
         </div>
       </div>
     </ModalOverlay>

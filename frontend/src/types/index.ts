@@ -16,7 +16,9 @@ export interface ProductVariant {
   label: string;
   type: 'size' | 'color' | 'weight' | 'count' | 'flavor' | 'scent';
   price: number;
-  priceBefore?: number;
+  priceBefore?: number | null;
+  discountStartsAt?: string | null;
+  discountEndsAt?: string | null;
   stock: number;
   sku?: string;
   color?: string;

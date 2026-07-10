@@ -53,6 +53,8 @@ const ProductSchema = new Schema(
         type: { type: String, enum: ['size', 'color', 'weight', 'count', 'flavor', 'scent'], required: true },
         price: { type: Number, required: true },
         priceBefore: Number,
+        discountStartsAt: Date,
+        discountEndsAt: Date,
         stock: { type: Number, required: true },
         sku: String,
         color: String,

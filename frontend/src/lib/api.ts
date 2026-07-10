@@ -238,7 +238,7 @@ export const api = {
         },
         token: string,
       ) =>
-        request<{ updated: number; total: number }>(
+        request<{ updated: number; total: number; skippedMatrix: number }>(
           "/admin/products/discounts/apply-category",
           { method: "POST", body: JSON.stringify(body) },
           token,

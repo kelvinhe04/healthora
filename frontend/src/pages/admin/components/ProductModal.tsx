@@ -1,6 +1,6 @@
 import { type ChangeEvent, useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Product } from '../../../types';
-import { iconBtnAd } from '../../../components/admin';
+import { DateInputDDMMYYYY, iconBtnAd } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
@@ -175,6 +175,18 @@ export function ProductModal({
     if (usesGenericFields && !form.imageUrl.trim()) {
       setValidationError("La imagen 1 es obligatoria.");
       return;
+    }
+    if (usesGenericFields && form.priceBefore && form.discountStartsAt && form.discountEndsAt && form.discountEndsAt < form.discountStartsAt) {
+      setValidationError('"Vigente hasta" no puede ser anterior a "Vigente desde".');
+      return;
+    }
+    if (variantTab === "simple") {
+      for (const row of form.variantsSimple) {
+        if (row.priceBefore && row.discountStartsAt && row.discountEndsAt && row.discountEndsAt < row.discountStartsAt) {
+          setValidationError(`"${row.label.trim()}": "Vigente hasta" no puede ser anterior a "Vigente desde".`);
+          return;
+        }
+      }
     }
     for (const tab of form.extraTabs) {
       if (Boolean(tab.label.trim()) !== Boolean(tab.content.trim())) {
@@ -505,7 +517,7 @@ export function ProductModal({
                 }}
               >
                 <div style={fieldS}>
-                  <label style={labelS}>Precio antes de descuento ($)</label>
+                  <label style={labelS}>Precio antes ($)</label>
                   <input
                     style={inputS}
                     type="number"
@@ -517,22 +529,20 @@ export function ProductModal({
                   />
                 </div>
                 <div style={fieldS}>
-                  <label style={labelS}>Descuento vigente desde</label>
-                  <input
+                  <label style={labelS}>Vigente desde</label>
+                  <DateInputDDMMYYYY
                     style={inputS}
-                    type="date"
                     value={form.discountStartsAt}
-                    onChange={setF("discountStartsAt")}
+                    onChange={(discountStartsAt) => setForm((prev) => ({ ...prev, discountStartsAt }))}
                     disabled={!form.priceBefore}
                   />
                 </div>
                 <div style={fieldS}>
-                  <label style={labelS}>Descuento vigente hasta</label>
-                  <input
+                  <label style={labelS}>Vigente hasta</label>
+                  <DateInputDDMMYYYY
                     style={inputS}
-                    type="date"
                     value={form.discountEndsAt}
-                    onChange={setF("discountEndsAt")}
+                    onChange={(discountEndsAt) => setForm((prev) => ({ ...prev, discountEndsAt }))}
                     disabled={!form.priceBefore}
                   />
                 </div>

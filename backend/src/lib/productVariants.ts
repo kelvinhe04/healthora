@@ -1,10 +1,11 @@
-import { getEffectivePrice } from './discounts';
-
 type ProductVariant = {
   id: string;
   label: string;
   type: string;
   price: number;
+  priceBefore?: number | null;
+  discountStartsAt?: Date | string | null;
+  discountEndsAt?: Date | string | null;
   stock: number;
   imageUrl?: string;
   images?: string[];
@@ -43,10 +44,9 @@ export type ResolvedVariantPricing = {
 
 export function resolveVariantPricing(product: ProductLike, variantId?: string): ResolvedVariantPricing {
   if (!variantId?.trim() || !product.variants?.length) {
-    // No variant selected: the product-level discount (if any and currently within its
-    // validity window) applies. Variant-specific pricing below has its own priceBefore and is
-    // out of scope for the product/category discount feature.
-    return { price: getEffectivePrice(product), stock: product.stock };
+    // No variant selected: `price` is always the real, current selling price - `priceBefore`/
+    // vigencia only control whether the "was $X" badge shows, never what's actually charged.
+    return { price: product.price, stock: product.stock };
   }
 
   if (variantId.includes(':')) {

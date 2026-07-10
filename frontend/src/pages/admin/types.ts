@@ -15,6 +15,9 @@ export type VariantFormRow = {
   label: string;
   type: ProductVariant['type'];
   price: string;
+  priceBefore: string;
+  discountStartsAt: string;
+  discountEndsAt: string;
   stock: string;
   sku: string;
   color: string;
@@ -36,6 +39,9 @@ export const emptyVariantRow = (): VariantFormRow => ({
   label: '',
   type: 'count',
   price: '0',
+  priceBefore: '',
+  discountStartsAt: '',
+  discountEndsAt: '',
   stock: '0',
   sku: '',
   color: '',
