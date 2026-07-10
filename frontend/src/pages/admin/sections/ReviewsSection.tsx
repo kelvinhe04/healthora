@@ -16,6 +16,7 @@ import { Stars } from '../../../components/shared/Stars';
 import { api } from '../../../lib/api';
 import type { ReviewStatus } from '../../../types';
 import { formatPanamaDateTime } from '../../../lib/dates';
+import { PaginationControls } from '../components/PaginationControls';
 
 // 'pending' existe en el schema pero ningún flujo lo asigna hoy (las reseñas nacen 'published' -
 // post-moderación, no pre-aprobación) - se omite del filtro para no mostrar una opción sin datos.
@@ -32,13 +33,14 @@ export function ReviewsSection() {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<'' | ReviewStatus>('');
+  const [page, setPage] = useState(1);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const reviewsQuery = useQuery({
-    queryKey: ['admin', 'reviews', statusFilter],
+    queryKey: ['admin', 'reviews', statusFilter, page],
     queryFn: async () => {
       const token = await getToken();
-      return api.admin.reviews.list(token!, statusFilter || undefined);
+      return api.admin.reviews.list(token!, statusFilter || undefined, page);
     },
   });
 
@@ -80,7 +82,10 @@ export function ReviewsSection() {
         actions={
           <select
             value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value as '' | ReviewStatus)}
+            onChange={(event) => {
+              setStatusFilter(event.target.value as '' | ReviewStatus);
+              setPage(1);
+            }}
             aria-label="Filtrar reseñas por estado"
             style={{
               border: '1px solid var(--ink-10)',
@@ -211,6 +216,14 @@ export function ReviewsSection() {
             </tbody>
           </table>
         </div>
+        <PaginationControls
+          page={reviewsQuery.data?.page ?? page}
+          totalPages={Math.max(1, Math.ceil((reviewsQuery.data?.total ?? 0) / (reviewsQuery.data?.limit ?? 20)))}
+          totalItems={reviewsQuery.data?.total ?? 0}
+          start={reviewsQuery.data ? (reviewsQuery.data.page - 1) * reviewsQuery.data.limit + (items.length ? 1 : 0) : 0}
+          end={reviewsQuery.data ? (reviewsQuery.data.page - 1) * reviewsQuery.data.limit + items.length : 0}
+          onPageChange={setPage}
+        />
       </Card>
     </>
   );
