@@ -13,11 +13,75 @@ import {
   useOnceLoading,
 } from '../../../components/admin';
 import { Icon } from '../../../components/shared/Icon';
+import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { Stars } from '../../../components/shared/Stars';
 import { api } from '../../../lib/api';
 import type { ReviewStatus } from '../../../types';
 import { formatPanamaDateTime } from '../../../lib/dates';
 import { PaginationControls } from '../components/PaginationControls';
+
+function BansModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  const bansQuery = useQuery({
+    queryKey: ['admin', 'reviews', 'bans'],
+    queryFn: async () => {
+      const token = await getToken();
+      return api.admin.reviews.listBans(token!);
+    },
+    enabled: open,
+  });
+
+  const unbanMut = useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getToken();
+      return api.admin.reviews.unban(id, token!);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'reviews', 'bans'] });
+    },
+  });
+
+  const bans = bansQuery.data ?? [];
+
+  return (
+    <ModalOverlay open={open} onClose={onClose}>
+      <div style={{ width: '100%', maxWidth: 520, maxHeight: '80vh', overflowY: 'auto', background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: 24 }}>
+        <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 6px' }}>Usuarios baneados</h3>
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '0 0 16px' }}>
+          No pueden dejar nuevas reseñas en el producto indicado. El baneo es por producto, no afecta al resto del catálogo.
+        </p>
+        {bansQuery.isLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[0, 1, 2].map((i) => <Skeleton key={i} height={44} borderRadius={10} />)}
+          </div>
+        ) : bans.length === 0 ? (
+          <div style={{ fontSize: 13, color: 'var(--ink-60)', padding: '12px 0' }}>Ningún usuario baneado por ahora.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {bans.map((ban) => (
+              <div key={ban._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 12px', border: '1px solid var(--ink-06)', borderRadius: 10 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>{ban.userName}</div>
+                  <div style={{ fontSize: 12, color: 'var(--ink-60)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ban.productName}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => unbanMut.mutate(ban._id)}
+                  disabled={unbanMut.isPending}
+                  style={{ flexShrink: 0, padding: '7px 12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--ink-12)', color: 'var(--ink)', cursor: 'pointer', fontSize: 12, fontFamily: '"Geist", sans-serif' }}
+                >
+                  Quitar baneo
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </ModalOverlay>
+  );
+}
 
 // 'pending' existe en el schema pero ningún flujo lo asigna hoy (las reseñas nacen 'published' -
 // post-moderación, no pre-aprobación) - se omite del filtro para no mostrar una opción sin datos.
@@ -56,6 +120,8 @@ export function ReviewsSection() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmBanId, setConfirmBanId] = useState<string | null>(null);
+  const [bansModalOpen, setBansModalOpen] = useState(false);
 
   // Debounced: evita un request por cada tecla mientras se escribe.
   useEffect(() => {
@@ -100,6 +166,17 @@ export function ReviewsSection() {
     },
   });
 
+  const banMut = useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getToken();
+      return api.admin.reviews.ban(id, token!);
+    },
+    onSuccess: () => {
+      setConfirmBanId(null);
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'reviews'] });
+    },
+  });
+
   const items = reviewsQuery.data?.items ?? [];
   const isLoading = useOnceLoading('section_reviews', reviewsQuery.isLoading);
   const total = reviewsQuery.data?.total ?? 0;
@@ -115,7 +192,22 @@ export function ReviewsSection() {
           </>
         }
         sub="Aprueba, oculta o elimina reseñas para mantener contenido apropiado y confiable en las fichas de producto."
+        actions={
+          isLoading ? (
+            <Skeleton height={40} width={168} borderRadius={999} />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setBansModalOpen(true)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 999, background: 'transparent', border: '1px solid var(--ink-12)', color: 'var(--ink)', cursor: 'pointer', fontSize: 13, fontFamily: '"Geist", sans-serif' }}
+            >
+              <Icon name="ban" size={14} />
+              Usuarios baneados
+            </button>
+          )
+        }
       />
+      <BansModal open={bansModalOpen} onClose={() => setBansModalOpen(false)} />
 
       {isLoading ? (
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' }}>
@@ -327,6 +419,34 @@ export function ReviewsSection() {
                           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--coral)' }}
                         >
                           <Icon name="trash" size={14} />
+                        </button>
+                      )}
+                      {confirmBanId === review._id ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => banMut.mutate(review._id)}
+                            disabled={banMut.isPending}
+                            style={{ background: 'var(--coral)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'white', fontSize: 12 }}
+                          >
+                            Banear
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmBanId(null)}
+                            style={{ background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--ink-60)', fontSize: 12 }}
+                          >
+                            Cancelar
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          title="Banear autor de este producto (elimina la reseña y evita que vuelva a comentar aquí)"
+                          onClick={() => setConfirmBanId(review._id)}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--coral)' }}
+                        >
+                          <Icon name="ban" size={14} />
                         </button>
                       )}
                     </div>

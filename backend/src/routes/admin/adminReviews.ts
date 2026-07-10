@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { Review } from '../../db/models/Review';
+import { ReviewBan } from '../../db/models/ReviewBan';
 import { Product } from '../../db/models/Product';
 import { requireAdmin } from '../../middleware/requireAdmin';
 import type { AppEnv } from '../../types/hono';
@@ -86,5 +87,44 @@ export const adminReviewsRouter = new Hono<AppEnv>()
     if (!review) return c.json({ error: 'Reseña no encontrada' }, 404);
 
     await recomputeProductRating(review.productId);
+    return c.json({ success: true });
+  })
+  // Banea al autor de esta reseña para este producto especifico (no es un baneo global de la
+  // cuenta) y elimina la reseña en la misma accion - "eliminar" solo no evita que el mismo
+  // usuario vuelva a publicar el mismo contenido, ya que no queda ningun registro de que ya
+  // habia comentado ahi.
+  .post('/:id/ban', async (c) => {
+    const parsed = parseParams(c, idParamsSchema);
+    if (!parsed.success) return parsed.response;
+
+    const review = await Review.findById(parsed.data.id).lean();
+    if (!review) return c.json({ error: 'Reseña no encontrada' }, 404);
+
+    const admin = c.get('user');
+    await ReviewBan.findOneAndUpdate(
+      { productId: review.productId, userId: review.userId },
+      { userName: review.userName, bannedBy: admin.clerkId },
+      { upsert: true }
+    );
+    await Review.findByIdAndDelete(review._id);
+    await recomputeProductRating(review.productId);
+
+    return c.json({ success: true });
+  })
+  .get('/bans', async (c) => {
+    const bans = await ReviewBan.find().sort({ createdAt: -1 }).lean();
+    const productIds = [...new Set(bans.map((ban) => ban.productId))];
+    const products = await Product.find({ id: { $in: productIds } }).select('id name').lean();
+    const nameById = new Map(products.map((product) => [product.id, product.name]));
+    const enriched = bans.map((ban) => ({ ...ban, productName: nameById.get(ban.productId) || ban.productId }));
+    return c.json(enriched);
+  })
+  .delete('/bans/:id', async (c) => {
+    const parsed = parseParams(c, idParamsSchema);
+    if (!parsed.success) return parsed.response;
+
+    const ban = await ReviewBan.findByIdAndDelete(parsed.data.id).lean();
+    if (!ban) return c.json({ error: 'Baneo no encontrado' }, 404);
+
     return c.json({ success: true });
   });

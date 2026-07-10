@@ -175,6 +175,16 @@ export interface AdminReview extends Review {
   productName: string;
 }
 
+export interface ReviewBan {
+  _id: string;
+  productId: string;
+  productName: string;
+  userId: string;
+  userName: string;
+  bannedBy: string;
+  createdAt: string;
+}
+
 export interface ErrorReport {
   _id: string;
   source: 'backend' | 'frontend';

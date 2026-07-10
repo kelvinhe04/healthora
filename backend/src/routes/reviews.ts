@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { Review } from '../db/models/Review';
+import { ReviewBan } from '../db/models/ReviewBan';
 import { Product } from '../db/models/Product';
 import { clerkAuth } from '../middleware/clerkAuth';
 import type { AppEnv } from '../types/hono';
@@ -68,6 +69,11 @@ export const reviewsRouter = new Hono<AppEnv>()
     const existing = await Review.findOne({ productId, userId: user.clerkId });
     if (existing) {
       return c.json({ error: 'Ya dejaste una resena para este producto' }, 409);
+    }
+
+    const banned = await ReviewBan.findOne({ productId, userId: user.clerkId }).lean();
+    if (banned) {
+      return c.json({ error: 'Un administrador restringió tu cuenta para dejar reseñas en este producto' }, 403);
     }
 
     const review = await Review.create({
