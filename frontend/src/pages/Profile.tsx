@@ -1,10 +1,7 @@
-import { useState } from 'react';
-import { useAuth, useClerk, useUser } from '@clerk/clerk-react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useClerk, useUser } from '@clerk/clerk-react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { Icon } from '../components/shared/Icon';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
-import { api } from '../lib/api';
 
 interface ProfileProps {
   onBack: () => void;
@@ -19,31 +16,6 @@ export function Profile({ onBack }: ProfileProps) {
   const isMobile = bp === 'mobile';
   const { user } = useUser();
   const { openUserProfile } = useClerk();
-  const { getToken } = useAuth();
-  const queryClient = useQueryClient();
-  const [justSaved, setJustSaved] = useState(false);
-
-  const preferencesQuery = useQuery({
-    queryKey: ['account', 'preferences'],
-    queryFn: async () => {
-      const token = await getToken();
-      return api.account.preferences.get(token!);
-    },
-  });
-
-  const updatePreferences = useMutation({
-    mutationFn: async (newsletterSubscribed: boolean) => {
-      const token = await getToken();
-      return api.account.preferences.update({ newsletterSubscribed }, token!);
-    },
-    onSuccess: (data) => {
-      queryClient.setQueryData(['account', 'preferences'], data);
-      setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 2000);
-    },
-  });
-
-  const newsletterSubscribed = preferencesQuery.data?.newsletterSubscribed ?? false;
 
   return (
     <div style={{ padding: isMobile ? '20px 16px 60px' : '24px 40px 80px', maxWidth: 640, margin: '0 auto' }}>
@@ -77,30 +49,6 @@ export function Profile({ onBack }: ProfileProps) {
         <p style={{ marginTop: 14, fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', lineHeight: 1.5 }}>
           Tu nombre, foto y seguridad de la cuenta se gestionan de forma segura a través de tu proveedor de acceso (Clerk).
         </p>
-      </section>
-
-      <section style={sectionCard}>
-        <h2 style={sectionTitle}>Preferencias</h2>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 14, fontFamily: '"Geist", sans-serif', color: 'var(--ink)' }}>
-          <input
-            type="checkbox"
-            checked={newsletterSubscribed}
-            disabled={preferencesQuery.isLoading || updatePreferences.isPending}
-            onChange={(e) => updatePreferences.mutate(e.target.checked)}
-            style={{ width: 18, height: 18, accentColor: 'var(--green)' }}
-          />
-          Recibir novedades y ofertas por correo
-        </label>
-        {justSaved && (
-          <div aria-live="polite" style={{ marginTop: 10, fontSize: 12, color: 'var(--green)', fontFamily: '"Geist", sans-serif' }}>
-            Preferencia guardada.
-          </div>
-        )}
-        {updatePreferences.isError && (
-          <div role="alert" style={{ marginTop: 10, fontSize: 12, color: 'var(--coral)', fontFamily: '"Geist", sans-serif' }}>
-            No se pudo guardar. Intenta de nuevo.
-          </div>
-        )}
       </section>
     </div>
   );

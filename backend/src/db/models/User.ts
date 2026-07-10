@@ -23,9 +23,6 @@ const UserSchema = new Schema(
         isDefault: { type: Boolean, default: false },
       },
     ],
-    preferences: {
-      newsletterSubscribed: { type: Boolean, default: false },
-    },
   },
   { timestamps: true }
 );

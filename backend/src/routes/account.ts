@@ -9,10 +9,6 @@ const addressesPayloadSchema = z.object({
   addresses: z.array(savedAddressSchema).max(20).default([]),
 });
 
-const preferencesPayloadSchema = z.object({
-  newsletterSubscribed: z.coerce.boolean(),
-});
-
 type Address = z.infer<typeof savedAddressSchema>;
 
 function normalizeAddresses(addresses: Address[]) {
@@ -61,24 +57,4 @@ export const accountRouter = new Hono<AppEnv>()
     }
 
     return c.json(updatedUser.addresses || []);
-  })
-  .get('/preferences', async (c) => {
-    const currentUser = await User.findOne({ clerkId: c.get('user').clerkId }).select('preferences').lean();
-    return c.json(currentUser?.preferences || { newsletterSubscribed: false });
-  })
-  .patch('/preferences', async (c) => {
-    const parsed = await parseJson(c, preferencesPayloadSchema);
-    if (!parsed.success) return parsed.response;
-
-    const updatedUser = await User.findOneAndUpdate(
-      { clerkId: c.get('user').clerkId },
-      { $set: { preferences: parsed.data } },
-      { returnDocument: 'after' }
-    ).select('preferences').lean();
-
-    if (!updatedUser) {
-      return c.json({ error: 'User not found' }, 404);
-    }
-
-    return c.json(updatedUser.preferences || { newsletterSubscribed: false });
   });
