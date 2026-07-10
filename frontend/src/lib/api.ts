@@ -110,6 +110,7 @@ export const api = {
         address: object;
         promoCode?: string;
         freeSampleId?: string;
+        shippingMethod: "delivery" | "pickup";
       },
       token: string,
     ) =>

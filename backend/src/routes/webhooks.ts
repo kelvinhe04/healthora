@@ -6,10 +6,10 @@ import { Product } from '../db/models/Product';
 import { normalizeOrder } from '../lib/orderStatus';
 import { sendOrderConfirmationEmail } from '../lib/email';
 import { recalculateBestsellers } from '../lib/bestsellers';
-import { addressSchema, cartItemSchema, emailField, moneyFromInput, optionalTextField, textField } from '../lib/validation';
+import { cartItemSchema, emailField, moneyFromInput, optionalTextField, orderAddressSchema, shippingMethodSchema, textField } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
 import { decrementStock, validateCartStock } from '../lib/inventory';
-import { notifyUser } from '../lib/realtime';
+import { notifyAdmins, notifyUser } from '../lib/realtime';
 import { scanAndNotifyLowStock } from '../lib/lowStock';
 
 type CheckoutAddress = {
@@ -41,6 +41,9 @@ const webhookMetadataSchema = z.object({
   discountAmount: moneyFromInput().default(0),
   tax: moneyFromInput().default(0),
   shipping: moneyFromInput().default(0),
+  shippingMethod: shippingMethodSchema.optional(),
+  shippingLabel: optionalTextField(160),
+  shippingEta: optionalTextField(80),
 });
 
 function parseJsonMetadata<T>(value: string, schema: z.ZodType<T>) {
@@ -89,13 +92,20 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
           return c.json({ error: 'Invalid checkout cart metadata', details: parsedCartItems.error.issues }, 400);
         }
 
-        const parsedAddress = parseJsonMetadata(metadata.address, addressSchema);
+        const parsedAddress = parseJsonMetadata(metadata.address, orderAddressSchema);
         if (!parsedAddress.success) {
           return c.json({ error: 'Invalid checkout address metadata', details: parsedAddress.error.issues }, 400);
         }
 
         const cartItems = parsedCartItems.data as CheckoutCartItem[];
-        const address = parsedAddress.data as CheckoutAddress;
+        const parsedAddressData = parsedAddress.data as { name: string; phone: string; address?: string; city?: string; postal?: string };
+        const address: CheckoutAddress = {
+          name: parsedAddressData.name,
+          phone: parsedAddressData.phone,
+          address: parsedAddressData.address || '',
+          city: parsedAddressData.city || '',
+          postal: parsedAddressData.postal || '',
+        };
         const sessionEmail = typeof session.customer_email === 'string' ? session.customer_email : undefined;
         const customerEmail = metadata.customerEmail || sessionEmail;
         console.log('[WEBHOOK] Customer email:', customerEmail);
@@ -137,6 +147,9 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
             discountAmount,
             tax,
             shipping,
+            shippingMethod: metadata.shippingMethod,
+            shippingLabel: metadata.shippingLabel,
+            shippingEta: metadata.shippingEta,
             total,
             paymentStatus: 'paid',
             fulfillmentStatus: 'unfulfilled',
@@ -160,6 +173,9 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
                 discountAmount,
                 tax,
                 shipping,
+                shippingLabel: metadata.shippingLabel,
+                shippingEta: metadata.shippingEta,
+                shippingMethod: metadata.shippingMethod,
                 total,
                 address,
                 createdAt: order.createdAt,
@@ -191,6 +207,18 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
             console.log('[WEBHOOK] order_paid notification created for', metadata.customerId);
           } catch (notifyError) {
             console.error('[WEBHOOK] order_paid notification failed:', notifyError);
+          }
+
+          try {
+            await notifyAdmins({
+              type: 'new_order',
+              title: 'Nuevo pedido',
+              body: `${metadata.customerName || 'Un cliente'} hizo un pedido de $${total.toFixed(2)} (#${order._id.toString().slice(-8).toUpperCase()}).`,
+              link: '/admin?section=orders',
+              data: { orderId: order._id.toString(), total },
+            });
+          } catch (notifyError) {
+            console.error('[WEBHOOK] new_order admin notification failed:', notifyError);
           }
 
           try {

@@ -127,6 +127,9 @@ export interface Order {
   discountAmount?: number;
   tax: number;
   shipping: number;
+  shippingMethod?: 'delivery' | 'pickup';
+  shippingLabel?: string;
+  shippingEta?: string;
   total: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
@@ -194,6 +197,7 @@ export type NotificationType =
   | 'order_paid'
   | 'order_shipped'
   | 'order_status'
+  | 'new_order'
   | 'low_stock'
   | 'new_review'
   | 'broadcast';

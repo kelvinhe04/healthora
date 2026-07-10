@@ -23,6 +23,9 @@ const OrderSchema = new Schema(
     discountAmount: { type: Number, default: 0 },
     tax: Number,
     shipping: Number,
+    shippingMethod: { type: String, enum: ['delivery', 'pickup'] },
+    shippingLabel: String,
+    shippingEta: String,
     total: Number,
     paymentStatus: {
       type: String,

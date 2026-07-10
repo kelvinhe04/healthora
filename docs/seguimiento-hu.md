@@ -48,19 +48,18 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | — | Carrito: items clickeables + editor de variante/combinación | `feat/cart-item-click-and-variant-edit` / PR #178 | Kelvin | Cierra issue #177. Extiende HU-035 (variante persistida en el carrito). Click en imagen/nombre de un item navega a `/product/:id` y cierra el drawer. Cada línea con variantes muestra "CAMBIAR" (estilo Taobao/AliExpress): selector inline de sabor+tamaño (matriz) o variante simple, reusando `resolveVariantById`/`sizesFor`/`pickSizeKeepingCurrent`. `cartStore.changeVariant` combina cantidades si la variante destino ya es otra línea del carrito. Incluye fix relacionado: el quick-add "+" de `ProductCard` (catálogo, recién llegados, recomendados) agregaba productos con variantes sin ninguna variante adjunta (`variant: undefined`), dejando líneas sin chip ni forma de editarlas; corregido con `pickDefaultCartVariant`, que resuelve el combo default al mismo id compuesto que una selección real. |
 | — | Admin: ordenar por precio/stock, conteo por categoría y columna de reseña | `feat/admin-products-sort-and-rating-column` / PR #180 | Kelvin | Cierra issue #179. Headers "Precio"/"Stock" clicables (asc/desc) en la tabla de Gestión de productos, conteo de productos por categoría en los filtros pill, y columna "Reseña" (Stars + promedio/cantidad vía `/reviews/summary`, agregado en una sola consulta en vez de una petición por producto). Incluye fix de datos: `product.rating`/`reviews` traían números inventados del seed inicial (ej. "2340 reseñas" falsas) nunca reconciliados con la colección `Review` real — se quitaron del seed y `seed-reviews.ts` ahora sincroniza automáticamente; y fix de sort: desempate final por `id` para que "Mejor valorados" (catálogo público) y "Reseña" (admin) siempre coincidan en el mismo orden. |
 | — | Admin: filtros, conteos y ordenamiento consistentes en Productos, Pedidos y Clientes | `feat/admin-tables-filters-sort-consistency` / PR #182 | Kelvin | Cierra issue #181. Detectado al revisar el PR #180: Productos, Pedidos y Clientes tenían niveles de funcionalidad distintos. Se nivelan las tres — Productos: filtro Estado (Todos/Activo/Inactivo) con conteo, columna Estado ordenable. Pedidos: conteo en los pills de estado de envío, columnas Total y Fecha ordenables. Clientes: búsqueda por nombre/email (no existía) y columnas Órdenes/Gasto total/Registro ordenables (de paso corrige un bug donde el total de paginación usaba `users.length` en vez de la lista de clientes filtrada). `SortableTh`/`SortClearChip` se movieron a `components/admin/index.tsx` para que las tres tablas compartan el mismo componente. De paso corrige el formato de fecha del admin (Pedidos, Clientes, Errores, ejes de charts): usaban `toLocaleDateString()`/`toLocaleString()` sin locale/timezone, cayendo al formato del navegador (mes/día/año en en-US); nuevo helper `lib/dates.ts` fuerza día/mes/año en America/Panama — con una vuelta extra: el locale `es-PA` de ICU en realidad ordena mes/día/año para el patrón numérico corto (rareza de CLDR propia de Panamá), así que el helper arma el string a mano con `formatToParts` en vez de confiar en el orden automático de `Intl`. |
-| — | Footer: acelerar animación de entrada | `fix/footer-animation-speed` / PR #184 | Kelvin | Cierra issue #183. La secuencia de entrada (letras de "Healthora", descripción, iconos sociales, columnas de links, newsletter, barra inferior) tardaba ~2.5s en asentarse del todo. Delays y stagger comprimidos ~45-55%, rigidez (`stiffness`) de los springs subida ~40-60% manteniendo `damping` similar. |
+| — | Footer: acelerar animación de entrada | `fix/footer-animation-speed` / PR #184 | Kelvin | Closes #183. La secuencia de entrada (letras de "Healthora", descripción, iconos sociales, columnas de links, newsletter, barra inferior) tardaba ~2.5s en asentarse del todo. Delays y stagger comprimidos ~45-55%, rigidez (`stiffness`) de los springs subida ~40-60% manteniendo `damping` similar. |
 
 ## En curso
 
 | HU | Título | Rama | Responsable | Notas |
 |---|---|---|---|---|
 | HU-080 | Optimización de imágenes (Cloudinary, lazy load) | `HU-080-optimizacion-imagenes-cloudinary-lazy-load` / PR #124 | Roy | `srcset`/`sizes` responsive con Cloudinary `f_auto,q_auto`, lazy por defecto y prioridad selectiva para LCP. Issue #84 cerrada; pendiente merge del PR a `main`. |
+| HU-038 / HU-100 | Envío a domicilio vs retiro en tienda en checkout | `fix/hu-038-100-envio-zona-velocidad` / PR #188 | Kelvin | Closes #42, Closes #185. **Alcance simplificado tras revisión manual**: la primera versión diferenciaba por zona (capital/interior, con autodetección desde la ciudad) × velocidad (estándar/express) — 4 tarifas — pero se revirtió a una sola opción binaria (`shippingMethod: 'delivery' \| 'pickup'`) por agregar demasiada superficie de error/validación. `backend/src/lib/shipping.ts` (espejo en frontend): retiro siempre gratis, envío tarifa plana $6.90 (gratis sobre $50, igual que el comportamiento original pre-feature). `Order` guarda `shippingMethod`/`shippingLabel`/`shippingEta`; visible en `Orders.tsx` (cliente), `OrdersSection.tsx` (admin) y ahora también en el email de confirmación. De paso: placeholder de teléfono a formato panameño + `lib/phone.ts` (`formatPanamaPhone`) limita el campo a 8 dígitos con guión automático (antes no limitaba nada), aplicado en Checkout, editar dirección de pedido y direcciones guardadas. Tests: `payment-flow.integration.test.ts`, `shipping.test.ts`, `phone.test.ts`, e2e `checkout.spec.ts`. |
 
 ## Pendientes — nueva funcionalidad (sin iniciar)
 
-| HU | Título | Notas |
-|---|---|---|
-| HU-100 | Opciones de velocidad de entrega en el checkout | Issue #185. Complementa a HU-038 (Cálculo de envío por zona en Panamá, también pendiente): esa calcula el costo según zona (capital/interior), esta agrega la dimensión de velocidad (ej. Estándar 24-48h vs Express) para que el cliente elija. Documentada en `Healthora-Historias-de-Usuario.docx` (Sección II, junto a HU-038 — insertada directamente en el .docx existente, no regenerada desde el script local, que estaba desactualizado respecto al documento real). Prioridad Media, módulo Ecommerce. Sin rama/PR — solo especificada, no implementada. |
+_(ninguna en este momento — ver "En curso" para HU-038/HU-100)_
 
 ## Pendientes — asignadas a Roy (infra, sin tocar código de producto/variantes)
 
@@ -77,6 +76,24 @@ HU-065/066/067/068 ya mergeadas a `main` (ver tabla de Completadas), fuera de or
 En pausa hasta que variantes/UI se estabilicen: HU-081 (HTTP cache — toca API/backend).
 
 ---
+
+## Nota: drift de numeración HU (detectado 2026-07-09)
+
+El `.docx` fuente (`deliverables/Healthora-Historias-de-Usuario.docx`) tiene, desde la sección 3.5 en adelante, dos historias nuevas insertadas (HU-061 "Suscripción de reposición automática" e HU-062 "Recordatorio de recompra", issues #95/#96) que corrieron +2 la numeración de todo lo posterior **en el documento**. Ese corrimiento nunca se propagó a este archivo ni a los títulos de issues ya creados/cerrados, así que hay dos numeraciones en paralelo para el mismo trabajo:
+
+| Feature | Número usado aquí / en el issue | Número actual en el `.docx` |
+|---|---|---|
+| Notificaciones en tiempo real (WebSockets) | HU-061 (issue #65, PR #170) | HU-063 |
+| Rate limiting (pendiente, Roy) | HU-062 | HU-064 |
+| Validación y saneamiento Zod | HU-063 (PR #101) | HU-065 |
+| Security headers (pendiente, Roy) | HU-064 | HU-066 |
+| Logs de auditoría de seguridad | HU-065 (PR #104) | HU-067 |
+| Logging estructurado | HU-066 (PR #105) | HU-068 |
+| Error tracking PostHog | HU-067 (PR #107) | HU-069 |
+| APM y métricas | HU-068 (PR #108) | ~HU-070 (no confirmado) |
+| Alertas y monitoreo de uptime (pendiente, Roy) | HU-069 | ~HU-071 (no confirmado) |
+
+No se renumeró nada de lo ya mergeado (bajo valor, alto riesgo para trabajo con historial/PRs ya cerrados). Si se quiere resolver de raíz, decidir entre: (a) renumerar el `.docx` para que HU-061/062 nuevas se muevan al final (ej. HU-101/102) y todo lo demás vuelva a su número original, o (b) adoptar la numeración nueva del `.docx` y actualizar las filas de esta tabla + títulos de issues abiertos de Roy. Mientras tanto, usar el número de **issue de GitHub** (no el HU-XXX) como identificador sin ambigüedad.
 
 ## Bugs abiertos
 
