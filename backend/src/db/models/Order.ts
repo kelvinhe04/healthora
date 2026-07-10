@@ -16,6 +16,7 @@ const OrderSchema = new Schema(
         variantId: String,
         variantLabel: String,
         isSample: { type: Boolean, default: false },
+        taxExempt: { type: Boolean, default: false },
       },
     ],
     subtotal: Number,

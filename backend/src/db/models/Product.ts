@@ -72,6 +72,9 @@ const ProductSchema = new Schema(
     ],
     active: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
+    // ITBMS (Panama VAT) exemption - certain medications/health items don't pay the 7% tax at
+    // checkout. Product-level only: a product's variants always share its exemption status.
+    taxExempt: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

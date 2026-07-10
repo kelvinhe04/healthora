@@ -10,6 +10,7 @@ import { cartItemSchema, optionalTextField, orderAddressSchema, parseJson, produ
 import { buildPaidLineItem } from '../lib/productVariants';
 import { validateCartStock } from '../lib/inventory';
 import { resolveShipping } from '../lib/shipping';
+import { computeItbms } from '../lib/tax';
 
 type CheckoutBody = {
   items: { productId: string; qty: number; variantId?: string }[];
@@ -97,7 +98,7 @@ export const checkoutRouter = new Hono<AppEnv>()
 
     const discountAmount = promotion?.discountAmount ?? 0;
     const discountedSubtotal = roundMoney(Math.max(0, subtotal - discountAmount));
-    const tax = roundMoney(discountedSubtotal * 0.07);
+    const tax = computeItbms(lineItems, discountAmount, subtotal);
     const shippingResolved = resolveShipping(shippingMethod, discountedSubtotal);
     const shipping = shippingResolved.cost;
 
@@ -128,7 +129,7 @@ export const checkoutRouter = new Hono<AppEnv>()
             price_data: {
               currency: 'usd',
               unit_amount: Math.round(tax * 100),
-              product_data: { name: 'Impuestos' },
+              product_data: { name: 'ITBMS' },
             },
             quantity: 1,
           }] : []),

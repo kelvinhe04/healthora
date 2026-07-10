@@ -8273,6 +8273,9 @@ async function seed() {
       need: CATEGORY_TO_NEED[p.category] ?? '',
       stock: totalStockFor(p),
       sortOrder: i,
+      // ITBMS: medicamentos exentos por defecto (issue #43/HU-039). El admin puede corregir caso
+      // por caso (ej. "otros articulos de salud" fuera de esta categoria) desde el editor.
+      taxExempt: p.category === 'Medicamentos',
     })),
   );
   await Category.insertMany(CATEGORIES);

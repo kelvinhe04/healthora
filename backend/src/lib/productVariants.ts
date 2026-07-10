@@ -26,6 +26,7 @@ type ProductLike = {
   imageUrl?: string;
   images?: Array<{ url: string; isPrimary?: boolean }>;
   variants?: ProductVariant[];
+  taxExempt?: boolean;
 };
 
 // Mirrors frontend/src/lib/productVariants.ts - any non-size type can be the primary dimension
@@ -132,6 +133,7 @@ export function buildPaidLineItem(
       imageUrl: primaryImage,
       category: product.category,
       isSample: true,
+      taxExempt: Boolean(product.taxExempt),
     };
   }
 
@@ -150,6 +152,7 @@ export function buildPaidLineItem(
     isSample: false,
     variantId: item.variantId,
     variantLabel: resolved.label,
+    taxExempt: Boolean(product.taxExempt),
   };
 }
 

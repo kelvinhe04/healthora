@@ -55,6 +55,7 @@ export function productToForm(p: Product): ProductForm {
     tag: p.tag || '',
     stock: String(p.stock),
     active: p.active,
+    taxExempt: Boolean(p.taxExempt),
     benefits: (p.benefits || []).join('\n'),
     usage: p.usage || '',
     ingredients: p.ingredients || '',
@@ -197,6 +198,7 @@ export function formToPayload(f: ProductForm): Partial<Product> {
     ...(f.tag ? { tag: normalizeTag(f.tag) } : {}),
     stock,
     active: f.active,
+    taxExempt: f.taxExempt,
     benefits: f.benefits
       .split('\n')
       .map((b) => b.trim())
