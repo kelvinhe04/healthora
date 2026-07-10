@@ -78,7 +78,7 @@ describe('payment integration flow', () => {
       body: JSON.stringify({
         items: [{ productId: 'vitamin-c-test', qty: 2 }],
         address,
-        shippingZone: 'capital',
+        shippingMethod: 'delivery',
       }),
     });
 
@@ -101,7 +101,7 @@ describe('payment integration flow', () => {
       body: JSON.stringify({
         items: [{ productId: 'vitamin-c-test', qty: 1 }],
         address,
-        shippingZone: 'capital',
+        shippingMethod: 'delivery',
       }),
     });
 

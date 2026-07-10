@@ -6,7 +6,7 @@ import { Product } from '../db/models/Product';
 import { Order } from '../db/models/Order';
 import { stripe } from '../lib/stripe';
 import { getPromotion } from '../lib/promotions';
-import { addressSchema, cartItemSchema, optionalTextField, parseJson, productIdSchema, shippingSpeedSchema, shippingZoneSchema } from '../lib/validation';
+import { addressSchema, cartItemSchema, optionalTextField, parseJson, productIdSchema, shippingMethodSchema } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
 import { validateCartStock } from '../lib/inventory';
 import { resolveShipping } from '../lib/shipping';
@@ -16,8 +16,7 @@ type CheckoutBody = {
   address: { name: string; phone: string; address: string; city: string; postal: string };
   promoCode?: string;
   freeSampleId?: string;
-  shippingZone: 'capital' | 'interior' | 'pickup';
-  shippingSpeed: 'standard' | 'express';
+  shippingMethod: 'delivery' | 'pickup';
 };
 
 const checkoutSchema = z.object({
@@ -25,8 +24,7 @@ const checkoutSchema = z.object({
   address: addressSchema,
   promoCode: optionalTextField(40).transform((code) => code?.toUpperCase()),
   freeSampleId: productIdSchema.optional(),
-  shippingZone: shippingZoneSchema,
-  shippingSpeed: shippingSpeedSchema.default('standard'),
+  shippingMethod: shippingMethodSchema,
 });
 
 function roundMoney(value: number): number {
@@ -40,7 +38,7 @@ export const checkoutRouter = new Hono<AppEnv>()
     if (!parsed.success) return parsed.response;
 
     const body = parsed.data as CheckoutBody;
-    const { items, address, promoCode, freeSampleId, shippingZone, shippingSpeed } = body;
+    const { items, address, promoCode, freeSampleId, shippingMethod } = body;
     const user = c.get('user');
 
     const productIds = [...new Set(items.map((i) => i.productId))];
@@ -91,7 +89,7 @@ export const checkoutRouter = new Hono<AppEnv>()
     const discountAmount = promotion?.discountAmount ?? 0;
     const discountedSubtotal = roundMoney(Math.max(0, subtotal - discountAmount));
     const tax = roundMoney(discountedSubtotal * 0.07);
-    const shippingResolved = resolveShipping({ zone: shippingZone, speed: shippingSpeed }, discountedSubtotal);
+    const shippingResolved = resolveShipping(shippingMethod, discountedSubtotal);
     const shipping = shippingResolved.cost;
 
     try {
@@ -150,8 +148,7 @@ export const checkoutRouter = new Hono<AppEnv>()
           discountedSubtotal: String(discountedSubtotal),
           tax: String(tax),
           shipping: String(shipping),
-          shippingZone,
-          shippingSpeed,
+          shippingMethod,
           shippingLabel: shippingResolved.label,
           shippingEta: shippingResolved.eta,
         },

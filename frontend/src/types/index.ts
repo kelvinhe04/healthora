@@ -127,8 +127,7 @@ export interface Order {
   discountAmount?: number;
   tax: number;
   shipping: number;
-  shippingZone?: 'capital' | 'interior' | 'pickup';
-  shippingSpeed?: 'standard' | 'express';
+  shippingMethod?: 'delivery' | 'pickup';
   shippingLabel?: string;
   shippingEta?: string;
   total: number;

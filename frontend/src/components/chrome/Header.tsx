@@ -12,6 +12,7 @@ import { api } from "../../lib/api";
 import type { SavedAddress } from "../../types";
 import { SignInModal } from "./SignInModal";
 import { useBreakpoint } from "../../hooks/useBreakpoint";
+import { formatPanamaPhone } from "../../lib/phone";
 
 type View =
   | "landing"
@@ -396,8 +397,8 @@ function AddressManagerModal({
               <span style={labelStyle}>Teléfono</span>
               <input
                 value={form.phone}
-                onChange={(e) => onFormChange("phone", e.target.value)}
-                placeholder="+1 555 000 000"
+                onChange={(e) => onFormChange("phone", formatPanamaPhone(e.target.value))}
+                placeholder="6123-4567"
                 style={inputStyle}
               />
             </label>

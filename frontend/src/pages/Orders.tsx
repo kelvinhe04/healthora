@@ -12,6 +12,7 @@ import { useCartStore } from '../store/cartStore';
 import { useUiStore } from '../store/uiStore';
 import { resolveVariantById } from '../lib/productVariants';
 import { formatPanamaFull, formatPanamaMedium } from '../lib/dates';
+import { formatPanamaPhone } from '../lib/phone';
 
 interface OrdersProps {
   onBack: () => void;
@@ -291,7 +292,7 @@ function OrderDetail({
             <div style={{ display: 'grid', gridTemplateColumns: isMobileInner ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 14 }}>
               {([
                 { key: 'name',   label: 'Nombre',       placeholder: 'Nombre completo' },
-                { key: 'phone',  label: 'Teléfono',      placeholder: '+1 555 000 000' },
+                { key: 'phone',  label: 'Teléfono',      placeholder: '6123-4567' },
                 { key: 'city',   label: 'Ciudad',        placeholder: 'Ciudad' },
                 { key: 'postal', label: 'Código postal', placeholder: '10001' },
               ] as const).map(f => (
@@ -634,7 +635,7 @@ export function Orders({ onBack }: OrdersProps) {
               isSavingAddr={editAddrMut.isPending}
               addrError={addrError}
               onStartEditAddr={handleStartEditAddr}
-              onAddrChange={(key, value) => setAddrForm(f => ({ ...f, [key]: value }))}
+              onAddrChange={(key, value) => setAddrForm(f => ({ ...f, [key]: key === 'phone' ? formatPanamaPhone(value) : value }))}
               onSaveAddr={handleSaveAddr}
               onCancelEditAddr={() => { setEditingAddress(false); setAddrError(''); }}
               onReorder={() => { void handleReorder(); }}

@@ -12,7 +12,8 @@ import { useAuth } from '@clerk/clerk-react';
 import { canApplyPromotion, getAvailablePromotionCodes, getPromotion, normalizePromotionCode } from '../lib/promotions';
 import { useCartStore } from '../store/cartStore';
 import { getE2EAuthToken, getE2EUser } from '../lib/e2eAuth';
-import { guessZoneFromCity, resolveShipping, SHIPPING_SPEED_OPTIONS, SHIPPING_ZONE_OPTIONS, type ShippingSpeed, type ShippingZone } from '../lib/shipping';
+import { resolveShipping, SHIPPING_METHOD_OPTIONS, type ShippingMethod } from '../lib/shipping';
+import { formatPanamaPhone } from '../lib/phone';
 
 interface CheckoutProps {
   items: CartItem[];
@@ -99,9 +100,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   }, [isSignedIn, step]);
 
   const [address, setAddress] = useState<OrderAddress>({ name: '', phone: '', address: '', city: '', postal: '' });
-  const [shippingZone, setShippingZone] = useState<ShippingZone>('capital');
-  const [zoneAutoDetected, setZoneAutoDetected] = useState(true);
-  const [shippingSpeed, setShippingSpeed] = useState<ShippingSpeed>('standard');
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('delivery');
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
@@ -182,16 +181,11 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     };
   }, [appliedPromoCode, getEffectiveToken, isSignedIn]);
 
-  useEffect(() => {
-    if (!zoneAutoDetected) return;
-    setShippingZone(guessZoneFromCity(address.city));
-  }, [address.city, zoneAutoDetected]);
-
   const subtotal = roundMoney(items.reduce((s, it) => s + (it.variant?.price ?? it.product.price) * it.qty, 0));
   const appliedPromo = appliedPromoCode ? getPromotion(appliedPromoCode, items) : null;
   const discountAmount = appliedPromo?.discountAmount ?? 0;
   const discountedSubtotal = roundMoney(Math.max(0, subtotal - discountAmount));
-  const shippingResolved = resolveShipping(shippingZone, shippingSpeed, discountedSubtotal);
+  const shippingResolved = resolveShipping(shippingMethod, discountedSubtotal);
   const shipping = shippingResolved.cost;
   const tax = roundMoney(discountedSubtotal * 0.07);
   const total = roundMoney(discountedSubtotal + shipping + tax);
@@ -241,8 +235,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
           address,
           promoCode: appliedPromo?.code,
           freeSampleId: freeSample?.id,
-          shippingZone,
-          shippingSpeed,
+          shippingMethod,
         },
         token!
       );
@@ -362,7 +355,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             )}
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginTop: 20 }}>
               <FormInput label="Nombre completo" value={address.name} onChange={(v) => { setAddress({ ...address, name: v }); setAddressError(''); }} placeholder="María Gómez" required />
-              <FormInput label="Teléfono" value={address.phone} onChange={(v) => { setAddress({ ...address, phone: v }); setAddressError(''); }} placeholder="+507 6123-4567" required />
+              <FormInput label="Teléfono" value={address.phone} onChange={(v) => { setAddress({ ...address, phone: formatPanamaPhone(v) }); setAddressError(''); }} placeholder="6123-4567" required />
               <FormInput label="Dirección" value={address.address} onChange={(v) => { setAddress({ ...address, address: v }); setAddressError(''); }} placeholder="Calle, número, apto" full required />
               <FormInput label="Ciudad" value={address.city} onChange={(v) => { setAddress({ ...address, city: v }); setAddressError(''); }} placeholder="Ciudad" required />
               <FormInput label="Código postal" value={address.postal} onChange={(v) => { setAddress({ ...address, postal: v.replace(/\D/g, '') }); setAddressError(''); }} placeholder="10001" required />
@@ -370,61 +363,32 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             {addressError && <div role="alert" style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{addressError}</div>}
 
             <div style={{ marginTop: 20 }}>
-              <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>
-                Zona de entrega {zoneAutoDetected && address.city.trim() && <span style={{ color: 'var(--green)', textTransform: 'none', letterSpacing: 0 }}>· detectada por tu ciudad</span>}
-              </span>
+              <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>Entrega</span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
-                {SHIPPING_ZONE_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => { setShippingZone(option.value); setZoneAutoDetected(false); }}
-                    style={{
-                      border: shippingZone === option.value ? '1px solid var(--green)' : '1px solid var(--ink-20)',
-                      background: shippingZone === option.value ? 'var(--ink-06)' : 'var(--cream)',
-                      borderRadius: 999,
-                      padding: '8px 12px',
-                      cursor: 'pointer',
-                      fontSize: 12,
-                      fontFamily: '"Geist", sans-serif',
-                      color: 'var(--ink)',
-                    }}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+                {SHIPPING_METHOD_OPTIONS.map((option) => {
+                  const resolved = resolveShipping(option.value, discountedSubtotal);
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setShippingMethod(option.value)}
+                      style={{
+                        border: shippingMethod === option.value ? '1px solid var(--green)' : '1px solid var(--ink-20)',
+                        background: shippingMethod === option.value ? 'var(--ink-06)' : 'var(--cream)',
+                        borderRadius: 12,
+                        padding: '10px 14px',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        fontFamily: '"Geist", sans-serif',
+                      }}
+                    >
+                      <div style={{ fontSize: 13, color: 'var(--ink)' }}>{option.label} <span style={{ color: 'var(--ink-60)' }}>· {resolved.eta}</span></div>
+                      <div style={{ fontSize: 12, color: 'var(--green)', marginTop: 2 }}>{resolved.cost === 0 ? 'GRATIS' : `$${resolved.cost.toFixed(2)}`}</div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-
-            {shippingZone !== 'pickup' && (
-              <div style={{ marginTop: 16 }}>
-                <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>Velocidad de envío</span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
-                  {SHIPPING_SPEED_OPTIONS.map((option) => {
-                    const resolved = resolveShipping(shippingZone, option.value, discountedSubtotal);
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setShippingSpeed(option.value)}
-                        style={{
-                          border: shippingSpeed === option.value ? '1px solid var(--green)' : '1px solid var(--ink-20)',
-                          background: shippingSpeed === option.value ? 'var(--ink-06)' : 'var(--cream)',
-                          borderRadius: 12,
-                          padding: '10px 14px',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          fontFamily: '"Geist", sans-serif',
-                        }}
-                      >
-                        <div style={{ fontSize: 13, color: 'var(--ink)' }}>{option.label} <span style={{ color: 'var(--ink-60)' }}>· {resolved.eta}</span></div>
-                        <div style={{ fontSize: 12, color: 'var(--green)', marginTop: 2 }}>{resolved.cost === 0 ? 'GRATIS' : `$${resolved.cost.toFixed(2)}`}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {step === 2 && (
               <AnimatedButton aria-label="Continuar al pago" variant="primary" onClick={() => { if (!isAddressValid) { setAddressError('Por favor completa todos los campos requeridos'); } else { setStep(3); }}} style={{ marginTop: 16 }} disabled={!isAddressValid} text="Continuar al pago" />

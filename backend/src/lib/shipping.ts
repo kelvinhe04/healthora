@@ -1,26 +1,9 @@
-export type ShippingZone = 'capital' | 'interior' | 'pickup';
-export type ShippingSpeed = 'standard' | 'express';
+export type ShippingMethod = 'delivery' | 'pickup';
 
-export const SHIPPING_ZONES: ShippingZone[] = ['capital', 'interior', 'pickup'];
-export const SHIPPING_SPEEDS: ShippingSpeed[] = ['standard', 'express'];
+export const SHIPPING_METHODS: ShippingMethod[] = ['delivery', 'pickup'];
 
-const RATES: Record<Exclude<ShippingZone, 'pickup'>, Record<ShippingSpeed, { cost: number; eta: string }>> = {
-  capital: {
-    standard: { cost: 3.5, eta: '3-4 días' },
-    express: { cost: 7.9, eta: 'Mismo día / 24h' },
-  },
-  interior: {
-    standard: { cost: 8.9, eta: '5-7 días' },
-    express: { cost: 14.9, eta: '2-3 días' },
-  },
-};
-
+const DELIVERY_RATE = { cost: 6.9, eta: '3-5 días' };
 const FREE_SHIPPING_THRESHOLD = 50;
-
-export interface ShippingSelection {
-  zone: ShippingZone;
-  speed: ShippingSpeed;
-}
 
 export interface ResolvedShipping {
   cost: number;
@@ -28,25 +11,16 @@ export interface ResolvedShipping {
   eta: string;
 }
 
-const ZONE_LABELS: Record<ShippingZone, string> = {
-  capital: 'Ciudad de Panamá / área metropolitana',
-  interior: 'Interior del país',
-  pickup: 'Retiro en tienda',
-};
-
-export function resolveShipping(selection: ShippingSelection, discountedSubtotal: number): ResolvedShipping {
-  const { zone, speed } = selection;
-
-  if (zone === 'pickup') {
-    return { cost: 0, label: `${ZONE_LABELS.pickup}`, eta: 'Listo en 24h' };
+export function resolveShipping(method: ShippingMethod, discountedSubtotal: number): ResolvedShipping {
+  if (method === 'pickup') {
+    return { cost: 0, label: 'Retiro en tienda', eta: 'Listo en 24h' };
   }
 
-  const rate = RATES[zone][speed];
   const freeShipping = discountedSubtotal >= FREE_SHIPPING_THRESHOLD || discountedSubtotal === 0;
 
   return {
-    cost: freeShipping ? 0 : rate.cost,
-    label: `${ZONE_LABELS[zone]} · ${speed === 'express' ? 'Express' : 'Estándar'}`,
-    eta: rate.eta,
+    cost: freeShipping ? 0 : DELIVERY_RATE.cost,
+    label: 'Envío a domicilio',
+    eta: DELIVERY_RATE.eta,
   };
 }

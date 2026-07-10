@@ -6,7 +6,7 @@ import { Product } from '../db/models/Product';
 import { normalizeOrder } from '../lib/orderStatus';
 import { sendOrderConfirmationEmail } from '../lib/email';
 import { recalculateBestsellers } from '../lib/bestsellers';
-import { addressSchema, cartItemSchema, emailField, moneyFromInput, optionalTextField, shippingSpeedSchema, shippingZoneSchema, textField } from '../lib/validation';
+import { addressSchema, cartItemSchema, emailField, moneyFromInput, optionalTextField, shippingMethodSchema, textField } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
 import { decrementStock, validateCartStock } from '../lib/inventory';
 import { notifyUser } from '../lib/realtime';
@@ -41,8 +41,7 @@ const webhookMetadataSchema = z.object({
   discountAmount: moneyFromInput().default(0),
   tax: moneyFromInput().default(0),
   shipping: moneyFromInput().default(0),
-  shippingZone: shippingZoneSchema.optional(),
-  shippingSpeed: shippingSpeedSchema.optional(),
+  shippingMethod: shippingMethodSchema.optional(),
   shippingLabel: optionalTextField(160),
   shippingEta: optionalTextField(80),
 });
@@ -141,8 +140,7 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
             discountAmount,
             tax,
             shipping,
-            shippingZone: metadata.shippingZone,
-            shippingSpeed: metadata.shippingSpeed,
+            shippingMethod: metadata.shippingMethod,
             shippingLabel: metadata.shippingLabel,
             shippingEta: metadata.shippingEta,
             total,
