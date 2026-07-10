@@ -1,7 +1,7 @@
 import { connectDB } from './connection';
 import { Order } from './models/Order';
 import { Product } from './models/Product';
-import { recalculateBestsellers, recalculateNew } from '../lib/bestsellers';
+import { recalculateBestsellers, recalculateNew, NEW_TOP_N } from '../lib/bestsellers';
 import { resolveVariantPricing, resolveVariantImage } from '../lib/productVariants';
 
 type SeedProduct = {
@@ -188,12 +188,12 @@ async function seedOrders() {
   await Order.insertMany(orders);
   console.log(`Seeded ${ORDER_COUNT} historical orders (last 6 months with real products)`);
 
-  // Stamp 4 random products with recent createdAt so recalculateNew() picks them up
+  // Stamp NEW_TOP_N random products with recent createdAt so recalculateNew() picks them up
   // Use the native collection to bypass Mongoose's createdAt immutability
-  const shuffled = [...products].sort(() => Math.random() - 0.5).slice(0, 4);
+  const shuffled = [...products].sort(() => Math.random() - 0.5).slice(0, NEW_TOP_N);
   const now = Date.now();
   for (let i = 0; i < shuffled.length; i++) {
-    const daysAgo = i; // 0, 1, 2, 3 days ago
+    const daysAgo = i; // 0, 1, 2, ... days ago
     const recentDate = new Date(now - daysAgo * 24 * 60 * 60 * 1000);
     await Product.collection.updateOne({ id: shuffled[i].id }, { $set: { createdAt: recentDate } });
   }
