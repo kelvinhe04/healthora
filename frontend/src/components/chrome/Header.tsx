@@ -794,6 +794,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   const navLinks = [
     { label: "Categorías", anchor: "categorias" },
     { label: "Más vendidos", anchor: "bestsellers" },
+    { label: "Vistos recientemente", anchor: "vistos-recientemente" },
     { label: "Ofertas", anchor: "ofertas" },
     { label: "Recién llegados", anchor: "nuevos" },
     { label: "Marcas", anchor: "marcas" },

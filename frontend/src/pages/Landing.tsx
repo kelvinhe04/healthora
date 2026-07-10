@@ -8,7 +8,7 @@ import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 
 gsap.registerPlugin(ScrollTrigger);
 import type { Product, Category, ProductVariant } from '../types';
-import { ProductCard, ProductCardSkeleton } from '../components/shared/ProductCard';
+import { ProductRow } from '../components/shared/ProductRow';
 import { RecentlyViewedSection } from '../components/shared/RecentlyViewedSection';
 import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
@@ -636,15 +636,15 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   }, [reviewStats]);
 
   const bestSellers = useMemo(() => {
-    const tagged = products.filter((p) => p.tag === 'Más vendido').slice(0, 4);
+    const tagged = products.filter((p) => p.tag === 'Más vendido').slice(0, 8);
     if (tagged.length > 0) return tagged;
-    return [...products].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, 4);
+    return [...products].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, 8);
   }, [products]);
 
   const featured = useMemo(() => {
-    const tagged = products.filter((p) => p.tag === 'Nuevo').slice(0, 4);
+    const tagged = products.filter((p) => p.tag === 'Nuevo').slice(0, 8);
     if (tagged.length > 0) return tagged;
-    return products.slice(0, 4);
+    return products.slice(0, 8);
   }, [products]);
   
   const activeHero = HERO_CONTENT[activeHeroIdx];
@@ -861,16 +861,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           </div>
           <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Ver todos" />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 12 : 20 }}>
-          {showProductsSkeleton
-            ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
-            : bestSellers.map((p, i) => (
-                <StaggerItem key={p.id} index={i}>
-                  <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} priority={i < (isMobile ? 2 : 4)} sectionKey="bestsellers" />
-                </StaggerItem>
-              ))
-          }
-        </div>
+        <ProductRow products={bestSellers} onOpenProduct={onOpenProduct} onAdd={onAdd} sectionKey="bestsellers" loading={showProductsSkeleton} priorityCount={isMobile ? 2 : 4} />
       </RevealSection>
 
       <RevealSection style={{ padding: secPad }} delay={70}>
@@ -1086,16 +1077,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           </div>
           <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Ver catálogo completo" />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 12 : 20 }}>
-          {showProductsSkeleton
-            ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
-            : featured.map((p, i) => (
-                <StaggerItem key={p.id} index={i}>
-                  <ProductCard product={p} onClick={onOpenProduct} onAdd={onAdd} sectionKey="nuevos" />
-                </StaggerItem>
-              ))
-          }
-        </div>
+        <ProductRow products={featured} onOpenProduct={onOpenProduct} onAdd={onAdd} sectionKey="nuevos" loading={showProductsSkeleton} />
       </RevealSection>
 
       {/* BRANDS */}
