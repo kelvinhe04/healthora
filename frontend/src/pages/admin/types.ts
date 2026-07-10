@@ -10,6 +10,15 @@ import type {
 import type { MatrixState } from './variantMatrix';
 import { emptyMatrixState } from './variantMatrix';
 
+/** Espejo del default del backend (backend/src/lib/realtime.ts, LOW_STOCK_THRESHOLD) para mostrar
+ * el placeholder correcto cuando un producto no tiene umbral propio. El backend sigue siendo la
+ * fuente de verdad real (variable de entorno) - esto es solo para la UI. */
+export const DEFAULT_LOW_STOCK_THRESHOLD = 5;
+
+export function effectiveLowStockThreshold(product: Pick<Product, 'lowStockThreshold'>): number {
+  return product.lowStockThreshold ?? DEFAULT_LOW_STOCK_THRESHOLD;
+}
+
 export type VariantFormRow = {
   id: string;
   label: string;
@@ -231,6 +240,8 @@ export type ProductForm = {
   tag: string;
   stock: string;
   active: boolean;
+  /** Vacio = usa el default global del backend. */
+  lowStockThreshold: string;
   benefits: string;
   usage: string;
   ingredients: string;
@@ -260,6 +271,7 @@ export const emptyForm: ProductForm = {
   tag: "",
   stock: "0",
   active: true,
+  lowStockThreshold: "",
   benefits: "",
   usage: "",
   ingredients: "",

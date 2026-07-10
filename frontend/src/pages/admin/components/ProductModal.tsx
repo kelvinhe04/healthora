@@ -4,7 +4,7 @@ import { DateInputDDMMYYYY, iconBtnAd } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
-import { emptyForm, type ProductForm } from '../types';
+import { DEFAULT_LOW_STOCK_THRESHOLD, emptyForm, type ProductForm } from '../types';
 import { formToPayload, productToForm } from '../utils';
 import { FormattedTextarea } from './FormattedTextarea';
 import { ImageDropZone } from './ImageDropZone';
@@ -444,6 +444,17 @@ export function ProductModal({
               value={form.short}
               onChange={setF("short")}
               placeholder="Breve descripción del producto…"
+            />
+          </div>
+          <div style={{ ...fieldS, maxWidth: 220, marginTop: 12 }}>
+            <label style={labelS}>Umbral de stock bajo</label>
+            <input
+              style={inputS}
+              type="number"
+              value={form.lowStockThreshold}
+              onChange={setF("lowStockThreshold")}
+              min={0}
+              placeholder={`Global (${DEFAULT_LOW_STOCK_THRESHOLD})`}
             />
           </div>
           <div style={dividerS} />

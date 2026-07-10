@@ -98,6 +98,7 @@ const productPayloadSchema = z.object({
   variants: z.array(productVariantSchema).max(100).optional(),
   active: z.coerce.boolean().default(true),
   sortOrder: sortOrderSchema.default(0),
+  lowStockThreshold: z.coerce.number().int().min(0).max(999999).nullable().optional(),
 });
 
 const productCreateSchema = productPayloadSchema.refine(

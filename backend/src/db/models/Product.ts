@@ -72,6 +72,10 @@ const ProductSchema = new Schema(
     ],
     active: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
+    // Umbral de stock bajo especifico de este producto (HU-055). Sin definir, se usa el default
+    // global LOW_STOCK_THRESHOLD (backend/src/lib/realtime.ts) tanto para las alertas en tiempo
+    // real como para el widget "Stock bajo" del dashboard.
+    lowStockThreshold: Number,
   },
   { timestamps: true }
 );

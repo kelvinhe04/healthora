@@ -27,6 +27,9 @@ interface ProductLike {
   /** Mongo document id (ObjectId or its string form) - carried into the notification so the
    * frontend can deep-link straight into the admin edit modal for this product. */
   _id?: unknown;
+  /** Per-product override of the global LOW_STOCK_THRESHOLD (HU-055). Undefined falls back to
+   * the global default in maybeNotifyLowStock. */
+  lowStockThreshold?: number | null;
 }
 
 /** Break a product into its stock cells: product-level, per simple variant, or per sabor×tamaño
@@ -79,9 +82,10 @@ export function enumerateStockCells(product: ProductLike): LowStockCell[] {
 /** Scan every stock cell of a product and fire a (deduped) low-stock alert for each critical one.
  * Returns the cells that triggered an alert. */
 export async function scanAndNotifyLowStock(product: ProductLike, opts: { threshold?: number } = {}) {
+  const threshold = opts.threshold ?? product.lowStockThreshold ?? undefined;
   const triggered: LowStockCell[] = [];
   for (const cell of enumerateStockCells(product)) {
-    const result = await maybeNotifyLowStock(cell, opts);
+    const result = await maybeNotifyLowStock(cell, { ...opts, threshold });
     if (result) triggered.push(cell);
   }
   return triggered;
