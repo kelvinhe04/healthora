@@ -71,7 +71,7 @@ export function ProductRow({ products, onOpenProduct, onAdd, sectionKey, loading
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    cursor: enabled ? 'pointer' : 'default',
+    cursor: enabled ? 'pointer' : 'not-allowed',
     opacity: enabled ? 1 : 0.5,
     boxShadow: '0 12px 30px -10px rgba(0,0,0,0.4)',
     zIndex: 3,
