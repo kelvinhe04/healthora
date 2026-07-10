@@ -14,12 +14,12 @@ export const SHIPPING_SPEED_OPTIONS: { value: ShippingSpeed; label: string }[] =
 
 const RATES: Record<Exclude<ShippingZone, 'pickup'>, Record<ShippingSpeed, { cost: number; eta: string }>> = {
   capital: {
-    standard: { cost: 3.5, eta: '24-48h' },
-    express: { cost: 7.9, eta: 'Mismo día / next-day' },
+    standard: { cost: 3.5, eta: '3-4 días' },
+    express: { cost: 7.9, eta: 'Mismo día / 24h' },
   },
   interior: {
-    standard: { cost: 8.9, eta: '3-5 días' },
-    express: { cost: 14.9, eta: '1-2 días' },
+    standard: { cost: 8.9, eta: '5-7 días' },
+    express: { cost: 14.9, eta: '2-3 días' },
   },
 };
 
