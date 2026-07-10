@@ -6,14 +6,14 @@ import { Product } from '../db/models/Product';
 import { Order } from '../db/models/Order';
 import { stripe } from '../lib/stripe';
 import { getPromotion } from '../lib/promotions';
-import { addressSchema, cartItemSchema, optionalTextField, parseJson, productIdSchema, shippingMethodSchema } from '../lib/validation';
+import { cartItemSchema, optionalTextField, orderAddressSchema, parseJson, productIdSchema, requireFullAddress, shippingMethodSchema } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
 import { validateCartStock } from '../lib/inventory';
 import { resolveShipping } from '../lib/shipping';
 
 type CheckoutBody = {
   items: { productId: string; qty: number; variantId?: string }[];
-  address: { name: string; phone: string; address: string; city: string; postal: string };
+  address: { name: string; phone: string; address?: string; city?: string; postal?: string };
   promoCode?: string;
   freeSampleId?: string;
   shippingMethod: 'delivery' | 'pickup';
@@ -21,10 +21,12 @@ type CheckoutBody = {
 
 const checkoutSchema = z.object({
   items: z.array(cartItemSchema).min(1).max(100),
-  address: addressSchema,
+  address: orderAddressSchema,
   promoCode: optionalTextField(40).transform((code) => code?.toUpperCase()),
   freeSampleId: productIdSchema.optional(),
   shippingMethod: shippingMethodSchema,
+}).superRefine((body, ctx) => {
+  if (body.shippingMethod !== 'pickup') requireFullAddress(ctx, body.address);
 });
 
 function roundMoney(value: number): number {
@@ -38,7 +40,14 @@ export const checkoutRouter = new Hono<AppEnv>()
     if (!parsed.success) return parsed.response;
 
     const body = parsed.data as CheckoutBody;
-    const { items, address, promoCode, freeSampleId, shippingMethod } = body;
+    const { items, promoCode, freeSampleId, shippingMethod } = body;
+    const address = {
+      name: body.address.name,
+      phone: body.address.phone,
+      address: body.address.address || '',
+      city: body.address.city || '',
+      postal: body.address.postal || '',
+    };
     const user = c.get('user');
 
     const productIds = [...new Set(items.map((i) => i.productId))];

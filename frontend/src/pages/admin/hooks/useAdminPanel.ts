@@ -9,6 +9,7 @@ import { useBreakpoint } from '../../../hooks/useBreakpoint';
 import {
   fulfillmentStatusLabels,
   fulfillmentStatusOptions,
+  orderShippingMethodOptions,
   type AdminAccess,
   type AdminOrder,
   type AdminPage,
@@ -81,6 +82,7 @@ export function useAdminPanel({
     }, { replace: true });
   }, [page]);
 const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
+  const [orderShippingMethodFilter, setOrderShippingMethodFilter] = useState("");
   const [usersLoading, setUsersLoading] = useState(true);
 
   useEffect(() => {
@@ -188,6 +190,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     customerName: string;
     from: FulfillmentStatus;
     to: FulfillmentStatus;
+    shippingMethod?: 'delivery' | 'pickup';
   } | null>(null);
 
   useEffect(() => {
@@ -494,7 +497,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
 
   useEffect(() => {
     setOrdersPage(1);
-  }, [orderFulfillmentFilter, orderSearch, orderSort]);
+  }, [orderFulfillmentFilter, orderShippingMethodFilter, orderSearch, orderSort]);
 
   useEffect(() => {
     setProductsPage(1);
@@ -641,6 +644,19 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     [ordersForFulfillmentCounts],
   );
 
+  const orderShippingMethodCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        orderShippingMethodOptions.map((method) => [
+          method,
+          method
+            ? ordersForFulfillmentCounts.filter((o) => (o.shippingMethod || "delivery") === method).length
+            : ordersForFulfillmentCounts.length,
+        ]),
+      ),
+    [ordersForFulfillmentCounts],
+  );
+
   const displayedOrders = useMemo(() => {
     const term = orderSearch.toLowerCase();
     const filtered = (orders || []).filter((o) => {
@@ -652,7 +668,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       const matchFulfillment =
         !orderFulfillmentFilter ||
         o.fulfillmentStatus === orderFulfillmentFilter;
-      return matchSearch && matchFulfillment;
+      const matchShippingMethod =
+        !orderShippingMethodFilter ||
+        (o.shippingMethod || "delivery") === orderShippingMethodFilter;
+      return matchSearch && matchFulfillment && matchShippingMethod;
     });
     if (!orderSort.key) return filtered;
     const sorted = filtered.slice();
@@ -667,7 +686,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       });
     }
     return sorted;
-  }, [orders, orderSearch, orderFulfillmentFilter, orderSort]);
+  }, [orders, orderSearch, orderFulfillmentFilter, orderShippingMethodFilter, orderSort]);
 
   const paginatedOrders = useMemo(
     () => paginateItems(displayedOrders, ordersPage),
@@ -747,6 +766,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     orderFulfillmentCounts,
     fulfillmentStatusOptions,
     fulfillmentStatusLabels,
+    orderShippingMethodFilter,
+    setOrderShippingMethodFilter,
+    orderShippingMethodCounts,
+    orderShippingMethodOptions,
     orderSort,
     toggleOrderSort,
     clearOrderSort,

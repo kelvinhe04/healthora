@@ -42,6 +42,14 @@ export function NotificationsRealtime() {
         mergePushedNotification(current ?? EMPTY_INBOX, notification),
       );
       pushToastRef.current(notification);
+
+      // A new order only ever reaches an admin socket (server-side audience routing), so no role
+      // check is needed here - refresh the admin orders table + dashboard KPIs so a just-placed
+      // order shows up without a manual page reload.
+      if (notification.type === 'new_order') {
+        void queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+        void queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+      }
     };
 
     const scheduleReconnect = () => {

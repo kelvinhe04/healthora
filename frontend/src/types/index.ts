@@ -197,6 +197,7 @@ export type NotificationType =
   | 'order_paid'
   | 'order_shipped'
   | 'order_status'
+  | 'new_order'
   | 'low_stock'
   | 'new_review'
   | 'broadcast';

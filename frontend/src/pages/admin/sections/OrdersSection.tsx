@@ -18,6 +18,7 @@ import { PaginationControls } from '../components/PaginationControls';
 import { useAdminPanelContext } from '../AdminPanelContext';
 import type { OrderSortKey } from '../hooks/useAdminPanel';
 import { formatPanamaShortDate, formatPanamaTime } from '../../../lib/dates';
+import { getFulfillmentStatusLabel, orderShippingMethodLabels } from '../types';
 
 const ORDER_SORT_LABEL: Record<OrderSortKey, string> = {
   total: 'Total',
@@ -35,6 +36,10 @@ export function OrdersSection() {
   orderFulfillmentCounts,
   fulfillmentStatusOptions,
   fulfillmentStatusLabels,
+  orderShippingMethodFilter,
+  setOrderShippingMethodFilter,
+  orderShippingMethodCounts,
+  orderShippingMethodOptions,
   orderSort,
   toggleOrderSort,
   clearOrderSort,
@@ -66,24 +71,30 @@ export function OrdersSection() {
               <div
                 style={{
                   display: "flex",
-                  gap: 12,
+                  flexDirection: "column",
+                  gap: 14,
                   marginBottom: 20,
-                  alignItems: "center",
                 }}
               >
                 <Skeleton height={36} width={296} borderRadius={999} />
-                {[100, 80, 90, 72, 86, 78].map((w, i) => (
-                  <Skeleton key={i} height={32} width={w} borderRadius={999} />
-                ))}
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  {[100, 80, 90, 72, 86].map((w, i) => (
+                    <Skeleton key={i} height={32} width={w} borderRadius={999} />
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  {[100, 130, 110].map((w, i) => (
+                    <Skeleton key={i} height={32} width={w} borderRadius={999} />
+                  ))}
+                </div>
               </div>
             ) : (
               <div
                 style={{
                   display: "flex",
-                  gap: 12,
+                  flexDirection: "column",
+                  gap: 14,
                   marginBottom: 20,
-                  alignItems: "center",
-                  flexWrap: "wrap",
                 }}
               >
                 <div
@@ -137,50 +148,142 @@ export function OrdersSection() {
                 <div
                   style={{
                     display: "flex",
-                    gap: 6,
+                    alignItems: "center",
+                    gap: 12,
                     flexWrap: "wrap",
                   }}
                 >
-                  {fulfillmentStatusOptions.map((status) => (
-                    <button
-                      key={status}
-                      onClick={() => setOrderFulfillmentFilter(status)}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        padding: "7px 14px",
-                        borderRadius: 999,
-                        fontSize: 12,
-                        cursor: "pointer",
-                        border:
-                          "1px solid " +
-                          (orderFulfillmentFilter === status
-                            ? "var(--ink)"
-                            : "var(--ink-20)"),
-                        background:
-                          orderFulfillmentFilter === status
-                            ? "var(--ink)"
-                            : "transparent",
-                        color:
-                          orderFulfillmentFilter === status
-                            ? "var(--cream)"
-                            : "var(--ink)",
-                        fontFamily: '"Geist", sans-serif',
-                      }}
-                    >
-                      <span>{fulfillmentStatusLabels[status]}</span>
-                      <span
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontFamily: '"JetBrains Mono", monospace',
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      color: "var(--ink-40)",
+                      flexShrink: 0,
+                      width: 48,
+                    }}
+                  >
+                    Estado
+                  </span>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {fulfillmentStatusOptions.map((status) => (
+                      <button
+                        key={status}
+                        onClick={() => setOrderFulfillmentFilter(status)}
                         style={{
-                          fontSize: 10,
-                          fontFamily: '"JetBrains Mono", monospace',
-                          opacity: orderFulfillmentFilter === status ? 0.8 : 0.6,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "7px 14px",
+                          borderRadius: 999,
+                          fontSize: 12,
+                          cursor: "pointer",
+                          border:
+                            "1px solid " +
+                            (orderFulfillmentFilter === status
+                              ? "var(--ink)"
+                              : "var(--ink-20)"),
+                          background:
+                            orderFulfillmentFilter === status
+                              ? "var(--ink)"
+                              : "transparent",
+                          color:
+                            orderFulfillmentFilter === status
+                              ? "var(--cream)"
+                              : "var(--ink)",
+                          fontFamily: '"Geist", sans-serif',
                         }}
                       >
-                        {orderFulfillmentCounts[status] ?? 0}
-                      </span>
-                    </button>
-                  ))}
+                        <span>{fulfillmentStatusLabels[status]}</span>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontFamily: '"JetBrains Mono", monospace',
+                            opacity: orderFulfillmentFilter === status ? 0.8 : 0.6,
+                          }}
+                        >
+                          {orderFulfillmentCounts[status] ?? 0}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontFamily: '"JetBrains Mono", monospace',
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      color: "var(--ink-40)",
+                      flexShrink: 0,
+                      width: 48,
+                    }}
+                  >
+                    Envío
+                  </span>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {orderShippingMethodOptions.map((method) => (
+                      <button
+                        key={method || "all"}
+                        onClick={() => setOrderShippingMethodFilter(method)}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "7px 14px",
+                          borderRadius: 999,
+                          fontSize: 12,
+                          cursor: "pointer",
+                          border:
+                            "1px solid " +
+                            (orderShippingMethodFilter === method
+                              ? "var(--green)"
+                              : "var(--ink-20)"),
+                          background:
+                            orderShippingMethodFilter === method
+                              ? "var(--green)"
+                              : "transparent",
+                          color:
+                            orderShippingMethodFilter === method
+                              ? "var(--cream)"
+                              : "var(--ink)",
+                          fontFamily: '"Geist", sans-serif',
+                        }}
+                      >
+                        <span>{orderShippingMethodLabels[method]}</span>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontFamily: '"JetBrains Mono", monospace',
+                            opacity: orderShippingMethodFilter === method ? 0.8 : 0.6,
+                          }}
+                        >
+                          {orderShippingMethodCounts[method] ?? 0}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -214,6 +317,9 @@ export function OrdersSection() {
                     </div>
                     <div style={{ flex: 1.8 }}>
                       <Skeleton height={9} width={88} borderRadius={3} />
+                    </div>
+                    <div style={{ flexShrink: 0, width: 90 }}>
+                      <Skeleton height={9} width={46} borderRadius={3} />
                     </div>
                     <div style={{ flex: 1.2 }}>
                       <Skeleton height={9} width={62} borderRadius={3} />
@@ -272,6 +378,13 @@ export function OrdersSection() {
                           <Skeleton height={10} width="60%" borderRadius={4} />
                         </div>
                       </div>
+                      {/* Envío: pill */}
+                      <Skeleton
+                        height={22}
+                        width={90}
+                        borderRadius={999}
+                        style={{ flexShrink: 0 }}
+                      />
                       {/* Productos: count label + 2 items */}
                       <div
                         style={{
@@ -364,7 +477,8 @@ export function OrdersSection() {
                 <thead>
                   <tr>
                     <th style={th}>Orden</th>
-                    <th style={th}>Cliente / Envío</th>
+                    <th style={th}>Cliente / Dirección</th>
+                    <th style={th}>Envío</th>
                     <th style={th}>Productos</th>
                     <SortableTh label="Total" sortKey="total" activeSort={orderSort} onSort={toggleOrderSort} />
                     <th style={th}>Pago</th>
@@ -405,24 +519,22 @@ export function OrdersSection() {
                             }}
                           >
                             {order.address.name} · {order.address.phone}
-                            <br />
-                            {order.address.address}, {order.address.city} ·{" "}
-                            {order.address.postal}
+                            {order.shippingMethod !== "pickup" && (
+                              <>
+                                <br />
+                                {order.address.address}, {order.address.city} ·{" "}
+                                {order.address.postal}
+                              </>
+                            )}
                           </div>
                         )}
-                        {order.shippingLabel && (
-                          <div
-                            style={{
-                              marginTop: 6,
-                              fontSize: 11,
-                              fontFamily: '"JetBrains Mono", monospace',
-                              color: "var(--green)",
-                            }}
-                          >
-                            {order.shippingLabel}
-                            {order.shippingEta ? ` · ${order.shippingEta}` : ""}
-                          </div>
-                        )}
+                      </td>
+                      <td style={td}>
+                        <StatusPill
+                          status={
+                            orderShippingMethodLabels[order.shippingMethod || "delivery"]
+                          }
+                        />
                       </td>
                       <td style={td}>
                         <div
@@ -487,9 +599,10 @@ export function OrdersSection() {
                         >
                           <StatusPill
                             status={
-                              fulfillmentStatusLabels[
-                                order.fulfillmentStatus || "unfulfilled"
-                              ]
+                              getFulfillmentStatusLabel(
+                                order.fulfillmentStatus || "unfulfilled",
+                                order.shippingMethod,
+                              )
                             }
                           />
                           {!["cancelled", "delivered"].includes(
@@ -500,7 +613,7 @@ export function OrdersSection() {
                                 value={(() => {
                                   const draft = orderStatusDrafts[order._id];
                                   const current = order.fulfillmentStatus || "unfulfilled";
-                                  const next = getNextFulfillmentStatus(order.fulfillmentStatus);
+                                  const next = getNextFulfillmentStatus(order.fulfillmentStatus, order.shippingMethod);
                                   return draft && draft === next ? draft : current;
                                 })()}
                                 onChange={(e) => {
@@ -522,11 +635,11 @@ export function OrdersSection() {
                               >
                                 {(() => {
                                   const current = order.fulfillmentStatus || "unfulfilled";
-                                  const next = getNextFulfillmentStatus(order.fulfillmentStatus);
+                                  const next = getNextFulfillmentStatus(order.fulfillmentStatus, order.shippingMethod);
                                   const opts: FulfillmentStatus[] = next ? [current as FulfillmentStatus, next] : [current as FulfillmentStatus];
                                   return opts.map((s) => (
                                     <option key={s} value={s}>
-                                      {fulfillmentStatusLabels[s]}
+                                      {getFulfillmentStatusLabel(s, order.shippingMethod)}
                                     </option>
                                   ));
                                 })()}
@@ -550,6 +663,7 @@ export function OrdersSection() {
                                           order.customerName || "Cliente",
                                         from: currentStatus,
                                         to: orderStatusDrafts[order._id],
+                                        shippingMethod: order.shippingMethod,
                                       });
                                     }}
                                     style={{
@@ -670,11 +784,11 @@ export function OrdersSection() {
                 >
                   Vas a cambiar el pedido #{confirmOrderStatus?.orderNumber} de{" "}
                   <strong>
-                    {fulfillmentStatusLabels[confirmOrderStatus?.from ?? '']}
+                    {getFulfillmentStatusLabel(confirmOrderStatus?.from ?? '', confirmOrderStatus?.shippingMethod)}
                   </strong>{" "}
                   a{" "}
                   <strong>
-                    {fulfillmentStatusLabels[confirmOrderStatus?.to ?? '']}
+                    {getFulfillmentStatusLabel(confirmOrderStatus?.to ?? '', confirmOrderStatus?.shippingMethod)}
                   </strong>
                   . El cliente {confirmOrderStatus?.customerName} recibirá un
                   email de actualización.

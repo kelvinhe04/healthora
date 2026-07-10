@@ -7,6 +7,7 @@ describe('notificationPresentation', () => {
     expect(notificationPresentation('order_shipped').icon).toBe('truck');
     expect(notificationPresentation('low_stock').accent).toBe('var(--coral)');
     expect(notificationPresentation('new_review').icon).toBe('star');
+    expect(notificationPresentation('new_order')).toEqual({ icon: 'bag', accent: 'var(--green)' });
     expect(notificationPresentation('broadcast').icon).toBe('bell');
   });
 });

@@ -70,6 +70,7 @@ type EmailData = {
   shipping: number;
   shippingLabel?: string;
   shippingEta?: string;
+  shippingMethod?: string;
   total: number;
   address: Address;
   createdAt: Date;
@@ -83,6 +84,7 @@ type OrderStatusEmailData = {
   items: OrderItem[];
   total: number;
   address?: Address;
+  shippingMethod?: string;
 };
 
 type NewsletterEmailData = {
@@ -121,6 +123,23 @@ const FULFILLMENT_EMAIL_COPY: Record<FulfillmentStatus, { label: string; title: 
     detail: 'Si tienes dudas sobre esta cancelación, nuestro equipo de soporte puede ayudarte.',
   },
 };
+
+/** Retiro en tienda no se "entrega": queda listo para que el cliente pase a recogerlo. */
+const PICKUP_FULFILLMENT_EMAIL_COPY_OVERRIDES: Partial<Record<FulfillmentStatus, { label: string; title: string; message: string; detail: string }>> = {
+  delivered: {
+    label: 'Listo para retirar',
+    title: 'Tu pedido está listo para retirar',
+    message: 'Tu pedido ya está preparado y disponible en nuestra tienda.',
+    detail: 'Puedes pasar a recogerlo con tu número de pedido en nuestro horario de atención.',
+  },
+};
+
+function getFulfillmentEmailCopy(fulfillmentStatus: FulfillmentStatus, shippingMethod?: string) {
+  if (shippingMethod === 'pickup') {
+    return PICKUP_FULFILLMENT_EMAIL_COPY_OVERRIDES[fulfillmentStatus] || FULFILLMENT_EMAIL_COPY[fulfillmentStatus];
+  }
+  return FULFILLMENT_EMAIL_COPY[fulfillmentStatus];
+}
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
@@ -240,13 +259,20 @@ function buildCompactProductList(items: OrderItem[]): string {
     .join('');
 }
 
-function buildFulfillmentSteps(currentStatus: FulfillmentStatus): string {
-  const steps: Array<{ status: FulfillmentStatus; label: string }> = [
-    { status: 'unfulfilled', label: 'Pendiente' },
-    { status: 'processing', label: 'Preparando' },
-    { status: 'shipped', label: 'Enviada' },
-    { status: 'delivered', label: 'Entregada' },
-  ];
+function buildFulfillmentSteps(currentStatus: FulfillmentStatus, shippingMethod?: string): string {
+  // Retiro en tienda no pasa por "Enviada": se prepara y queda listo para retirar.
+  const steps: Array<{ status: FulfillmentStatus; label: string }> = shippingMethod === 'pickup'
+    ? [
+      { status: 'unfulfilled', label: 'Pendiente' },
+      { status: 'processing', label: 'Preparando' },
+      { status: 'delivered', label: 'Listo para retirar' },
+    ]
+    : [
+      { status: 'unfulfilled', label: 'Pendiente' },
+      { status: 'processing', label: 'Preparando' },
+      { status: 'shipped', label: 'Enviada' },
+      { status: 'delivered', label: 'Entregada' },
+    ];
   const currentIndex = steps.findIndex((step) => step.status === currentStatus);
 
   if (currentStatus === 'cancelled') {
@@ -268,15 +294,13 @@ function buildFulfillmentSteps(currentStatus: FulfillmentStatus): string {
       const lineActive = index < currentIndex; // connector after this step is active if next step is also done
 
       const stepCell = `
-        <td align="center" style="vertical-align: top; width: 30px;">
+        <td align="center" style="vertical-align: top; width: 90px;">
           <table cellpadding="0" cellspacing="0" border="0" align="center">
             <tr>
               <td width="30" height="30" align="center" style="width: 30px; height: 30px; border-radius: 999px; background-color: ${isActive ? '#213a27' : '#dfe8e1'}; color: ${isActive ? '#c8ee2e' : '#7b8d81'}; font-size: 13px; line-height: 30px; font-weight: 800;">${index + 1}</td>
             </tr>
-            <tr>
-              <td align="center" style="padding-top: 6px; font-size: 11px; line-height: 14px; color: ${isActive ? '#213a27' : '#7b8d81'}; font-weight: 700; white-space: nowrap;">${step.label}</td>
-            </tr>
           </table>
+          <p style="margin: 6px 0 0 0; font-size: 11px; line-height: 14px; color: ${isActive ? '#213a27' : '#7b8d81'}; font-weight: 700; text-align: center;">${step.label}</p>
         </td>`;
 
       const connectorCell = isLast ? '' : `
@@ -302,7 +326,8 @@ function buildFulfillmentSteps(currentStatus: FulfillmentStatus): string {
 }
 
 export async function sendOrderConfirmationEmail(data: EmailData): Promise<void> {
-  const { customerName, customerEmail, orderId, items, subtotal, discountCode, discountAmount = 0, tax, shipping, shippingLabel, shippingEta, total, address, createdAt } = data;
+  const { customerName, customerEmail, orderId, items, subtotal, discountCode, discountAmount = 0, tax, shipping, shippingLabel, shippingEta, shippingMethod, total, address, createdAt } = data;
+  const isPickup = shippingMethod === 'pickup';
 
   if (process.env.NODE_ENV === 'test') {
     return;
@@ -331,7 +356,7 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
 
   const safeCustomerName = escapeHtml(customerName);
   const safeOrderNumber = escapeHtml(orderId.slice(-8).toUpperCase());
-  const ordersUrl = `${getFrontendUrl()}/?view=orders`;
+  const ordersUrl = `${getFrontendUrl()}/orders?orderId=${orderId}`;
 
   const html = `
 <!DOCTYPE html>
@@ -454,12 +479,12 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
 
           <tr>
             <td style="padding: 0 38px 30px 38px;">
-              <p style="margin: 0 0 12px 0; font-size: 12px; color: #11845b; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">Dirección de envío</p>
+              <p style="margin: 0 0 12px 0; font-size: 12px; color: #11845b; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">${isPickup ? 'Retiro en tienda' : 'Dirección de envío'}</p>
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fbfdfb; border-radius: 18px; border: 1px solid #dfe8e1;">
                 <tr>
                   <td style="padding: 22px 24px;">
                     <p style="margin: 0; font-size: 16px; color: #213a27; font-weight: 800;">${escapeHtml(address.name)}</p>
-                    <p style="margin: 9px 0 0 0; font-size: 14px; line-height: 22px; color: #64756a;">${escapeHtml(address.city)}, ${escapeHtml(address.address)}, ${escapeHtml(address.postal)}</p>
+                    ${isPickup ? '' : `<p style="margin: 9px 0 0 0; font-size: 14px; line-height: 22px; color: #64756a;">${escapeHtml(address.city)}, ${escapeHtml(address.address)}, ${escapeHtml(address.postal)}</p>`}
                     <p style="margin: 5px 0 0 0; font-size: 14px; line-height: 21px; color: #64756a;">Tel. ${escapeHtml(address.phone)}</p>
                   </td>
                 </tr>
@@ -492,7 +517,7 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
                       Email: <strong>soporte@healthora.com</strong>
                     </p>
                     <p style="margin: 0 0 16px 0; font-size: 14px; color: #213a27;">
-                      Teléfono: <strong>+52 800 123 4567</strong>
+                      Teléfono: <strong>+507 800-1234</strong>
                     </p>
                     <p style="margin: 0; font-size: 13px; color: #64756a; line-height: 1.6; padding-top: 15px; border-top: 1px solid #dfe8e1;">
                       <strong>Política de devoluciones:</strong> Puedes devolver productos en un plazo de 30 días desde la recepción si el producto está sellado y en su empaque original.
@@ -545,27 +570,27 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
 }
 
 export async function sendOrderStatusUpdateEmail(data: OrderStatusEmailData): Promise<void> {
-  const { customerName, customerEmail, orderId, fulfillmentStatus, items, total, address } = data;
+  const { customerName, customerEmail, orderId, fulfillmentStatus, items, total, address, shippingMethod } = data;
 
   if (!customerEmail) {
     console.error('[EMAIL] No customer email provided, skipping status update email');
     return;
   }
 
-  const copy = FULFILLMENT_EMAIL_COPY[fulfillmentStatus];
+  const copy = getFulfillmentEmailCopy(fulfillmentStatus, shippingMethod);
   const safeCustomerName = escapeHtml(customerName || 'cliente');
   const safeOrderNumber = escapeHtml(orderId.slice(-8).toUpperCase());
-  const ordersUrl = `${getFrontendUrl()}/?view=orders`;
+  const ordersUrl = `${getFrontendUrl()}/orders?orderId=${orderId}`;
   const addressBlock = address
     ? `
       <tr>
         <td style="padding: 0 38px 30px 38px;">
-          <p style="margin: 0 0 12px 0; font-size: 12px; color: #11845b; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">Dirección de envío</p>
+          <p style="margin: 0 0 12px 0; font-size: 12px; color: #11845b; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">${shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Dirección de envío'}</p>
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fbfdfb; border-radius: 18px; border: 1px solid #dfe8e1;">
             <tr>
               <td style="padding: 22px 24px;">
                 <p style="margin: 0; font-size: 16px; color: #213a27; font-weight: 800;">${escapeHtml(address.name)}</p>
-                <p style="margin: 9px 0 0 0; font-size: 14px; line-height: 22px; color: #64756a;">${escapeHtml(address.city)}, ${escapeHtml(address.address)}, ${escapeHtml(address.postal)}</p>
+                ${shippingMethod === 'pickup' ? '' : `<p style="margin: 9px 0 0 0; font-size: 14px; line-height: 22px; color: #64756a;">${escapeHtml(address.city)}, ${escapeHtml(address.address)}, ${escapeHtml(address.postal)}</p>`}
                 <p style="margin: 5px 0 0 0; font-size: 14px; line-height: 21px; color: #64756a;">Tel. ${escapeHtml(address.phone)}</p>
               </td>
             </tr>
@@ -627,7 +652,7 @@ export async function sendOrderStatusUpdateEmail(data: OrderStatusEmailData): Pr
 
           <tr>
             <td style="padding: 0 38px 30px 38px;">
-              ${buildFulfillmentSteps(fulfillmentStatus)}
+              ${buildFulfillmentSteps(fulfillmentStatus, shippingMethod)}
             </td>
           </tr>
 
