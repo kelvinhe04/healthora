@@ -26,7 +26,10 @@ export const adminReviewsRouter = new Hono<AppEnv>()
     if (!parsed.success) return parsed.response;
 
     const { status, page, limit } = parsed.data;
-    const filter = status ? { status } : {};
+    // Reseñas creadas antes de que este campo existiera no tienen `status` guardado en Mongo -
+    // el default del schema no se les aplica retroactivamente. Para no dejarlas invisibles bajo
+    // el filtro "Publicada", se tratan como publicadas (= no ocultas), igual que en reviews.ts.
+    const filter = status === 'published' ? { status: { $ne: 'hidden' } } : status ? { status } : {};
     const skip = (page - 1) * limit;
 
     const [items, total] = await Promise.all([
@@ -51,7 +54,7 @@ export const adminReviewsRouter = new Hono<AppEnv>()
     const review = await Review.findByIdAndUpdate(
       paramsParsed.data.id,
       { status: bodyParsed.data.status },
-      { new: true }
+      { returnDocument: 'after' }
     ).lean();
 
     if (!review) return c.json({ error: 'Reseña no encontrada' }, 404);
