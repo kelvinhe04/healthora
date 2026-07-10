@@ -12,9 +12,11 @@ import { useCartStore } from '../store/cartStore';
 import { useUiStore } from '../store/uiStore';
 import { resolveVariantById } from '../lib/productVariants';
 import { formatPanamaFull, formatPanamaMedium } from '../lib/dates';
+import { formatPanamaPhone } from '../lib/phone';
 
 interface OrdersProps {
   onBack: () => void;
+  initialOrderId?: string;
 }
 
 const DARK_GREEN = 'oklch(0.28 0.055 155)';
@@ -38,10 +40,23 @@ const STEPS = [
   { key: 'delivered',   label: 'Entregada' },
 ];
 
+// Retiro en tienda no pasa por "Enviada": se prepara y queda listo para retirar.
+const PICKUP_STEPS = [
+  { key: 'unfulfilled', label: 'Pendiente' },
+  { key: 'processing',  label: 'Preparando' },
+  { key: 'delivered',   label: 'Listo para retirar' },
+];
+
+/** "Entregada" no aplica a retiro en tienda: no se entrega nada, el cliente lo recoge. */
+function getStatusLabel(status: string, shippingMethod?: Order['shippingMethod']): string {
+  if (status === 'delivered' && shippingMethod === 'pickup') return 'Listo para retirar';
+  return STATUS_CFG[status]?.label ?? STATUS_CFG.paid.label;
+}
+
 const formatFull = formatPanamaFull;
 const formatShort = formatPanamaMedium;
 
-function FulfillmentTimeline({ status }: { status: string }) {
+function FulfillmentTimeline({ status, shippingMethod }: { status: string; shippingMethod?: Order['shippingMethod'] }) {
   if (status === 'cancelled') {
     return (
       <div style={{ padding: '14px 0' }}>
@@ -52,15 +67,16 @@ function FulfillmentTimeline({ status }: { status: string }) {
     );
   }
 
-  const currentIdx = STEPS.findIndex(s => s.key === status);
+  const steps = shippingMethod === 'pickup' ? PICKUP_STEPS : STEPS;
+  const currentIdx = steps.findIndex(s => s.key === status);
 
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 0, padding: '14px 0' }}>
-      {STEPS.map((step, idx) => {
+      {steps.map((step, idx) => {
         const done = idx < currentIdx;
         const active = idx === currentIdx;
         return (
-          <div key={step.key} style={{ display: 'flex', alignItems: 'center', flex: idx < STEPS.length - 1 ? 1 : undefined }}>
+          <div key={step.key} style={{ display: 'flex', alignItems: 'center', flex: idx < steps.length - 1 ? 1 : undefined }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
               <div style={{
                 width: 28, height: 28, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -77,7 +93,7 @@ function FulfillmentTimeline({ status }: { status: string }) {
                 {step.label}
               </span>
             </div>
-            {idx < STEPS.length - 1 && (
+            {idx < steps.length - 1 && (
               <div style={{ flex: 1, height: 2, background: done ? 'var(--green)' : 'var(--ink-06)', margin: '0 4px', marginBottom: 22 }} />
             )}
           </div>
@@ -150,14 +166,14 @@ function OrderDetail({
             </div>
           </div>
           <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: 8, background: s.bg, color: s.color, flexShrink: 0, marginTop: 4 }}>
-            {s.label}
+            {getStatusLabel(order.status, order.shippingMethod)}
           </span>
         </div>
       </div>
 
       {order.fulfillmentStatus !== 'cancelled' && (
         <>
-          <FulfillmentTimeline status={order.fulfillmentStatus} />
+          <FulfillmentTimeline status={order.fulfillmentStatus} shippingMethod={order.shippingMethod} />
           {divider}
         </>
       )}
@@ -251,7 +267,7 @@ function OrderDetail({
           {([
             { label: 'Subtotal de productos', value: order.subtotal },
             ...(order.discountAmount && order.discountAmount > 0 ? [{ label: `Descuento ${order.discountCode || ''}`.trim(), value: -order.discountAmount }] : []),
-            { label: 'Envío',                 value: order.shipping },
+            { label: order.shippingLabel ? `Envío (${order.shippingLabel})` : 'Envío', value: order.shipping },
             { label: 'Impuesto (IVA)',         value: order.tax },
           ] as const).map(row => (
             <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -275,7 +291,7 @@ function OrderDetail({
       {divider}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <span style={{ ...sectionLabel, marginBottom: 0 }}>Dirección de entrega</span>
+          <span style={{ ...sectionLabel, marginBottom: 0 }}>{order.shippingMethod === 'pickup' ? 'Datos de contacto' : 'Dirección de entrega'}</span>
           {canEditAddr && !editingAddress && (
             <button
               onClick={onStartEditAddr}
@@ -289,21 +305,27 @@ function OrderDetail({
         {editingAddress ? (
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: isMobileInner ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 14 }}>
-              {([
-                { key: 'name',   label: 'Nombre',       placeholder: 'Nombre completo' },
-                { key: 'phone',  label: 'Teléfono',      placeholder: '+1 555 000 000' },
-                { key: 'city',   label: 'Ciudad',        placeholder: 'Ciudad' },
-                { key: 'postal', label: 'Código postal', placeholder: '10001' },
-              ] as const).map(f => (
+              {(
+                [
+                  { key: 'name',   label: 'Nombre',       placeholder: 'Nombre completo' },
+                  { key: 'phone',  label: 'Teléfono',      placeholder: '6123-4567' },
+                  ...(order.shippingMethod === 'pickup' ? [] : [
+                    { key: 'city',   label: 'Ciudad',        placeholder: 'Ciudad' },
+                    { key: 'postal', label: 'Código postal', placeholder: '10001' },
+                  ]),
+                ] as Array<{ key: keyof OrderAddress; label: string; placeholder: string }>
+              ).map(f => (
                 <label key={f.key}>
                   <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 5, display: 'block' }}>{f.label}</span>
                   <input value={addrForm[f.key]} onChange={(e) => onAddrChange(f.key, e.target.value)} placeholder={f.placeholder} style={inputStyle} />
                 </label>
               ))}
-              <label style={{ gridColumn: '1 / -1' }}>
-                <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 5, display: 'block' }}>Dirección</span>
-                <input value={addrForm.address} onChange={(e) => onAddrChange('address', e.target.value)} placeholder="Calle, número, apto" style={inputStyle} />
-              </label>
+              {order.shippingMethod !== 'pickup' && (
+                <label style={{ gridColumn: '1 / -1' }}>
+                  <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 5, display: 'block' }}>Dirección</span>
+                  <input value={addrForm.address} onChange={(e) => onAddrChange('address', e.target.value)} placeholder="Calle, número, apto" style={inputStyle} />
+                </label>
+              )}
             </div>
             {addrError && <div style={{ fontSize: 13, color: 'var(--coral)', marginBottom: 10, fontFamily: '"Geist", sans-serif' }}>{addrError}</div>}
             <div style={{ display: 'flex', gap: 10 }}>
@@ -322,9 +344,11 @@ function OrderDetail({
               <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 500, color: 'var(--ink)', marginBottom: 3 }}>
                 {order.address.name} · {order.address.phone}
               </div>
-              <div style={{ fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)', lineHeight: 1.5 }}>
-                {order.address.address}, {order.address.city}, {order.address.postal}
-              </div>
+              {order.shippingMethod !== 'pickup' && (
+                <div style={{ fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)', lineHeight: 1.5 }}>
+                  {order.address.address}, {order.address.city}, {order.address.postal}
+                </div>
+              )}
             </div>
           </div>
         ) : null}
@@ -368,7 +392,7 @@ function OrderDetail({
 
 const EMPTY_ADDR: OrderAddress = { name: '', phone: '', address: '', city: '', postal: '' };
 
-export function Orders({ onBack }: OrdersProps) {
+export function Orders({ onBack, initialOrderId }: OrdersProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const isTablet = bp === 'tablet';
@@ -386,7 +410,7 @@ export function Orders({ onBack }: OrdersProps) {
 
   const showOrdersSkeleton = useOnceLoading("client_orders", isLoading);
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() => initialOrderId ?? null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [editingAddress, setEditingAddress] = useState(false);
   const [addrForm, setAddrForm] = useState<OrderAddress>(EMPTY_ADDR);
@@ -451,8 +475,9 @@ export function Orders({ onBack }: OrdersProps) {
   };
 
   const handleSaveAddr = () => {
-    if (!addrForm.name.trim() || !addrForm.phone.trim() || !addrForm.address.trim() || !addrForm.city.trim() || !addrForm.postal.trim()) {
-      setAddrError('Completa todos los campos de la dirección.');
+    const isPickup = selected?.shippingMethod === 'pickup';
+    if (!addrForm.name.trim() || !addrForm.phone.trim() || (!isPickup && (!addrForm.address.trim() || !addrForm.city.trim() || !addrForm.postal.trim()))) {
+      setAddrError('Completa todos los campos requeridos.');
       return;
     }
     if (!selected) return;
@@ -612,7 +637,7 @@ export function Orders({ onBack }: OrdersProps) {
                     {formatShort(order.createdAt)} · {order.items.length} {order.items.length === 1 ? 'artículo' : 'artículos'}
                   </div>
                   <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: 5, background: isActive ? 'rgba(255,255,255,0.14)' : s.bg, color: isActive ? 'rgba(255,255,255,0.9)' : s.color }}>
-                    {s.label}
+                    {getStatusLabel(order.status, order.shippingMethod)}
                   </span>
                 </div>
               );
@@ -634,7 +659,7 @@ export function Orders({ onBack }: OrdersProps) {
               isSavingAddr={editAddrMut.isPending}
               addrError={addrError}
               onStartEditAddr={handleStartEditAddr}
-              onAddrChange={(key, value) => setAddrForm(f => ({ ...f, [key]: value }))}
+              onAddrChange={(key, value) => setAddrForm(f => ({ ...f, [key]: key === 'phone' ? formatPanamaPhone(value) : value }))}
               onSaveAddr={handleSaveAddr}
               onCancelEditAddr={() => { setEditingAddress(false); setAddrError(''); }}
               onReorder={() => { void handleReorder(); }}

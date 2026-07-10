@@ -10,13 +10,14 @@ const EMPTY_INBOX: NotificationInbox = { notifications: [], unread: 0 };
 const MAX_BACKOFF_MS = 30_000;
 
 /** Which admin list/dashboard queries to refresh when a given notification type arrives, so the
- * panel updates live instead of waiting for a manual reload. Only wired for the two events that
- * actually carry an admin audience today (`new_review`, `low_stock`) — invalidating query keys
- * that aren't mounted (e.g. a customer's browser) is a harmless no-op, so this list is safe to
- * grow as more admin-facing events get their own notification type. */
+ * panel updates live instead of waiting for a manual reload. Only wired for the events that
+ * actually carry an admin audience today (`new_review`, `low_stock`, `new_order`) — invalidating
+ * query keys that aren't mounted (e.g. a customer's browser) is a harmless no-op, so this list is
+ * safe to grow as more admin-facing events get their own notification type. */
 const ADMIN_INVALIDATION_BY_TYPE: Partial<Record<AppNotification['type'], string[][]>> = {
   new_review: [['admin', 'reviews'], ['admin-dashboard']],
   low_stock: [['admin-products'], ['admin-products-count'], ['admin-dashboard']],
+  new_order: [['admin-orders'], ['admin-dashboard']],
 };
 
 /** Headless component (mounted once at the app root) that keeps a live WebSocket to the backend

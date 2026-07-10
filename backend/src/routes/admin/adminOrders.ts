@@ -36,6 +36,16 @@ const fulfillmentLabels: Record<FulfillmentStatus, { title: string; body: string
   cancelled: { title: 'Pedido cancelado', body: 'Tu pedido fue cancelado. Si tienes dudas, contáctanos.' },
 };
 
+/** Retiro en tienda no se "entrega": queda listo para que el cliente pase a recogerlo. */
+const pickupFulfillmentLabelOverrides: Partial<Record<FulfillmentStatus, { title: string; body: string }>> = {
+  delivered: { title: 'Pedido listo para retirar', body: 'Tu pedido ya está listo. Puedes pasar a recogerlo en nuestra tienda.' },
+};
+
+function getFulfillmentPushLabel(fulfillmentStatus: FulfillmentStatus, shippingMethod?: string) {
+  if (shippingMethod === 'pickup') return pickupFulfillmentLabelOverrides[fulfillmentStatus] || fulfillmentLabels[fulfillmentStatus];
+  return fulfillmentLabels[fulfillmentStatus];
+}
+
 export const adminOrdersRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
   .get('/', async (c) => {
@@ -114,6 +124,7 @@ export const adminOrdersRouter = new Hono<AppEnv>()
             items: order.items || [],
             total: order.total || 0,
             address: order.address,
+            shippingMethod: order.shippingMethod,
           });
         } catch (emailError) {
           console.error('[ADMIN_ORDERS] Failed to send status update email:', emailError);
@@ -123,10 +134,11 @@ export const adminOrdersRouter = new Hono<AppEnv>()
       // Real-time push to the customer (HU-061), mirroring the status email.
       if (order.customerId) {
         try {
+          const pushLabel = getFulfillmentPushLabel(fulfillmentStatus, order.shippingMethod);
           await notifyUser(order.customerId, {
             type: fulfillmentStatus === 'shipped' ? 'order_shipped' : 'order_status',
-            title: fulfillmentLabels[fulfillmentStatus].title,
-            body: fulfillmentLabels[fulfillmentStatus].body,
+            title: pushLabel.title,
+            body: pushLabel.body,
             link: '/orders',
             data: { orderId: order._id.toString(), fulfillmentStatus },
           });
