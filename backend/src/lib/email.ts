@@ -68,6 +68,8 @@ type EmailData = {
   discountAmount?: number;
   tax: number;
   shipping: number;
+  shippingLabel?: string;
+  shippingEta?: string;
   total: number;
   address: Address;
   createdAt: Date;
@@ -300,7 +302,7 @@ function buildFulfillmentSteps(currentStatus: FulfillmentStatus): string {
 }
 
 export async function sendOrderConfirmationEmail(data: EmailData): Promise<void> {
-  const { customerName, customerEmail, orderId, items, subtotal, discountCode, discountAmount = 0, tax, shipping, total, address, createdAt } = data;
+  const { customerName, customerEmail, orderId, items, subtotal, discountCode, discountAmount = 0, tax, shipping, shippingLabel, shippingEta, total, address, createdAt } = data;
 
   if (process.env.NODE_ENV === 'test') {
     return;
@@ -424,9 +426,10 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
                 <tr>
                   <td style="padding: 14px 20px; border-top: 1px solid #e8efe9;">
                     <p style="margin: 0; font-size: 14px; color: #64756a;">Envío</p>
+                    ${shippingLabel ? `<p style="margin: 3px 0 0 0; font-size: 12px; color: #8a9a90;">${escapeHtml(shippingLabel)}${shippingEta ? ` · ${escapeHtml(shippingEta)}` : ''}</p>` : ''}
                   </td>
                   <td align="right" style="padding: 14px 20px; border-top: 1px solid #e8efe9;">
-                    <p style="margin: 0; font-size: 14px; color: #213a27; font-weight: 700;">${formatPrice(shipping)}</p>
+                    <p style="margin: 0; font-size: 14px; color: #213a27; font-weight: 700;">${shipping === 0 ? 'Gratis' : formatPrice(shipping)}</p>
                   </td>
                 </tr>
                 <tr>

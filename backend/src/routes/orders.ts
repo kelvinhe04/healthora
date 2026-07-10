@@ -180,6 +180,8 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
         discountAmount,
         tax,
         shipping,
+        shippingLabel: metadata.shippingLabel,
+        shippingEta: metadata.shippingEta,
         total,
         address,
         createdAt: createdOrder.createdAt,

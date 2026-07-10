@@ -168,6 +168,8 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
                 discountAmount,
                 tax,
                 shipping,
+                shippingLabel: metadata.shippingLabel,
+                shippingEta: metadata.shippingEta,
                 total,
                 address,
                 createdAt: order.createdAt,
