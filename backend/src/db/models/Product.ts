@@ -64,6 +64,7 @@ const ProductSchema = new Schema(
         imagesBySize: { type: Object },
         stockBySize: { type: Object },
         priceBySize: { type: Object },
+        priceBeforeBySize: { type: Object },
         isDefault: { type: Boolean, default: false },
         // Mongoose auto-defaults array paths to `[]` when omitted, which would collapse "no
         // restriction" (key absent) and "active for no one" (explicit empty array) into the same

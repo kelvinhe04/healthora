@@ -54,6 +54,7 @@ const productVariantSchema = z
     imagesBySize: z.record(z.string(), z.array(textField(400)).max(20)).optional(),
     stockBySize: z.record(z.string(), z.coerce.number().int().min(0).max(999999)).optional(),
     priceBySize: z.record(z.string(), moneyFromInput()).optional(),
+    priceBeforeBySize: z.record(z.string(), moneyFromInput()).optional(),
     isDefault: z.coerce.boolean().default(false),
     availableFor: z.array(productIdSchema).max(50).optional(),
   })

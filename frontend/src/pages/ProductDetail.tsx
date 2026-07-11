@@ -166,7 +166,8 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
 
   const priceOverride = hasTwoDimensions && selectedSize ? selectedVariant?.priceBySize?.[selectedSize.id] : undefined;
   const effectivePrice = priceOverride ?? ((selectedVariant?.price ?? product.price) + (hasTwoDimensions ? (selectedSize?.price ?? 0) : 0));
-  const effectivePriceBefore = selectedVariant?.priceBefore ?? product.priceBefore;
+  const comboPriceBefore = hasTwoDimensions && selectedSize ? selectedVariant?.priceBeforeBySize?.[selectedSize.id] : undefined;
+  const effectivePriceBefore = comboPriceBefore ?? selectedVariant?.priceBefore ?? product.priceBefore;
   const effectiveStock = hasTwoDimensions
     ? (selectedSize && selectedVariant?.stockBySize?.[selectedSize.id]) ?? selectedSize?.stock ?? selectedVariant?.stock ?? product.stock
     : (selectedVariant?.stock ?? product.stock);

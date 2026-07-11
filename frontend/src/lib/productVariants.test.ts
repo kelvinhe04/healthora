@@ -98,6 +98,26 @@ describe('productVariants', () => {
     expect(getEffectivePriceBefore(testProduct)).toBe(28);
   });
 
+  it('un descuento por categoria aplicado a un combo (priceBeforeBySize) manda sobre el priceBefore plano del sabor', () => {
+    const chocolateWithComboDiscount = variant({
+      id: 'chocolate',
+      label: 'Chocolate',
+      type: 'flavor',
+      price: 24,
+      priceBefore: 28,
+      isDefault: true,
+      priceBySize: { large: 27.5 },
+      priceBeforeBySize: { large: 32 },
+    });
+    const testProduct = product({
+      price: 20,
+      variants: [vanilla, chocolateWithComboDiscount, small, large, universal],
+    });
+
+    expect(getEffectivePrice(testProduct)).toBe(27.5);
+    expect(getEffectivePriceBefore(testProduct)).toBe(32);
+  });
+
   it('resuelve el combo default como variante de carrito real (id compuesto), para el quick-add sin selector', () => {
     const testProduct = product({
       price: 20,

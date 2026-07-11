@@ -152,7 +152,7 @@ export function ProductVariantsMatrixEditor({
   const tabHint: Record<'none' | 'simple' | 'matrix', string> = {
     none: 'El producto usa un solo precio y stock (los campos de arriba). No hay opciones para elegir.',
     simple: 'Una lista de opciones de un solo tipo (ej. solo tamaño, o solo color) — cada una con su propio precio y stock.',
-    matrix: 'Dos dimensiones combinadas (ej. sabor + tamaño): cada combinación puede tener su propio precio, stock e imágenes. Los descuentos (individual y por categoría) aún no aplican a este modo — solo a "Sin variante" y "Variante simple".',
+    matrix: 'Dos dimensiones combinadas (ej. sabor + tamaño): cada combinación puede tener su propio precio, stock e imágenes. El descuento por categoría también aplica aquí, por combinación — el editor de descuento individual todavía no tiene campos para esto, solo "Sin variante" y "Variante simple".',
   };
 
   return (

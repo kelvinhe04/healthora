@@ -112,9 +112,15 @@ export function getDefaultComboImage(product: Product): string | undefined {
 
 type DiscountSource = { priceBefore: number; discountStartsAt?: string | null; discountEndsAt?: string | null };
 
-/** A variant's discount (if it has its own `priceBefore`) always wins over the product's, mirroring
- * the `??` fallback the rest of this file already uses for price/stock. */
-function resolveDiscountSource(variant: ProductVariant | null, product: Product): DiscountSource | null {
+/** A combo's own `priceBeforeBySize` entry wins over its primary variant's flat `priceBefore`,
+ * which in turn wins over the product's - mirroring the `??` fallback the rest of this file
+ * already uses for price/stock. A combo doesn't carry its own vigencia dates; it shares its
+ * primary variant's `discountStartsAt`/`discountEndsAt`. */
+function resolveDiscountSource(variant: ProductVariant | null, size: ProductVariant | null, product: Product): DiscountSource | null {
+  const comboPriceBefore = size ? variant?.priceBeforeBySize?.[size.id] : undefined;
+  if (comboPriceBefore != null) {
+    return { priceBefore: comboPriceBefore, discountStartsAt: variant?.discountStartsAt, discountEndsAt: variant?.discountEndsAt };
+  }
   if (variant?.priceBefore != null) {
     return { priceBefore: variant.priceBefore, discountStartsAt: variant.discountStartsAt, discountEndsAt: variant.discountEndsAt };
   }
@@ -158,8 +164,8 @@ export function getEffectivePrice(product: Product): number {
 }
 
 export function getEffectivePriceBefore(product: Product): number | undefined {
-  const { variant } = pickDefaultCombo(product);
-  const discount = resolveDiscountSource(variant, product);
+  const { variant, size } = pickDefaultCombo(product);
+  const discount = resolveDiscountSource(variant, size, product);
   if (!discount) return undefined;
   return isDiscountActive(discount) ? discount.priceBefore : undefined;
 }

@@ -45,7 +45,10 @@ async function seedMatrixProduct() {
     stock: 0,
     variants: [
       { id: 'chocolate', label: 'Chocolate', type: 'flavor', price: 0, stock: 20 },
+      { id: 'vanilla', label: 'Vainilla', type: 'flavor', price: 0, stock: 20 },
       { id: '5lb', label: '5lb', type: 'size', price: 15, stock: 20 },
+      // Only offered for chocolate - exercises the `availableFor` restriction.
+      { id: '10lb', label: '10lb', type: 'size', price: 28, stock: 10, availableFor: ['chocolate'] },
     ],
   });
 }
@@ -68,7 +71,7 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
   test('discounts the product price when it has no variants', async () => {
     await seedNoVariantProduct();
     const result = await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'percent', value: 10 });
-    expect(result).toEqual({ updated: 1, total: 1, skippedMatrix: 0 });
+    expect(result).toEqual({ updated: 1, total: 1 });
 
     const product = await Product.findOne({ id: 'no-variant' }).lean();
     expect(product?.price).toBe(18);
@@ -78,7 +81,7 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
   test('discounts each simple variant using its own price as the base', async () => {
     await seedSimpleVariantProduct();
     const result = await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'fixed', value: 2 });
-    expect(result).toEqual({ updated: 1, total: 1, skippedMatrix: 0 });
+    expect(result).toEqual({ updated: 1, total: 1 });
 
     const product = await Product.findOne({ id: 'simple-variant' }).lean();
     const small = product?.variants?.find((v) => v.id === 'small');
@@ -103,25 +106,59 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
     expect(small?.price).toBe(9);
   });
 
-  test('skips sabor×tamaño matrix products and reports them separately', async () => {
+  test('discounts every sabor×tamaño combo using each combo\'s own price as the base, respecting availableFor', async () => {
     await seedMatrixProduct();
-    const result = await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'percent', value: 10 });
-    expect(result).toEqual({ updated: 0, total: 1, skippedMatrix: 1 });
+    const discountStartsAt = new Date('2026-07-01');
+    const discountEndsAt = new Date('2026-07-31');
+    const result = await applyCategoryDiscount({
+      category: 'Vitaminas',
+      discountType: 'percent',
+      value: 10,
+      discountStartsAt,
+      discountEndsAt,
+    });
+    expect(result).toEqual({ updated: 1, total: 1 });
 
     const product = await Product.findOne({ id: 'matrix-product' }).lean();
-    expect(product?.priceBefore).toBeUndefined();
-    for (const variant of product?.variants ?? []) {
-      expect(variant.priceBefore).toBeUndefined();
-    }
+    const chocolate = product?.variants?.find((v) => v.id === 'chocolate');
+    const vanilla = product?.variants?.find((v) => v.id === 'vanilla');
+
+    // chocolate:5lb = 0 + 15 = 15 -> 13.5; chocolate:10lb = 0 + 28 = 28 -> 25.2 (only available for chocolate).
+    expect(chocolate?.priceBySize).toEqual({ '5lb': 13.5, '10lb': 25.2 });
+    expect(chocolate?.priceBeforeBySize).toEqual({ '5lb': 15, '10lb': 28 });
+    expect(chocolate?.discountStartsAt?.toISOString()).toBe(discountStartsAt.toISOString());
+    expect(chocolate?.discountEndsAt?.toISOString()).toBe(discountEndsAt.toISOString());
+
+    // vanilla only has 5lb available (10lb is restricted to chocolate).
+    expect(vanilla?.priceBySize).toEqual({ '5lb': 13.5 });
+    expect(vanilla?.priceBeforeBySize).toEqual({ '5lb': 15 });
+
+    // The additive price parts themselves are untouched - only the combo override changed.
+    expect(chocolate?.price).toBe(0);
+    const size5lb = product?.variants?.find((v) => v.id === '5lb');
+    expect(size5lb?.price).toBe(15);
   });
 
-  test('removeCategoryDiscount reverts both product-level and variant-level discounts', async () => {
+  test('re-applying a discount to matrix combos does not compound on top of a previous one', async () => {
+    await seedMatrixProduct();
+    await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'percent', value: 10 });
+    await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'percent', value: 10 });
+
+    const product = await Product.findOne({ id: 'matrix-product' }).lean();
+    const chocolate = product?.variants?.find((v) => v.id === 'chocolate');
+    // Base stays the original $15 (from priceBeforeBySize, not the already-discounted $13.5).
+    expect(chocolate?.priceBeforeBySize).toEqual({ '5lb': 15, '10lb': 28 });
+    expect(chocolate?.priceBySize).toEqual({ '5lb': 13.5, '10lb': 25.2 });
+  });
+
+  test('removeCategoryDiscount reverts product-level, variant-level and combo-level discounts', async () => {
     await seedNoVariantProduct();
     await seedSimpleVariantProduct();
+    await seedMatrixProduct();
     await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'percent', value: 10 });
 
     const result = await removeCategoryDiscount('Vitaminas');
-    expect(result).toEqual({ updated: 2 });
+    expect(result).toEqual({ updated: 3 });
 
     const noVariant = await Product.findOne({ id: 'no-variant' }).lean();
     expect(noVariant?.price).toBe(20);
@@ -131,6 +168,13 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
     const small = simpleVariant?.variants?.find((v) => v.id === 'small');
     expect(small?.price).toBe(10);
     expect(small?.priceBefore).toBeUndefined();
+
+    const matrixProduct = await Product.findOne({ id: 'matrix-product' }).lean();
+    const chocolate = matrixProduct?.variants?.find((v) => v.id === 'chocolate');
+    expect(chocolate?.priceBySize).toEqual({ '5lb': 15, '10lb': 28 });
+    expect(chocolate?.priceBeforeBySize).toBeUndefined();
+    expect(chocolate?.discountStartsAt).toBeUndefined();
+    expect(chocolate?.discountEndsAt).toBeUndefined();
   });
 
   test('removeCategoryDiscount also clears a discount that was hardcoded directly in seed data', async () => {

@@ -63,10 +63,7 @@ function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; o
       );
     },
     onSuccess: (data) => {
-      const skippedNote = data.skippedMatrix
-        ? ` ${data.skippedMatrix} con variante×tamaño no se tocaron (aún sin soporte para ese modo).`
-        : '';
-      setMessage(`${data.updated} de ${data.total} producto(s) actualizados.${skippedNote}`);
+      setMessage(`${data.updated} de ${data.total} producto(s) actualizados.`);
       invalidate();
     },
   });

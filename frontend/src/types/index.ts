@@ -29,6 +29,8 @@ export interface ProductVariant {
   stockBySize?: Record<string, number>;
   /** Price override for a specific sabor+tamaño combo, keyed by size variant id. Omit to use the tamaño's base price (sabores no longer add their own price extra). */
   priceBySize?: Record<string, number>;
+  /** "Was $X" price for a specific sabor+tamaño combo (set by a category/individual discount), keyed by size variant id. Vigencia comes from this variant's own discountStartsAt/discountEndsAt. */
+  priceBeforeBySize?: Record<string, number>;
   isDefault?: boolean;
   /** For a `size` variant paired with a `flavor`/`scent` variant: restricts this size to the given primary variant ids. Omit to make it available for all. */
   availableFor?: string[];

@@ -1,5 +1,5 @@
 import { Product } from '../db/models/Product';
-import { hasTwoDimensions } from './productVariants';
+import { getVariantCombos, hasTwoDimensions } from './productVariants';
 
 export interface DiscountableProduct {
   price: number;
@@ -28,11 +28,23 @@ function panamaEndOfDay(dateOnly: Date | string): Date {
   return new Date(panamaStartOfDay(dateOnly).getTime() + 24 * 60 * 60 * 1000 - 1);
 }
 
+/** The vigencia check shared by a product/variant's own `priceBefore` and a matrix combo's
+ * `priceBeforeBySize` entry - both hide their "was $X" badge outside this window, on the primary
+ * variant's `discountStartsAt`/`discountEndsAt` (a combo doesn't get its own date pair; every
+ * combo of the same sabor/color shares its primary's vigencia). */
+function isWithinVigencia(
+  discountStartsAt: Date | string | null | undefined,
+  discountEndsAt: Date | string | null | undefined,
+  now: Date,
+): boolean {
+  if (discountStartsAt && now < panamaStartOfDay(discountStartsAt)) return false;
+  if (discountEndsAt && now > panamaEndOfDay(discountEndsAt)) return false;
+  return true;
+}
+
 export function isDiscountActive(product: DiscountableProduct, now: Date = new Date()): boolean {
   if (product.priceBefore == null) return false;
-  if (product.discountStartsAt && now < panamaStartOfDay(product.discountStartsAt)) return false;
-  if (product.discountEndsAt && now > panamaEndOfDay(product.discountEndsAt)) return false;
-  return true;
+  return isWithinVigencia(product.discountStartsAt, product.discountEndsAt, now);
 }
 
 /** An end date before the start date creates a window that can never be active (no "now" is ever
@@ -53,14 +65,12 @@ export function isVigenciaRangeValid(startsAt?: Date | string | null, endsAt?: D
  *
  * Also applies the same badge-hiding, independently, to every "simple" (single-dimension) variant
  * that carries its own priceBefore/vigencia — a product and its variants can each have their own
- * discount window. Sabor×tamaño matrix combos are out of scope (see `resolveVariantPricing`);
- * those never get a `priceBefore` written by the admin discount features, so this is a no-op for
- * them regardless.
+ * discount window — and to every sabor×tamaño matrix combo that carries a `priceBeforeBySize`
+ * entry, gated on that same primary variant's vigencia dates.
  */
-export function withEffectiveDiscount<T extends DiscountableProduct & { variants?: DiscountableProduct[] }>(
-  product: T,
-  now: Date = new Date(),
-): T {
+export function withEffectiveDiscount<
+  T extends DiscountableProduct & { variants?: (DiscountableProduct & { priceBeforeBySize?: Record<string, number> })[] },
+>(product: T, now: Date = new Date()): T {
   const withOwnDiscount: T =
     product.priceBefore == null || isDiscountActive(product, now) ? product : { ...product, priceBefore: undefined };
 
@@ -68,9 +78,20 @@ export function withEffectiveDiscount<T extends DiscountableProduct & { variants
 
   let anyVariantChanged = false;
   const variants = withOwnDiscount.variants.map((variant) => {
-    if (variant.priceBefore == null || isDiscountActive(variant, now)) return variant;
-    anyVariantChanged = true;
-    return { ...variant, priceBefore: undefined };
+    let next = variant;
+    if (variant.priceBefore != null && !isDiscountActive(variant, now)) {
+      next = { ...next, priceBefore: undefined };
+      anyVariantChanged = true;
+    }
+    if (
+      next.priceBeforeBySize &&
+      Object.keys(next.priceBeforeBySize).length > 0 &&
+      !isWithinVigencia(next.discountStartsAt, next.discountEndsAt, now)
+    ) {
+      next = { ...next, priceBeforeBySize: undefined };
+      anyVariantChanged = true;
+    }
+    return next;
   });
 
   return anyVariantChanged ? { ...withOwnDiscount, variants } : withOwnDiscount;
@@ -94,30 +115,38 @@ export interface CategoryDiscountInput {
 }
 
 /**
- * Applies a discount to every active product in a category, in one admin action. Sabor×tamaño
- * matrix products are skipped (see `withEffectiveDiscount`'s doc comment) - counted separately so
- * the admin isn't told "updated" for products that visibly didn't change. For everything else,
- * the discount lands on each simple variant's own price when the product has variants (using each
- * variant's own current price as the base, so re-applying doesn't compound), or on the product
- * itself when it has none.
+ * Applies a discount to every active product in a category, in one admin action. The discount
+ * lands on each simple variant's own price when the product has (single-dimension) variants, on
+ * each sabor×tamaño combo's price when it's a matrix product (respecting `availableFor`), or on
+ * the product itself when it has neither - in every case using the option's own current price as
+ * the base, so re-applying doesn't compound.
  */
 export async function applyCategoryDiscount(
   input: CategoryDiscountInput,
-): Promise<{ updated: number; total: number; skippedMatrix: number }> {
+): Promise<{ updated: number; total: number }> {
   const { category, discountType, value, discountStartsAt, discountEndsAt } = input;
   const products = await Product.find({ category, active: true });
   let updated = 0;
-  let skippedMatrix = 0;
 
   for (const product of products) {
-    if (hasTwoDimensions(product.variants)) {
-      skippedMatrix++;
-      continue;
-    }
-
     let changed = false;
 
-    if (product.variants?.length) {
+    if (hasTwoDimensions(product.variants)) {
+      for (const { primary, size } of getVariantCombos(product.variants)) {
+        // Same "don't compound on re-apply" rule as the simple-variant/product branches below:
+        // prefer the combo's own prior `priceBeforeBySize` entry over its current (already
+        // discounted) `priceBySize` override.
+        const base = primary.priceBeforeBySize?.[size.id] ?? primary.priceBySize?.[size.id] ?? primary.price + size.price;
+        const newPrice = discountedPrice(base, discountType, value);
+        if (newPrice == null) continue;
+        primary.priceBeforeBySize = { ...(primary.priceBeforeBySize ?? {}), [size.id]: base };
+        primary.priceBySize = { ...(primary.priceBySize ?? {}), [size.id]: newPrice };
+        primary.discountStartsAt = discountStartsAt;
+        primary.discountEndsAt = discountEndsAt;
+        changed = true;
+      }
+      if (changed) product.markModified('variants');
+    } else if (product.variants?.length) {
       for (const variant of product.variants) {
         const base = variant.priceBefore ?? variant.price;
         const newPrice = discountedPrice(base, discountType, value);
@@ -145,16 +174,29 @@ export async function applyCategoryDiscount(
     updated++;
   }
 
-  return { updated, total: products.length, skippedMatrix };
+  return { updated, total: products.length };
 }
 
-/** Reverts every discount in a category - both the product-level one and any per-variant one -
- * back to the pre-discount price, regardless of whether it was set by `applyCategoryDiscount`,
- * the individual product/variant editor, or baked into the original seed data. */
+/** Reverts every discount in a category - the product-level one, any per-variant one, and any
+ * per-combo one - back to the pre-discount price, regardless of whether it was set by
+ * `applyCategoryDiscount`, the individual product/variant editor, or baked into the original seed
+ * data. A combo that had no price override before the discount reverts to that same frozen number
+ * rather than un-overriding back to a live `primary.price + size.price` sum - matching how
+ * reverting a simple variant/product discount already restores an exact prior number instead of
+ * trying to recompute one. */
 export async function removeCategoryDiscount(category: string): Promise<{ updated: number }> {
   const products = await Product.find({
     category,
-    $or: [{ priceBefore: { $ne: null } }, { 'variants.priceBefore': { $ne: null } }],
+    $or: [
+      { priceBefore: { $ne: null } },
+      { 'variants.priceBefore': { $ne: null } },
+      // Not `{ 'variants.priceBeforeBySize': { $ne: null } }`: Mongo's array-field `$ne` matches
+      // only when NO element equals the excluded value, and a size variant (which never has this
+      // field at all) counts as "null" for that purpose - so a real discount on the primary
+      // variant would be masked by its sibling size variant simply lacking the field. `$elemMatch`
+      // requires a single element to satisfy the condition, avoiding that trap.
+      { variants: { $elemMatch: { priceBeforeBySize: { $exists: true } } } },
+    ],
   });
   let updated = 0;
 
@@ -170,15 +212,29 @@ export async function removeCategoryDiscount(category: string): Promise<{ update
     }
 
     for (const variant of product.variants ?? []) {
-      if (variant.priceBefore == null) continue;
-      variant.price = variant.priceBefore;
-      variant.priceBefore = undefined;
-      variant.discountStartsAt = undefined;
-      variant.discountEndsAt = undefined;
-      changed = true;
+      if (variant.priceBefore != null) {
+        variant.price = variant.priceBefore;
+        variant.priceBefore = undefined;
+        variant.discountStartsAt = undefined;
+        variant.discountEndsAt = undefined;
+        changed = true;
+      }
+
+      if (variant.priceBeforeBySize && Object.keys(variant.priceBeforeBySize).length > 0) {
+        const priceBySize = { ...(variant.priceBySize ?? {}) };
+        for (const [sizeId, before] of Object.entries(variant.priceBeforeBySize as Record<string, number>)) {
+          priceBySize[sizeId] = before;
+        }
+        variant.priceBySize = priceBySize;
+        variant.priceBeforeBySize = undefined;
+        variant.discountStartsAt = undefined;
+        variant.discountEndsAt = undefined;
+        changed = true;
+      }
     }
 
     if (!changed) continue;
+    product.markModified('variants');
     await product.save();
     updated++;
   }
