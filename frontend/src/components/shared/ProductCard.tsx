@@ -161,13 +161,20 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
         )}
 
         {/* Badges */}
-        {product.stock === 0 ? (
-          <span style={{ position: 'absolute', top: 12, left: 12, background: dark ? 'oklch(0.10 0.012 155)' : 'var(--ink)', color: dark ? 'oklch(0.96 0.006 85)' : 'var(--cream)', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Agotado</span>
-        ) : isLowStock(product.stock) ? (
-          <span style={{ position: 'absolute', top: 12, left: 12, background: 'var(--coral)', color: 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Solo quedan {product.stock}</span>
-        ) : product.tag ? (
-          <span style={{ position: 'absolute', top: 12, left: 12, background: product.tag === 'Nuevo' ? 'var(--lime)' : 'oklch(0.18 0.03 155)', color: product.tag === 'Nuevo' ? 'oklch(0.18 0.03 155)' : 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{product.tag}</span>
-        ) : null}
+        <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+          {product.stock === 0 ? (
+            <span style={{ background: dark ? 'oklch(0.10 0.012 155)' : 'var(--ink)', color: dark ? 'oklch(0.96 0.006 85)' : 'var(--cream)', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Agotado</span>
+          ) : (
+            <>
+              {product.tag && (
+                <span style={{ background: product.tag === 'Nuevo' ? 'var(--lime)' : 'oklch(0.18 0.03 155)', color: product.tag === 'Nuevo' ? 'oklch(0.18 0.03 155)' : 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{product.tag}</span>
+              )}
+              {isLowStock(product.stock) && (
+                <span style={{ background: 'var(--coral)', color: 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Solo quedan {product.stock}</span>
+              )}
+            </>
+          )}
+        </div>
         
         {product.stock > 0 && effectivePriceBefore && (
           <span style={{ position: 'absolute', top: 12, right: 12, background: 'var(--coral)', color: 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, fontWeight: 600 }}>−{Math.round((1 - effectivePrice / effectivePriceBefore) * 100)}%</span>
