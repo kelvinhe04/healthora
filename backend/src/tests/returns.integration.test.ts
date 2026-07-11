@@ -102,6 +102,7 @@ describe('returns flow', () => {
     expect(created.status).toBe('requested');
     expect(created.refundAmount).toBe(20);
     expect(created.returnMethod).toBe('courier_pickup');
+    expect(created.desiredResolution).toBe('refund');
 
     const listResponse = await app.request('/admin/returns', { headers: adminHeaders });
     expect(listResponse.status).toBe(200);
@@ -134,9 +135,11 @@ describe('returns flow', () => {
         orderId: order._id.toString(),
         reason: 'Llegó un producto distinto al que pedí',
         items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        desiredResolution: 'replacement',
       }),
     });
     const created = await createResponse.json();
+    expect(created.desiredResolution).toBe('replacement');
 
     const replaceResponse = await app.request(`/admin/returns/${created._id}/status`, {
       method: 'PATCH',

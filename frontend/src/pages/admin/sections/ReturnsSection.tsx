@@ -30,6 +30,11 @@ const RETURN_METHOD_LABELS: Record<OrderReturn['returnMethod'], string> = {
   store_dropoff: 'Cliente trae a tienda',
 };
 
+const RESOLUTION_LABELS: Record<OrderReturn['desiredResolution'], string> = {
+  refund: 'Prefiere: reembolso',
+  replacement: 'Prefiere: reenvío del producto correcto',
+};
+
 // Un retiro en tienda nunca salió por un courier, así que tampoco vuelve por uno: la devolución
 // salta "en tránsito" y queda lista para resolver en cuanto está aprobada.
 const NEXT_STATUS: Record<OrderReturn['returnMethod'], Partial<Record<ReturnStatus, { next: ReturnStatus; label: string }>>> = {
@@ -159,6 +164,9 @@ export function ReturnsSection() {
                       <div style={{ fontSize: 11, color: 'var(--ink-40)' }}>
                         {ret.items.map((item) => `${item.productName} ×${item.qty}`).join(', ')}
                       </div>
+                      <div style={{ fontSize: 11, color: 'var(--ink)', fontWeight: 500, marginTop: 4 }}>
+                        {RESOLUTION_LABELS[ret.desiredResolution]}
+                      </div>
                     </td>
                     <td style={td}>${ret.refundAmount.toFixed(2)}</td>
                     <td style={{ ...td, fontSize: 12, color: 'var(--ink-60)' }}>{RETURN_METHOD_LABELS[ret.returnMethod]}</td>
@@ -196,18 +204,22 @@ export function ReturnsSection() {
                               type="button"
                               onClick={() => updateStatusMut.mutate({ id: ret._id, status: 'refunded' })}
                               disabled={updateStatusMut.isPending}
-                              style={{ background: 'oklch(0.28 0.055 155)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--lime)', fontSize: 12 }}
+                              style={ret.desiredResolution === 'refund'
+                                ? { background: 'oklch(0.28 0.055 155)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--lime)', fontSize: 12 }
+                                : { background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--ink)', fontSize: 12 }}
                             >
-                              Reembolsar
+                              Reembolsar{ret.desiredResolution === 'refund' ? ' (solicitado)' : ''}
                             </button>
                             <button
                               type="button"
                               onClick={() => updateStatusMut.mutate({ id: ret._id, status: 'replaced' })}
                               disabled={updateStatusMut.isPending}
                               title="Para cuando llegó el producto equivocado o dañado: reenvía el correcto sin costo en vez de reembolsar."
-                              style={{ background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--ink)', fontSize: 12 }}
+                              style={ret.desiredResolution === 'replacement'
+                                ? { background: 'oklch(0.28 0.055 155)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--lime)', fontSize: 12 }
+                                : { background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--ink)', fontSize: 12 }}
                             >
-                              Reenviar producto correcto
+                              Reenviar producto correcto{ret.desiredResolution === 'replacement' ? ' (solicitado)' : ''}
                             </button>
                           </>
                         )}

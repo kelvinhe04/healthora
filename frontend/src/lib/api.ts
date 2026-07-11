@@ -8,6 +8,7 @@ import type {
   Review,
   OrderReturn,
   ReturnStatus,
+  ReturnResolution,
   AdminReview,
   ReviewStatus,
   ReviewBan,
@@ -90,7 +91,7 @@ export const api = {
   returns: {
     list: (token: string) => request<OrderReturn[]>("/returns", undefined, token),
     create: (
-      body: { orderId: string; reason: string; items: { productId: string; qty: number }[] },
+      body: { orderId: string; reason: string; items: { productId: string; qty: number }[]; desiredResolution?: ReturnResolution },
       token: string,
     ) =>
       request<OrderReturn>(

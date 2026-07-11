@@ -18,6 +18,7 @@ const createReturnSchema = z.object({
   orderId: objectIdSchema,
   reason: textField(1000),
   items: z.array(returnItemSchema).min(1).max(100),
+  desiredResolution: z.enum(['refund', 'replacement']).default('refund'),
 });
 
 export const returnsRouter = new Hono<AppEnv>()
@@ -32,7 +33,7 @@ export const returnsRouter = new Hono<AppEnv>()
     const parsed = await parseJson(c, createReturnSchema);
     if (!parsed.success) return parsed.response;
 
-    const { orderId, reason, items } = parsed.data;
+    const { orderId, reason, items, desiredResolution } = parsed.data;
     const order = await Order.findOne({ _id: orderId, customerId: user.clerkId }).lean();
     if (!order) return c.json({ error: 'Orden no encontrada' }, 404);
     if (order.paymentStatus !== 'paid') {
@@ -77,6 +78,7 @@ export const returnsRouter = new Hono<AppEnv>()
       refundAmount: Math.round(refundAmount * 100) / 100,
       status: 'requested',
       returnMethod,
+      desiredResolution,
       pickupAddress: returnMethod === 'courier_pickup' ? order.address : undefined,
     });
 
@@ -95,7 +97,7 @@ export const returnsRouter = new Hono<AppEnv>()
       await notifyAdmins({
         type: 'return_requested',
         title: 'Nueva solicitud de devolución',
-        body: `${user.name || 'Un cliente'} solicitó devolver ${resolvedItems.length} artículo${resolvedItems.length === 1 ? '' : 's'} del pedido #${String(orderId).slice(-8).toUpperCase()} por $${returnDoc.refundAmount.toFixed(2)}.`,
+        body: `${user.name || 'Un cliente'} solicitó devolver ${resolvedItems.length} artículo${resolvedItems.length === 1 ? '' : 's'} del pedido #${String(orderId).slice(-8).toUpperCase()} por $${returnDoc.refundAmount.toFixed(2)} — pide ${desiredResolution === 'replacement' ? 'que le reenvíen el producto correcto' : 'reembolso'}.`,
         link: '/admin?section=returns',
         data: { returnId: returnDoc._id.toString(), orderId: String(orderId), refundAmount: returnDoc.refundAmount },
       });

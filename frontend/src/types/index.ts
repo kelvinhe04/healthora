@@ -167,6 +167,9 @@ export type ReturnStatus = 'requested' | 'approved' | 'in_transit' | 'refunded' 
  * drops it off in person (pickup orders never had a courier on the way out either). */
 export type ReturnMethod = 'courier_pickup' | 'store_dropoff';
 
+/** What the customer asked for when requesting the return - the admin resolves toward this. */
+export type ReturnResolution = 'refund' | 'replacement';
+
 export interface ReturnItem {
   productId: string;
   productName: string;
@@ -184,6 +187,7 @@ export interface OrderReturn {
   refundAmount: number;
   status: ReturnStatus;
   returnMethod: ReturnMethod;
+  desiredResolution: ReturnResolution;
   pickupAddress?: OrderAddress;
   replacementOrderId?: string;
   stripeRefundId?: string;

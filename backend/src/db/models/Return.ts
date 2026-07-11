@@ -20,6 +20,15 @@ const ReturnSchema = new Schema(
       enum: ['requested', 'approved', 'in_transit', 'refunded', 'replaced', 'rejected'],
       default: 'requested',
     },
+    // What the *customer* asked for when requesting the return - refund is the default (fits
+    // "changed my mind"/damaged-with-no-need-for-it cases); replacement is what they'd pick for
+    // "this isn't what I ordered". The admin resolves toward this, not their own call - see
+    // adminReturns.ts.
+    desiredResolution: {
+      type: String,
+      enum: ['refund', 'replacement'],
+      default: 'refund',
+    },
     // Set once the admin resolves the return as `replaced` instead of `refunded` (wrong/damaged
     // item) - points at the no-charge replacement Order created for it.
     replacementOrderId: { type: Schema.Types.ObjectId, ref: 'Order' },

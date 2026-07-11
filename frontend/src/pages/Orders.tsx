@@ -6,7 +6,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { useOrders } from '../hooks/useOrders';
 import { Icon } from '../components/shared/Icon';
 import { api } from '../lib/api';
-import type { Order, OrderAddress, ReturnStatus } from '../types';
+import type { Order, OrderAddress, ReturnResolution, ReturnStatus } from '../types';
 import { useOnceLoading, Skeleton } from '../components/admin';
 import { useCartStore } from '../store/cartStore';
 import { useUiStore } from '../store/uiStore';
@@ -120,6 +120,7 @@ function ReturnPanel({ order }: { order: Order }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
+  const [desiredResolution, setDesiredResolution] = useState<ReturnResolution>('refund');
   const [error, setError] = useState('');
 
   const returnsQuery = useQuery({
@@ -140,6 +141,7 @@ function ReturnPanel({ order }: { order: Order }) {
           orderId: order._id,
           reason,
           items: order.items.filter((i) => !i.isSample).map((i) => ({ productId: i.productId, qty: i.qty })),
+          desiredResolution,
         },
         token!,
       );
@@ -148,6 +150,7 @@ function ReturnPanel({ order }: { order: Order }) {
       void queryClient.invalidateQueries({ queryKey: ['returns'] });
       setOpen(false);
       setReason('');
+      setDesiredResolution('refund');
       setError('');
     },
     onError: (err: Error) => setError(err.message || 'No se pudo enviar la solicitud'),
@@ -177,6 +180,11 @@ function ReturnPanel({ order }: { order: Order }) {
                 : 'Un mensajero pasará a recoger el producto en la dirección de tu pedido.')
             : existingReturn.reason}
         </div>
+        {['requested', 'approved', 'in_transit'].includes(existingReturn.status) && (
+          <div style={{ fontSize: 11, color: 'var(--ink-40)', marginTop: 6, fontFamily: '"Geist", sans-serif' }}>
+            Solicitaste: {existingReturn.desiredResolution === 'replacement' ? 'que te reenvíen el producto correcto' : 'reembolso'}
+          </div>
+        )}
       </div>
     );
   }
@@ -204,6 +212,37 @@ function ReturnPanel({ order }: { order: Order }) {
             placeholder="Cuéntanos qué pasó…"
             style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--ink-20)', background: 'var(--cream)', fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', boxSizing: 'border-box', resize: 'vertical' }}
           />
+          <label style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginTop: 12, marginBottom: 6, display: 'block' }}>
+            ¿Qué prefieres?
+          </label>
+          <div role="radiogroup" aria-label="¿Qué prefieres?" style={{ display: 'flex', gap: 8 }}>
+            {([
+              { value: 'refund' as const, label: 'Reembolso' },
+              { value: 'replacement' as const, label: 'Que me envíen el producto correcto' },
+            ]).map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={desiredResolution === option.value}
+                onClick={() => setDesiredResolution(option.value)}
+                style={{
+                  flex: 1,
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  border: desiredResolution === option.value ? '1px solid oklch(0.28 0.055 155)' : '1px solid var(--ink-12)',
+                  background: desiredResolution === option.value ? 'color-mix(in oklab, oklch(0.28 0.055 155) 10%, var(--cream))' : 'var(--cream)',
+                  color: 'var(--ink)',
+                  fontSize: 12,
+                  fontFamily: '"Geist", sans-serif',
+                  fontWeight: desiredResolution === option.value ? 600 : 400,
+                  cursor: 'pointer',
+                }}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
           {error && <div role="alert" style={{ marginTop: 8, fontSize: 12, color: 'var(--coral)' }}>{error}</div>}
           <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
             <button
