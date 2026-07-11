@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { isDiscountActive, isVigenciaRangeValid, withEffectiveDiscount } from './discounts';
+import { clearStaleCategoryDiscountMarkers, isDiscountActive, isVigenciaRangeValid, withEffectiveDiscount } from './discounts';
 
 describe('isDiscountActive', () => {
   test('false when no priceBefore is set', () => {
@@ -88,6 +88,107 @@ describe('withEffectiveDiscount', () => {
       variants: [{ id: 'a', price: 8, priceBefore: 10 }],
     };
     expect(withEffectiveDiscount(product)).toEqual(product);
+  });
+});
+
+describe('clearStaleCategoryDiscountMarkers', () => {
+  test('clears the product-level marker when the admin changes priceBefore over a category discount', () => {
+    const before = { price: 90, priceBefore: 100, categoryDiscount: true };
+    const update = { priceBefore: 130, categoryDiscount: true, categoryDiscountRestore: { price: 100 } };
+    clearStaleCategoryDiscountMarkers(before, update);
+    expect(update.categoryDiscount).toBeUndefined();
+    expect(update.categoryDiscountRestore).toBeUndefined();
+    // The admin's new priceBefore itself is untouched - only the stale marker is cleared.
+    expect(update.priceBefore).toBe(130);
+  });
+
+  test('leaves the marker alone when price/priceBefore round-trip unchanged', () => {
+    const before = { price: 90, priceBefore: 100, categoryDiscount: true };
+    const update = { price: 90, priceBefore: 100, categoryDiscount: true, categoryDiscountRestore: { price: 100 } };
+    clearStaleCategoryDiscountMarkers(before, update);
+    expect(update.categoryDiscount).toBe(true);
+    expect(update.categoryDiscountRestore).toEqual({ price: 100 });
+  });
+
+  test('is a no-op when the product never had a category discount to begin with', () => {
+    const before = { price: 90, priceBefore: 100 };
+    const update = { priceBefore: 130 };
+    clearStaleCategoryDiscountMarkers(before, update);
+    expect(update.priceBefore).toBe(130);
+    expect(update.categoryDiscount).toBeUndefined();
+  });
+
+  test('clears a simple variant\'s marker when its price changes, leaving other untouched variants alone', () => {
+    const before = {
+      price: 10,
+      variants: [
+        { id: 'a', price: 9, priceBefore: 10, categoryDiscount: true },
+        { id: 'b', price: 18, priceBefore: 20, categoryDiscount: true },
+      ],
+    };
+    const update = {
+      variants: [
+        { id: 'a', price: 25, priceBefore: 30, categoryDiscount: true, categoryDiscountRestore: { price: 10 } },
+        { id: 'b', price: 18, priceBefore: 20, categoryDiscount: true, categoryDiscountRestore: { price: 20 } },
+      ],
+    };
+    clearStaleCategoryDiscountMarkers(before, update);
+    expect(update.variants[0].categoryDiscount).toBeUndefined();
+    expect(update.variants[0].categoryDiscountRestore).toBeUndefined();
+    expect(update.variants[0].price).toBe(25);
+    // Variant "b" round-tripped unchanged, so its marker survives.
+    expect(update.variants[1].categoryDiscount).toBe(true);
+    expect(update.variants[1].categoryDiscountRestore).toEqual({ price: 20 });
+  });
+
+  test('clears a matrix primary\'s marker when any one combo\'s priceBySize changes', () => {
+    const before = {
+      price: 15,
+      variants: [{ id: 'chocolate', price: 0, priceBySize: { '5lb': 13.5, '10lb': 25.2 }, categoryDiscount: true }],
+    };
+    const update = {
+      variants: [
+        {
+          id: 'chocolate',
+          priceBySize: { '5lb': 40, '10lb': 25.2 },
+          categoryDiscount: true,
+          categoryDiscountRestoreBySize: { '5lb': { price: 15 } },
+        },
+      ],
+    };
+    clearStaleCategoryDiscountMarkers(before, update);
+    expect(update.variants[0].categoryDiscount).toBeUndefined();
+    expect(update.variants[0].categoryDiscountRestoreBySize).toBeUndefined();
+    expect(update.variants[0].priceBySize).toEqual({ '5lb': 40, '10lb': 25.2 });
+  });
+
+  test('clears a matrix primary\'s marker when the admin hand-sets a combo\'s priceBeforeBySize alone (price unchanged)', () => {
+    const before = {
+      price: 15,
+      variants: [{ id: 'chocolate', price: 0, priceBySize: { '5lb': 13.5 }, categoryDiscount: true }],
+    };
+    const update = {
+      variants: [
+        {
+          id: 'chocolate',
+          // Admin used the new per-combo "Precio antes" field without touching "Precio".
+          priceBySize: { '5lb': 13.5 },
+          priceBeforeBySize: { '5lb': 20 },
+          categoryDiscount: true,
+        },
+      ],
+    };
+    clearStaleCategoryDiscountMarkers(before, update);
+    expect(update.variants[0].categoryDiscount).toBeUndefined();
+    expect(update.variants[0].priceBeforeBySize).toEqual({ '5lb': 20 });
+  });
+
+  test('does not clear a variant\'s marker for one that never had a category discount', () => {
+    const before = { price: 10, variants: [{ id: 'a', price: 9, priceBefore: 10 }] };
+    const update = { variants: [{ id: 'a', price: 25, priceBefore: 30 }] };
+    clearStaleCategoryDiscountMarkers(before, update);
+    expect(update.variants[0].categoryDiscount).toBeUndefined();
+    expect(update.variants[0].price).toBe(25);
   });
 });
 

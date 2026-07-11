@@ -36,6 +36,22 @@ describe('resolveVariantPricing', () => {
     });
   });
 
+  test('charges the combo\'s priceBySize override instead of the additive sum when present', () => {
+    const productWithOverride = {
+      ...product,
+      variants: [
+        { id: 'vanilla', label: 'Vainilla', type: 'flavor', price: 12, stock: 3, priceBySize: { small: 13.5 } },
+        { id: 'small', label: '30 ct', type: 'size', price: 2, stock: 4 },
+      ],
+    };
+    expect(resolveVariantPricing(productWithOverride, 'vanilla:small')).toEqual({
+      price: 13.5,
+      stock: 4,
+      label: 'Vainilla · 30 ct',
+      stockVariantId: 'small',
+    });
+  });
+
   test('prefers stockBySize override for composite id when present', () => {
     const productWithOverride = {
       ...product,
