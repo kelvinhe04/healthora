@@ -14,6 +14,7 @@ import { useCartStore } from '../store/cartStore';
 import { getE2EAuthToken, getE2EUser } from '../lib/e2eAuth';
 import { resolveShipping, SHIPPING_METHOD_OPTIONS, type ShippingMethod } from '../lib/shipping';
 import { formatPanamaPhone } from '../lib/phone';
+import { computeItbms } from '../lib/tax';
 
 interface CheckoutProps {
   items: CartItem[];
@@ -188,7 +189,11 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   const discountedSubtotal = roundMoney(Math.max(0, subtotal - discountAmount));
   const shippingResolved = resolveShipping(shippingMethod, discountedSubtotal);
   const shipping = shippingResolved.cost;
-  const tax = roundMoney(discountedSubtotal * 0.07);
+  const tax = computeItbms(
+    items.map((it) => ({ price: it.variant?.price ?? it.product.price, qty: it.qty, taxExempt: it.product.taxExempt })),
+    discountAmount,
+    subtotal,
+  );
   const total = roundMoney(discountedSubtotal + shipping + tax);
 
   const handleApplyPromo = (code = promoInput) => {
@@ -506,7 +511,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             {discountAmount > 0 && <Row k={`Descuento ${appliedPromo?.code}`} v={<span style={{ color: 'var(--green)' }}>-${discountAmount.toFixed(2)}</span>} />}
             {freeSample && <Row k="Muestra gratis" v={<span style={{ color: 'var(--green)' }}>$0.00</span>} />}
             <Row k={`Envío (${shippingResolved.eta})`} v={shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`} />
-            <Row k="Impuestos" v={`$${tax.toFixed(2)}`} />
+            <Row k="ITBMS" v={`$${tax.toFixed(2)}`} />
           </div>
           <div style={{ padding: '14px 0', borderTop: '1px solid var(--ink-06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <strong style={{ fontSize: 16, fontFamily: '"Geist", sans-serif' }}>Total</strong>

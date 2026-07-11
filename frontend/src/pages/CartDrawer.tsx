@@ -9,6 +9,7 @@ import { Icon } from '../components/shared/Icon';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import type { Product, ProductVariant } from '../types';
 import { PRIMARY_VARIANT_TYPES, hasTwoDimensions, pickSizeKeepingCurrent, resolveVariantById, sizesFor } from '../lib/productVariants';
+import { computeItbms } from '../lib/tax';
 
 interface CartDrawerProps {
   open: boolean;
@@ -134,7 +135,11 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
   const drawerPad = isMobile ? '16px' : '28px';
   const subtotal = items.reduce((s, it) => s + (it.variant?.price ?? it.product.price) * it.qty, 0);
   const shipping = subtotal > 50 || subtotal === 0 ? 0 : 6.90;
-  const tax = subtotal * 0.07;
+  const tax = computeItbms(
+    items.map((it) => ({ price: it.variant?.price ?? it.product.price, qty: it.qty, taxExempt: it.product.taxExempt })),
+    0,
+    subtotal,
+  );
   const total = subtotal + shipping + tax;
   const qualifiesForSample = subtotal >= 200;
 
@@ -352,7 +357,7 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--green)' }}><span>Muestra gratis</span><span>$0.00</span></div>
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}><span>Envío</span><span>{shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}><span>Impuestos (7%)</span><span>${tax.toFixed(2)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}><span>ITBMS</span><span>${tax.toFixed(2)}</span></div>
               <div style={{ height: 1, background: 'var(--ink-06)', margin: '8px 0' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 0', marginBottom: 10 }}>
                 <strong style={{ fontSize: 14, fontFamily: '"Geist", sans-serif' }}>Total</strong>
