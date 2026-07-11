@@ -20,6 +20,8 @@ export type NotificationType =
   | 'order_status'
   | 'low_stock'
   | 'new_review'
+  | 'return_requested'
+  | 'return_status'
   | 'broadcast';
 
 const NotificationSchema = new Schema(
@@ -29,7 +31,7 @@ const NotificationSchema = new Schema(
     recipientId: { type: String, default: null },
     type: {
       type: String,
-      enum: ['order_paid', 'order_shipped', 'order_status', 'low_stock', 'new_review', 'broadcast'],
+      enum: ['order_paid', 'order_shipped', 'order_status', 'low_stock', 'new_review', 'return_requested', 'return_status', 'broadcast'],
       required: true,
     },
     title: { type: String, required: true },

@@ -777,7 +777,7 @@ export async function sendNewsletterSubscriptionEmail(data: NewsletterEmailData)
   console.log('[EMAIL] Newsletter subscription sent to:', data.email, 'MessageId:', info.messageId);
 }
 
-const RETURN_STATUS_COPY: Record<string, { label: string; message: string }> = {
+export const RETURN_STATUS_COPY: Record<string, { label: string; message: string }> = {
   requested: { label: 'Solicitud recibida', message: 'recibimos tu solicitud de devolución y la estamos revisando.' },
   approved: { label: 'Devolución aprobada', message: 'aprobamos tu devolución. Te avisaremos cuando recibamos el producto de vuelta.' },
   in_transit: { label: 'Producto en tránsito', message: 'registramos que tu producto está en camino de vuelta a nuestro almacén.' },

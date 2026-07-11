@@ -5,8 +5,9 @@ import { Order } from '../../db/models/Order';
 import { requireAdmin } from '../../middleware/requireAdmin';
 import type { AppEnv } from '../../types/hono';
 import { objectIdSchema, parseJson, parseParams, parseQuery } from '../../lib/validation';
-import { sendReturnStatusEmail } from '../../lib/email';
+import { sendReturnStatusEmail, RETURN_STATUS_COPY } from '../../lib/email';
 import { stripe } from '../../lib/stripe';
+import { notifyUser } from '../../lib/realtime';
 
 const returnStatusSchema = z.enum(['requested', 'approved', 'in_transit', 'refunded', 'rejected']);
 
@@ -70,6 +71,24 @@ export const adminReturnsRouter = new Hono<AppEnv>()
       status: nextStatus,
       refundAmount: returnDoc.refundAmount,
     }).catch((err) => console.error('[ADMIN_RETURNS] Failed to send status email:', err));
+
+    // Real-time push to the customer (HU-061), mirroring the status email and the fulfillment
+    // notification in adminOrders.ts. Best-effort - a notification failure must not fail the
+    // status update itself.
+    if (returnDoc.customerId) {
+      try {
+        const copy = RETURN_STATUS_COPY[nextStatus];
+        await notifyUser(returnDoc.customerId, {
+          type: 'return_status',
+          title: copy.label,
+          body: copy.message,
+          link: '/orders',
+          data: { returnId: returnDoc._id.toString(), orderId: String(returnDoc.orderId), status: nextStatus },
+        });
+      } catch (notifyError) {
+        console.error('[ADMIN_RETURNS] Failed to push return_status notification:', notifyError);
+      }
+    }
 
     return c.json(returnDoc.toObject());
   });

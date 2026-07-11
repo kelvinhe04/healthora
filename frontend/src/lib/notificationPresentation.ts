@@ -15,6 +15,10 @@ export function notificationPresentation(type: NotificationType): { icon: string
       return { icon: 'alert-circle', accent: 'var(--coral)' };
     case 'new_review':
       return { icon: 'star', accent: 'var(--coral)' };
+    case 'return_requested':
+      return { icon: 'arrow-left', accent: 'var(--coral)' };
+    case 'return_status':
+      return { icon: 'arrow-left', accent: 'var(--ink)' };
     case 'broadcast':
     default:
       return { icon: 'bell', accent: 'var(--ink)' };

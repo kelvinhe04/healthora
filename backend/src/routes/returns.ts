@@ -7,6 +7,7 @@ import { Return } from '../db/models/Return';
 import { objectIdSchema, parseJson, productIdSchema, textField } from '../lib/validation';
 import { isWithinReturnWindow } from '../lib/returns';
 import { sendReturnStatusEmail } from '../lib/email';
+import { notifyAdmins } from '../lib/realtime';
 
 const returnItemSchema = z.object({
   productId: productIdSchema,
@@ -79,6 +80,20 @@ export const returnsRouter = new Hono<AppEnv>()
       status: 'requested',
       refundAmount: returnDoc.refundAmount,
     }).catch((err) => console.error('[RETURNS] Failed to send requested email:', err));
+
+    // Real-time alert to admins (HU-061), mirroring new_review. Best-effort - a notification
+    // failure must not fail the return request itself.
+    try {
+      await notifyAdmins({
+        type: 'return_requested',
+        title: 'Nueva solicitud de devolución',
+        body: `${user.name || 'Un cliente'} solicitó devolver ${resolvedItems.length} artículo${resolvedItems.length === 1 ? '' : 's'} del pedido #${String(orderId).slice(-8).toUpperCase()} por $${returnDoc.refundAmount.toFixed(2)}.`,
+        link: '/admin?section=returns',
+        data: { returnId: returnDoc._id.toString(), orderId: String(orderId), refundAmount: returnDoc.refundAmount },
+      });
+    } catch (notifyError) {
+      console.error('[RETURNS] Failed to push return_requested notification:', notifyError);
+    }
 
     return c.json(returnDoc.toObject(), 201);
   });

@@ -219,6 +219,8 @@ export type NotificationType =
   | 'order_status'
   | 'low_stock'
   | 'new_review'
+  | 'return_requested'
+  | 'return_status'
   | 'broadcast';
 
 /** A real-time notification (HU-061) as delivered by the REST inbox and the WebSocket channel. */
