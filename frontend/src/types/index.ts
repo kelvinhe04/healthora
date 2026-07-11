@@ -31,6 +31,8 @@ export interface ProductVariant {
   priceBySize?: Record<string, number>;
   /** "Was $X" price for a specific sabor+tamaño combo (set by a category/individual discount), keyed by size variant id. Vigencia comes from this variant's own discountStartsAt/discountEndsAt. */
   priceBeforeBySize?: Record<string, number>;
+  /** Whether this variant's discount came from the bulk "Descuento por categoría" admin tool (vs. hand-set on this variant's own editor). Never admin-editable directly. */
+  categoryDiscount?: boolean;
   isDefault?: boolean;
   /** For a `size` variant paired with a `flavor`/`scent` variant: restricts this size to the given primary variant ids. Omit to make it available for all. */
   availableFor?: string[];
@@ -47,6 +49,8 @@ export interface Product {
   priceBefore?: number | null;
   discountStartsAt?: string | null;
   discountEndsAt?: string | null;
+  /** Whether this product's discount came from the bulk "Descuento por categoría" admin tool (vs. hand-set on this product's own editor). Never admin-editable directly. */
+  categoryDiscount?: boolean;
   tag?: string;
   rating: number;
   reviews: number;

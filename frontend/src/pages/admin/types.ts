@@ -18,6 +18,9 @@ export type VariantFormRow = {
   priceBefore: string;
   discountStartsAt: string;
   discountEndsAt: string;
+  /** Whether priceBefore came from the bulk "Descuento por categoría" tool (vs. hand-set here).
+   * No checkbox for this - carried through so an unrelated re-save doesn't silently wipe it. */
+  categoryDiscount: boolean;
   stock: string;
   sku: string;
   color: string;
@@ -42,6 +45,7 @@ export const emptyVariantRow = (): VariantFormRow => ({
   priceBefore: '',
   discountStartsAt: '',
   discountEndsAt: '',
+  categoryDiscount: false,
   stock: '0',
   sku: '',
   color: '',

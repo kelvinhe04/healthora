@@ -40,6 +40,10 @@ export type MatrixPrimaryRow = {
    * an unrelated manual re-save of this product instead of being silently dropped. */
   discountStartsAt: string;
   discountEndsAt: string;
+  /** Whether this primary's combo discount came from the bulk "Descuento por categoría" tool
+   * (vs. hand-set) - see `backend/src/lib/discounts.ts`. Carried through for the same reason as
+   * the vigencia fields above; never toggled by this editor. */
+  categoryDiscount: boolean;
 };
 
 export type MatrixSizeRow = {
@@ -86,7 +90,7 @@ export function cellKey(primaryKey: string, sizeKey: string): string {
 }
 
 export function emptyPrimaryRow(): MatrixPrimaryRow {
-  return { key: newKey(), id: '', label: '', price: '0', stock: '0', sku: '', isDefault: false, images: [], color: '', discountStartsAt: '', discountEndsAt: '' };
+  return { key: newKey(), id: '', label: '', price: '0', stock: '0', sku: '', isDefault: false, images: [], color: '', discountStartsAt: '', discountEndsAt: '', categoryDiscount: false };
 }
 
 export function emptySizeRow(): MatrixSizeRow {
@@ -118,6 +122,7 @@ export function decomposeToMatrix(variants: ProductVariant[]): MatrixState {
     color: v.color ?? '',
     discountStartsAt: v.discountStartsAt ? v.discountStartsAt.slice(0, 10) : '',
     discountEndsAt: v.discountEndsAt ? v.discountEndsAt.slice(0, 10) : '',
+    categoryDiscount: Boolean(v.categoryDiscount),
   }));
 
   const sizes: MatrixSizeRow[] = sizeVariants.map((v) => ({
@@ -206,6 +211,7 @@ export function composeFromMatrix(state: MatrixState): ProductVariant[] {
         ...(Object.keys(priceBeforeBySize).length ? { priceBeforeBySize } : {}),
         ...(Object.keys(priceBeforeBySize).length && p.discountStartsAt ? { discountStartsAt: p.discountStartsAt } : {}),
         ...(Object.keys(priceBeforeBySize).length && p.discountEndsAt ? { discountEndsAt: p.discountEndsAt } : {}),
+        ...(Object.keys(priceBeforeBySize).length && p.categoryDiscount ? { categoryDiscount: true } : {}),
         ...(p.isDefault ? { isDefault: true } : {}),
       };
     });

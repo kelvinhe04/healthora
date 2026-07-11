@@ -68,7 +68,7 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
     await Product.deleteMany({});
   });
 
-  test('discounts the product price when it has no variants', async () => {
+  test('discounts the product price when it has no variants, marking it as a category discount', async () => {
     await seedNoVariantProduct();
     const result = await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'percent', value: 10 });
     expect(result).toEqual({ updated: 1, total: 1 });
@@ -76,9 +76,10 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
     const product = await Product.findOne({ id: 'no-variant' }).lean();
     expect(product?.price).toBe(18);
     expect(product?.priceBefore).toBe(20);
+    expect(product?.categoryDiscount).toBe(true);
   });
 
-  test('discounts each simple variant using its own price as the base', async () => {
+  test('discounts each simple variant using its own price as the base, marking each as a category discount', async () => {
     await seedSimpleVariantProduct();
     const result = await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'fixed', value: 2 });
     expect(result).toEqual({ updated: 1, total: 1 });
@@ -88,8 +89,10 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
     const large = product?.variants?.find((v) => v.id === 'large');
     expect(small?.price).toBe(8);
     expect(small?.priceBefore).toBe(10);
+    expect(small?.categoryDiscount).toBe(true);
     expect(large?.price).toBe(16);
     expect(large?.priceBefore).toBe(18);
+    expect(large?.categoryDiscount).toBe(true);
     // Top-level price/priceBefore are unused for variant products - left untouched, not faked.
     expect(product?.priceBefore).toBeUndefined();
   });
@@ -126,12 +129,14 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
     // chocolate:5lb = 0 + 15 = 15 -> 13.5; chocolate:10lb = 0 + 28 = 28 -> 25.2 (only available for chocolate).
     expect(chocolate?.priceBySize).toEqual({ '5lb': 13.5, '10lb': 25.2 });
     expect(chocolate?.priceBeforeBySize).toEqual({ '5lb': 15, '10lb': 28 });
+    expect(chocolate?.categoryDiscount).toBe(true);
     expect(chocolate?.discountStartsAt?.toISOString()).toBe(discountStartsAt.toISOString());
     expect(chocolate?.discountEndsAt?.toISOString()).toBe(discountEndsAt.toISOString());
 
     // vanilla only has 5lb available (10lb is restricted to chocolate).
     expect(vanilla?.priceBySize).toEqual({ '5lb': 13.5 });
     expect(vanilla?.priceBeforeBySize).toEqual({ '5lb': 15 });
+    expect(vanilla?.categoryDiscount).toBe(true);
 
     // The additive price parts themselves are untouched - only the combo override changed.
     expect(chocolate?.price).toBe(0);
@@ -151,7 +156,7 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
     expect(chocolate?.priceBySize).toEqual({ '5lb': 13.5, '10lb': 25.2 });
   });
 
-  test('removeCategoryDiscount reverts product-level, variant-level and combo-level discounts', async () => {
+  test('removeCategoryDiscount reverts product-level, variant-level and combo-level discounts, clearing the categoryDiscount marker', async () => {
     await seedNoVariantProduct();
     await seedSimpleVariantProduct();
     await seedMatrixProduct();
@@ -163,11 +168,13 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
     const noVariant = await Product.findOne({ id: 'no-variant' }).lean();
     expect(noVariant?.price).toBe(20);
     expect(noVariant?.priceBefore).toBeUndefined();
+    expect(noVariant?.categoryDiscount).toBeUndefined();
 
     const simpleVariant = await Product.findOne({ id: 'simple-variant' }).lean();
     const small = simpleVariant?.variants?.find((v) => v.id === 'small');
     expect(small?.price).toBe(10);
     expect(small?.priceBefore).toBeUndefined();
+    expect(small?.categoryDiscount).toBeUndefined();
 
     const matrixProduct = await Product.findOne({ id: 'matrix-product' }).lean();
     const chocolate = matrixProduct?.variants?.find((v) => v.id === 'chocolate');
@@ -175,9 +182,41 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
     expect(chocolate?.priceBeforeBySize).toBeUndefined();
     expect(chocolate?.discountStartsAt).toBeUndefined();
     expect(chocolate?.discountEndsAt).toBeUndefined();
+    expect(chocolate?.categoryDiscount).toBeUndefined();
   });
 
-  test('removeCategoryDiscount also clears a discount that was hardcoded directly in seed data', async () => {
+  test('removeCategoryDiscount leaves a discount an admin set by hand on a product\'s own editor untouched', async () => {
+    await seedNoVariantProduct();
+    await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'percent', value: 10 });
+
+    // AFTER that bulk action, the admin manually sets a discount on a different product via its
+    // own editor - a real priceBefore/vigencia, but `categoryDiscount` is never stamped because it
+    // never went through `applyCategoryDiscount`.
+    await Product.create({
+      id: 'manual-discount',
+      name: 'Manual Discount Product',
+      brand: 'Healthora',
+      category: 'Vitaminas',
+      need: 'Test',
+      price: 15,
+      stock: 10,
+      priceBefore: 20,
+    });
+
+    const result = await removeCategoryDiscount('Vitaminas');
+    // Only the bulk-applied one (no-variant) counts as reverted - the hand-set one is left alone.
+    expect(result).toEqual({ updated: 1 });
+
+    const manual = await Product.findOne({ id: 'manual-discount' }).lean();
+    expect(manual?.price).toBe(15);
+    expect(manual?.priceBefore).toBe(20);
+
+    const noVariant = await Product.findOne({ id: 'no-variant' }).lean();
+    expect(noVariant?.price).toBe(20);
+    expect(noVariant?.priceBefore).toBeUndefined();
+  });
+
+  test('removeCategoryDiscount does not touch a discount hardcoded directly in seed data (no categoryDiscount flag)', async () => {
     await Product.create({
       id: 'hardcoded-discount',
       name: 'Hardcoded Discount Product',
@@ -190,11 +229,11 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
     });
 
     const result = await removeCategoryDiscount('Vitaminas');
-    expect(result).toEqual({ updated: 1 });
+    expect(result).toEqual({ updated: 0 });
 
     const product = await Product.findOne({ id: 'hardcoded-discount' }).lean();
     const variant = product?.variants?.[0];
-    expect(variant?.price).toBe(19.99);
-    expect(variant?.priceBefore).toBeUndefined();
+    expect(variant?.price).toBe(11.68);
+    expect(variant?.priceBefore).toBe(19.99);
   });
 });

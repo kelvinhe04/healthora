@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -27,11 +27,12 @@ import { variantSummary } from '../utils';
 import type { ProductSortKey } from '../hooks/useAdminPanel';
 import { getTotalStock, getEffectivePrice, getEffectivePriceBefore } from '../../../lib/productVariants';
 import { api } from '../../../lib/api';
+import type { Product } from '../../../types';
 
 const modalFieldLabel = { fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: 'var(--ink-60)', marginBottom: 6, display: 'block' };
 const modalInput = { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--ink-20)', background: 'var(--cream)', fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', boxSizing: 'border-box' as const };
 
-function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; onClose: () => void; categories: string[] }) {
+function CategoryDiscountModal({ open, onClose, categories, products }: { open: boolean; onClose: () => void; categories: string[]; products: Product[] }) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [category, setCategory] = useState('');
@@ -41,6 +42,19 @@ function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; o
   const [endsAt, setEndsAt] = useState('');
   const [message, setMessage] = useState('');
   const invalidRange = Boolean(startsAt && endsAt && endsAt < startsAt);
+
+  // "Con descuento activo" = tiene al menos un producto/variante/combo marcado por el propio
+  // descuento por categoría (categoryDiscount), sin importar si su vigencia ya venció - el precio
+  // sigue siendo el descontado hasta que se quite explícitamente. Para que el admin sepa de
+  // antemano, antes de aplicar/quitar, si esa categoría ya tiene uno corriendo.
+  const categoriesWithDiscount = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products) {
+      const hasDiscount = p.categoryDiscount || p.variants?.some((v) => v.categoryDiscount);
+      if (hasDiscount) set.add(p.category);
+    }
+    return categories.filter((c) => set.has(c));
+  }, [products, categories]);
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ['admin-products'] });
@@ -83,6 +97,11 @@ function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; o
     <ModalOverlay open={open} onClose={onClose}>
       <div style={{ width: '100%', maxWidth: 420, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: 24 }}>
         <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 16px' }}>Descuento por categoría</h3>
+        {categoriesWithDiscount.length > 0 && (
+          <div style={{ marginBottom: 16, fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>
+            Con descuento activo: {categoriesWithDiscount.join(', ')}
+          </div>
+        )}
         <div style={{ marginBottom: 14 }}>
           <label style={modalFieldLabel}>Categoría</label>
           <select style={modalInput} value={category} onChange={(e) => { setCategory(e.target.value); setMessage(''); }}>
@@ -235,7 +254,7 @@ export function ProductsSection() {
                 )
               }
             />
-            <CategoryDiscountModal open={discountModalOpen} onClose={() => setDiscountModalOpen(false)} categories={categories} />
+            <CategoryDiscountModal open={discountModalOpen} onClose={() => setDiscountModalOpen(false)} categories={categories} products={products} />
 
             {/* Filter bar */}
             {showProductsSkeleton ? (

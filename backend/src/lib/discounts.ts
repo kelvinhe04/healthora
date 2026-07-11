@@ -119,7 +119,9 @@ export interface CategoryDiscountInput {
  * lands on each simple variant's own price when the product has (single-dimension) variants, on
  * each sabor×tamaño combo's price when it's a matrix product (respecting `availableFor`), or on
  * the product itself when it has neither - in every case using the option's own current price as
- * the base, so re-applying doesn't compound.
+ * the base, so re-applying doesn't compound. Every item touched is stamped `categoryDiscount:
+ * true` so `removeCategoryDiscount` can later undo exactly this action, not a discount an admin
+ * set by hand on one product's own editor.
  */
 export async function applyCategoryDiscount(
   input: CategoryDiscountInput,
@@ -143,6 +145,7 @@ export async function applyCategoryDiscount(
         primary.priceBySize = { ...(primary.priceBySize ?? {}), [size.id]: newPrice };
         primary.discountStartsAt = discountStartsAt;
         primary.discountEndsAt = discountEndsAt;
+        primary.categoryDiscount = true;
         changed = true;
       }
       if (changed) product.markModified('variants');
@@ -155,6 +158,7 @@ export async function applyCategoryDiscount(
         variant.price = newPrice;
         variant.discountStartsAt = discountStartsAt;
         variant.discountEndsAt = discountEndsAt;
+        variant.categoryDiscount = true;
         changed = true;
       }
     } else {
@@ -165,6 +169,7 @@ export async function applyCategoryDiscount(
         product.price = newPrice;
         product.discountStartsAt = discountStartsAt;
         product.discountEndsAt = discountEndsAt;
+        product.categoryDiscount = true;
         changed = true;
       }
     }
@@ -177,46 +182,39 @@ export async function applyCategoryDiscount(
   return { updated, total: products.length };
 }
 
-/** Reverts every discount in a category - the product-level one, any per-variant one, and any
- * per-combo one - back to the pre-discount price, regardless of whether it was set by
- * `applyCategoryDiscount`, the individual product/variant editor, or baked into the original seed
- * data. A combo that had no price override before the discount reverts to that same frozen number
- * rather than un-overriding back to a live `primary.price + size.price` sum - matching how
- * reverting a simple variant/product discount already restores an exact prior number instead of
- * trying to recompute one. */
+/** Reverts every discount this same tool applied in a category - the product-level one, any
+ * per-variant one, and any per-combo one - back to the pre-discount price. Only touches items
+ * stamped `categoryDiscount: true` by `applyCategoryDiscount`; a discount an admin set by hand on
+ * one product's own editor (or one baked into the original seed data) is never marked that way,
+ * so it survives a category-wide "quitar descuento" untouched. A combo that had no price override
+ * before the discount reverts to that same frozen number rather than un-overriding back to a live
+ * `primary.price + size.price` sum - matching how reverting a simple variant/product discount
+ * already restores an exact prior number instead of trying to recompute one. */
 export async function removeCategoryDiscount(category: string): Promise<{ updated: number }> {
   const products = await Product.find({
     category,
-    $or: [
-      { priceBefore: { $ne: null } },
-      { 'variants.priceBefore': { $ne: null } },
-      // Not `{ 'variants.priceBeforeBySize': { $ne: null } }`: Mongo's array-field `$ne` matches
-      // only when NO element equals the excluded value, and a size variant (which never has this
-      // field at all) counts as "null" for that purpose - so a real discount on the primary
-      // variant would be masked by its sibling size variant simply lacking the field. `$elemMatch`
-      // requires a single element to satisfy the condition, avoiding that trap.
-      { variants: { $elemMatch: { priceBeforeBySize: { $exists: true } } } },
-    ],
+    $or: [{ categoryDiscount: true }, { 'variants.categoryDiscount': true }],
   });
   let updated = 0;
 
   for (const product of products) {
     let changed = false;
 
-    if (product.priceBefore != null) {
+    if (product.categoryDiscount && product.priceBefore != null) {
       product.price = product.priceBefore;
       product.priceBefore = undefined;
       product.discountStartsAt = undefined;
       product.discountEndsAt = undefined;
+      product.categoryDiscount = undefined;
       changed = true;
     }
 
     for (const variant of product.variants ?? []) {
+      if (!variant.categoryDiscount) continue;
+
       if (variant.priceBefore != null) {
         variant.price = variant.priceBefore;
         variant.priceBefore = undefined;
-        variant.discountStartsAt = undefined;
-        variant.discountEndsAt = undefined;
         changed = true;
       }
 
@@ -227,10 +225,12 @@ export async function removeCategoryDiscount(category: string): Promise<{ update
         }
         variant.priceBySize = priceBySize;
         variant.priceBeforeBySize = undefined;
-        variant.discountStartsAt = undefined;
-        variant.discountEndsAt = undefined;
         changed = true;
       }
+
+      variant.discountStartsAt = undefined;
+      variant.discountEndsAt = undefined;
+      variant.categoryDiscount = undefined;
     }
 
     if (!changed) continue;
