@@ -53,9 +53,6 @@ export function OrdersSection() {
   confirmOrderStatus,
   orderStatusesMutation,
   getNextFulfillmentStatus,
-  orderTrackingDrafts,
-  setOrderTrackingDrafts,
-  orderTrackingMutation,
   } = useAdminPanelContext();
 
   return (
@@ -539,55 +536,18 @@ export function OrdersSection() {
                             orderShippingMethodLabels[order.shippingMethod || "delivery"]
                           }
                         />
-                        {order.shippingMethod !== "pickup" && (() => {
-                          const draft = orderTrackingDrafts[order._id] ?? {
-                            trackingNumber: order.trackingNumber || "",
-                          };
-                          const dirty = draft.trackingNumber !== (order.trackingNumber || "");
+                        {order.shippingMethod !== "pickup" && order.trackingNumber && (() => {
                           const trackingUrl = getTrackingUrl(order.carrier, order.trackingNumber);
                           return (
-                            <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
-                              {order.trackingNumber && !dirty && (
-                                <div style={{ fontSize: 11, color: "var(--ink-60)" }}>
-                                  {carrierLabel(order.carrier) || "Sin courier"} ·{" "}
-                                  {trackingUrl ? (
-                                    <a href={trackingUrl} target="_blank" rel="noreferrer" style={{ color: "var(--green)" }}>
-                                      {order.trackingNumber}
-                                    </a>
-                                  ) : (
-                                    order.trackingNumber
-                                  )}
-                                </div>
+                            <div style={{ marginTop: 8, fontSize: 11, color: "var(--ink-60)" }}>
+                              {carrierLabel(order.carrier) || "Sin courier"} ·{" "}
+                              {trackingUrl ? (
+                                <a href={trackingUrl} target="_blank" rel="noreferrer" style={{ color: "var(--green)" }}>
+                                  {order.trackingNumber}
+                                </a>
+                              ) : (
+                                order.trackingNumber
                               )}
-                              <div style={{ display: "flex", gap: 4 }}>
-                                <input
-                                  aria-label="Número de tracking"
-                                  value={draft.trackingNumber}
-                                  onChange={(e) =>
-                                    setOrderTrackingDrafts((current) => ({
-                                      ...current,
-                                      [order._id]: { trackingNumber: e.target.value },
-                                    }))
-                                  }
-                                  placeholder="N° de guía"
-                                  style={{ fontSize: 11, padding: "5px 6px", borderRadius: 6, border: "1px solid var(--ink-12)", background: "var(--cream-2)", color: "var(--ink)", width: 90 }}
-                                />
-                                {dirty && (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      orderTrackingMutation.mutate({
-                                        id: order._id,
-                                        carrier: 'propia',
-                                        trackingNumber: draft.trackingNumber || undefined,
-                                      })
-                                    }
-                                    style={{ fontSize: 11, padding: "5px 8px", borderRadius: 6, border: "none", background: "var(--green)", color: "#fff", cursor: "pointer" }}
-                                  >
-                                    Guardar
-                                  </button>
-                                )}
-                              </div>
                             </div>
                           );
                         })()}
