@@ -1,5 +1,20 @@
 import { describe, expect, test } from 'bun:test';
-import { computeItbms, ITBMS_RATE } from './tax';
+import { computeItbms, isTaxExemptCategory, ITBMS_RATE } from './tax';
+
+describe('isTaxExemptCategory', () => {
+  test('Medicamentos esta exenta', () => {
+    expect(isTaxExemptCategory('Medicamentos')).toBe(true);
+  });
+
+  test('otras categorias no estan exentas', () => {
+    expect(isTaxExemptCategory('Vitaminas')).toBe(false);
+  });
+
+  test('valores vacios no estan exentos', () => {
+    expect(isTaxExemptCategory(undefined)).toBe(false);
+    expect(isTaxExemptCategory('')).toBe(false);
+  });
+});
 
 describe('computeItbms', () => {
   test('7% sobre el subtotal cuando nada esta exento', () => {

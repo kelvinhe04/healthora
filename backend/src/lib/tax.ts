@@ -1,6 +1,15 @@
 /** Tasa vigente de ITBMS (impuesto de transferencia de bienes muebles y servicios) en Panama. */
 export const ITBMS_RATE = 0.07;
 
+/** Categorias de producto exentas de ITBMS por ley (medicamentos). Fuente unica de verdad:
+ * Product.taxExempt se deriva de esto automaticamente (ver hooks en db/models/Product.ts),
+ * no es editable a mano desde el admin. */
+export const TAX_EXEMPT_CATEGORIES = ['Medicamentos'];
+
+export function isTaxExemptCategory(category: string | undefined | null): boolean {
+  return !!category && TAX_EXEMPT_CATEGORIES.includes(category);
+}
+
 function roundMoney(value: number): number {
   return Math.round(value * 100) / 100;
 }

@@ -446,17 +446,6 @@ export function ProductModal({
               placeholder="Breve descripción del producto…"
             />
           </div>
-          <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", marginTop: 12 }}>
-            <input
-              type="checkbox"
-              checked={form.taxExempt}
-              onChange={() => setForm((prev) => ({ ...prev, taxExempt: !prev.taxExempt }))}
-              style={{ width: 15, height: 15, accentColor: "var(--green)", cursor: "pointer" }}
-            />
-            <span style={{ fontSize: 12, fontFamily: '"Geist", sans-serif', color: "var(--ink-80)" }}>
-              Exento de ITBMS (medicamentos y artículos de salud)
-            </span>
-          </label>
           <div style={dividerS} />
 
           {/* Tipo de producto / variantes — decide esto primero, define lo que sigue */}

@@ -231,7 +231,6 @@ export type ProductForm = {
   tag: string;
   stock: string;
   active: boolean;
-  taxExempt: boolean;
   benefits: string;
   usage: string;
   ingredients: string;
@@ -261,7 +260,6 @@ export const emptyForm: ProductForm = {
   tag: "",
   stock: "0",
   active: true,
-  taxExempt: false,
   benefits: "",
   usage: "",
   ingredients: "",
