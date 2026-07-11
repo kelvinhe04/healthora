@@ -1329,6 +1329,7 @@ export function Sidebar({
           </div>
         </div>
         <NotificationCenter
+          panelAlign="left"
           buttonStyle={{
             background: "transparent",
             border: "1px solid var(--ink-06)",

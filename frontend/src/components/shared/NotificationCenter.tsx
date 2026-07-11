@@ -9,11 +9,16 @@ interface NotificationCenterProps {
   /** Style for the trigger button, so it matches the surrounding header icon cluster. */
   buttonStyle?: CSSProperties;
   iconSize?: number;
+  /** Which side of the trigger button the panel hangs from. 'right' (default) anchors the
+   * panel's right edge to the button - correct when the button sits near the right edge of the
+   * screen (storefront header). Use 'left' when the button sits near the *left* edge instead
+   * (e.g. the admin sidebar) - anchoring right there would push the ~360px panel off-screen. */
+  panelAlign?: 'left' | 'right';
 }
 
 /** Bell trigger + dropdown panel: the persistent notification center (HU-061). Reads from the
  * shared inbox cache that the WebSocket also feeds, so it updates in real time and after a reload. */
-export function NotificationCenter({ buttonStyle, iconSize = 18 }: NotificationCenterProps) {
+export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'right' }: NotificationCenterProps) {
   const { notifications, unread, markRead, markAllRead, dismiss, clearAll } = useNotifications();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -76,7 +81,7 @@ export function NotificationCenter({ buttonStyle, iconSize = 18 }: NotificationC
           style={{
             position: 'absolute',
             top: 'calc(100% + 10px)',
-            right: 0,
+            ...(panelAlign === 'left' ? { left: 0 } : { right: 0 }),
             width: 'min(360px, calc(100vw - 32px))',
             maxHeight: 'min(70vh, 480px)',
             display: 'flex',
