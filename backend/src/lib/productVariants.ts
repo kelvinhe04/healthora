@@ -13,6 +13,9 @@ type ProductVariant = {
   stockBySize?: Record<string, number>;
   priceBySize?: Record<string, number>;
   priceBeforeBySize?: Record<string, number>;
+  categoryDiscount?: boolean;
+  categoryDiscountRestore?: { price: number; priceBefore?: number; discountStartsAt?: Date; discountEndsAt?: Date };
+  categoryDiscountRestoreBySize?: Record<string, { price: number; priceBefore?: number }>;
   availableFor?: string[];
 };
 

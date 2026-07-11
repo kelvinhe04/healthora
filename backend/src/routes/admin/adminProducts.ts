@@ -46,10 +46,22 @@ const productVariantSchema = z
     priceBefore: moneyFromInput().nullable().optional(),
     discountStartsAt: z.coerce.date().nullable().optional(),
     discountEndsAt: z.coerce.date().nullable().optional(),
-    // Origin marker for priceBefore/priceBeforeBySize - only ever written by discounts.ts
-    // (applyCategoryDiscount/removeCategoryDiscount). Accepted here purely so the admin editor's
-    // round-trip (which resends whatever it loaded) doesn't silently strip it on an unrelated save.
+    // Origin marker + restore snapshot for priceBefore/priceBeforeBySize - only ever written by
+    // discounts.ts (applyCategoryDiscount/removeCategoryDiscount). Accepted here purely so the
+    // admin editor's round-trip (which resends whatever it loaded) doesn't silently strip them on
+    // an unrelated save.
     categoryDiscount: z.boolean().optional(),
+    categoryDiscountRestore: z
+      .object({
+        price: moneyFromInput(),
+        priceBefore: moneyFromInput().optional(),
+        discountStartsAt: z.coerce.date().optional(),
+        discountEndsAt: z.coerce.date().optional(),
+      })
+      .optional(),
+    categoryDiscountRestoreBySize: z
+      .record(z.string(), z.object({ price: moneyFromInput(), priceBefore: moneyFromInput().optional() }))
+      .optional(),
     stock: z.coerce.number().int().min(0).max(999999),
     sku: optionalTextField(120),
     color: optionalTextField(80),

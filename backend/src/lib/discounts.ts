@@ -118,10 +118,16 @@ export interface CategoryDiscountInput {
  * Applies a discount to every active product in a category, in one admin action. The discount
  * lands on each simple variant's own price when the product has (single-dimension) variants, on
  * each sabor×tamaño combo's price when it's a matrix product (respecting `availableFor`), or on
- * the product itself when it has neither - in every case using the option's own current price as
- * the base, so re-applying doesn't compound. Every item touched is stamped `categoryDiscount:
- * true` so `removeCategoryDiscount` can later undo exactly this action, not a discount an admin
- * set by hand on one product's own editor.
+ * the product itself when it has neither.
+ *
+ * The base to discount from depends on whether this same tool already owns the item's current
+ * discount: re-applying (item already stamped `categoryDiscount: true`) discounts from the frozen
+ * pre-bulk price captured in its `categoryDiscountRestore(BySize)` snapshot, so repeated clicks
+ * don't compound. The *first* time this tool touches an item, it discounts from its current
+ * `price` - which, for an item an admin already discounted by hand on its own editor, is that
+ * hand-set sale price, not the "before" figure above it - and captures a snapshot of exactly what
+ * that hand-set state was (price, priceBefore, vigencia) so `removeCategoryDiscount` can restore
+ * it verbatim later, instead of just stripping every discount down to nothing.
  */
 export async function applyCategoryDiscount(
   input: CategoryDiscountInput,
@@ -134,13 +140,28 @@ export async function applyCategoryDiscount(
     let changed = false;
 
     if (hasTwoDimensions(product.variants)) {
+      // Cache each primary's pre-apply `categoryDiscount` state once - it flips to `true` mid-loop
+      // as soon as its first combo is processed, and every later combo of that same primary must
+      // still see the *original* value to know whether it, specifically, is being swept for the
+      // first time (otherwise a second combo would wrongly skip capturing its own restore snapshot).
+      const primaryWasBulk = new Map<string, boolean>();
       for (const { primary, size } of getVariantCombos(product.variants)) {
-        // Same "don't compound on re-apply" rule as the simple-variant/product branches below:
-        // prefer the combo's own prior `priceBeforeBySize` entry over its current (already
-        // discounted) `priceBySize` override.
-        const base = primary.priceBeforeBySize?.[size.id] ?? primary.priceBySize?.[size.id] ?? primary.price + size.price;
+        if (!primaryWasBulk.has(primary.id)) primaryWasBulk.set(primary.id, primary.categoryDiscount === true);
+        const alreadyBulk = primaryWasBulk.get(primary.id)!;
+
+        const priorPrice = primary.priceBySize?.[size.id] ?? primary.price + size.price;
+        const priorBefore = primary.priceBeforeBySize?.[size.id];
+        const restored = alreadyBulk ? primary.categoryDiscountRestoreBySize?.[size.id] : undefined;
+        const base = restored?.price ?? priorPrice;
         const newPrice = discountedPrice(base, discountType, value);
         if (newPrice == null) continue;
+
+        if (!alreadyBulk) {
+          primary.categoryDiscountRestoreBySize = {
+            ...(primary.categoryDiscountRestoreBySize ?? {}),
+            [size.id]: { price: priorPrice, ...(priorBefore != null ? { priceBefore: priorBefore } : {}) },
+          };
+        }
         primary.priceBeforeBySize = { ...(primary.priceBeforeBySize ?? {}), [size.id]: base };
         primary.priceBySize = { ...(primary.priceBySize ?? {}), [size.id]: newPrice };
         primary.discountStartsAt = discountStartsAt;
@@ -151,9 +172,20 @@ export async function applyCategoryDiscount(
       if (changed) product.markModified('variants');
     } else if (product.variants?.length) {
       for (const variant of product.variants) {
-        const base = variant.priceBefore ?? variant.price;
+        const alreadyBulk = variant.categoryDiscount === true;
+        const restored = alreadyBulk ? variant.categoryDiscountRestore : undefined;
+        const base = restored?.price ?? variant.price;
         const newPrice = discountedPrice(base, discountType, value);
         if (newPrice == null) continue;
+
+        if (!alreadyBulk) {
+          variant.categoryDiscountRestore = {
+            price: variant.price,
+            ...(variant.priceBefore != null ? { priceBefore: variant.priceBefore } : {}),
+            ...(variant.discountStartsAt ? { discountStartsAt: variant.discountStartsAt } : {}),
+            ...(variant.discountEndsAt ? { discountEndsAt: variant.discountEndsAt } : {}),
+          };
+        }
         variant.priceBefore = base;
         variant.price = newPrice;
         variant.discountStartsAt = discountStartsAt;
@@ -162,9 +194,19 @@ export async function applyCategoryDiscount(
         changed = true;
       }
     } else {
-      const base = product.priceBefore ?? product.price;
+      const alreadyBulk = product.categoryDiscount === true;
+      const restored = alreadyBulk ? product.categoryDiscountRestore : undefined;
+      const base = restored?.price ?? product.price;
       const newPrice = discountedPrice(base, discountType, value);
       if (newPrice != null) {
+        if (!alreadyBulk) {
+          product.categoryDiscountRestore = {
+            price: product.price,
+            ...(product.priceBefore != null ? { priceBefore: product.priceBefore } : {}),
+            ...(product.discountStartsAt ? { discountStartsAt: product.discountStartsAt } : {}),
+            ...(product.discountEndsAt ? { discountEndsAt: product.discountEndsAt } : {}),
+          };
+        }
         product.priceBefore = base;
         product.price = newPrice;
         product.discountStartsAt = discountStartsAt;
@@ -183,13 +225,16 @@ export async function applyCategoryDiscount(
 }
 
 /** Reverts every discount this same tool applied in a category - the product-level one, any
- * per-variant one, and any per-combo one - back to the pre-discount price. Only touches items
- * stamped `categoryDiscount: true` by `applyCategoryDiscount`; a discount an admin set by hand on
- * one product's own editor (or one baked into the original seed data) is never marked that way,
- * so it survives a category-wide "quitar descuento" untouched. A combo that had no price override
- * before the discount reverts to that same frozen number rather than un-overriding back to a live
- * `primary.price + size.price` sum - matching how reverting a simple variant/product discount
- * already restores an exact prior number instead of trying to recompute one. */
+ * per-variant one, and any per-combo one. Only touches items stamped `categoryDiscount: true` by
+ * `applyCategoryDiscount`; a discount an admin set by hand on one product's own editor (or one
+ * baked into the original seed data) is never marked that way, so it survives a category-wide
+ * "quitar descuento" untouched.
+ *
+ * Restores from the `categoryDiscountRestore(BySize)` snapshot captured at apply time when one
+ * exists - putting back the *exact* prior state (price and, if there was one, its own hand-set
+ * priceBefore/vigencia) rather than just stripping the item down to no discount at all. Falls back
+ * to the old "just un-freeze priceBefore into price" behavior for data written before this
+ * snapshot existed (e.g. by an older build of this tool). */
 export async function removeCategoryDiscount(category: string): Promise<{ updated: number }> {
   const products = await Product.find({
     category,
@@ -200,37 +245,59 @@ export async function removeCategoryDiscount(category: string): Promise<{ update
   for (const product of products) {
     let changed = false;
 
-    if (product.categoryDiscount && product.priceBefore != null) {
-      product.price = product.priceBefore;
-      product.priceBefore = undefined;
-      product.discountStartsAt = undefined;
-      product.discountEndsAt = undefined;
+    if (product.categoryDiscount) {
+      const restore = product.categoryDiscountRestore;
+      if (restore) {
+        product.price = restore.price;
+        product.priceBefore = restore.priceBefore;
+        product.discountStartsAt = restore.discountStartsAt;
+        product.discountEndsAt = restore.discountEndsAt;
+      } else if (product.priceBefore != null) {
+        product.price = product.priceBefore;
+        product.priceBefore = undefined;
+        product.discountStartsAt = undefined;
+        product.discountEndsAt = undefined;
+      }
       product.categoryDiscount = undefined;
+      product.categoryDiscountRestore = undefined;
       changed = true;
     }
 
     for (const variant of product.variants ?? []) {
       if (!variant.categoryDiscount) continue;
 
-      if (variant.priceBefore != null) {
-        variant.price = variant.priceBefore;
-        variant.priceBefore = undefined;
-        changed = true;
-      }
-
       if (variant.priceBeforeBySize && Object.keys(variant.priceBeforeBySize).length > 0) {
+        const comboRestore = variant.categoryDiscountRestoreBySize;
         const priceBySize = { ...(variant.priceBySize ?? {}) };
+        const priceBeforeBySize: Record<string, number> = {};
         for (const [sizeId, before] of Object.entries(variant.priceBeforeBySize as Record<string, number>)) {
-          priceBySize[sizeId] = before;
+          const snap = comboRestore?.[sizeId];
+          priceBySize[sizeId] = snap?.price ?? before;
+          if (snap?.priceBefore != null) priceBeforeBySize[sizeId] = snap.priceBefore;
         }
         variant.priceBySize = priceBySize;
-        variant.priceBeforeBySize = undefined;
-        changed = true;
+        variant.priceBeforeBySize = Object.keys(priceBeforeBySize).length ? priceBeforeBySize : undefined;
+        variant.discountStartsAt = undefined;
+        variant.discountEndsAt = undefined;
+      } else if (variant.priceBefore != null) {
+        const restore = variant.categoryDiscountRestore;
+        if (restore) {
+          variant.price = restore.price;
+          variant.priceBefore = restore.priceBefore;
+          variant.discountStartsAt = restore.discountStartsAt;
+          variant.discountEndsAt = restore.discountEndsAt;
+        } else {
+          variant.price = variant.priceBefore;
+          variant.priceBefore = undefined;
+          variant.discountStartsAt = undefined;
+          variant.discountEndsAt = undefined;
+        }
       }
 
-      variant.discountStartsAt = undefined;
-      variant.discountEndsAt = undefined;
       variant.categoryDiscount = undefined;
+      variant.categoryDiscountRestore = undefined;
+      variant.categoryDiscountRestoreBySize = undefined;
+      changed = true;
     }
 
     if (!changed) continue;

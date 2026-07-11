@@ -216,6 +216,122 @@ describe('applyCategoryDiscount / removeCategoryDiscount', () => {
     expect(noVariant?.priceBefore).toBeUndefined();
   });
 
+  test('applying to a variant that already has a hand-set discount discounts from its current price, not its "before" figure - and reverting restores the hand-set discount exactly', async () => {
+    await Product.create({
+      id: 'partly-manual',
+      name: 'Partly Manual Discount Product',
+      brand: 'Healthora',
+      category: 'Vitaminas',
+      need: 'Test',
+      price: 74,
+      stock: 0,
+      variants: [
+        // Admin already discounted this one by hand on its own editor: $150 -> $130.
+        { id: '15ml', label: '15 ml Mini', type: 'size', price: 130, priceBefore: 150, stock: 20 },
+        { id: '50ml', label: '50 ml Full Size', type: 'size', price: 74, stock: 18 },
+      ],
+    });
+
+    const result = await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'fixed', value: 10 });
+    expect(result).toEqual({ updated: 1, total: 1 });
+
+    const product = await Product.findOne({ id: 'partly-manual' }).lean();
+    const mini = product?.variants?.find((v) => v.id === '15ml');
+    const full = product?.variants?.find((v) => v.id === '50ml');
+
+    // $10 off $130 (the current price) = $120 - NOT $10 off $150 (the old "before" figure), which
+    // would have wrongly given $140.
+    expect(mini?.price).toBe(120);
+    expect(mini?.priceBefore).toBe(130);
+    expect(mini?.categoryDiscount).toBe(true);
+    // The untouched variant behaves the same as always: $10 off its own current price.
+    expect(full?.price).toBe(64);
+    expect(full?.priceBefore).toBe(74);
+
+    const revertResult = await removeCategoryDiscount('Vitaminas');
+    expect(revertResult).toEqual({ updated: 1 });
+
+    const reverted = await Product.findOne({ id: 'partly-manual' }).lean();
+    const miniReverted = reverted?.variants?.find((v) => v.id === '15ml');
+    const fullReverted = reverted?.variants?.find((v) => v.id === '50ml');
+    // The hand-set discount is back exactly as it was, not just wiped to no discount.
+    expect(miniReverted?.price).toBe(130);
+    expect(miniReverted?.priceBefore).toBe(150);
+    expect(miniReverted?.categoryDiscount).toBeUndefined();
+    // The other variant, which never had a hand-set discount, goes back to no discount at all.
+    expect(fullReverted?.price).toBe(74);
+    expect(fullReverted?.priceBefore).toBeUndefined();
+  });
+
+  test('re-applying on top of a hand-set discount does not compound - stays $10 off the original $150, not off the already-discounted price', async () => {
+    await Product.create({
+      id: 'partly-manual-reapply',
+      name: 'Partly Manual Reapply Product',
+      brand: 'Healthora',
+      category: 'Vitaminas',
+      need: 'Test',
+      price: 74,
+      stock: 0,
+      variants: [{ id: '15ml', label: '15 ml Mini', type: 'size', price: 130, priceBefore: 150, stock: 20 }],
+    });
+
+    await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'fixed', value: 10 });
+    await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'fixed', value: 10 });
+
+    const product = await Product.findOne({ id: 'partly-manual-reapply' }).lean();
+    const mini = product?.variants?.find((v) => v.id === '15ml');
+    expect(mini?.price).toBe(120);
+    expect(mini?.priceBefore).toBe(130);
+  });
+
+  test('matrix: applying to a combo that already has a hand-set discount uses its current price, and reverting restores it exactly - including when it is not the first combo of its primary', async () => {
+    await Product.create({
+      id: 'matrix-partly-manual',
+      name: 'Matrix Partly Manual Product',
+      brand: 'Healthora',
+      category: 'Vitaminas',
+      need: 'Test',
+      price: 15,
+      stock: 0,
+      variants: [
+        { id: 'chocolate', label: 'Chocolate', type: 'flavor', price: 0, stock: 20 },
+        // 5lb (no manual discount) is processed before 10lb for the same primary - exercises that
+        // the second combo of a primary still gets its own restore snapshot captured correctly.
+        { id: '5lb', label: '5lb', type: 'size', price: 15, stock: 20 },
+        { id: '10lb', label: '10lb', type: 'size', price: 30, stock: 10 },
+      ],
+    });
+    // Admin already hand-discounted the 10lb combo: $30 -> $28 (priceBySize/priceBeforeBySize, no
+    // categoryDiscount flag - simulating a manual edit via a direct write, same as MCP/seed data).
+    await Product.updateOne(
+      { id: 'matrix-partly-manual', 'variants.id': 'chocolate' },
+      { $set: { 'variants.$.priceBySize': { '10lb': 28 }, 'variants.$.priceBeforeBySize': { '10lb': 30 } } },
+    );
+
+    const result = await applyCategoryDiscount({ category: 'Vitaminas', discountType: 'fixed', value: 2 });
+    expect(result).toEqual({ updated: 1, total: 1 });
+
+    const product = await Product.findOne({ id: 'matrix-partly-manual' }).lean();
+    const chocolate = product?.variants?.find((v) => v.id === 'chocolate');
+    // 5lb: $2 off $15 (no prior discount) = $13. 10lb: $2 off $28 (its hand-set price) = $26 - NOT
+    // $2 off $30 (the old "before"), which would have wrongly given $28 again (a no-op discount).
+    expect(chocolate?.priceBySize).toEqual({ '5lb': 13, '10lb': 26 });
+    expect(chocolate?.priceBeforeBySize).toEqual({ '5lb': 15, '10lb': 28 });
+
+    const revertResult = await removeCategoryDiscount('Vitaminas');
+    expect(revertResult).toEqual({ updated: 1 });
+
+    const reverted = await Product.findOne({ id: 'matrix-partly-manual' }).lean();
+    const chocolateReverted = reverted?.variants?.find((v) => v.id === 'chocolate');
+    // 5lb never had a hand-set discount, so its priceBySize freezes back to the same $15 it
+    // always effectively was (matching how a from-scratch revert already behaves) with no
+    // priceBeforeBySize entry. 10lb's hand-set discount ($30 -> $28) is restored exactly, not
+    // just wiped to $30 flat.
+    expect(chocolateReverted?.priceBySize).toEqual({ '5lb': 15, '10lb': 28 });
+    expect(chocolateReverted?.priceBeforeBySize).toEqual({ '10lb': 30 });
+    expect(chocolateReverted?.categoryDiscount).toBeUndefined();
+  });
+
   test('removeCategoryDiscount does not touch a discount hardcoded directly in seed data (no categoryDiscount flag)', async () => {
     await Product.create({
       id: 'hardcoded-discount',

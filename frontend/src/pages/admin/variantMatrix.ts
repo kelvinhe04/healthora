@@ -44,6 +44,9 @@ export type MatrixPrimaryRow = {
    * (vs. hand-set) - see `backend/src/lib/discounts.ts`. Carried through for the same reason as
    * the vigencia fields above; never toggled by this editor. */
   categoryDiscount: boolean;
+  /** Snapshot the category discount tool uses to restore a hand-set combo discount it discounted
+   * on top of, keyed by size variant id. Opaque here - no editor for it, just carried through. */
+  categoryDiscountRestoreBySize?: Record<string, { price: number; priceBefore?: number }>;
 };
 
 export type MatrixSizeRow = {
@@ -123,6 +126,7 @@ export function decomposeToMatrix(variants: ProductVariant[]): MatrixState {
     discountStartsAt: v.discountStartsAt ? v.discountStartsAt.slice(0, 10) : '',
     discountEndsAt: v.discountEndsAt ? v.discountEndsAt.slice(0, 10) : '',
     categoryDiscount: Boolean(v.categoryDiscount),
+    ...(v.categoryDiscountRestoreBySize ? { categoryDiscountRestoreBySize: v.categoryDiscountRestoreBySize } : {}),
   }));
 
   const sizes: MatrixSizeRow[] = sizeVariants.map((v) => ({
@@ -212,6 +216,9 @@ export function composeFromMatrix(state: MatrixState): ProductVariant[] {
         ...(Object.keys(priceBeforeBySize).length && p.discountStartsAt ? { discountStartsAt: p.discountStartsAt } : {}),
         ...(Object.keys(priceBeforeBySize).length && p.discountEndsAt ? { discountEndsAt: p.discountEndsAt } : {}),
         ...(Object.keys(priceBeforeBySize).length && p.categoryDiscount ? { categoryDiscount: true } : {}),
+        ...(Object.keys(priceBeforeBySize).length && p.categoryDiscount && p.categoryDiscountRestoreBySize
+          ? { categoryDiscountRestoreBySize: p.categoryDiscountRestoreBySize }
+          : {}),
         ...(p.isDefault ? { isDefault: true } : {}),
       };
     });

@@ -17,6 +17,12 @@ const ProductSchema = new Schema(
     // (on this product's own editor, or baked into seed data) untouched. Never sent by the
     // individual product/variant editor - see backend/src/lib/discounts.ts.
     categoryDiscount: Boolean,
+    // Snapshot of {price, priceBefore, discountStartsAt, discountEndsAt} taken the moment
+    // categoryDiscount first flips on, so a category discount applied on top of a discount an
+    // admin already set by hand can be reverted back to that exact hand-set state - not just
+    // "no discount at all". Captured once per bulk-discount window (not re-captured on re-apply),
+    // so re-applying still discounts from the true original, avoiding compounding.
+    categoryDiscountRestore: { type: Object },
     tag: String,
     rating: { type: Number, default: 0 },
     reviews: { type: Number, default: 0 },
@@ -65,6 +71,12 @@ const ProductSchema = new Schema(
         // granularity (a combo's marker lives here too, shared across all of that primary's
         // priceBeforeBySize entries - same granularity as its discountStartsAt/discountEndsAt).
         categoryDiscount: Boolean,
+        // Same as the product-level categoryDiscountRestore above, for a simple variant's own
+        // price/priceBefore.
+        categoryDiscountRestore: { type: Object },
+        // Same idea, per sabor×tamaño combo (keyed by size variant id) for matrix mode - each
+        // combo's own {price, priceBefore} from just before the category discount first touched it.
+        categoryDiscountRestoreBySize: { type: Object },
         stock: { type: Number, required: true },
         sku: String,
         color: String,

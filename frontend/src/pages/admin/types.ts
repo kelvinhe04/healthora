@@ -21,6 +21,9 @@ export type VariantFormRow = {
   /** Whether priceBefore came from the bulk "Descuento por categoría" tool (vs. hand-set here).
    * No checkbox for this - carried through so an unrelated re-save doesn't silently wipe it. */
   categoryDiscount: boolean;
+  /** Snapshot the category discount tool uses to restore a hand-set discount it discounted on top
+   * of. Opaque here - no editor for it, just carried through untouched. */
+  categoryDiscountRestore?: ProductVariant['categoryDiscountRestore'];
   stock: string;
   sku: string;
   color: string;
