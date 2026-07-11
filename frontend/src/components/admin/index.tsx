@@ -13,6 +13,7 @@ import { useMemo, useState, useEffect, useRef, memo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { useThemeStore } from "../../store/themeStore";
 import { Icon } from "../shared/Icon";
+import { NotificationCenter } from "../shared/NotificationCenter";
 import { formatPanamaDayMonth } from "../../lib/dates";
 
 let _adminSessionId = "";
@@ -1278,51 +1279,69 @@ export function Sidebar({
         style={{
           display: "flex",
           alignItems: "center",
+          justifyContent: "space-between",
           gap: 10,
           padding: "4px 8px 24px",
           borderBottom: "1px solid var(--ink-06)",
           marginBottom: 16,
         }}
       >
-        <div
-          style={{
-            width: 28,
-            height: 28,
+        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 999,
+              background: "var(--green)",
+              color: "var(--lime)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: '"Instrument Serif", serif',
+              fontSize: 18,
+              flexShrink: 0,
+            }}
+          >
+            h
+          </div>
+          <div>
+            <div
+              style={{
+                fontFamily: '"Instrument Serif", serif',
+                fontSize: 20,
+                letterSpacing: "-0.02em",
+                lineHeight: 1,
+              }}
+            >
+              Healthora
+            </div>
+            <div
+              style={{
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 9,
+                color: "var(--ink-60)",
+                letterSpacing: "0.12em",
+                marginTop: 2,
+              }}
+            >
+              ADMIN PANEL
+            </div>
+          </div>
+        </div>
+        <NotificationCenter
+          buttonStyle={{
+            background: "transparent",
+            border: "1px solid var(--ink-06)",
             borderRadius: 999,
-            background: "var(--green)",
-            color: "var(--lime)",
+            padding: 7,
+            cursor: "pointer",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            fontFamily: '"Instrument Serif", serif',
-            fontSize: 18,
+            color: "var(--ink)",
+            flexShrink: 0,
           }}
-        >
-          h
-        </div>
-        <div>
-          <div
-            style={{
-              fontFamily: '"Instrument Serif", serif',
-              fontSize: 20,
-              letterSpacing: "-0.02em",
-              lineHeight: 1,
-            }}
-          >
-            Healthora
-          </div>
-          <div
-            style={{
-              fontFamily: '"JetBrains Mono", monospace',
-              fontSize: 9,
-              color: "var(--ink-60)",
-              letterSpacing: "0.12em",
-              marginTop: 2,
-            }}
-          >
-            ADMIN PANEL
-          </div>
-        </div>
+          iconSize={15}
+        />
       </div>
       <nav style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {items.map((it) => (
