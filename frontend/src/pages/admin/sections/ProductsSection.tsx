@@ -226,7 +226,7 @@ export function ProductsSection() {
                     <button
                       type="button"
                       onClick={() => setDiscountModalOpen(true)}
-                      style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif' }}
+                      style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif', whiteSpace: "nowrap" }}
                     >
                       Descuento por categoría
                     </button>
