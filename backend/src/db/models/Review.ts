@@ -10,6 +10,7 @@ const ReviewSchema = new Schema(
     body: { type: String, required: true },
     userAvatar: String,
     helpfulVoters: { type: [String], default: [] },
+    status: { type: String, enum: ['pending', 'published', 'hidden'], default: 'published' },
   },
   { timestamps: true }
 );

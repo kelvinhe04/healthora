@@ -9,7 +9,7 @@ import {
   Line,
   CartesianGrid,
 } from "recharts";
-import { useMemo, useState, useEffect, memo } from "react";
+import { useMemo, useState, useEffect, useRef, memo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { useThemeStore } from "../../store/themeStore";
 import { Icon } from "../shared/Icon";
@@ -47,6 +47,120 @@ export function useOnceLoading(key: string, isLoading: boolean): boolean {
 
   return locked && loadingStarted;
 }
+
+function digitsFromISO(iso: string): string {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-");
+  if (!y || !m || !d) return "";
+  return `${d}${m}${y}`;
+}
+
+function isoFromDigits(digits: string): string | null {
+  if (digits.length !== 8) return null;
+  const day = parseInt(digits.slice(0, 2), 10);
+  const month = parseInt(digits.slice(2, 4), 10);
+  const year = parseInt(digits.slice(4, 8), 10);
+  if (month < 1 || month > 12) return null;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  if (day < 1 || day > daysInMonth) return null;
+  if (year < 1900 || year > 2200) return null;
+  return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function formatDigitsAsDDMMYYYY(digits: string): string {
+  let out = digits.slice(0, 2);
+  if (digits.length > 2) out += "/" + digits.slice(2, 4);
+  if (digits.length > 4) out += "/" + digits.slice(4, 8);
+  return out;
+}
+
+/** Date field that always reads/types as DD/MM/AAAA, regardless of the browser or OS locale.
+ * `<input type="date">`'s visible format follows the user's locale (often MM/DD/YYYY), which is
+ * silently wrong for admins reading it as day-first — the same class of surprise this codebase
+ * already hand-rolls around for display formatting (`lib/dates.ts`), just on the input side. A
+ * hidden native date input (synced to the same ISO value) sits behind the calendar icon so
+ * clicking it still opens the OS date picker; typing digits is the primary path and is masked
+ * with "/" as you go. Value/onChange are always ISO `yyyy-mm-dd` (or `''`), matching what the
+ * rest of the form/backend already expects from a plain `<input type="date">`. */
+export function DateInputDDMMYYYY({
+  value,
+  onChange,
+  disabled,
+  style,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  style?: CSSProperties;
+}) {
+  const [digits, setDigits] = useState(() => digitsFromISO(value));
+  const nativeRef = useRef<HTMLInputElement>(null);
+
+  // Re-derive the visible digits whenever the ISO value actually changes - including when it
+  // changes from *this* component's own commit (e.g. picking a date via the hidden native
+  // calendar below), not just from the outside. Re-deriving digits from the just-committed ISO
+  // always reproduces the same digits, so this never clobbers in-progress typing: the effect
+  // only re-runs when `value` (a primitive string) truly changes, which typing alone doesn't do
+  // until a complete valid date is committed.
+  useEffect(() => {
+    setDigits(digitsFromISO(value));
+  }, [value]);
+
+  const commit = (iso: string) => onChange(iso);
+
+  return (
+    <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+      <input
+        type="text"
+        inputMode="numeric"
+        value={formatDigitsAsDDMMYYYY(digits)}
+        onChange={(e) => {
+          const next = e.target.value.replace(/\D/g, "").slice(0, 8);
+          setDigits(next);
+          if (next.length === 8) {
+            const iso = isoFromDigits(next);
+            if (iso) commit(iso);
+          } else if (next.length === 0) {
+            commit("");
+          }
+        }}
+        placeholder="dd/mm/aaaa"
+        disabled={disabled}
+        style={{ ...style, paddingRight: 34 }}
+      />
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={() => nativeRef.current?.showPicker?.()}
+        disabled={disabled}
+        aria-label="Elegir fecha en calendario"
+        style={{
+          position: "absolute",
+          right: 8,
+          background: "transparent",
+          border: "none",
+          cursor: disabled ? "default" : "pointer",
+          color: "var(--ink-40)",
+          display: "flex",
+          padding: 0,
+        }}
+      >
+        <Icon name="calendar" size={14} />
+      </button>
+      <input
+        ref={nativeRef}
+        type="date"
+        value={value}
+        onChange={(e) => commit(e.target.value)}
+        disabled={disabled}
+        tabIndex={-1}
+        aria-hidden="true"
+        style={{ position: "absolute", top: "100%", left: 0, width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+      />
+    </div>
+  );
+}
+
 const Ctx = ({
   active,
   payload,
@@ -369,11 +483,15 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; darkBg: string; da
   Pagado:    { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
   delivered: { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
   Entregada: { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
+  "Listo para retirar": { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
   Activo:    { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
+  published: { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
+  Publicada: { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
   // Amber — pending payment / unfulfilled
   Pendiente:            { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
   pending_payment:      { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
   "Pendiente de pago":  { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
+  pending:              { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
   unfulfilled:                  { bg: "oklch(0.95 0.04 85)", fg: "oklch(0.45 0.05 85)", darkBg: "oklch(0.26 0.05 85)",  darkFg: "oklch(0.82 0.07 85)"  },
   "Pendiente de preparación":   { bg: "oklch(0.95 0.04 85)", fg: "oklch(0.45 0.05 85)", darkBg: "oklch(0.26 0.05 85)",  darkFg: "oklch(0.82 0.07 85)"  },
   requested:                    { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
@@ -387,12 +505,16 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; darkBg: string; da
   shipped:     { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   Enviada:     { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   in_transit:  { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  "Envío a domicilio": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  "Retiro en tienda":  { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
   // Coral — cancelled / inactive
   cancelled: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Cancelado: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Cancelada: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Inactivo:  { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   rejected:  { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
+  hidden:    { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
+  Oculta:    { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   // Purple — refunded
   refunded:    { bg: "oklch(0.92 0.08 300)", fg: "oklch(0.4 0.1 300)",  darkBg: "oklch(0.27 0.08 300)", darkFg: "oklch(0.82 0.11 300)" },
   Reembolsado: { bg: "oklch(0.92 0.08 300)", fg: "oklch(0.4 0.1 300)",  darkBg: "oklch(0.27 0.08 300)", darkFg: "oklch(0.82 0.11 300)" },
@@ -1084,7 +1206,8 @@ type AdminPage =
   | "earnings"
   | "performance"
   | "errors"
-  | "returns";
+  | "returns"
+  | "reviews";
 interface SidebarProps {
   page: AdminPage;
   setPage: (p: AdminPage) => void;
@@ -1121,6 +1244,7 @@ export function Sidebar({
     },
     { id: "users", label: "Clientes", icon: "user", count: counts?.users },
     { id: "returns", label: "Devoluciones", icon: "arrow-left", count: counts?.returns },
+    { id: "reviews", label: "Reseñas", icon: "star", count: counts?.reviews },
     { id: "sales", label: "Ventas", icon: "truck" },
     { id: "earnings", label: "Ganancias", icon: "percent" },
     { id: "performance", label: "Rendimiento", icon: "activity" },

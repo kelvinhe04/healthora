@@ -6,10 +6,18 @@ import { Order } from '../../db/models/Order';
 import { sendOrderStatusUpdateEmail } from '../../lib/email';
 import { combineOrderStatus, normalizeOrder, type FulfillmentStatus } from '../../lib/orderStatus';
 import { notifyUser } from '../../lib/realtime';
-import { objectIdSchema, parseJson, parseParams, parseQuery } from '../../lib/validation';
+import { generateTrackingNumber } from '../../lib/tracking';
+import { objectIdSchema, optionalTextField, parseJson, parseParams, parseQuery } from '../../lib/validation';
 
 const paymentStatusSchema = z.enum(['pending_payment', 'paid', 'cancelled', 'refunded']);
 const fulfillmentStatusSchema = z.enum(['unfulfilled', 'processing', 'shipped', 'delivered', 'cancelled']);
+
+const orderTrackingSchema = z.object({
+  carrier: optionalTextField(60),
+  trackingNumber: optionalTextField(120),
+}).refine((body) => body.carrier !== undefined || body.trackingNumber !== undefined, {
+  message: 'Debe enviar carrier o numero de tracking',
+});
 
 const adminOrdersQuerySchema = z.object({
   paymentStatus: paymentStatusSchema.optional(),
@@ -35,6 +43,16 @@ const fulfillmentLabels: Record<FulfillmentStatus, { title: string; body: string
   delivered: { title: 'Pedido entregado', body: 'Tu pedido fue entregado. ¡Gracias por comprar en Healthora!' },
   cancelled: { title: 'Pedido cancelado', body: 'Tu pedido fue cancelado. Si tienes dudas, contáctanos.' },
 };
+
+/** Retiro en tienda no se "entrega": queda listo para que el cliente pase a recogerlo. */
+const pickupFulfillmentLabelOverrides: Partial<Record<FulfillmentStatus, { title: string; body: string }>> = {
+  delivered: { title: 'Pedido listo para retirar', body: 'Tu pedido ya está listo. Puedes pasar a recogerlo en nuestra tienda.' },
+};
+
+function getFulfillmentPushLabel(fulfillmentStatus: FulfillmentStatus, shippingMethod?: string) {
+  if (shippingMethod === 'pickup') return pickupFulfillmentLabelOverrides[fulfillmentStatus] || fulfillmentLabels[fulfillmentStatus];
+  return fulfillmentLabels[fulfillmentStatus];
+}
 
 export const adminOrdersRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
@@ -95,9 +113,23 @@ export const adminOrdersRouter = new Hono<AppEnv>()
     const fulfillmentStatus = (body.fulfillmentStatus || normalizedCurrent.fulfillmentStatus) as typeof normalizedCurrent.fulfillmentStatus;
     const status = combineOrderStatus(paymentStatus, fulfillmentStatus);
 
+    const update: Record<string, unknown> = { paymentStatus, fulfillmentStatus, status };
+
+    // Simulacion: no hay integracion real con couriers todavia (ver seguimiento HU-042), asi que
+    // al pasar a "enviado" sin courier/numero ya asignados se genera un numero de guia propio.
+    const shouldAutoAssignTracking =
+      fulfillmentStatus === 'shipped' &&
+      normalizedCurrent.shippingMethod !== 'pickup' &&
+      !normalizedCurrent.carrier &&
+      !normalizedCurrent.trackingNumber;
+    if (shouldAutoAssignTracking) {
+      update.carrier = 'propia';
+      update.trackingNumber = generateTrackingNumber();
+    }
+
     const order = await Order.findByIdAndUpdate(
       parsedParams.data.id,
-      { paymentStatus, fulfillmentStatus, status },
+      update,
       { returnDocument: 'after' }
     ).lean();
 
@@ -114,6 +146,9 @@ export const adminOrdersRouter = new Hono<AppEnv>()
             items: order.items || [],
             total: order.total || 0,
             address: order.address,
+            shippingMethod: order.shippingMethod,
+            carrier: order.carrier,
+            trackingNumber: order.trackingNumber,
           });
         } catch (emailError) {
           console.error('[ADMIN_ORDERS] Failed to send status update email:', emailError);
@@ -123,10 +158,11 @@ export const adminOrdersRouter = new Hono<AppEnv>()
       // Real-time push to the customer (HU-061), mirroring the status email.
       if (order.customerId) {
         try {
+          const pushLabel = getFulfillmentPushLabel(fulfillmentStatus, order.shippingMethod);
           await notifyUser(order.customerId, {
             type: fulfillmentStatus === 'shipped' ? 'order_shipped' : 'order_status',
-            title: fulfillmentLabels[fulfillmentStatus].title,
-            body: fulfillmentLabels[fulfillmentStatus].body,
+            title: pushLabel.title,
+            body: pushLabel.body,
             link: '/orders',
             data: { orderId: order._id.toString(), fulfillmentStatus },
           });
@@ -135,6 +171,22 @@ export const adminOrdersRouter = new Hono<AppEnv>()
         }
       }
     }
+
+    return c.json(normalizeOrder(order));
+  })
+  .patch('/:id/tracking', async (c) => {
+    const parsedParams = parseParams(c, orderIdParamsSchema);
+    if (!parsedParams.success) return parsedParams.response;
+
+    const parsedBody = await parseJson(c, orderTrackingSchema);
+    if (!parsedBody.success) return parsedBody.response;
+
+    const update: Record<string, string> = {};
+    if (parsedBody.data.carrier !== undefined) update.carrier = parsedBody.data.carrier;
+    if (parsedBody.data.trackingNumber !== undefined) update.trackingNumber = parsedBody.data.trackingNumber;
+
+    const order = await Order.findByIdAndUpdate(parsedParams.data.id, update, { returnDocument: 'after' }).lean();
+    if (!order) return c.json({ error: 'Not found' }, 404);
 
     return c.json(normalizeOrder(order));
   });

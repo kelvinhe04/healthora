@@ -2,7 +2,7 @@ import { Order } from '../db/models/Order';
 import { Product } from '../db/models/Product';
 
 const BESTSELLER_TAG = 'Más vendido';
-const TOP_N = 4;
+export const TOP_N = 8;
 
 export async function recalculateBestsellers(): Promise<void> {
   // Aggregate total units sold per product from paid orders
@@ -33,10 +33,10 @@ export async function recalculateBestsellers(): Promise<void> {
 }
 
 const NEW_TAG = 'Nuevo';
-const NEW_TOP_N = 4;
+export const NEW_TOP_N = 8;
 
 export async function recalculateNew(): Promise<void> {
-  // Always tag the 4 most recently added products, regardless of date
+  // Always tag the NEW_TOP_N most recently added products, regardless of date
   const recent = await Product.find({ active: true })
     .sort({ createdAt: -1 })
     .limit(NEW_TOP_N)

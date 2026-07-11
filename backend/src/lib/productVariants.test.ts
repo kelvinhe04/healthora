@@ -36,6 +36,22 @@ describe('resolveVariantPricing', () => {
     });
   });
 
+  test('charges the combo\'s priceBySize override instead of the additive sum when present', () => {
+    const productWithOverride = {
+      ...product,
+      variants: [
+        { id: 'vanilla', label: 'Vainilla', type: 'flavor', price: 12, stock: 3, priceBySize: { small: 13.5 } },
+        { id: 'small', label: '30 ct', type: 'size', price: 2, stock: 4 },
+      ],
+    };
+    expect(resolveVariantPricing(productWithOverride, 'vanilla:small')).toEqual({
+      price: 13.5,
+      stock: 4,
+      label: 'Vainilla · 30 ct',
+      stockVariantId: 'small',
+    });
+  });
+
   test('prefers stockBySize override for composite id when present', () => {
     const productWithOverride = {
       ...product,
@@ -50,6 +66,36 @@ describe('resolveVariantPricing', () => {
       label: 'Vainilla · 30 ct',
       stockVariantId: 'vanilla',
       stockField: 'stockBySize.small',
+    });
+  });
+
+  test('always charges the variant\'s own price, regardless of priceBefore/vigencia - those only control the "was $X" badge, never what\'s billed', () => {
+    const productWithDiscount = {
+      ...product,
+      variants: [
+        { id: 'vanilla', label: 'Vainilla', type: 'flavor', price: 9, priceBefore: 12, stock: 3 },
+        { id: 'small', label: '30 ct', type: 'size', price: 2, stock: 4 },
+      ],
+    };
+    expect(resolveVariantPricing(productWithDiscount, 'vanilla')).toEqual({
+      price: 9,
+      stock: 3,
+      label: 'Vainilla',
+      stockVariantId: 'vanilla',
+    });
+
+    const productWithExpiredDiscount = {
+      ...product,
+      variants: [
+        { id: 'vanilla', label: 'Vainilla', type: 'flavor', price: 9, priceBefore: 12, discountEndsAt: '2020-01-01', stock: 3 },
+        { id: 'small', label: '30 ct', type: 'size', price: 2, stock: 4 },
+      ],
+    };
+    expect(resolveVariantPricing(productWithExpiredDiscount, 'vanilla')).toEqual({
+      price: 9,
+      stock: 3,
+      label: 'Vainilla',
+      stockVariantId: 'vanilla',
     });
   });
 

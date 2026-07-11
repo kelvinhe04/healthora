@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { iconBtnAd } from '../../../components/admin';
+import { DateInputDDMMYYYY, iconBtnAd } from '../../../components/admin';
 import { Icon } from '../../../components/shared/Icon';
 import { emptyVariantRow, VARIANT_TYPE_OPTIONS, type VariantFormRow } from '../types';
 import { MiniImagePicker } from './MiniImagePicker';
@@ -177,6 +177,44 @@ export function ProductVariantsEditor({
               >
                 <Icon name="trash" size={14} />
               </button>
+              </div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr 1fr',
+                  gap: 8,
+                }}
+              >
+                <div>
+                  <label style={labelS}>Precio antes ($)</label>
+                  <input
+                    style={inputS}
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={row.priceBefore}
+                    onChange={(e) => updateRow(idx, { priceBefore: e.target.value })}
+                    placeholder="Sin descuento"
+                  />
+                </div>
+                <div>
+                  <label style={labelS}>Vigente desde</label>
+                  <DateInputDDMMYYYY
+                    style={inputS}
+                    value={row.discountStartsAt}
+                    onChange={(discountStartsAt) => updateRow(idx, { discountStartsAt })}
+                    disabled={!row.priceBefore}
+                  />
+                </div>
+                <div>
+                  <label style={labelS}>Vigente hasta</label>
+                  <DateInputDDMMYYYY
+                    style={inputS}
+                    value={row.discountEndsAt}
+                    onChange={(discountEndsAt) => updateRow(idx, { discountEndsAt })}
+                    disabled={!row.priceBefore}
+                  />
+                </div>
               </div>
               <div>
                 <label style={labelS}>Imágenes (mínimo 1, máximo 4) <span style={{ color: '#e53e3e' }}>*</span></label>

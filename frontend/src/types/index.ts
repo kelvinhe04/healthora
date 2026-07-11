@@ -16,7 +16,9 @@ export interface ProductVariant {
   label: string;
   type: 'size' | 'color' | 'weight' | 'count' | 'flavor' | 'scent';
   price: number;
-  priceBefore?: number;
+  priceBefore?: number | null;
+  discountStartsAt?: string | null;
+  discountEndsAt?: string | null;
   stock: number;
   sku?: string;
   color?: string;
@@ -27,6 +29,14 @@ export interface ProductVariant {
   stockBySize?: Record<string, number>;
   /** Price override for a specific sabor+tamaño combo, keyed by size variant id. Omit to use the tamaño's base price (sabores no longer add their own price extra). */
   priceBySize?: Record<string, number>;
+  /** "Was $X" price for a specific sabor+tamaño combo (set by a category/individual discount), keyed by size variant id. Vigencia comes from this variant's own discountStartsAt/discountEndsAt. */
+  priceBeforeBySize?: Record<string, number>;
+  /** Whether this variant's discount came from the bulk "Descuento por categoría" admin tool (vs. hand-set on this variant's own editor). Never admin-editable directly. */
+  categoryDiscount?: boolean;
+  /** Snapshot of this variant's price/priceBefore/vigencia from just before the category discount tool first touched it, so removing the category discount can restore a hand-set discount exactly. Never admin-editable directly. */
+  categoryDiscountRestore?: { price: number; priceBefore?: number; discountStartsAt?: string; discountEndsAt?: string };
+  /** Same idea as categoryDiscountRestore, per sabor+tamaño combo (keyed by size variant id) for matrix mode. Never admin-editable directly. */
+  categoryDiscountRestoreBySize?: Record<string, { price: number; priceBefore?: number }>;
   isDefault?: boolean;
   /** For a `size` variant paired with a `flavor`/`scent` variant: restricts this size to the given primary variant ids. Omit to make it available for all. */
   availableFor?: string[];
@@ -40,7 +50,11 @@ export interface Product {
   category: string;
   need: string;
   price: number;
-  priceBefore?: number;
+  priceBefore?: number | null;
+  discountStartsAt?: string | null;
+  discountEndsAt?: string | null;
+  /** Whether this product's discount came from the bulk "Descuento por categoría" admin tool (vs. hand-set on this product's own editor). Never admin-editable directly. */
+  categoryDiscount?: boolean;
   tag?: string;
   rating: number;
   reviews: number;
@@ -74,6 +88,7 @@ export interface Product {
   }[];
   variants?: ProductVariant[];
   active: boolean;
+  taxExempt?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -127,6 +142,11 @@ export interface Order {
   discountAmount?: number;
   tax: number;
   shipping: number;
+  shippingMethod?: 'delivery' | 'pickup';
+  shippingLabel?: string;
+  shippingEta?: string;
+  carrier?: string;
+  trackingNumber?: string;
   total: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
@@ -170,6 +190,8 @@ export interface User {
   createdAt: string;
 }
 
+export type ReviewStatus = 'pending' | 'published' | 'hidden';
+
 export interface Review {
   _id: string;
   productId: string;
@@ -180,8 +202,23 @@ export interface Review {
   body: string;
   userAvatar?: string;
   helpfulVoters: string[];
+  status?: ReviewStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AdminReview extends Review {
+  productName: string;
+}
+
+export interface ReviewBan {
+  _id: string;
+  productId: string;
+  productName: string;
+  userId: string;
+  userName: string;
+  bannedBy: string;
+  createdAt: string;
 }
 
 export interface ErrorReport {
@@ -217,6 +254,7 @@ export type NotificationType =
   | 'order_paid'
   | 'order_shipped'
   | 'order_status'
+  | 'new_order'
   | 'low_stock'
   | 'new_review'
   | 'return_requested'

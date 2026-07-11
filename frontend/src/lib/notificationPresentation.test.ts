@@ -9,6 +9,7 @@ describe('notificationPresentation', () => {
     expect(notificationPresentation('new_review').icon).toBe('star');
     expect(notificationPresentation('return_requested')).toEqual({ icon: 'arrow-left', accent: 'var(--coral)' });
     expect(notificationPresentation('return_status')).toEqual({ icon: 'arrow-left', accent: 'var(--ink)' });
+    expect(notificationPresentation('new_order')).toEqual({ icon: 'bag', accent: 'var(--green)' });
     expect(notificationPresentation('broadcast').icon).toBe('bell');
   });
 });

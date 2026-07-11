@@ -15,6 +15,15 @@ export type VariantFormRow = {
   label: string;
   type: ProductVariant['type'];
   price: string;
+  priceBefore: string;
+  discountStartsAt: string;
+  discountEndsAt: string;
+  /** Whether priceBefore came from the bulk "Descuento por categoría" tool (vs. hand-set here).
+   * No checkbox for this - carried through so an unrelated re-save doesn't silently wipe it. */
+  categoryDiscount: boolean;
+  /** Snapshot the category discount tool uses to restore a hand-set discount it discounted on top
+   * of. Opaque here - no editor for it, just carried through untouched. */
+  categoryDiscountRestore?: ProductVariant['categoryDiscountRestore'];
   stock: string;
   sku: string;
   color: string;
@@ -36,6 +45,10 @@ export const emptyVariantRow = (): VariantFormRow => ({
   label: '',
   type: 'count',
   price: '0',
+  priceBefore: '',
+  discountStartsAt: '',
+  discountEndsAt: '',
+  categoryDiscount: false,
   stock: '0',
   sku: '',
   color: '',
@@ -52,7 +65,8 @@ export type AdminPage =
   | "earnings"
   | "performance"
   | "errors"
-  | "returns";
+  | "returns"
+  | "reviews";
 export interface AdminAppProps {
   onGoToStore: () => void;
 }
@@ -84,6 +98,9 @@ export type AdminOrder = {
   status?: string;
   paymentStatus?: PaymentStatus;
   fulfillmentStatus?: FulfillmentStatus;
+  shippingMethod?: "delivery" | "pickup";
+  shippingLabel?: string;
+  shippingEta?: string;
   address?: OrderAddress;
   createdAt?: string;
 };
@@ -188,10 +205,25 @@ export const fulfillmentStatusOptions: (FulfillmentStatus | "")[] = [
   "delivered",
 ];
 
+export const orderShippingMethodOptions: ("" | "delivery" | "pickup")[] = ["", "delivery", "pickup"];
+
+export const orderShippingMethodLabels: Record<"" | "delivery" | "pickup", string> = {
+  "": "Todos",
+  delivery: "Envío a domicilio",
+  pickup: "Retiro en tienda",
+};
+
 export const fulfillmentStatusSequence: FulfillmentStatus[] = [
   "unfulfilled",
   "processing",
   "shipped",
+  "delivered",
+];
+
+// Retiro en tienda no pasa por "Enviada": se prepara y queda listo para retirar.
+export const pickupFulfillmentStatusSequence: FulfillmentStatus[] = [
+  "unfulfilled",
+  "processing",
   "delivered",
 ];
 
@@ -202,6 +234,8 @@ export type ProductForm = {
   short: string;
   price: string;
   priceBefore: string;
+  discountStartsAt: string;
+  discountEndsAt: string;
   tag: string;
   stock: string;
   active: boolean;
@@ -229,6 +263,8 @@ export const emptyForm: ProductForm = {
   short: "",
   price: "0",
   priceBefore: "",
+  discountStartsAt: "",
+  discountEndsAt: "",
   tag: "",
   stock: "0",
   active: true,
@@ -257,3 +293,12 @@ export const fulfillmentStatusLabels: Record<FulfillmentStatus | "", string> = {
   delivered: "Entregada",
   cancelled: "Cancelada",
 };
+
+/** "Entregada" no aplica a retiro en tienda: no se entrega nada, el cliente lo recoge. */
+export function getFulfillmentStatusLabel(
+  status: FulfillmentStatus | "",
+  shippingMethod?: "delivery" | "pickup",
+): string {
+  if (status === "delivered" && shippingMethod === "pickup") return "Listo para retirar";
+  return fulfillmentStatusLabels[status];
+}

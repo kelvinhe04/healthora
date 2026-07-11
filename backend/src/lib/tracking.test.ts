@@ -1,0 +1,47 @@
+import { describe, expect, test } from 'bun:test';
+import { carrierLabel, generateTrackingNumber, getTrackingUrl } from './tracking';
+
+describe('carrierLabel', () => {
+  test('null sin carrier', () => {
+    expect(carrierLabel(undefined)).toBeNull();
+    expect(carrierLabel('')).toBeNull();
+  });
+
+  test('label conocido para un carrier de la lista', () => {
+    expect(carrierLabel('propia')).toBe('Mensajería Healthora');
+  });
+
+  test('devuelve el texto tal cual para un carrier fuera de la lista (texto libre)', () => {
+    expect(carrierLabel('Mensajería Don Pepe')).toBe('Mensajería Don Pepe');
+  });
+});
+
+describe('getTrackingUrl', () => {
+  test('null sin carrier o sin numero', () => {
+    expect(getTrackingUrl(undefined, '123')).toBeNull();
+    expect(getTrackingUrl('propia', undefined)).toBeNull();
+  });
+
+  test('null para courier propio (sin plantilla de URL publica)', () => {
+    expect(getTrackingUrl('propia', 'ABC123')).toBeNull();
+  });
+
+  test('null para un carrier de texto libre no reconocido', () => {
+    expect(getTrackingUrl('Mensajería Don Pepe', 'ABC123')).toBeNull();
+  });
+});
+
+describe('generateTrackingNumber', () => {
+  test('respeta el formato HLT-XXXXXXXX', () => {
+    expect(generateTrackingNumber()).toMatch(/^HLT-[A-Z0-9]{8}$/);
+  });
+
+  test('no usa caracteres ambiguos (I, O, 0, 1)', () => {
+    expect(generateTrackingNumber()).not.toMatch(/[IO01]/);
+  });
+
+  test('genera valores distintos entre llamadas', () => {
+    const numbers = new Set(Array.from({ length: 20 }, () => generateTrackingNumber()));
+    expect(numbers.size).toBeGreaterThan(1);
+  });
+});

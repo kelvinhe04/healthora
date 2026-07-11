@@ -12,6 +12,7 @@ import { api } from "../../lib/api";
 import type { SavedAddress } from "../../types";
 import { SignInModal } from "./SignInModal";
 import { useBreakpoint } from "../../hooks/useBreakpoint";
+import { formatPanamaPhone } from "../../lib/phone";
 
 type View =
   | "landing"
@@ -21,6 +22,7 @@ type View =
   | "success"
   | "admin"
   | "orders"
+  | "profile"
   | "compare"
   | "wishlist";
 
@@ -396,8 +398,8 @@ function AddressManagerModal({
               <span style={labelStyle}>Teléfono</span>
               <input
                 value={form.phone}
-                onChange={(e) => onFormChange("phone", e.target.value)}
-                placeholder="+1 555 000 000"
+                onChange={(e) => onFormChange("phone", formatPanamaPhone(e.target.value))}
+                placeholder="6123-4567"
                 style={inputStyle}
               />
             </label>
@@ -792,6 +794,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   const navLinks = [
     { label: "Categorías", anchor: "categorias" },
     { label: "Más vendidos", anchor: "bestsellers" },
+    { label: "Vistos recientemente", anchor: "vistos-recientemente" },
     { label: "Ofertas", anchor: "ofertas" },
     { label: "Recién llegados", anchor: "nuevos" },
     { label: "Marcas", anchor: "marcas" },
@@ -1132,6 +1135,25 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               >
                 <Icon name="receipt" size={14} style={{ marginRight: 8 }} /> Mis
                 pedidos
+              </button>
+              <button
+                style={{
+                  ...iconBtn,
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  justifyContent: "flex-start",
+                  color: "var(--ink)",
+                  fontSize: 13,
+                  whiteSpace: "nowrap",
+                }}
+                onClick={() => {
+                  onNav("profile");
+                  setUserMenuOpen(false);
+                }}
+              >
+                <Icon name="user" size={14} style={{ marginRight: 8 }} /> Mi
+                perfil
               </button>
               <button
                 style={{

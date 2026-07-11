@@ -11,6 +11,8 @@ export function notificationPresentation(type: NotificationType): { icon: string
       return { icon: 'truck', accent: 'var(--green)' };
     case 'order_status':
       return { icon: 'receipt', accent: 'var(--ink)' };
+    case 'new_order':
+      return { icon: 'bag', accent: 'var(--green)' };
     case 'low_stock':
       return { icon: 'alert-circle', accent: 'var(--coral)' };
     case 'new_review':

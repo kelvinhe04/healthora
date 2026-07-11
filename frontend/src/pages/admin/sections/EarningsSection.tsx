@@ -48,7 +48,7 @@ export function EarningsSection() {
                 animKey="earn_gross"
               />
               <KpiCard
-                label="Impuestos"
+                label="ITBMS"
                 value={
                   earnings?.summary
                     ? `$${earnings.summary.tax.toFixed(2)}`

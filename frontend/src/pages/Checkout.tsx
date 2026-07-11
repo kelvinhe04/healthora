@@ -12,6 +12,9 @@ import { useAuth } from '@clerk/clerk-react';
 import { canApplyPromotion, getAvailablePromotionCodes, getPromotion, normalizePromotionCode } from '../lib/promotions';
 import { useCartStore } from '../store/cartStore';
 import { getE2EAuthToken, getE2EUser } from '../lib/e2eAuth';
+import { resolveShipping, SHIPPING_METHOD_OPTIONS, type ShippingMethod } from '../lib/shipping';
+import { formatPanamaPhone } from '../lib/phone';
+import { computeItbms } from '../lib/tax';
 
 interface CheckoutProps {
   items: CartItem[];
@@ -98,6 +101,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   }, [isSignedIn, step]);
 
   const [address, setAddress] = useState<OrderAddress>({ name: '', phone: '', address: '', city: '', postal: '' });
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('delivery');
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
@@ -107,7 +111,8 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   const [promoError, setPromoError] = useState('');
   const [hasPaidOrders, setHasPaidOrders] = useState(false);
 
-  const isAddressValid = address.name.trim() && address.phone.trim() && address.address.trim() && address.city.trim() && address.postal.trim();
+  const isAddressValid = address.name.trim() && address.phone.trim()
+    && (shippingMethod === 'pickup' || (address.address.trim() && address.city.trim() && address.postal.trim()));
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -182,8 +187,13 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   const appliedPromo = appliedPromoCode ? getPromotion(appliedPromoCode, items) : null;
   const discountAmount = appliedPromo?.discountAmount ?? 0;
   const discountedSubtotal = roundMoney(Math.max(0, subtotal - discountAmount));
-  const shipping = discountedSubtotal >= 50 || discountedSubtotal === 0 ? 0 : 6.90;
-  const tax = roundMoney(discountedSubtotal * 0.07);
+  const shippingResolved = resolveShipping(shippingMethod, discountedSubtotal);
+  const shipping = shippingResolved.cost;
+  const tax = computeItbms(
+    items.map((it) => ({ price: it.variant?.price ?? it.product.price, qty: it.qty, taxExempt: it.product.taxExempt })),
+    discountAmount,
+    subtotal,
+  );
   const total = roundMoney(discountedSubtotal + shipping + tax);
 
   const handleApplyPromo = (code = promoInput) => {
@@ -231,6 +241,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
           address,
           promoCode: appliedPromo?.code,
           freeSampleId: freeSample?.id,
+          shippingMethod,
         },
         token!
       );
@@ -317,10 +328,39 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             <div style={stepHeader}>
               <div>
                 <div style={stepNum}>02</div>
-                <h2 style={stepTitle}>Dirección de envío</h2>
+                <h2 style={stepTitle}>{shippingMethod === 'pickup' ? 'Tus datos' : 'Dirección de envío'}</h2>
               </div>
             </div>
-            {savedAddresses.length > 0 && (
+
+            <div style={{ marginTop: 20 }}>
+              <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>Entrega</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                {SHIPPING_METHOD_OPTIONS.map((option) => {
+                  const resolved = resolveShipping(option.value, discountedSubtotal);
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setShippingMethod(option.value)}
+                      style={{
+                        border: shippingMethod === option.value ? '1px solid var(--green)' : '1px solid var(--ink-20)',
+                        background: shippingMethod === option.value ? 'var(--ink-06)' : 'var(--cream)',
+                        borderRadius: 12,
+                        padding: '10px 14px',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        fontFamily: '"Geist", sans-serif',
+                      }}
+                    >
+                      <div style={{ fontSize: 13, color: 'var(--ink)' }}>{option.label} <span style={{ color: 'var(--ink-60)' }}>· {resolved.eta}</span></div>
+                      <div style={{ fontSize: 12, color: 'var(--green)', marginTop: 2 }}>{resolved.cost === 0 ? 'GRATIS' : `$${resolved.cost.toFixed(2)}`}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {shippingMethod === 'delivery' && savedAddresses.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 20 }}>
                 {savedAddresses.map((savedAddress, index) => (
                   <button
@@ -350,12 +390,17 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             )}
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginTop: 20 }}>
               <FormInput label="Nombre completo" value={address.name} onChange={(v) => { setAddress({ ...address, name: v }); setAddressError(''); }} placeholder="María Gómez" required />
-              <FormInput label="Teléfono" value={address.phone} onChange={(v) => { setAddress({ ...address, phone: v }); setAddressError(''); }} placeholder="+1 555 000 000" required />
-              <FormInput label="Dirección" value={address.address} onChange={(v) => { setAddress({ ...address, address: v }); setAddressError(''); }} placeholder="Calle, número, apto" full required />
-              <FormInput label="Ciudad" value={address.city} onChange={(v) => { setAddress({ ...address, city: v }); setAddressError(''); }} placeholder="Ciudad" required />
-              <FormInput label="Código postal" value={address.postal} onChange={(v) => { setAddress({ ...address, postal: v.replace(/\D/g, '') }); setAddressError(''); }} placeholder="10001" required />
+              <FormInput label="Teléfono" value={address.phone} onChange={(v) => { setAddress({ ...address, phone: formatPanamaPhone(v) }); setAddressError(''); }} placeholder="6123-4567" required />
+              {shippingMethod === 'delivery' && (
+                <>
+                  <FormInput label="Dirección" value={address.address} onChange={(v) => { setAddress({ ...address, address: v }); setAddressError(''); }} placeholder="Calle, número, apto" full required />
+                  <FormInput label="Ciudad" value={address.city} onChange={(v) => { setAddress({ ...address, city: v }); setAddressError(''); }} placeholder="Ciudad" required />
+                  <FormInput label="Código postal" value={address.postal} onChange={(v) => { setAddress({ ...address, postal: v.replace(/\D/g, '') }); setAddressError(''); }} placeholder="10001" required />
+                </>
+              )}
             </div>
             {addressError && <div role="alert" style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{addressError}</div>}
+
             {step === 2 && (
               <AnimatedButton aria-label="Continuar al pago" variant="primary" onClick={() => { if (!isAddressValid) { setAddressError('Por favor completa todos los campos requeridos'); } else { setStep(3); }}} style={{ marginTop: 16 }} disabled={!isAddressValid} text="Continuar al pago" />
             )}
@@ -465,8 +510,8 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             <Row k="Subtotal" v={`$${subtotal.toFixed(2)}`} />
             {discountAmount > 0 && <Row k={`Descuento ${appliedPromo?.code}`} v={<span style={{ color: 'var(--green)' }}>-${discountAmount.toFixed(2)}</span>} />}
             {freeSample && <Row k="Muestra gratis" v={<span style={{ color: 'var(--green)' }}>$0.00</span>} />}
-            <Row k="Envío" v={shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`} />
-            <Row k="Impuestos" v={`$${tax.toFixed(2)}`} />
+            <Row k={`Envío (${shippingResolved.eta})`} v={shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`} />
+            <Row k="ITBMS" v={`$${tax.toFixed(2)}`} />
           </div>
           <div style={{ padding: '14px 0', borderTop: '1px solid var(--ink-06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <strong style={{ fontSize: 16, fontFamily: '"Geist", sans-serif' }}>Total</strong>

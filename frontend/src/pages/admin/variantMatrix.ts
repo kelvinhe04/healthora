@@ -35,6 +35,18 @@ export type MatrixPrimaryRow = {
   images: string[];
   /** Only meaningful when primaryType === 'color'. */
   color: string;
+  /** Vigencia for this primary's combo discounts (see `MatrixCell.priceBefore`). No dedicated
+   * editor yet - carried through so a category discount applied via the bulk admin tool survives
+   * an unrelated manual re-save of this product instead of being silently dropped. */
+  discountStartsAt: string;
+  discountEndsAt: string;
+  /** Whether this primary's combo discount came from the bulk "Descuento por categoría" tool
+   * (vs. hand-set) - see `backend/src/lib/discounts.ts`. Carried through for the same reason as
+   * the vigencia fields above; never toggled by this editor. */
+  categoryDiscount: boolean;
+  /** Snapshot the category discount tool uses to restore a hand-set combo discount it discounted
+   * on top of, keyed by size variant id. Opaque here - no editor for it, just carried through. */
+  categoryDiscountRestoreBySize?: Record<string, { price: number; priceBefore?: number }>;
 };
 
 export type MatrixSizeRow = {
@@ -53,6 +65,9 @@ export type MatrixCell = {
   stock: string;
   /** Combo-specific price override; empty string means "use the tamaño's base price". */
   price: string;
+  /** Combo-specific "was $X" price, set by a category discount; empty string means no discount
+   * on this combo. No dedicated editor yet - see `MatrixPrimaryRow.discountStartsAt`. */
+  priceBefore: string;
   /** Combo-specific images; ignored unless `imagesTouched` is true. */
   images: string[];
   /** True once the user has edited this combo's own image picker (add or remove) - distinguishes
@@ -78,7 +93,7 @@ export function cellKey(primaryKey: string, sizeKey: string): string {
 }
 
 export function emptyPrimaryRow(): MatrixPrimaryRow {
-  return { key: newKey(), id: '', label: '', price: '0', stock: '0', sku: '', isDefault: false, images: [], color: '' };
+  return { key: newKey(), id: '', label: '', price: '0', stock: '0', sku: '', isDefault: false, images: [], color: '', discountStartsAt: '', discountEndsAt: '', categoryDiscount: false };
 }
 
 export function emptySizeRow(): MatrixSizeRow {
@@ -86,7 +101,7 @@ export function emptySizeRow(): MatrixSizeRow {
 }
 
 export function emptyMatrixCell(): MatrixCell {
-  return { active: true, stock: '', price: '', images: [], imagesTouched: false };
+  return { active: true, stock: '', price: '', priceBefore: '', images: [], imagesTouched: false };
 }
 
 export function emptyMatrixState(): MatrixState {
@@ -108,6 +123,10 @@ export function decomposeToMatrix(variants: ProductVariant[]): MatrixState {
     isDefault: Boolean(v.isDefault),
     images: v.images?.length ? v.images : v.imageUrl ? [v.imageUrl] : [],
     color: v.color ?? '',
+    discountStartsAt: v.discountStartsAt ? v.discountStartsAt.slice(0, 10) : '',
+    discountEndsAt: v.discountEndsAt ? v.discountEndsAt.slice(0, 10) : '',
+    categoryDiscount: Boolean(v.categoryDiscount),
+    ...(v.categoryDiscountRestoreBySize ? { categoryDiscountRestoreBySize: v.categoryDiscountRestoreBySize } : {}),
   }));
 
   const sizes: MatrixSizeRow[] = sizeVariants.map((v) => ({
@@ -131,6 +150,7 @@ export function decomposeToMatrix(variants: ProductVariant[]): MatrixState {
         active: true,
         stock: p.stockBySize?.[s.id] != null ? String(p.stockBySize[s.id]) : '',
         price: p.priceBySize?.[s.id] != null ? String(p.priceBySize[s.id]) : '',
+        priceBefore: p.priceBeforeBySize?.[s.id] != null ? String(p.priceBeforeBySize[s.id]) : '',
         images: p.imagesBySize?.[s.id] ?? [],
         imagesTouched: p.imagesBySize?.[s.id] != null,
       };
@@ -169,6 +189,7 @@ export function composeFromMatrix(state: MatrixState): ProductVariant[] {
       const imagesBySize: Record<string, string[]> = {};
       const stockBySize: Record<string, number> = {};
       const priceBySize: Record<string, number> = {};
+      const priceBeforeBySize: Record<string, number> = {};
       for (const s of sizes) {
         const cell = cells[cellKey(p.key, s.key)];
         if (!cell?.active) continue;
@@ -176,6 +197,7 @@ export function composeFromMatrix(state: MatrixState): ProductVariant[] {
         if (cell.imagesTouched) imagesBySize[sizeId] = cell.images;
         if (cell.stock.trim() !== '') stockBySize[sizeId] = parseInt(cell.stock, 10) || 0;
         if (cell.price.trim() !== '') priceBySize[sizeId] = parseFloat(cell.price) || 0;
+        if (cell.priceBefore.trim() !== '') priceBeforeBySize[sizeId] = parseFloat(cell.priceBefore) || 0;
       }
       return {
         id,
@@ -190,6 +212,13 @@ export function composeFromMatrix(state: MatrixState): ProductVariant[] {
         ...(Object.keys(imagesBySize).length ? { imagesBySize } : {}),
         ...(Object.keys(stockBySize).length ? { stockBySize } : {}),
         ...(Object.keys(priceBySize).length ? { priceBySize } : {}),
+        ...(Object.keys(priceBeforeBySize).length ? { priceBeforeBySize } : {}),
+        ...(Object.keys(priceBeforeBySize).length && p.discountStartsAt ? { discountStartsAt: p.discountStartsAt } : {}),
+        ...(Object.keys(priceBeforeBySize).length && p.discountEndsAt ? { discountEndsAt: p.discountEndsAt } : {}),
+        ...(Object.keys(priceBeforeBySize).length && p.categoryDiscount ? { categoryDiscount: true } : {}),
+        ...(Object.keys(priceBeforeBySize).length && p.categoryDiscount && p.categoryDiscountRestoreBySize
+          ? { categoryDiscountRestoreBySize: p.categoryDiscountRestoreBySize }
+          : {}),
         ...(p.isDefault ? { isDefault: true } : {}),
       };
     });
