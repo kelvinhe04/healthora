@@ -13,6 +13,7 @@ import { useUiStore } from '../store/uiStore';
 import { resolveVariantById } from '../lib/productVariants';
 import { formatPanamaFull, formatPanamaMedium } from '../lib/dates';
 import { formatPanamaPhone } from '../lib/phone';
+import { carrierLabel, getTrackingUrl } from '../lib/tracking';
 
 interface OrdersProps {
   onBack: () => void;
@@ -174,6 +175,24 @@ function OrderDetail({
       {order.fulfillmentStatus !== 'cancelled' && (
         <>
           <FulfillmentTimeline status={order.fulfillmentStatus} shippingMethod={order.shippingMethod} />
+          {order.trackingNumber && (
+            <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 12, background: 'var(--cream-2)', display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontFamily: '"Geist", sans-serif' }}>
+              <Icon name="truck" size={16} />
+              <span>
+                {carrierLabel(order.carrier) || 'Courier'} · N° de guía{' '}
+                {(() => {
+                  const url = getTrackingUrl(order.carrier, order.trackingNumber);
+                  return url ? (
+                    <a href={url} target="_blank" rel="noreferrer" style={{ color: 'var(--green)', fontWeight: 600 }}>
+                      {order.trackingNumber}
+                    </a>
+                  ) : (
+                    <strong>{order.trackingNumber}</strong>
+                  );
+                })()}
+              </span>
+            </div>
+          )}
           {divider}
         </>
       )}

@@ -27,6 +27,8 @@ const OrderSchema = new Schema(
     shippingMethod: { type: String, enum: ['delivery', 'pickup'] },
     shippingLabel: String,
     shippingEta: String,
+    carrier: String,
+    trackingNumber: String,
     total: Number,
     paymentStatus: {
       type: String,

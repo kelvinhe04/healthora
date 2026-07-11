@@ -19,6 +19,7 @@ import { useAdminPanelContext } from '../AdminPanelContext';
 import type { OrderSortKey } from '../hooks/useAdminPanel';
 import { formatPanamaShortDate, formatPanamaTime } from '../../../lib/dates';
 import { getFulfillmentStatusLabel, orderShippingMethodLabels } from '../types';
+import { carrierLabel, getTrackingUrl } from '../../../lib/tracking';
 
 const ORDER_SORT_LABEL: Record<OrderSortKey, string> = {
   total: 'Total',
@@ -535,6 +536,21 @@ export function OrdersSection() {
                             orderShippingMethodLabels[order.shippingMethod || "delivery"]
                           }
                         />
+                        {order.shippingMethod !== "pickup" && order.trackingNumber && (() => {
+                          const trackingUrl = getTrackingUrl(order.carrier, order.trackingNumber);
+                          return (
+                            <div style={{ marginTop: 8, fontSize: 11, color: "var(--ink-60)" }}>
+                              {carrierLabel(order.carrier) || "Sin courier"} ·{" "}
+                              {trackingUrl ? (
+                                <a href={trackingUrl} target="_blank" rel="noreferrer" style={{ color: "var(--green)" }}>
+                                  {order.trackingNumber}
+                                </a>
+                              ) : (
+                                order.trackingNumber
+                              )}
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td style={td}>
                         <div
