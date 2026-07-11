@@ -308,3 +308,93 @@ export async function removeCategoryDiscount(category: string): Promise<{ update
 
   return { updated };
 }
+
+interface ProductLikeForStaleCheck {
+  price: number;
+  priceBefore?: number | null;
+  categoryDiscount?: boolean;
+  variants?: Array<{
+    id: string;
+    price: number;
+    priceBefore?: number | null;
+    priceBySize?: Record<string, number>;
+    categoryDiscount?: boolean;
+  }>;
+}
+
+interface ProductUpdateForStaleCheck {
+  price?: number;
+  priceBefore?: number | null;
+  categoryDiscount?: boolean;
+  categoryDiscountRestore?: unknown;
+  variants?: Array<{
+    id: string;
+    price?: number;
+    priceBefore?: number | null;
+    priceBySize?: Record<string, number>;
+    categoryDiscount?: boolean;
+    categoryDiscountRestore?: unknown;
+    categoryDiscountRestoreBySize?: unknown;
+  }>;
+}
+
+/**
+ * Called just before a normal admin save (`PUT /admin/products/:id`) persists, with `before` the
+ * product as it currently is in the database and `update` the incoming payload (mutated in place).
+ *
+ * The individual product/variant editor always round-trips whatever `categoryDiscount`/
+ * `categoryDiscountRestore(BySize)` it loaded, since it has no checkbox for them - that's needed
+ * so an unrelated re-save doesn't silently wipe a category discount (see the editor's
+ * decompose/compose helpers). But it means that when the admin *does* deliberately type a new
+ * price/priceBefore over one still marked `categoryDiscount: true`, the stale marker and its
+ * now-outdated restore snapshot would otherwise survive untouched - and a later "quitar descuento
+ * por categoría" would revert past this brand new hand-set discount, back to whatever the snapshot
+ * points to. Detecting that the price/priceBefore actually changed and clearing the marker here is
+ * what makes that hand-set discount stick instead of disappearing under a later bulk revert.
+ */
+export function clearStaleCategoryDiscountMarkers(
+  before: ProductLikeForStaleCheck | null,
+  update: ProductUpdateForStaleCheck,
+): void {
+  if (!before) return;
+
+  if (
+    before.categoryDiscount &&
+    update.categoryDiscount &&
+    ((update.price !== undefined && update.price !== before.price) ||
+      (update.priceBefore !== undefined && (update.priceBefore ?? null) !== (before.priceBefore ?? null)))
+  ) {
+    update.categoryDiscount = undefined;
+    update.categoryDiscountRestore = undefined;
+  }
+
+  if (!update.variants?.length) return;
+  const beforeVariants = before.variants ?? [];
+
+  for (const v of update.variants) {
+    const bv = beforeVariants.find((x) => x.id === v.id);
+    if (!bv?.categoryDiscount || !v.categoryDiscount) continue;
+
+    const simpleChanged =
+      (v.price !== undefined && v.price !== bv.price) ||
+      (v.priceBefore !== undefined && (v.priceBefore ?? null) !== (bv.priceBefore ?? null));
+    if (simpleChanged) {
+      v.categoryDiscount = undefined;
+      v.categoryDiscountRestore = undefined;
+    }
+
+    // Matrix combo: the editor only lets the admin change a combo's price cell (priceBySize),
+    // never priceBeforeBySize directly - so a price mismatch on any one combo is the only signal
+    // available. Clears the whole primary's marker, matching how its vigencia is already shared
+    // across all of its combos rather than tracked per combo.
+    if (v.priceBySize) {
+      const comboChanged = Object.entries(v.priceBySize).some(
+        ([sizeId, price]) => bv.priceBySize?.[sizeId] !== undefined && bv.priceBySize[sizeId] !== price,
+      );
+      if (comboChanged) {
+        v.categoryDiscount = undefined;
+        v.categoryDiscountRestoreBySize = undefined;
+      }
+    }
+  }
+}

@@ -6,7 +6,12 @@ import { Product } from "../../db/models/Product";
 import { Category } from "../../db/models/Category";
 import { recalculateNew } from "../../lib/bestsellers";
 import { scanAndNotifyLowStock } from "../../lib/lowStock";
-import { applyCategoryDiscount, isVigenciaRangeValid, removeCategoryDiscount } from "../../lib/discounts";
+import {
+  applyCategoryDiscount,
+  clearStaleCategoryDiscountMarkers,
+  isVigenciaRangeValid,
+  removeCategoryDiscount,
+} from "../../lib/discounts";
 import { clearCatalogCache } from "../../lib/cache";
 import {
   moneyFromInput,
@@ -210,6 +215,13 @@ export const adminProductsRouter = new Hono<AppEnv>()
 
       const parsedBody = await parseJson(c, productUpdateSchema);
       if (!parsedBody.success) return parsedBody.response;
+
+      // The editor round-trips categoryDiscount/categoryDiscountRestore(BySize) untouched (no
+      // checkbox for them), so a deliberate new price/priceBefore over one still marked as a
+      // category discount needs to clear that stale marker here - otherwise a later "quitar
+      // descuento por categoría" would revert past this hand-set edit. See clearStaleCategoryDiscountMarkers.
+      const before = await Product.findById(parsedParams.data.id).lean();
+      clearStaleCategoryDiscountMarkers(before, parsedBody.data);
 
       const product = await Product.findByIdAndUpdate(parsedParams.data.id, parsedBody.data, {
         returnDocument: "after",
