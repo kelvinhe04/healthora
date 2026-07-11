@@ -8,7 +8,7 @@ describe('carrierLabel', () => {
   });
 
   test('label conocido para un carrier de la lista', () => {
-    expect(carrierLabel('dhl')).toBe('DHL');
+    expect(carrierLabel('propia')).toBe('Mensajería Healthora');
   });
 
   test('devuelve el texto tal cual para un carrier fuera de la lista (texto libre)', () => {
@@ -19,12 +19,7 @@ describe('carrierLabel', () => {
 describe('getTrackingUrl', () => {
   test('null sin carrier o sin numero', () => {
     expect(getTrackingUrl(undefined, '123')).toBeNull();
-    expect(getTrackingUrl('dhl', undefined)).toBeNull();
-  });
-
-  test('arma la URL para un carrier conocido', () => {
-    expect(getTrackingUrl('dhl', 'ABC123')).toContain('ABC123');
-    expect(getTrackingUrl('ups', 'ABC123')).toContain('ups.com');
+    expect(getTrackingUrl('propia', undefined)).toBeNull();
   });
 
   test('null para courier propio (sin plantilla de URL publica)', () => {

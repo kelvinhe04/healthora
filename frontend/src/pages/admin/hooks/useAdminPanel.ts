@@ -98,7 +98,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     Record<string, FulfillmentStatus>
   >({});
   const [orderTrackingDrafts, setOrderTrackingDrafts] = useState<
-    Record<string, { carrier: string; trackingNumber: string }>
+    Record<string, { trackingNumber: string }>
   >({});
   const [orderSort, setOrderSort] = useState<OrderSort>({ key: null, dir: 'asc' });
   const toggleOrderSort = useCallback((key: OrderSortKey) => {

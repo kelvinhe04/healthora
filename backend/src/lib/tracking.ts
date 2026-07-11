@@ -1,10 +1,6 @@
-/** Couriers comunes en envios de Panama, con su plantilla de URL de rastreo publica. Un carrier
- * fuera de esta lista (texto libre) simplemente no muestra enlace, solo el numero. */
+/** Sin integracion real con couriers externos (ver seguimiento HU-042): todo envio se asigna a la
+ * mensajeria propia de Healthora, sin plantilla de URL de rastreo publica. */
 export const CARRIERS = {
-  dhl: { label: 'DHL', trackingUrl: (n: string) => `https://www.dhl.com/pa-es/home/tracking/tracking-express.html?tracking-id=${encodeURIComponent(n)}` },
-  ups: { label: 'UPS', trackingUrl: (n: string) => `https://www.ups.com/track?tracknum=${encodeURIComponent(n)}` },
-  fedex: { label: 'FedEx', trackingUrl: (n: string) => `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(n)}` },
-  'correos-panama': { label: 'Correos de Panamá', trackingUrl: (n: string) => `https://www.correospanama.gob.pa/rastreo/?guia=${encodeURIComponent(n)}` },
   propia: { label: 'Mensajería Healthora', trackingUrl: null },
 } as const;
 
