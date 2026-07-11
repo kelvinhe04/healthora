@@ -318,6 +318,7 @@ interface ProductLikeForStaleCheck {
     price: number;
     priceBefore?: number | null;
     priceBySize?: Record<string, number>;
+    priceBeforeBySize?: Record<string, number>;
     categoryDiscount?: boolean;
   }>;
 }
@@ -332,6 +333,7 @@ interface ProductUpdateForStaleCheck {
     price?: number;
     priceBefore?: number | null;
     priceBySize?: Record<string, number>;
+    priceBeforeBySize?: Record<string, number>;
     categoryDiscount?: boolean;
     categoryDiscountRestore?: unknown;
     categoryDiscountRestoreBySize?: unknown;
@@ -383,18 +385,18 @@ export function clearStaleCategoryDiscountMarkers(
       v.categoryDiscountRestore = undefined;
     }
 
-    // Matrix combo: the editor only lets the admin change a combo's price cell (priceBySize),
-    // never priceBeforeBySize directly - so a price mismatch on any one combo is the only signal
-    // available. Clears the whole primary's marker, matching how its vigencia is already shared
-    // across all of its combos rather than tracked per combo.
-    if (v.priceBySize) {
-      const comboChanged = Object.entries(v.priceBySize).some(
-        ([sizeId, price]) => bv.priceBySize?.[sizeId] !== undefined && bv.priceBySize[sizeId] !== price,
-      );
-      if (comboChanged) {
-        v.categoryDiscount = undefined;
-        v.categoryDiscountRestoreBySize = undefined;
-      }
+    // Matrix combo: a mismatch on any one combo's price or hand-set "before" clears the whole
+    // primary's marker, matching how its vigencia is already shared across all of its combos
+    // rather than tracked per combo.
+    const priceComboChanged = v.priceBySize
+      ? Object.entries(v.priceBySize).some(([sizeId, price]) => (bv.priceBySize?.[sizeId] ?? null) !== (price ?? null))
+      : false;
+    const beforeComboChanged = v.priceBeforeBySize
+      ? Object.entries(v.priceBeforeBySize).some(([sizeId, priceBefore]) => (bv.priceBeforeBySize?.[sizeId] ?? null) !== (priceBefore ?? null))
+      : false;
+    if (priceComboChanged || beforeComboChanged) {
+      v.categoryDiscount = undefined;
+      v.categoryDiscountRestoreBySize = undefined;
     }
   }
 }

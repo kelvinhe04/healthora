@@ -162,6 +162,27 @@ describe('clearStaleCategoryDiscountMarkers', () => {
     expect(update.variants[0].priceBySize).toEqual({ '5lb': 40, '10lb': 25.2 });
   });
 
+  test('clears a matrix primary\'s marker when the admin hand-sets a combo\'s priceBeforeBySize alone (price unchanged)', () => {
+    const before = {
+      price: 15,
+      variants: [{ id: 'chocolate', price: 0, priceBySize: { '5lb': 13.5 }, categoryDiscount: true }],
+    };
+    const update = {
+      variants: [
+        {
+          id: 'chocolate',
+          // Admin used the new per-combo "Precio antes" field without touching "Precio".
+          priceBySize: { '5lb': 13.5 },
+          priceBeforeBySize: { '5lb': 20 },
+          categoryDiscount: true,
+        },
+      ],
+    };
+    clearStaleCategoryDiscountMarkers(before, update);
+    expect(update.variants[0].categoryDiscount).toBeUndefined();
+    expect(update.variants[0].priceBeforeBySize).toEqual({ '5lb': 20 });
+  });
+
   test('does not clear a variant\'s marker for one that never had a category discount', () => {
     const before = { price: 10, variants: [{ id: 'a', price: 9, priceBefore: 10 }] };
     const update = { variants: [{ id: 'a', price: 25, priceBefore: 30 }] };

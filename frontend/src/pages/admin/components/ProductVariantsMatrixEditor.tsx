@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { iconBtnAd } from '../../../components/admin';
+import { DateInputDDMMYYYY, iconBtnAd } from '../../../components/admin';
 import { Icon } from '../../../components/shared/Icon';
 import { emptyVariantRow, type VariantFormRow } from '../types';
 import {
@@ -152,7 +152,7 @@ export function ProductVariantsMatrixEditor({
   const tabHint: Record<'none' | 'simple' | 'matrix', string> = {
     none: 'El producto usa un solo precio y stock (los campos de arriba). No hay opciones para elegir.',
     simple: 'Una lista de opciones de un solo tipo (ej. solo tamaño, o solo color) — cada una con su propio precio y stock.',
-    matrix: 'Dos dimensiones combinadas (ej. sabor + tamaño): cada combinación puede tener su propio precio, stock e imágenes. El descuento por categoría también aplica aquí, por combinación — el editor de descuento individual todavía no tiene campos para esto, solo "Sin variante" y "Variante simple".',
+    matrix: 'Dos dimensiones combinadas (ej. sabor + tamaño): cada combinación puede tener su propio precio, stock, imágenes y "precio antes" (descuento). El descuento por categoría también aplica aquí, por combinación.',
   };
 
   return (
@@ -224,45 +224,80 @@ export function ProductVariantsMatrixEditor({
               <span />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {matrix.primary.map((p) => (
-                <div
-                  key={p.key}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: matrix.primaryType === 'color' ? '1fr auto auto' : '1fr auto',
-                    gap: 8,
-                    alignItems: 'center',
-                    padding: 10,
-                    borderRadius: 10,
-                    background: 'var(--cream-2)',
-                    border: '1px solid var(--ink-06)',
-                  }}
-                >
-                  <input
-                    style={inputS}
-                    placeholder={`ej. ${primaryLabels.singular === 'Color' ? 'Rojo' : 'Chocolate'}`}
-                    value={p.label}
-                    onChange={(e) => updatePrimary(p.key, { label: e.target.value })}
-                  />
-                  {matrix.primaryType === 'color' && (
-                    <input
-                      style={{ ...inputS, padding: '6px 8px', width: 44 }}
-                      type="color"
-                      title="Color (hex)"
-                      value={/^#[0-9a-fA-F]{6}$/.test(p.color) ? p.color : '#cccccc'}
-                      onChange={(e) => updatePrimary(p.key, { color: e.target.value })}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removePrimary(p.key)}
-                    style={{ ...iconBtnAd, color: 'var(--coral)' }}
-                    title={`Eliminar ${primaryLabels.singular.toLowerCase()}`}
+              {matrix.primary.map((p) => {
+                // Vigencia is shared per sabor/color (not per combo) - only worth showing once at
+                // least one of its active combos actually has a "precio antes" set.
+                const hasComboDiscount = matrix.sizes.some(
+                  (s) => (matrix.cells[cellKey(p.key, s.key)]?.priceBefore ?? '').trim() !== '',
+                );
+                return (
+                  <div
+                    key={p.key}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 8,
+                      padding: 10,
+                      borderRadius: 10,
+                      background: 'var(--cream-2)',
+                      border: '1px solid var(--ink-06)',
+                    }}
                   >
-                    <Icon name="trash" size={14} />
-                  </button>
-                </div>
-              ))}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: matrix.primaryType === 'color' ? '1fr auto auto' : '1fr auto',
+                        gap: 8,
+                        alignItems: 'center',
+                      }}
+                    >
+                      <input
+                        style={inputS}
+                        placeholder={`ej. ${primaryLabels.singular === 'Color' ? 'Rojo' : 'Chocolate'}`}
+                        value={p.label}
+                        onChange={(e) => updatePrimary(p.key, { label: e.target.value })}
+                      />
+                      {matrix.primaryType === 'color' && (
+                        <input
+                          style={{ ...inputS, padding: '6px 8px', width: 44 }}
+                          type="color"
+                          title="Color (hex)"
+                          value={/^#[0-9a-fA-F]{6}$/.test(p.color) ? p.color : '#cccccc'}
+                          onChange={(e) => updatePrimary(p.key, { color: e.target.value })}
+                        />
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removePrimary(p.key)}
+                        style={{ ...iconBtnAd, color: 'var(--coral)' }}
+                        title={`Eliminar ${primaryLabels.singular.toLowerCase()}`}
+                      >
+                        <Icon name="trash" size={14} />
+                      </button>
+                    </div>
+                    {hasComboDiscount && (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        <div>
+                          <label style={columnLabelS}>Vigente desde (opcional)</label>
+                          <DateInputDDMMYYYY
+                            style={inputS}
+                            value={p.discountStartsAt}
+                            onChange={(discountStartsAt) => updatePrimary(p.key, { discountStartsAt })}
+                          />
+                        </div>
+                        <div>
+                          <label style={columnLabelS}>Vigente hasta (opcional)</label>
+                          <DateInputDDMMYYYY
+                            style={inputS}
+                            value={p.discountEndsAt}
+                            onChange={(discountEndsAt) => updatePrimary(p.key, { discountEndsAt })}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <button
               type="button"
@@ -399,6 +434,16 @@ export function ProductVariantsMatrixEditor({
                                     title="Solo si esta combinación necesita un precio distinto al default"
                                     value={cell?.price ?? ''}
                                     onChange={(e) => updateCell(p.key, s.key, { price: e.target.value })}
+                                  />
+                                  <input
+                                    style={{ ...inputS, fontSize: 11 }}
+                                    type="number"
+                                    min={0}
+                                    step={0.01}
+                                    placeholder="Precio antes (sin descuento)"
+                                    title="Precio tachado para esta combinación - deja vacío para no mostrar descuento"
+                                    value={cell?.priceBefore ?? ''}
+                                    onChange={(e) => updateCell(p.key, s.key, { priceBefore: e.target.value })}
                                   />
                                   <input
                                     style={{ ...inputS, fontSize: 11 }}
