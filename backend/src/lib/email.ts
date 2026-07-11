@@ -832,28 +832,43 @@ export async function sendNewsletterSubscriptionEmail(data: NewsletterEmailData)
 
 export const RETURN_STATUS_COPY: Record<string, { label: string; message: string }> = {
   requested: { label: 'Solicitud recibida', message: 'recibimos tu solicitud de devolución y la estamos revisando.' },
-  approved: { label: 'Devolución aprobada', message: 'aprobamos tu devolución. Te avisaremos cuando recibamos el producto de vuelta.' },
+  approved: { label: 'Devolución aprobada', message: 'aprobamos tu devolución. Un mensajero pasará a recoger el producto en la dirección de tu pedido.' },
   in_transit: { label: 'Producto en tránsito', message: 'registramos que tu producto está en camino de vuelta a nuestro almacén.' },
   refunded: { label: 'Reembolso procesado', message: 'procesamos tu reembolso. Debería reflejarse en tu método de pago en los próximos días.' },
+  replaced: { label: 'Reemplazo en camino', message: 'confirmamos que te llegó el producto equivocado. Ya estamos preparando el envío del producto correcto, sin costo adicional.' },
   rejected: { label: 'Devolución rechazada', message: 'no pudimos aprobar tu solicitud de devolución. Contáctanos si tienes preguntas.' },
 };
+
+/** Un pedido de retiro en tienda nunca tuvo mensajero de ida, así que tampoco lo tiene de vuelta:
+ * el cliente trae el producto él mismo, sin paso "en tránsito". */
+const STORE_DROPOFF_RETURN_STATUS_COPY_OVERRIDES: Partial<Record<string, { label: string; message: string }>> = {
+  approved: { label: 'Devolución aprobada', message: 'aprobamos tu devolución. Puedes traer el producto a nuestra tienda cuando gustes, dentro de la ventana de devolución.' },
+};
+
+export function getReturnStatusCopy(status: string, returnMethod?: string) {
+  if (returnMethod === 'store_dropoff') {
+    return STORE_DROPOFF_RETURN_STATUS_COPY_OVERRIDES[status] || RETURN_STATUS_COPY[status];
+  }
+  return RETURN_STATUS_COPY[status];
+}
 
 export interface ReturnStatusEmailData {
   customerName: string;
   customerEmail: string;
   orderId: string;
-  status: 'requested' | 'approved' | 'in_transit' | 'refunded' | 'rejected';
+  status: 'requested' | 'approved' | 'in_transit' | 'refunded' | 'replaced' | 'rejected';
   refundAmount: number;
+  returnMethod?: 'courier_pickup' | 'store_dropoff';
 }
 
 export async function sendReturnStatusEmail(data: ReturnStatusEmailData): Promise<void> {
-  const { customerName, customerEmail, orderId, status, refundAmount } = data;
+  const { customerName, customerEmail, orderId, status, refundAmount, returnMethod } = data;
   if (!customerEmail) {
     console.error('[EMAIL] No customer email provided, skipping return status email');
     return;
   }
 
-  const copy = RETURN_STATUS_COPY[status];
+  const copy = getReturnStatusCopy(status, returnMethod);
   const safeCustomerName = escapeHtml(customerName || 'cliente');
   const safeOrderNumber = escapeHtml(orderId.slice(-8).toUpperCase());
   const ordersUrl = `${getFrontendUrl()}/?view=orders`;

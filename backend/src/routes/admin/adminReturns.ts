@@ -5,11 +5,12 @@ import { Order } from '../../db/models/Order';
 import { requireAdmin } from '../../middleware/requireAdmin';
 import type { AppEnv } from '../../types/hono';
 import { objectIdSchema, parseJson, parseParams, parseQuery } from '../../lib/validation';
-import { sendReturnStatusEmail, RETURN_STATUS_COPY } from '../../lib/email';
+import { sendReturnStatusEmail, getReturnStatusCopy } from '../../lib/email';
 import { stripe } from '../../lib/stripe';
 import { notifyUser } from '../../lib/realtime';
+import { createReplacementOrder } from '../../lib/returns';
 
-const returnStatusSchema = z.enum(['requested', 'approved', 'in_transit', 'refunded', 'rejected']);
+const returnStatusSchema = z.enum(['requested', 'approved', 'in_transit', 'refunded', 'replaced', 'rejected']);
 
 const listQuerySchema = z.object({
   status: returnStatusSchema.optional(),
@@ -61,6 +62,14 @@ export const adminReturnsRouter = new Hono<AppEnv>()
       await Order.updateOne({ _id: returnDoc.orderId }, { paymentStatus: 'refunded', status: 'refunded' });
     }
 
+    if (nextStatus === 'replaced' && returnDoc.status !== 'replaced') {
+      const order = await Order.findById(returnDoc.orderId).lean();
+      if (!order) return c.json({ error: 'La orden original no existe' }, 400);
+
+      const replacementOrder = await createReplacementOrder(order, returnDoc.items);
+      returnDoc.replacementOrderId = replacementOrder._id;
+    }
+
     returnDoc.status = nextStatus;
     await returnDoc.save();
 
@@ -70,6 +79,7 @@ export const adminReturnsRouter = new Hono<AppEnv>()
       orderId: String(returnDoc.orderId),
       status: nextStatus,
       refundAmount: returnDoc.refundAmount,
+      returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
     }).catch((err) => console.error('[ADMIN_RETURNS] Failed to send status email:', err));
 
     // Real-time push to the customer (HU-061), mirroring the status email and the fulfillment
@@ -77,7 +87,7 @@ export const adminReturnsRouter = new Hono<AppEnv>()
     // status update itself.
     if (returnDoc.customerId) {
       try {
-        const copy = RETURN_STATUS_COPY[nextStatus];
+        const copy = getReturnStatusCopy(nextStatus, returnDoc.returnMethod);
         await notifyUser(returnDoc.customerId, {
           type: 'return_status',
           title: copy.label,

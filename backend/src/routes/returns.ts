@@ -62,6 +62,11 @@ export const returnsRouter = new Hono<AppEnv>()
       return c.json({ error: error instanceof Error ? error.message : 'Items invalidos' }, 400);
     }
 
+    // Mirrors the outbound trip: a pickup order never got shipped to the customer, so the return
+    // can't go back via courier either - it's a drop-off at the store. Everything else (including
+    // legacy orders predating shippingMethod) was shipped, so a courier picks it up.
+    const returnMethod = order.shippingMethod === 'pickup' ? 'store_dropoff' : 'courier_pickup';
+
     const returnDoc = await Return.create({
       orderId,
       customerId: user.clerkId,
@@ -71,6 +76,8 @@ export const returnsRouter = new Hono<AppEnv>()
       items: resolvedItems,
       refundAmount: Math.round(refundAmount * 100) / 100,
       status: 'requested',
+      returnMethod,
+      pickupAddress: returnMethod === 'courier_pickup' ? order.address : undefined,
     });
 
     sendReturnStatusEmail({
@@ -79,6 +86,7 @@ export const returnsRouter = new Hono<AppEnv>()
       orderId: String(orderId),
       status: 'requested',
       refundAmount: returnDoc.refundAmount,
+      returnMethod,
     }).catch((err) => console.error('[RETURNS] Failed to send requested email:', err));
 
     // Real-time alert to admins (HU-061), mirroring new_review. Best-effort - a notification

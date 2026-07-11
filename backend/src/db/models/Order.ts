@@ -47,6 +47,9 @@ const OrderSchema = new Schema(
     },
     stripeSessionId: { type: String, unique: true, sparse: true },
     stripePaymentIntentId: String,
+    // Set when this order is a no-charge replacement shipment created by resolving a Return as
+    // "replaced" instead of refunded (wrong/damaged item) - see lib/returns.ts.
+    replacesOrderId: { type: Schema.Types.ObjectId, ref: 'Order' },
     address: {
       name: String,
       phone: String,

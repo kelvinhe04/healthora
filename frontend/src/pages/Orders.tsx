@@ -111,6 +111,7 @@ const RETURN_STATUS_LABELS: Record<ReturnStatus, string> = {
   approved: 'Aprobada',
   in_transit: 'En tránsito',
   refunded: 'Reembolsada',
+  replaced: 'Reemplazo enviado',
   rejected: 'Rechazada',
 };
 
@@ -168,6 +169,12 @@ function ReturnPanel({ order }: { order: Order }) {
         <div style={{ fontSize: 12, color: 'var(--ink-60)', marginTop: 4, fontFamily: '"Geist", sans-serif' }}>
           {existingReturn.status === 'refunded'
             ? `Reembolso de $${existingReturn.refundAmount.toFixed(2)} procesado.`
+            : existingReturn.status === 'replaced'
+            ? 'Confirmamos que te llegó el producto equivocado. Ya estamos preparando el envío del producto correcto, sin costo adicional.'
+            : existingReturn.status === 'approved'
+            ? (existingReturn.returnMethod === 'store_dropoff'
+                ? 'Puedes traer el producto a nuestra tienda cuando gustes, dentro de la ventana de devolución.'
+                : 'Un mensajero pasará a recoger el producto en la dirección de tu pedido.')
             : existingReturn.reason}
         </div>
       </div>

@@ -6,6 +6,7 @@ import { returnsRouter } from '../routes/returns';
 import { adminReturnsRouter } from '../routes/admin/adminReturns';
 import { Order } from '../db/models/Order';
 import { Return } from '../db/models/Return';
+import { Product } from '../db/models/Product';
 
 process.env.NODE_ENV = 'test';
 
@@ -32,6 +33,21 @@ const adminHeaders = {
   'x-test-name': 'Admin Test',
   'x-test-role': 'admin',
 };
+
+async function seedProduct(overrides: Partial<Record<string, unknown>> = {}) {
+  return Product.create({
+    id: 'vitamin-c-test',
+    name: 'Vitamin C Test',
+    brand: 'Healthora',
+    category: 'Vitaminas',
+    need: 'Inmunidad',
+    price: 20,
+    short: 'Producto test',
+    stock: 10,
+    active: true,
+    ...overrides,
+  });
+}
 
 async function seedPaidOrder(overrides: Partial<Record<string, unknown>> = {}) {
   return Order.create({
@@ -85,6 +101,7 @@ describe('returns flow', () => {
     const created = await createResponse.json();
     expect(created.status).toBe('requested');
     expect(created.refundAmount).toBe(20);
+    expect(created.returnMethod).toBe('courier_pickup');
 
     const listResponse = await app.request('/admin/returns', { headers: adminHeaders });
     expect(listResponse.status).toBe(200);
@@ -103,6 +120,68 @@ describe('returns flow', () => {
 
     const updatedOrder = await Order.findById(order._id).lean();
     expect(updatedOrder?.paymentStatus).toBe('refunded');
+  });
+
+  test('wrong item: admin resolves as replaced instead of refunded, shipping a no-charge replacement order', async () => {
+    const app = createTestApp();
+    await seedProduct();
+    const order = await seedPaidOrder();
+
+    const createResponse = await app.request('/returns', {
+      method: 'POST',
+      headers: customerHeaders,
+      body: JSON.stringify({
+        orderId: order._id.toString(),
+        reason: 'Llegó un producto distinto al que pedí',
+        items: [{ productId: 'vitamin-c-test', qty: 1 }],
+      }),
+    });
+    const created = await createResponse.json();
+
+    const replaceResponse = await app.request(`/admin/returns/${created._id}/status`, {
+      method: 'PATCH',
+      headers: adminHeaders,
+      body: JSON.stringify({ status: 'replaced' }),
+    });
+    expect(replaceResponse.status).toBe(200);
+    const replaced = await replaceResponse.json();
+    expect(replaced.status).toBe('replaced');
+    expect(replaced.replacementOrderId).toBeTruthy();
+
+    // Original order is untouched - this isn't a refund, so paymentStatus stays 'paid'.
+    const originalOrder = await Order.findById(order._id).lean();
+    expect(originalOrder?.paymentStatus).toBe('paid');
+
+    const replacementOrder = await Order.findById(replaced.replacementOrderId).lean();
+    expect(replacementOrder?.total).toBe(0);
+    expect(replacementOrder?.paymentStatus).toBe('paid');
+    expect(replacementOrder?.fulfillmentStatus).toBe('unfulfilled');
+    expect(replacementOrder?.replacesOrderId?.toString()).toBe(order._id.toString());
+    expect(replacementOrder?.items).toHaveLength(1);
+    expect(replacementOrder?.items[0].productId).toBe('vitamin-c-test');
+    expect(replacementOrder?.items[0].qty).toBe(1);
+
+    const product = await Product.findOne({ id: 'vitamin-c-test' }).lean();
+    expect(product?.stock).toBe(9);
+  });
+
+  test('derives store_dropoff returnMethod for a pickup order (no courier on the way out either)', async () => {
+    const app = createTestApp();
+    const order = await seedPaidOrder({ shippingMethod: 'pickup' });
+
+    const createResponse = await app.request('/returns', {
+      method: 'POST',
+      headers: customerHeaders,
+      body: JSON.stringify({
+        orderId: order._id.toString(),
+        reason: 'No era lo que esperaba',
+        items: [{ productId: 'vitamin-c-test', qty: 1 }],
+      }),
+    });
+
+    expect(createResponse.status).toBe(201);
+    const created = await createResponse.json();
+    expect(created.returnMethod).toBe('store_dropoff');
   });
 
   test('rejects a return request outside the return window', async () => {

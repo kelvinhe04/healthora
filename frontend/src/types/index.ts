@@ -153,12 +153,19 @@ export interface Order {
   fulfillmentStatus: FulfillmentStatus;
   stripeSessionId: string;
   stripePaymentIntentId?: string;
+  /** Set when this order is a no-charge replacement shipment created from a Return resolved as
+   * "replaced" (wrong/damaged item) instead of refunded. */
+  replacesOrderId?: string;
   address: OrderAddress;
   createdAt: string;
   updatedAt: string;
 }
 
-export type ReturnStatus = 'requested' | 'approved' | 'in_transit' | 'refunded' | 'rejected';
+export type ReturnStatus = 'requested' | 'approved' | 'in_transit' | 'refunded' | 'replaced' | 'rejected';
+
+/** How the product physically comes back: a courier picks it up (delivery orders) or the customer
+ * drops it off in person (pickup orders never had a courier on the way out either). */
+export type ReturnMethod = 'courier_pickup' | 'store_dropoff';
 
 export interface ReturnItem {
   productId: string;
@@ -176,6 +183,9 @@ export interface OrderReturn {
   items: ReturnItem[];
   refundAmount: number;
   status: ReturnStatus;
+  returnMethod: ReturnMethod;
+  pickupAddress?: OrderAddress;
+  replacementOrderId?: string;
   stripeRefundId?: string;
   createdAt: string;
   updatedAt: string;

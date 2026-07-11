@@ -17,8 +17,29 @@ const ReturnSchema = new Schema(
     refundAmount: { type: Number, required: true },
     status: {
       type: String,
-      enum: ['requested', 'approved', 'in_transit', 'refunded', 'rejected'],
+      enum: ['requested', 'approved', 'in_transit', 'refunded', 'replaced', 'rejected'],
       default: 'requested',
+    },
+    // Set once the admin resolves the return as `replaced` instead of `refunded` (wrong/damaged
+    // item) - points at the no-charge replacement Order created for it.
+    replacementOrderId: { type: Schema.Types.ObjectId, ref: 'Order' },
+    // Snapshot of the order's shippingMethod at request time (delivery -> courier_pickup, pickup ->
+    // store_dropoff). Determines whether the flow goes through `in_transit` (a courier is bringing
+    // it back) or skips straight to the customer dropping it off in person.
+    returnMethod: {
+      type: String,
+      enum: ['courier_pickup', 'store_dropoff'],
+      required: true,
+    },
+    // Snapshot of the order's delivery address at request time - only set for courier_pickup, so
+    // admin knows where to send the courier without a join back to Order. Irrelevant for
+    // store_dropoff (the customer brings it in, no pickup location to schedule).
+    pickupAddress: {
+      name: String,
+      phone: String,
+      address: String,
+      city: String,
+      postal: String,
     },
     stripeRefundId: String,
   },
