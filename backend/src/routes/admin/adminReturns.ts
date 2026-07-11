@@ -10,7 +10,7 @@ import { stripe } from '../../lib/stripe';
 import { notifyUser } from '../../lib/realtime';
 import { createReplacementOrder } from '../../lib/returns';
 
-const returnStatusSchema = z.enum(['requested', 'approved', 'in_transit', 'refunded', 'replaced', 'rejected']);
+const returnStatusSchema = z.enum(['requested', 'approved', 'in_transit', 'in_review', 'refund_pending', 'refunded', 'replaced', 'rejected']);
 
 const listQuerySchema = z.object({
   status: returnStatusSchema.optional(),
@@ -18,7 +18,11 @@ const listQuerySchema = z.object({
 
 const idParamsSchema = z.object({ id: objectIdSchema });
 
-const updateStatusSchema = z.object({ status: returnStatusSchema });
+// `refund_pending` is server-internal (set while waiting on Stripe's refund.updated webhook, see
+// lib/returns.ts#confirmReturnRefund) - the admin never targets it directly via this endpoint.
+const adminSettableStatusSchema = z.enum(['requested', 'approved', 'in_transit', 'in_review', 'refunded', 'replaced', 'rejected']);
+
+const updateStatusSchema = z.object({ status: adminSettableStatusSchema });
 
 export const adminReturnsRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
@@ -42,12 +46,16 @@ export const adminReturnsRouter = new Hono<AppEnv>()
 
     const nextStatus = bodyParsed.data.status;
 
-    if (nextStatus === 'refunded' && returnDoc.status !== 'refunded') {
+    if (nextStatus === 'refunded' && !['refund_pending', 'refunded'].includes(returnDoc.status)) {
       const order = await Order.findById(returnDoc.orderId).lean();
       if (!order?.stripePaymentIntentId) {
         return c.json({ error: 'La orden no tiene un pago de Stripe asociado' }, 400);
       }
 
+      // Only *requests* the refund - the return stays in refund_pending until Stripe's
+      // refund.updated webhook confirms it actually succeeded (source of truth, same pattern as
+      // order payment confirmation via checkout.session.completed). No email/notification here;
+      // confirmReturnRefund sends the "reembolso procesado" copy once it's real.
       try {
         const refund = await stripe.refunds.create({
           payment_intent: order.stripePaymentIntentId,
@@ -59,7 +67,9 @@ export const adminReturnsRouter = new Hono<AppEnv>()
         return c.json({ error: 'No se pudo procesar el reembolso en Stripe' }, 502);
       }
 
-      await Order.updateOne({ _id: returnDoc.orderId }, { paymentStatus: 'refunded', status: 'refunded' });
+      returnDoc.status = 'refund_pending';
+      await returnDoc.save();
+      return c.json(returnDoc.toObject());
     }
 
     if (nextStatus === 'replaced' && returnDoc.status !== 'replaced') {

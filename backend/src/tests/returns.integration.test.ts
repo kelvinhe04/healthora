@@ -4,11 +4,13 @@ import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { returnsRouter } from '../routes/returns';
 import { adminReturnsRouter } from '../routes/admin/adminReturns';
+import { webhooksRouter } from '../routes/webhooks';
 import { Order } from '../db/models/Order';
 import { Return } from '../db/models/Return';
 import { Product } from '../db/models/Product';
 
 process.env.NODE_ENV = 'test';
+process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
 
 let mongo: MongoMemoryServer;
 
@@ -16,7 +18,16 @@ function createTestApp() {
   const app = new Hono();
   app.route('/returns', returnsRouter);
   app.route('/admin/returns', adminReturnsRouter);
+  app.route('/webhooks', webhooksRouter);
   return app;
+}
+
+async function sendRefundWebhook(app: Hono, refundId: string, status: string) {
+  return app.request('/webhooks/stripe', {
+    method: 'POST',
+    headers: { 'stripe-signature': 'test-signature', 'content-type': 'application/json' },
+    body: JSON.stringify({ type: 'refund.updated', data: { object: { id: refundId, status } } }),
+  });
 }
 
 const customerHeaders = {
@@ -109,6 +120,8 @@ describe('returns flow', () => {
     const list = await listResponse.json();
     expect(list).toHaveLength(1);
 
+    // Clicking "Reembolsar" only *requests* the refund - it stays pending until Stripe confirms
+    // it via the refund.updated webhook, same as order payment via checkout.session.completed.
     const approveResponse = await app.request(`/admin/returns/${created._id}/status`, {
       method: 'PATCH',
       headers: adminHeaders,
@@ -116,11 +129,53 @@ describe('returns flow', () => {
     });
     expect(approveResponse.status).toBe(200);
     const approved = await approveResponse.json();
-    expect(approved.status).toBe('refunded');
+    expect(approved.status).toBe('refund_pending');
     expect(approved.stripeRefundId).toBe('refund_test_healthora');
+
+    const orderBeforeWebhook = await Order.findById(order._id).lean();
+    expect(orderBeforeWebhook?.paymentStatus).toBe('paid');
+
+    const webhookResponse = await sendRefundWebhook(app, approved.stripeRefundId, 'succeeded');
+    expect(webhookResponse.status).toBe(200);
+
+    const finalReturn = await Return.findById(created._id).lean();
+    expect(finalReturn?.status).toBe('refunded');
 
     const updatedOrder = await Order.findById(order._id).lean();
     expect(updatedOrder?.paymentStatus).toBe('refunded');
+  });
+
+  test('refund.updated webhook reports failure: return reverts to in_review instead of staying stuck', async () => {
+    const app = createTestApp();
+    const order = await seedPaidOrder();
+
+    const createResponse = await app.request('/returns', {
+      method: 'POST',
+      headers: customerHeaders,
+      body: JSON.stringify({
+        orderId: order._id.toString(),
+        reason: 'Llegó dañado',
+        items: [{ productId: 'vitamin-c-test', qty: 1 }],
+      }),
+    });
+    const created = await createResponse.json();
+
+    const refundResponse = await app.request(`/admin/returns/${created._id}/status`, {
+      method: 'PATCH',
+      headers: adminHeaders,
+      body: JSON.stringify({ status: 'refunded' }),
+    });
+    const refundPending = await refundResponse.json();
+    expect(refundPending.status).toBe('refund_pending');
+
+    const webhookResponse = await sendRefundWebhook(app, refundPending.stripeRefundId, 'failed');
+    expect(webhookResponse.status).toBe(200);
+
+    const finalReturn = await Return.findById(created._id).lean();
+    expect(finalReturn?.status).toBe('in_review');
+
+    const order2 = await Order.findById(order._id).lean();
+    expect(order2?.paymentStatus).toBe('paid');
   });
 
   test('wrong item: admin resolves as replaced instead of refunded, shipping a no-charge replacement order', async () => {

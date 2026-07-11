@@ -495,25 +495,32 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; darkBg: string; da
   unfulfilled:                  { bg: "oklch(0.95 0.04 85)", fg: "oklch(0.45 0.05 85)", darkBg: "oklch(0.26 0.05 85)",  darkFg: "oklch(0.82 0.07 85)"  },
   "Pendiente de preparación":   { bg: "oklch(0.95 0.04 85)", fg: "oklch(0.45 0.05 85)", darkBg: "oklch(0.26 0.05 85)",  darkFg: "oklch(0.82 0.07 85)"  },
   requested:                    { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
+  Solicitada:                   { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
+  "Reembolso en proceso":       { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
   // Blue — processing / in-prep / scheduled
   processing:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   Preparando:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   "En preparación":{ bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   Programado:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   approved:        { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
+  Aprobada:        { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
+  "En revisión":   { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   // Teal — shipped
   shipped:     { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   Enviada:     { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   in_transit:  { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  "En tránsito": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   "Envío a domicilio": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   "Retiro en tienda":  { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
   replaced:    { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  "Reemplazo enviado": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   // Coral — cancelled / inactive
   cancelled: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Cancelado: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Cancelada: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Inactivo:  { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   rejected:  { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
+  Rechazada: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   hidden:    { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Oculta:    { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   // Purple — refunded
@@ -958,9 +965,11 @@ export function Card({
         minWidth: 0,
       }}
     >
-      {/* Title area — skeleton or real */}
+      {/* Title area — skeleton or real. Gets its own padding when `pad={0}` (a table-in-card
+          layout, where the table's own th/td cells carry the 24px horizontal padding instead) so
+          the title/sub text isn't flush against the card's edges. */}
       {title && (
-        <div style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 20, ...(pad === 0 ? { padding: "24px 24px 0" } : {}) }}>
           {loading ? (
             <>
               <SkeletonTitle size="md" width="45%" />

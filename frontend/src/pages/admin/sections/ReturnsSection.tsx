@@ -20,6 +20,8 @@ const STATUS_LABELS: Record<'' | ReturnStatus, string> = {
   requested: 'Solicitada',
   approved: 'Aprobada',
   in_transit: 'En tránsito',
+  in_review: 'En revisión',
+  refund_pending: 'Reembolso en proceso',
   refunded: 'Reembolsada',
   replaced: 'Reemplazo enviado',
   rejected: 'Rechazada',
@@ -36,24 +38,23 @@ const RESOLUTION_LABELS: Record<OrderReturn['desiredResolution'], string> = {
 };
 
 // Un retiro en tienda nunca salió por un courier, así que tampoco vuelve por uno: la devolución
-// salta "en tránsito" y queda lista para resolver en cuanto está aprobada.
+// salta "en tránsito" y pasa directo a revisión en cuanto está aprobada.
 const NEXT_STATUS: Record<OrderReturn['returnMethod'], Partial<Record<ReturnStatus, { next: ReturnStatus; label: string }>>> = {
   courier_pickup: {
     requested: { next: 'approved', label: 'Aprobar' },
     approved: { next: 'in_transit', label: 'Marcar en tránsito' },
+    in_transit: { next: 'in_review', label: 'Producto recibido, en revisión' },
   },
   store_dropoff: {
     requested: { next: 'approved', label: 'Aprobar' },
+    approved: { next: 'in_review', label: 'Producto recibido, en revisión' },
   },
 };
 
-// El producto ya volvió (el mensajero lo trajo, o el cliente lo entregó en tienda): el admin
-// decide cómo resolverlo — reembolsar, o si el motivo fue que llegó el producto equivocado/dañado,
-// reenviar el correcto sin costo en vez de devolver el dinero.
-const RESOLVABLE_STATUS: Record<OrderReturn['returnMethod'], ReturnStatus> = {
-  courier_pickup: 'in_transit',
-  store_dropoff: 'approved',
-};
+// El producto ya volvió y se revisó: el admin ejecuta lo que el cliente ya pidió al solicitar la
+// devolución (desiredResolution) - no vuelve a decidir entre reembolso y reemplazo, solo confirma
+// que corresponde procesarlo.
+const RESOLVABLE_STATUS: ReturnStatus = 'in_review';
 
 export function ReturnsSection() {
   const { getToken } = useAuth();
@@ -91,7 +92,7 @@ export function ReturnsSection() {
             Devoluciones de <em style={{ color: 'var(--green)' }}>clientes</em>
           </>
         }
-        sub="Aprueba, marca en tránsito y resuelve con reembolso vía Stripe o reenvío del producto correcto cuando vuelva."
+        sub="Aprueba, marca en tránsito, confirma la revisión y procesa lo que el cliente pidió (reembolso vía Stripe o reenvío del producto correcto)."
         actions={
           <select
             value={statusFilter}
@@ -106,7 +107,7 @@ export function ReturnsSection() {
               fontSize: 13,
             }}
           >
-            {(['', 'requested', 'approved', 'in_transit', 'refunded', 'replaced', 'rejected'] as const).map((value) => (
+            {(['', 'requested', 'approved', 'in_transit', 'in_review', 'refund_pending', 'refunded', 'replaced', 'rejected'] as const).map((value) => (
               <option key={value} value={value}>{STATUS_LABELS[value]}</option>
             ))}
           </select>
@@ -152,7 +153,7 @@ export function ReturnsSection() {
             <tbody>
               {items.map((ret) => {
                 const nextAction = NEXT_STATUS[ret.returnMethod]?.[ret.status];
-                const canResolve = ret.status === RESOLVABLE_STATUS[ret.returnMethod];
+                const canResolve = ret.status === RESOLVABLE_STATUS;
                 return (
                   <tr key={ret._id} style={trStyle}>
                     <td style={td}>
@@ -181,13 +182,13 @@ export function ReturnsSection() {
                       ) : '—'}
                     </td>
                     <td style={td}>
-                      <StatusPill status={ret.status} />
+                      <StatusPill status={STATUS_LABELS[ret.status]} />
                     </td>
                     <td style={{ ...td, fontFamily: '"JetBrains Mono", monospace', fontSize: 12 }}>
                       {formatPanamaDateTime(ret.createdAt)}
                     </td>
                     <td style={td}>
-                      <div style={{ display: 'flex', gap: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
                         {nextAction && (
                           <button
                             type="button"
@@ -199,29 +200,17 @@ export function ReturnsSection() {
                           </button>
                         )}
                         {canResolve && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => updateStatusMut.mutate({ id: ret._id, status: 'refunded' })}
-                              disabled={updateStatusMut.isPending}
-                              style={ret.desiredResolution === 'refund'
-                                ? { background: 'oklch(0.28 0.055 155)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--lime)', fontSize: 12 }
-                                : { background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--ink)', fontSize: 12 }}
-                            >
-                              Reembolsar{ret.desiredResolution === 'refund' ? ' (solicitado)' : ''}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => updateStatusMut.mutate({ id: ret._id, status: 'replaced' })}
-                              disabled={updateStatusMut.isPending}
-                              title="Para cuando llegó el producto equivocado o dañado: reenvía el correcto sin costo en vez de reembolsar."
-                              style={ret.desiredResolution === 'replacement'
-                                ? { background: 'oklch(0.28 0.055 155)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--lime)', fontSize: 12 }
-                                : { background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--ink)', fontSize: 12 }}
-                            >
-                              Reenviar producto correcto{ret.desiredResolution === 'replacement' ? ' (solicitado)' : ''}
-                            </button>
-                          </>
+                          // El cliente ya eligió qué quiere al pedir la devolución - este botón
+                          // solo ejecuta esa decisión (confirmación de que el producto ya se
+                          // revisó), no es al admin volviendo a elegir entre dos opciones.
+                          <button
+                            type="button"
+                            onClick={() => updateStatusMut.mutate({ id: ret._id, status: ret.desiredResolution === 'replacement' ? 'replaced' : 'refunded' })}
+                            disabled={updateStatusMut.isPending}
+                            style={{ background: 'oklch(0.28 0.055 155)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--lime)', fontSize: 12 }}
+                          >
+                            {ret.desiredResolution === 'replacement' ? 'Reenviar producto correcto' : 'Reembolsar'}
+                          </button>
                         )}
                         {ret.status === 'requested' && (
                           <button

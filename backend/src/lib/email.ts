@@ -834,6 +834,7 @@ export const RETURN_STATUS_COPY: Record<string, { label: string; message: string
   requested: { label: 'Solicitud recibida', message: 'recibimos tu solicitud de devolución y la estamos revisando.' },
   approved: { label: 'Devolución aprobada', message: 'aprobamos tu devolución. Un mensajero pasará a recoger el producto en la dirección de tu pedido.' },
   in_transit: { label: 'Producto en tránsito', message: 'registramos que tu producto está en camino de vuelta a nuestro almacén.' },
+  in_review: { label: 'Producto en revisión', message: 'recibimos tu producto y lo estamos revisando antes de continuar.' },
   refunded: { label: 'Reembolso procesado', message: 'procesamos tu reembolso. Debería reflejarse en tu método de pago en los próximos días.' },
   replaced: { label: 'Reemplazo en camino', message: 'confirmamos que te llegó el producto equivocado. Ya estamos preparando el envío del producto correcto, sin costo adicional.' },
   rejected: { label: 'Devolución rechazada', message: 'no pudimos aprobar tu solicitud de devolución. Contáctanos si tienes preguntas.' },

@@ -15,9 +15,14 @@ const ReturnSchema = new Schema(
       },
     ],
     refundAmount: { type: Number, required: true },
+    // in_review = the product is physically back (courier delivered it, or the customer dropped
+    // it off) and staff is inspecting it before resolving. refund_pending is an internal-only
+    // state: the Stripe refund was requested but not yet confirmed by the `refund.updated`
+    // webhook (the source of truth, same pattern as order payment confirmation) - never set
+    // directly by the admin PATCH, only by the server while it waits on Stripe.
     status: {
       type: String,
-      enum: ['requested', 'approved', 'in_transit', 'refunded', 'replaced', 'rejected'],
+      enum: ['requested', 'approved', 'in_transit', 'in_review', 'refund_pending', 'refunded', 'replaced', 'rejected'],
       default: 'requested',
     },
     // What the *customer* asked for when requesting the return - refund is the default (fits

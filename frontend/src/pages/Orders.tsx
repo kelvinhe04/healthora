@@ -110,6 +110,8 @@ const RETURN_STATUS_LABELS: Record<ReturnStatus, string> = {
   requested: 'Solicitada',
   approved: 'Aprobada',
   in_transit: 'En tránsito',
+  in_review: 'En revisión',
+  refund_pending: 'Reembolso en proceso',
   refunded: 'Reembolsada',
   replaced: 'Reemplazo enviado',
   rejected: 'Rechazada',
@@ -172,15 +174,19 @@ function ReturnPanel({ order }: { order: Order }) {
         <div style={{ fontSize: 12, color: 'var(--ink-60)', marginTop: 4, fontFamily: '"Geist", sans-serif' }}>
           {existingReturn.status === 'refunded'
             ? `Reembolso de $${existingReturn.refundAmount.toFixed(2)} procesado.`
+            : existingReturn.status === 'refund_pending'
+            ? 'Estamos procesando tu reembolso.'
             : existingReturn.status === 'replaced'
             ? 'Confirmamos que te llegó el producto equivocado. Ya estamos preparando el envío del producto correcto, sin costo adicional.'
+            : existingReturn.status === 'in_review'
+            ? 'Recibimos tu producto y lo estamos revisando antes de continuar.'
             : existingReturn.status === 'approved'
             ? (existingReturn.returnMethod === 'store_dropoff'
                 ? 'Puedes traer el producto a nuestra tienda cuando gustes, dentro de la ventana de devolución.'
                 : 'Un mensajero pasará a recoger el producto en la dirección de tu pedido.')
             : existingReturn.reason}
         </div>
-        {['requested', 'approved', 'in_transit'].includes(existingReturn.status) && (
+        {['requested', 'approved', 'in_transit', 'in_review'].includes(existingReturn.status) && (
           <div style={{ fontSize: 11, color: 'var(--ink-40)', marginTop: 6, fontFamily: '"Geist", sans-serif' }}>
             Solicitaste: {existingReturn.desiredResolution === 'replacement' ? 'que te reenvíen el producto correcto' : 'reembolso'}
           </div>

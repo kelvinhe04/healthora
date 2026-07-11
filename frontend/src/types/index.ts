@@ -161,7 +161,7 @@ export interface Order {
   updatedAt: string;
 }
 
-export type ReturnStatus = 'requested' | 'approved' | 'in_transit' | 'refunded' | 'replaced' | 'rejected';
+export type ReturnStatus = 'requested' | 'approved' | 'in_transit' | 'in_review' | 'refund_pending' | 'refunded' | 'replaced' | 'rejected';
 
 /** How the product physically comes back: a courier picks it up (delivery orders) or the customer
  * drops it off in person (pickup orders never had a courier on the way out either). */

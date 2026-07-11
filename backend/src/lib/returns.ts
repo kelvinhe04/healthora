@@ -1,7 +1,10 @@
 import { Order } from '../db/models/Order';
 import { Product } from '../db/models/Product';
+import { Return } from '../db/models/Return';
 import { decrementStock } from './inventory';
 import { scanAndNotifyLowStock } from './lowStock';
+import { sendReturnStatusEmail, getReturnStatusCopy } from './email';
+import { notifyAdmins, notifyUser } from './realtime';
 
 export const RETURN_WINDOW_DAYS = 30;
 
@@ -100,4 +103,69 @@ export async function createReplacementOrder(originalOrder: OriginalOrder, retur
   }
 
   return replacementOrder;
+}
+
+/**
+ * Source of truth for "did the refund actually go through" - mirrors how order payment only
+ * counts as confirmed once the `checkout.session.completed` webhook fires, not the moment the
+ * synchronous Stripe API call returns. `adminReturns.ts` only *requests* the refund and parks the
+ * return in `refund_pending`; this is what Stripe's `refund.updated` webhook calls once it knows
+ * the real outcome.
+ */
+export async function confirmReturnRefund(stripeRefundId: string, stripeStatus: string) {
+  const returnDoc = await Return.findOne({ stripeRefundId });
+  // Not found (refund unrelated to a return) or already resolved (duplicate webhook delivery -
+  // Stripe retries these) - either way, nothing to do.
+  if (!returnDoc || returnDoc.status !== 'refund_pending') return;
+
+  if (stripeStatus === 'succeeded') {
+    returnDoc.status = 'refunded';
+    await returnDoc.save();
+    await Order.updateOne({ _id: returnDoc.orderId }, { paymentStatus: 'refunded', status: 'refunded' });
+
+    sendReturnStatusEmail({
+      customerName: returnDoc.customerName || 'cliente',
+      customerEmail: returnDoc.customerEmail || '',
+      orderId: String(returnDoc.orderId),
+      status: 'refunded',
+      refundAmount: returnDoc.refundAmount,
+      returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
+    }).catch((err) => console.error('[RETURNS] Failed to send refunded email:', err));
+
+    if (returnDoc.customerId) {
+      try {
+        const copy = getReturnStatusCopy('refunded', returnDoc.returnMethod);
+        await notifyUser(returnDoc.customerId, {
+          type: 'return_status',
+          title: copy.label,
+          body: copy.message,
+          link: '/orders',
+          data: { returnId: returnDoc._id.toString(), orderId: String(returnDoc.orderId), status: 'refunded' },
+        });
+      } catch (notifyError) {
+        console.error('[RETURNS] Failed to push refunded notification:', notifyError);
+      }
+    }
+    return;
+  }
+
+  if (stripeStatus === 'failed' || stripeStatus === 'canceled') {
+    // Back to in_review so the admin sees it needs attention and can retry, instead of the
+    // return silently stalling in refund_pending forever.
+    returnDoc.status = 'in_review';
+    await returnDoc.save();
+    try {
+      await notifyAdmins({
+        type: 'return_status',
+        title: 'Reembolso falló',
+        body: `El reembolso de $${returnDoc.refundAmount.toFixed(2)} para el pedido #${String(returnDoc.orderId).slice(-8).toUpperCase()} falló en Stripe. Revisa e intenta de nuevo.`,
+        link: '/admin?section=returns',
+        data: { returnId: returnDoc._id.toString(), orderId: String(returnDoc.orderId) },
+      });
+    } catch (notifyError) {
+      console.error('[RETURNS] Failed to push refund-failed notification:', notifyError);
+    }
+  }
+
+  // Any other Stripe status (e.g. still `pending`) - no-op, wait for the next webhook delivery.
 }
