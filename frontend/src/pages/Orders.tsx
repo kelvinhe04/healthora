@@ -6,7 +6,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { useOrders } from '../hooks/useOrders';
 import { Icon } from '../components/shared/Icon';
 import { api } from '../lib/api';
-import type { Order, OrderAddress, ReturnResolution, ReturnStatus } from '../types';
+import type { Order, OrderAddress, OrderReturn, ReturnResolution, ReturnStatus } from '../types';
 import { useOnceLoading, Skeleton } from '../components/admin';
 import { useCartStore } from '../store/cartStore';
 import { useUiStore } from '../store/uiStore';
@@ -116,6 +116,14 @@ const RETURN_STATUS_LABELS: Record<ReturnStatus, string> = {
   replaced: 'Reemplazo enviado',
   rejected: 'Rechazada',
 };
+
+/** Once a return exists for an order, that's the more relevant status to show than the plain
+ * fulfillment badge ("Entregada" stops mattering once a return is in motion) - used by both the
+ * sidebar order card and the detail panel's header badge. */
+const RETURN_BADGE_ACCENT = { bg: 'var(--ink-06)', color: 'var(--ink-60)' };
+function returnBadgeLabel(status: ReturnStatus): string {
+  return `Devolución ${RETURN_STATUS_LABELS[status]}`;
+}
 
 function ReturnPanel({ order }: { order: Order }) {
   const { getToken } = useAuth();
@@ -273,6 +281,7 @@ function ReturnPanel({ order }: { order: Order }) {
 
 interface OrderDetailProps {
   order: Order;
+  existingReturn?: OrderReturn;
   showCancelConfirm: boolean;
   isCancelling: boolean;
   cancelError: string;
@@ -294,6 +303,7 @@ interface OrderDetailProps {
 
 function OrderDetail({
   order,
+  existingReturn,
   showCancelConfirm, isCancelling, cancelError, onRequestCancel, onConfirmCancel, onAbortCancel,
   editingAddress, addrForm, isSavingAddr, addrError, onStartEditAddr, onAddrChange, onSaveAddr, onCancelEditAddr,
   onReorder, isReordering, reorderMessage,
@@ -333,8 +343,8 @@ function OrderDetail({
               {formatFull(order.createdAt)}
             </div>
           </div>
-          <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: 8, background: s.bg, color: s.color, flexShrink: 0, marginTop: 4 }}>
-            {getStatusLabel(order.status, order.shippingMethod)}
+          <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: 8, background: existingReturn ? RETURN_BADGE_ACCENT.bg : s.bg, color: existingReturn ? RETURN_BADGE_ACCENT.color : s.color, flexShrink: 0, marginTop: 4 }}>
+            {existingReturn ? returnBadgeLabel(existingReturn.status) : getStatusLabel(order.status, order.shippingMethod)}
           </span>
         </div>
       </div>
@@ -597,6 +607,18 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
 
+  // Shares the ['returns'] cache key with ReturnPanel below - a return in progress is more
+  // relevant than the plain fulfillment status, so both the sidebar card and the detail header
+  // badge switch to it once one exists for an order.
+  const returnsQuery = useQuery({
+    queryKey: ['returns'],
+    queryFn: async () => {
+      const token = await getToken();
+      return api.returns.list(token!);
+    },
+  });
+  const returnByOrderId = new Map((returnsQuery.data ?? []).map((r) => [r.orderId, r] as const));
+
   const showOrdersSkeleton = useOnceLoading("client_orders", isLoading);
 
   const [selectedId, setSelectedId] = useState<string | null>(() => initialOrderId ?? null);
@@ -802,6 +824,7 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
             {sorted.map(order => {
               const s = STATUS_CFG[order.status] ?? STATUS_CFG.paid;
               const isActive = order._id === selected?._id;
+              const orderReturn = returnByOrderId.get(order._id);
               return (
                 <div
                   key={order._id}
@@ -825,8 +848,8 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
                   <div style={{ fontSize: 12, fontFamily: '"Geist", sans-serif', color: isActive ? 'rgba(255,255,255,0.6)' : 'var(--ink-60)', marginBottom: 10 }}>
                     {formatShort(order.createdAt)} · {order.items.length} {order.items.length === 1 ? 'artículo' : 'artículos'}
                   </div>
-                  <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: 5, background: isActive ? 'rgba(255,255,255,0.14)' : s.bg, color: isActive ? 'rgba(255,255,255,0.9)' : s.color }}>
-                    {getStatusLabel(order.status, order.shippingMethod)}
+                  <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: 5, background: isActive ? 'rgba(255,255,255,0.14)' : (orderReturn ? RETURN_BADGE_ACCENT.bg : s.bg), color: isActive ? 'rgba(255,255,255,0.9)' : (orderReturn ? RETURN_BADGE_ACCENT.color : s.color) }}>
+                    {orderReturn ? returnBadgeLabel(orderReturn.status) : getStatusLabel(order.status, order.shippingMethod)}
                   </span>
                 </div>
               );
@@ -837,6 +860,7 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
           {selected && (
             <OrderDetail
               order={selected}
+              existingReturn={returnByOrderId.get(selected._id)}
               showCancelConfirm={showCancelConfirm}
               isCancelling={cancelMut.isPending}
               cancelError={cancelError}
