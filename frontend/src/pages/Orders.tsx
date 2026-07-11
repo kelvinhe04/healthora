@@ -186,6 +186,8 @@ function ReturnPanel({ order }: { order: Order }) {
             ? 'Estamos procesando tu reembolso.'
             : existingReturn.status === 'replaced'
             ? 'Confirmamos que te llegó el producto equivocado. Ya estamos preparando el envío del producto correcto, sin costo adicional.'
+            : existingReturn.status === 'in_transit'
+            ? 'El mensajero está en camino a buscar el paquete.'
             : existingReturn.status === 'in_review'
             ? 'Recibimos tu producto y lo estamos revisando antes de continuar.'
             : existingReturn.status === 'approved'
