@@ -8,7 +8,7 @@ import { objectIdSchema, parseJson, parseParams, parseQuery } from '../../lib/va
 import { sendReturnStatusEmail, getReturnStatusCopy } from '../../lib/email';
 import { stripe } from '../../lib/stripe';
 import { notifyUser } from '../../lib/realtime';
-import { createReplacementOrder } from '../../lib/returns';
+import { createReplacementOrder, resolvePendingRefunds } from '../../lib/returns';
 
 const returnStatusSchema = z.enum(['requested', 'approved', 'in_transit', 'in_review', 'refund_pending', 'refunded', 'replaced', 'rejected']);
 
@@ -30,6 +30,7 @@ export const adminReturnsRouter = new Hono<AppEnv>()
     const parsed = parseQuery(c, listQuerySchema);
     if (!parsed.success) return parsed.response;
 
+    await resolvePendingRefunds();
     const filter = parsed.data.status ? { status: parsed.data.status } : {};
     const returns = await Return.find(filter).sort({ createdAt: -1 }).lean();
     return c.json(returns);

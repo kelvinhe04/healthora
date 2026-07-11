@@ -5,6 +5,7 @@ import { decrementStock } from './inventory';
 import { scanAndNotifyLowStock } from './lowStock';
 import { sendReturnStatusEmail, getReturnStatusCopy } from './email';
 import { notifyAdmins, notifyUser } from './realtime';
+import { stripe } from './stripe';
 
 export const RETURN_WINDOW_DAYS = 30;
 
@@ -168,4 +169,29 @@ export async function confirmReturnRefund(stripeRefundId: string, stripeStatus: 
   }
 
   // Any other Stripe status (e.g. still `pending`) - no-op, wait for the next webhook delivery.
+}
+
+/**
+ * Self-heals `refund_pending` returns that never got a `refund.updated` webhook - the most common
+ * case being local dev, where nothing is forwarding Stripe events unless `stripe listen` is
+ * running (see README). Mirrors the `GET /orders?stripeSessionId=` fallback for payment
+ * confirmation: the webhook is the fast, event-driven path in production, this is the safety net
+ * that keeps the list endpoints accurate even if it never arrives. Called from the returns list
+ * routes (customer + admin) before responding - cheap no-op when nothing is pending.
+ */
+export async function resolvePendingRefunds(): Promise<void> {
+  const pending = await Return.find({ status: 'refund_pending' }).lean();
+  if (!pending.length) return;
+
+  await Promise.all(
+    pending.map(async (r) => {
+      if (!r.stripeRefundId) return;
+      try {
+        const refund = await stripe.refunds.retrieve(r.stripeRefundId);
+        await confirmReturnRefund(r.stripeRefundId, refund.status ?? '');
+      } catch (error) {
+        console.error('[RETURNS] Failed to poll refund status for', r._id, error);
+      }
+    }),
+  );
 }

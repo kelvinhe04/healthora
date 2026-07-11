@@ -5,7 +5,7 @@ import type { AppEnv } from '../types/hono';
 import { Order } from '../db/models/Order';
 import { Return } from '../db/models/Return';
 import { objectIdSchema, parseJson, productIdSchema, textField } from '../lib/validation';
-import { isWithinReturnWindow } from '../lib/returns';
+import { isWithinReturnWindow, resolvePendingRefunds } from '../lib/returns';
 import { sendReturnStatusEmail } from '../lib/email';
 import { notifyAdmins } from '../lib/realtime';
 
@@ -25,6 +25,7 @@ export const returnsRouter = new Hono<AppEnv>()
   .use('*', clerkAuth)
   .get('/', async (c) => {
     const user = c.get('user');
+    await resolvePendingRefunds();
     const returns = await Return.find({ customerId: user.clerkId }).sort({ createdAt: -1 }).lean();
     return c.json(returns);
   })

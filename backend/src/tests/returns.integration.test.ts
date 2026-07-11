@@ -178,6 +178,42 @@ describe('returns flow', () => {
     expect(order2?.paymentStatus).toBe('paid');
   });
 
+  test('list endpoint self-heals a refund_pending return if the webhook never arrives (local dev without `stripe listen`)', async () => {
+    const app = createTestApp();
+    const order = await seedPaidOrder();
+
+    const createResponse = await app.request('/returns', {
+      method: 'POST',
+      headers: customerHeaders,
+      body: JSON.stringify({
+        orderId: order._id.toString(),
+        reason: 'Llegó dañado',
+        items: [{ productId: 'vitamin-c-test', qty: 1 }],
+      }),
+    });
+    const created = await createResponse.json();
+
+    const refundResponse = await app.request(`/admin/returns/${created._id}/status`, {
+      method: 'PATCH',
+      headers: adminHeaders,
+      body: JSON.stringify({ status: 'refunded' }),
+    });
+    const refundPending = await refundResponse.json();
+    expect(refundPending.status).toBe('refund_pending');
+
+    // No webhook fired here - the list endpoints poll Stripe directly as a fallback.
+    const adminListResponse = await app.request('/admin/returns', { headers: adminHeaders });
+    const adminList = await adminListResponse.json();
+    expect(adminList.find((r: { _id: string }) => r._id === created._id).status).toBe('refunded');
+
+    const customerListResponse = await app.request('/returns', { headers: customerHeaders });
+    const customerList = await customerListResponse.json();
+    expect(customerList.find((r: { _id: string }) => r._id === created._id).status).toBe('refunded');
+
+    const updatedOrder = await Order.findById(order._id).lean();
+    expect(updatedOrder?.paymentStatus).toBe('refunded');
+  });
+
   test('wrong item: admin resolves as replaced instead of refunded, shipping a no-charge replacement order', async () => {
     const app = createTestApp();
     await seedProduct();

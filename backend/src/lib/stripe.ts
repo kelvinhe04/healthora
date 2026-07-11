@@ -46,6 +46,7 @@ export const stripe = process.env.NODE_ENV === 'test'
           amount: payload.amount,
           status: 'succeeded',
         }),
+        retrieve: async (id: string) => ({ id, status: 'succeeded' }),
       },
       webhooks: {
         constructEvent: (rawBody: string) => JSON.parse(rawBody),
