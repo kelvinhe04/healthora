@@ -38,6 +38,8 @@ export type UserSort = { key: UserSortKey | null; dir: 'asc' | 'desc' };
 
 export type AdminPanelState = ReturnType<typeof useAdminPanel>;
 
+const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "users", "returns", "reviews", "sales", "earnings", "performance", "errors"];
+
 export function useAdminPanel({
   access,
   onGoToStore,
@@ -57,7 +59,7 @@ export function useAdminPanel({
   const [page, setPage] = useState<AdminPage>(() => {
     const sp = new URLSearchParams(window.location.search);
     const urlPage = sp.get("section") as AdminPage | null;
-    if (urlPage && ["dashboard","orders","products","users","sales","earnings","performance","errors"].includes(urlPage)) return urlPage;
+    if (urlPage && ADMIN_PAGES.includes(urlPage)) return urlPage;
     return (localStorage.getItem("healthora_admin_page") as AdminPage) || "dashboard";
   });
 
@@ -81,6 +83,17 @@ export function useAdminPanel({
       return next;
     }, { replace: true });
   }, [page]);
+
+  // Picks up a `?section=` change that happens *after* mount without a full page reload - e.g. a
+  // notification link (`/admin?section=returns`) clicked while already inside /admin. The effect
+  // above only writes page -> URL; without this, the URL bar would update but the visible section
+  // wouldn't, since `page` was already initialized once and nothing else read the URL back.
+  useEffect(() => {
+    const urlPage = searchParams.get("section") as AdminPage | null;
+    if (urlPage && ADMIN_PAGES.includes(urlPage) && urlPage !== page) {
+      setPage(urlPage);
+    }
+  }, [searchParams]);
 const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const [orderShippingMethodFilter, setOrderShippingMethodFilter] = useState("");
   const [usersLoading, setUsersLoading] = useState(true);
