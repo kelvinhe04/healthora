@@ -10,6 +10,7 @@ import { pickDefaultCombo, pickDefaultCartVariant, getEffectivePrice, getEffecti
 import { useCompareStore } from '../../store/compareStore';
 import { useWishlistStore } from '../../store/wishlistStore';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { isLowStock } from '../../lib/stock';
 
 // ─── Shared shimmer helper ────────────────────────────────────────────────────
 function ShimmerBox({ style }: { style?: CSSProperties }) {
@@ -162,6 +163,8 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
         {/* Badges */}
         {product.stock === 0 ? (
           <span style={{ position: 'absolute', top: 12, left: 12, background: dark ? 'oklch(0.10 0.012 155)' : 'var(--ink)', color: dark ? 'oklch(0.96 0.006 85)' : 'var(--cream)', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Agotado</span>
+        ) : isLowStock(product.stock) ? (
+          <span style={{ position: 'absolute', top: 12, left: 12, background: 'var(--coral)', color: 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Solo quedan {product.stock}</span>
         ) : product.tag ? (
           <span style={{ position: 'absolute', top: 12, left: 12, background: product.tag === 'Nuevo' ? 'var(--lime)' : 'oklch(0.18 0.03 155)', color: product.tag === 'Nuevo' ? 'oklch(0.18 0.03 155)' : 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{product.tag}</span>
         ) : null}
