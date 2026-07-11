@@ -15,6 +15,26 @@ import { api } from '../../../lib/api';
 import type { OrderReturn, ReturnStatus } from '../../../types';
 import { formatPanamaDateTime } from '../../../lib/dates';
 
+function ButtonSpinner() {
+  return (
+    <>
+      <span
+        style={{
+          display: 'inline-block',
+          width: 11,
+          height: 11,
+          borderRadius: '50%',
+          border: '2px solid currentColor',
+          borderTopColor: 'transparent',
+          opacity: 0.85,
+          animation: 'admin-btn-spin 0.6s linear infinite',
+        }}
+      />
+      <style>{'@keyframes admin-btn-spin { to { transform: rotate(360deg); } }'}</style>
+    </>
+  );
+}
+
 const STATUS_LABELS: Record<'' | ReturnStatus, string> = {
   '': 'Todas',
   requested: 'Solicitada',
@@ -154,6 +174,11 @@ export function ReturnsSection() {
               {items.map((ret) => {
                 const nextAction = NEXT_STATUS[ret.returnMethod]?.[ret.status];
                 const canResolve = ret.status === RESOLVABLE_STATUS;
+                // Only the row actually being mutated shows the spinner - the shared mutation's
+                // isPending alone would light up every row's button at once.
+                const pendingStatus = updateStatusMut.isPending && updateStatusMut.variables?.id === ret._id
+                  ? updateStatusMut.variables.status
+                  : null;
                 return (
                   <tr key={ret._id} style={trStyle}>
                     <td style={td}>
@@ -194,8 +219,9 @@ export function ReturnsSection() {
                             type="button"
                             onClick={() => updateStatusMut.mutate({ id: ret._id, status: nextAction.next })}
                             disabled={updateStatusMut.isPending}
-                            style={{ background: 'oklch(0.28 0.055 155)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--lime)', fontSize: 12 }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'oklch(0.28 0.055 155)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--lime)', fontSize: 12 }}
                           >
+                            {pendingStatus === nextAction.next && <ButtonSpinner />}
                             {nextAction.label}
                           </button>
                         )}
@@ -207,8 +233,9 @@ export function ReturnsSection() {
                             type="button"
                             onClick={() => updateStatusMut.mutate({ id: ret._id, status: ret.desiredResolution === 'replacement' ? 'replaced' : 'refunded' })}
                             disabled={updateStatusMut.isPending}
-                            style={{ background: 'oklch(0.28 0.055 155)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--lime)', fontSize: 12 }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'oklch(0.28 0.055 155)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--lime)', fontSize: 12 }}
                           >
+                            {(pendingStatus === 'refunded' || pendingStatus === 'replaced') && <ButtonSpinner />}
                             {ret.desiredResolution === 'replacement' ? 'Reenviar producto correcto' : 'Reembolsar'}
                           </button>
                         )}
@@ -217,8 +244,9 @@ export function ReturnsSection() {
                             type="button"
                             onClick={() => updateStatusMut.mutate({ id: ret._id, status: 'rejected' })}
                             disabled={updateStatusMut.isPending}
-                            style={{ background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--coral)', fontSize: 12 }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--coral)', fontSize: 12 }}
                           >
+                            {pendingStatus === 'rejected' && <ButtonSpinner />}
                             Rechazar
                           </button>
                         )}
