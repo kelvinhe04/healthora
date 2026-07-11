@@ -32,6 +32,26 @@ import type { Product } from '../../../types';
 const modalFieldLabel = { fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: 'var(--ink-60)', marginBottom: 6, display: 'block' };
 const modalInput = { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--ink-20)', background: 'var(--cream)', fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', boxSizing: 'border-box' as const };
 
+function ButtonSpinner() {
+  return (
+    <>
+      <span
+        style={{
+          display: 'inline-block',
+          width: 13,
+          height: 13,
+          borderRadius: '50%',
+          border: '2px solid currentColor',
+          borderTopColor: 'transparent',
+          opacity: 0.85,
+          animation: 'admin-btn-spin 0.6s linear infinite',
+        }}
+      />
+      <style>{'@keyframes admin-btn-spin { to { transform: rotate(360deg); } }'}</style>
+    </>
+  );
+}
+
 function CategoryDiscountModal({ open, onClose, categories, products }: { open: boolean; onClose: () => void; categories: string[]; products: Product[] }) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
@@ -136,10 +156,22 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
         {message && <div style={{ marginBottom: 14, fontSize: 13, color: 'var(--green)' }}>{message}</div>}
         {(applyMut.isError || removeMut.isError) && <div role="alert" style={{ marginBottom: 14, fontSize: 13, color: 'var(--coral)' }}>No se pudo completar la acción.</div>}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button type="button" onClick={() => removeMut.mutate()} disabled={!category || removeMut.isPending} style={{ padding: '10px 16px', borderRadius: 10, background: 'transparent', border: '1px solid var(--ink-12)', color: 'var(--coral)', cursor: 'pointer', fontSize: 13 }}>
-            Quitar descuento
-          </button>
-          <AnimatedButton variant="primary" disabled={!category || (parseFloat(value) || 0) <= 0 || invalidRange || applyMut.isPending} onClick={() => applyMut.mutate()} text={applyMut.isPending ? 'Aplicando…' : 'Aplicar descuento'} />
+          <AnimatedButton
+            variant="outline"
+            size="sm"
+            style={{ color: 'var(--coral)', borderColor: 'oklch(0.85 0.08 30)' }}
+            disabled={!category || removeMut.isPending}
+            onClick={() => removeMut.mutate()}
+            text={removeMut.isPending ? 'Quitando…' : 'Quitar descuento'}
+            icon={removeMut.isPending ? <ButtonSpinner /> : undefined}
+          />
+          <AnimatedButton
+            variant="primary"
+            disabled={!category || (parseFloat(value) || 0) <= 0 || invalidRange || applyMut.isPending}
+            onClick={() => applyMut.mutate()}
+            text={applyMut.isPending ? 'Aplicando…' : 'Aplicar descuento'}
+            icon={applyMut.isPending ? <ButtonSpinner /> : undefined}
+          />
         </div>
       </div>
     </ModalOverlay>
