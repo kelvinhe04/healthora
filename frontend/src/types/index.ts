@@ -78,6 +78,7 @@ export interface Product {
   }[];
   variants?: ProductVariant[];
   active: boolean;
+  taxExempt?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

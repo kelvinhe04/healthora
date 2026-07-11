@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import { isTaxExemptCategory } from '../../lib/tax';
 
 const ProductSchema = new Schema(
   {
@@ -72,8 +73,24 @@ const ProductSchema = new Schema(
     ],
     active: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
+    // ITBMS (Panama VAT) exemption - certain medications/health items don't pay the 7% tax at
+    // checkout. Derived automatically from `category` (see hooks below), not admin-editable.
+    taxExempt: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
+
+// taxExempt siempre se deriva de category, nunca se acepta del cliente - evita que un admin
+// deje un producto de "Medicamentos" gravado (o viceversa) por error u omision en el payload.
+ProductSchema.pre('save', function () {
+  this.taxExempt = isTaxExemptCategory(this.category);
+});
+
+ProductSchema.pre('findOneAndUpdate', function () {
+  const update = this.getUpdate() as { category?: string } | null;
+  if (update && typeof update.category === 'string') {
+    (update as { taxExempt?: boolean }).taxExempt = isTaxExemptCategory(update.category);
+  }
+});
 
 export const Product = model('Product', ProductSchema);
