@@ -118,8 +118,37 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
       <div style={{ width: '100%', maxWidth: 420, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: 24 }}>
         <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 16px' }}>Descuento por categoría</h3>
         {categoriesWithDiscount.length > 0 && (
-          <div style={{ marginBottom: 16, fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>
-            Con descuento activo: {categoriesWithDiscount.join(', ')}
+          <div style={{ marginBottom: 16 }}>
+            <label style={modalFieldLabel}>Con descuento activo</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {categoriesWithDiscount.map((c) => {
+                const selected = category === c;
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => { setCategory(c); setMessage(''); }}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '5px 12px',
+                      borderRadius: 999,
+                      fontSize: 12,
+                      fontFamily: '"Geist", sans-serif',
+                      cursor: 'pointer',
+                      border: '1px solid ' + (selected ? 'var(--green)' : 'var(--ink-20)'),
+                      background: selected ? 'var(--green)' : 'transparent',
+                      color: selected ? 'var(--cream)' : 'var(--ink)',
+                      transition: 'all 120ms',
+                    }}
+                  >
+                    <span style={{ width: 5, height: 5, borderRadius: 999, background: selected ? 'var(--cream)' : 'var(--green)' }} />
+                    {c}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
         <div style={{ marginBottom: 14 }}>
