@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { carrierLabel, getTrackingUrl } from './tracking';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -85,6 +86,8 @@ type OrderStatusEmailData = {
   total: number;
   address?: Address;
   shippingMethod?: string;
+  carrier?: string;
+  trackingNumber?: string;
 };
 
 type NewsletterEmailData = {
@@ -570,7 +573,7 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
 }
 
 export async function sendOrderStatusUpdateEmail(data: OrderStatusEmailData): Promise<void> {
-  const { customerName, customerEmail, orderId, fulfillmentStatus, items, total, address, shippingMethod } = data;
+  const { customerName, customerEmail, orderId, fulfillmentStatus, items, total, address, shippingMethod, carrier, trackingNumber } = data;
 
   if (!customerEmail) {
     console.error('[EMAIL] No customer email provided, skipping status update email');
@@ -581,6 +584,26 @@ export async function sendOrderStatusUpdateEmail(data: OrderStatusEmailData): Pr
   const safeCustomerName = escapeHtml(customerName || 'cliente');
   const safeOrderNumber = escapeHtml(orderId.slice(-8).toUpperCase());
   const ordersUrl = `${getFrontendUrl()}/orders?orderId=${orderId}`;
+  const trackingUrl = getTrackingUrl(carrier, trackingNumber);
+  const trackingBlock = fulfillmentStatus === 'shipped' && trackingNumber
+    ? `
+      <tr>
+        <td style="padding: 0 38px 30px 38px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4fbef; border-radius: 18px; border: 1px solid #cfeac5;">
+            <tr>
+              <td style="padding: 20px 24px;">
+                <p style="margin: 0; font-size: 11px; color: #53725e; text-transform: uppercase; letter-spacing: 1.4px; font-weight: 800;">${escapeHtml(carrierLabel(carrier) || 'Courier')}</p>
+                <p style="margin: 7px 0 0 0; font-size: 20px; font-weight: 800; color: #213a27; letter-spacing: -0.3px;">
+                  ${trackingUrl ? `<a href="${trackingUrl}" style="color: #11845b; text-decoration: none;">${escapeHtml(trackingNumber)}</a>` : escapeHtml(trackingNumber)}
+                </p>
+                <p style="margin: 8px 0 0 0; font-size: 13px; color: #64756a;">Número de guía de tu envío${trackingUrl ? ' · toca para rastrearlo' : ''}</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    `
+    : '';
   const addressBlock = address
     ? `
       <tr>
@@ -655,6 +678,8 @@ export async function sendOrderStatusUpdateEmail(data: OrderStatusEmailData): Pr
               ${buildFulfillmentSteps(fulfillmentStatus, shippingMethod)}
             </td>
           </tr>
+
+          ${trackingBlock}
 
           <tr>
             <td style="padding: 0 38px 30px 38px;">

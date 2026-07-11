@@ -6,6 +6,7 @@ import { Order } from '../../db/models/Order';
 import { sendOrderStatusUpdateEmail } from '../../lib/email';
 import { combineOrderStatus, normalizeOrder, type FulfillmentStatus } from '../../lib/orderStatus';
 import { notifyUser } from '../../lib/realtime';
+import { generateTrackingNumber } from '../../lib/tracking';
 import { objectIdSchema, optionalTextField, parseJson, parseParams, parseQuery } from '../../lib/validation';
 
 const paymentStatusSchema = z.enum(['pending_payment', 'paid', 'cancelled', 'refunded']);
@@ -112,9 +113,23 @@ export const adminOrdersRouter = new Hono<AppEnv>()
     const fulfillmentStatus = (body.fulfillmentStatus || normalizedCurrent.fulfillmentStatus) as typeof normalizedCurrent.fulfillmentStatus;
     const status = combineOrderStatus(paymentStatus, fulfillmentStatus);
 
+    const update: Record<string, unknown> = { paymentStatus, fulfillmentStatus, status };
+
+    // Simulacion: no hay integracion real con couriers todavia (ver seguimiento HU-042), asi que
+    // al pasar a "enviado" sin courier/numero ya asignados se genera un numero de guia propio.
+    const shouldAutoAssignTracking =
+      fulfillmentStatus === 'shipped' &&
+      normalizedCurrent.shippingMethod !== 'pickup' &&
+      !normalizedCurrent.carrier &&
+      !normalizedCurrent.trackingNumber;
+    if (shouldAutoAssignTracking) {
+      update.carrier = 'propia';
+      update.trackingNumber = generateTrackingNumber();
+    }
+
     const order = await Order.findByIdAndUpdate(
       parsedParams.data.id,
-      { paymentStatus, fulfillmentStatus, status },
+      update,
       { returnDocument: 'after' }
     ).lean();
 
@@ -132,6 +147,8 @@ export const adminOrdersRouter = new Hono<AppEnv>()
             total: order.total || 0,
             address: order.address,
             shippingMethod: order.shippingMethod,
+            carrier: order.carrier,
+            trackingNumber: order.trackingNumber,
           });
         } catch (emailError) {
           console.error('[ADMIN_ORDERS] Failed to send status update email:', emailError);

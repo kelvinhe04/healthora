@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { carrierLabel, getTrackingUrl } from './tracking';
+import { carrierLabel, generateTrackingNumber, getTrackingUrl } from './tracking';
 
 describe('carrierLabel', () => {
   test('null sin carrier', () => {
@@ -33,5 +33,20 @@ describe('getTrackingUrl', () => {
 
   test('null para un carrier de texto libre no reconocido', () => {
     expect(getTrackingUrl('Mensajería Don Pepe', 'ABC123')).toBeNull();
+  });
+});
+
+describe('generateTrackingNumber', () => {
+  test('respeta el formato HLT-XXXXXXXX', () => {
+    expect(generateTrackingNumber()).toMatch(/^HLT-[A-Z0-9]{8}$/);
+  });
+
+  test('no usa caracteres ambiguos (I, O, 0, 1)', () => {
+    expect(generateTrackingNumber()).not.toMatch(/[IO01]/);
+  });
+
+  test('genera valores distintos entre llamadas', () => {
+    const numbers = new Set(Array.from({ length: 20 }, () => generateTrackingNumber()));
+    expect(numbers.size).toBeGreaterThan(1);
   });
 });
