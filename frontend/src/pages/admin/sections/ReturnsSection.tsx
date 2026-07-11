@@ -43,11 +43,11 @@ const NEXT_STATUS: Record<OrderReturn['returnMethod'], Partial<Record<ReturnStat
   courier_pickup: {
     requested: { next: 'approved', label: 'Aprobar' },
     approved: { next: 'in_transit', label: 'Marcar en tránsito' },
-    in_transit: { next: 'in_review', label: 'Producto recibido, en revisión' },
+    in_transit: { next: 'in_review', label: 'En revisión' },
   },
   store_dropoff: {
     requested: { next: 'approved', label: 'Aprobar' },
-    approved: { next: 'in_review', label: 'Producto recibido, en revisión' },
+    approved: { next: 'in_review', label: 'En revisión' },
   },
 };
 
