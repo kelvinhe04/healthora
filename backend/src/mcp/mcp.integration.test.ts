@@ -67,7 +67,7 @@ describe('MCP server', () => {
     expect(json.result.serverInfo.name).toBe('healthora');
   });
 
-  test('tools/list exposes all 15 registered tools', async () => {
+  test('tools/list exposes all 16 registered tools', async () => {
     const { json } = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const names = json.result.tools.map((t: { name: string }) => t.name).sort();
     expect(names).toEqual(
@@ -75,6 +75,7 @@ describe('MCP server', () => {
         'analytics.getSalesReport',
         'catalog.listProducts',
         'catalog.upsertProduct',
+        'categories.upsertCategory',
         'inventory.adjustStock',
         'notifications.broadcast',
         'orders.getOrderItems',

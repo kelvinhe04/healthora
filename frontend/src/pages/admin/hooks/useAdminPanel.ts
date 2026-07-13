@@ -57,7 +57,7 @@ export function useAdminPanel({
   const [page, setPage] = useState<AdminPage>(() => {
     const sp = new URLSearchParams(window.location.search);
     const urlPage = sp.get("section") as AdminPage | null;
-    if (urlPage && ["dashboard","orders","products","users","sales","earnings","performance","errors"].includes(urlPage)) return urlPage;
+    if (urlPage && ["dashboard","orders","products","categories","users","sales","earnings","performance","errors"].includes(urlPage)) return urlPage;
     return (localStorage.getItem("healthora_admin_page") as AdminPage) || "dashboard";
   });
 
@@ -513,36 +513,31 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     }
   }, [page]);
 
+  const { data: adminCategories = [] } = useQuery({
+    queryKey: ['admin-categories'],
+    queryFn: async () => api.admin.categories.list(await getAdminToken()),
+  });
+
   const sidebarCounts = useMemo(
     () => ({
       orders: dashboardData?.kpis.totalOrders ?? orders.length,
       products: productsCountQuery.data?.count ?? 0,
+      categories: adminCategories.length,
       users: customers.length,
     }),
-    [dashboardData, orders.length, productsCountQuery.data, customers.length],
+    [dashboardData, orders.length, productsCountQuery.data, adminCategories.length, customers.length],
   );
 
-  const STATIC_CATEGORIES = [
-    "Vitaminas",
-    "Cuidado personal",
-    "Cuidado del bebé",
-    "Suplementos de Bienestar",
-    "Salud de la piel",
-    "Fitness",
-    "Medicamentos",
-    "Hidratantes",
-    "Fragancias",
-    "Maquillaje",
-  ];
-
   const categories = useMemo(() => {
+    const fromApi = adminCategories
+      .filter((c) => c.active !== false)
+      .map((c) => c.id);
     const fromProducts =
       products.length > 0
-        ? [...new Set(products.map((p) => p.category))].sort()
+        ? [...new Set(products.map((p) => p.category))]
         : [];
-    const allCategories = new Set([...STATIC_CATEGORIES, ...fromProducts]);
-    return Array.from(allCategories).sort();
-  }, [products]);
+    return Array.from(new Set([...fromApi, ...fromProducts])).sort();
+  }, [adminCategories, products]);
 
   // Products matching only the search term (not the category filter) — used to count how many
   // products each category pill would show if selected, so the count reflects the active search
