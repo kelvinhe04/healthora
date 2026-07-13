@@ -100,7 +100,10 @@ export type DashboardData = {
   };
   dailySales: { revenue: number; date: string }[];
   recentOrders: AdminOrder[];
-  lowStockProducts: Product[];
+  /** Una entrada por celda de stock critica (producto sin variantes, variante simple, o combo
+   * sabor/color x tamaño) - no por producto, para no esconder un combo critico detras del total
+   * sano del producto (#153). `variantLabel` es null para un producto sin variantes. */
+  lowStockCells: { variantId: string | null; variantLabel: string | null; stock: number; product: Product }[];
 };
 export type AdminOrder = {
   _id: string;
@@ -148,6 +151,9 @@ export type SalesData = {
   topProducts?: { _id: string; revenue: number; units: number }[];
   topCategories?: { _id: string; units: number; revenue: number }[];
   topBrands?: { _id: string; units: number; revenue: number }[];
+  /** Combos sabor/color x tamaño mas vendidos (no solo productos) - agrupado por
+   * items.variantLabel, distinto por producto (#154). */
+  topVariants?: { productId: string; productName: string; variantLabel: string; units: number; revenue: number }[];
 };
 export type EarningsData = {
   monthly?: { month: string; revenue: number; orders: number }[];

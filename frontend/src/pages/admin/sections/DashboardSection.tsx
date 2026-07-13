@@ -12,7 +12,6 @@ import {
 } from '../../../components/admin';
 import { ProductImage } from '../../../components/shared/ProductImage';
 import { useAdminPanelContext } from '../AdminPanelContext';
-import { getTotalStock } from '../../../lib/productVariants';
 
 export function DashboardSection() {
   const {
@@ -260,7 +259,7 @@ export function DashboardSection() {
                   </div>
                 }
               >
-                {dashboard?.lowStockProducts?.length ? (
+                {dashboard?.lowStockCells?.length ? (
                   <div
                     style={{
                       display: "flex",
@@ -268,9 +267,9 @@ export function DashboardSection() {
                       gap: 12,
                     }}
                   >
-                    {(dashboard?.lowStockProducts || []).map((product) => (
+                    {(dashboard?.lowStockCells || []).map((cell) => (
                       <div
-                        key={product.id}
+                        key={`${cell.product.id}-${cell.variantId ?? "base"}`}
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -287,7 +286,7 @@ export function DashboardSection() {
                             flexShrink: 0,
                           }}
                         >
-                          <ProductImage product={product} size="xs" />
+                          <ProductImage product={cell.product} size="xs" />
                         </div>
                         <div style={{ flex: 1 }}>
                           <div
@@ -296,7 +295,7 @@ export function DashboardSection() {
                               fontWeight: 500,
                             }}
                           >
-                            {product.name}
+                            {cell.product.name}
                           </div>
                           <div
                             style={{
@@ -304,10 +303,10 @@ export function DashboardSection() {
                               color: "var(--ink-60)",
                             }}
                           >
-                            {product.brand}
+                            {cell.variantLabel ?? cell.product.brand}
                           </div>
                         </div>
-                        <StatusPill status={`${getTotalStock(product)} uds`} />
+                        <StatusPill status={`${cell.stock} uds`} />
                       </div>
                     ))}
                   </div>
