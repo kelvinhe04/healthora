@@ -157,7 +157,7 @@ export function OrdersSection() {
                   <input
                     value={orderSearch}
                     onChange={(e) => setOrderSearch(e.target.value)}
-                    placeholder="Buscar por ID, cliente o email…"
+                    placeholder="Buscar por ID, cliente, email o producto…"
                     style={{
                       border: "none",
                       outline: "none",
