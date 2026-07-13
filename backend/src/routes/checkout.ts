@@ -3,9 +3,8 @@ import { z } from 'zod';
 import { clerkAuth } from '../middleware/clerkAuth';
 import type { AppEnv } from '../types/hono';
 import { Product } from '../db/models/Product';
-import { Order } from '../db/models/Order';
 import { stripe } from '../lib/stripe';
-import { getPromotion } from '../lib/promotions';
+import { validatePromotionForCart } from '../lib/promotions';
 import { cartItemSchema, optionalTextField, orderAddressSchema, parseJson, productIdSchema, requireFullAddress, shippingMethodSchema } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
 import { validateCartStock } from '../lib/inventory';
@@ -78,25 +77,19 @@ export const checkoutRouter = new Hono<AppEnv>()
 
     const subtotal = roundMoney(lineItems.reduce((s, i) => s + i.price * i.qty, 0));
     const promotion = promoCode
-      ? getPromotion(promoCode, lineItems.map((item) => ({ product: { category: products.find((product) => product.id === item.productId)?.category || '', price: item.price }, qty: item.qty })))
+      ? await validatePromotionForCart(
+          promoCode,
+          items,
+          { customerId: user.clerkId },
+        )
       : null;
 
-    if (promoCode && !promotion) {
-      return c.json({ error: 'Código inválido o sin productos elegibles' }, 400);
+    if (promoCode && (!promotion || !promotion.valid)) {
+      return c.json({ error: promotion && !promotion.valid ? promotion.error : 'Código inválido o sin productos elegibles' }, 400);
     }
 
-    if (promotion?.code === 'BIENVENIDA') {
-      const previousPaidOrder = await Order.findOne({
-        customerId: user.clerkId,
-        $or: [{ paymentStatus: 'paid' }, { status: 'paid' }],
-      }).select('_id').lean();
-
-      if (previousPaidOrder) {
-        return c.json({ error: 'BIENVENIDA solo aplica en tu primera compra.' }, 400);
-      }
-    }
-
-    const discountAmount = promotion?.discountAmount ?? 0;
+    const discountAmount = promotion?.valid ? promotion.discountAmount : 0;
+    const promoCodeApplied = promotion?.valid ? promotion.code : '';
     const discountedSubtotal = roundMoney(Math.max(0, subtotal - discountAmount));
     const tax = computeItbms(lineItems, discountAmount, subtotal);
     const shippingResolved = resolveShipping(shippingMethod, discountedSubtotal);
@@ -139,7 +132,7 @@ export const checkoutRouter = new Hono<AppEnv>()
             coupon: await stripe.coupons.create({
               amount_off: Math.round(discountAmount * 100),
               currency: 'usd',
-              name: promotion?.code,
+              name: promoCodeApplied,
               duration: 'once',
             }).then((coupon) => coupon.id),
           }],
@@ -153,7 +146,7 @@ export const checkoutRouter = new Hono<AppEnv>()
             ...(freeSampleProduct ? [{ productId: freeSampleProduct.id, qty: 1, isSample: true }] : []),
           ]),
           address: JSON.stringify(address),
-          discountCode: promotion?.code || '',
+          discountCode: promoCodeApplied,
           discountAmount: String(discountAmount),
           discountedSubtotal: String(discountedSubtotal),
           tax: String(tax),

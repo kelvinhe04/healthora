@@ -2,6 +2,7 @@ import { connectDB } from './connection';
 import { Product } from './models/Product';
 import { Category } from './models/Category';
 import { isTaxExemptCategory } from '../lib/tax';
+import { seedCoupons } from './seed-coupons';
 
 const CATEGORY_FOLDER_BY_ID: Record<string, string> = {
   Vitaminas: 'vitaminas',
@@ -8279,6 +8280,7 @@ async function seed() {
     })),
   );
   await Category.insertMany(CATEGORIES);
+  await seedCoupons();
   console.log(`Seeded ${PRODUCTS.length} products and ${CATEGORIES.length} categories`);
   process.exit(0);
 }

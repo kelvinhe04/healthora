@@ -4,6 +4,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Product } from '../db/models/Product';
 import { Order } from '../db/models/Order';
 import { Review } from '../db/models/Review';
+import { seedCoupons } from '../db/seed-coupons';
 
 let mongo: MongoMemoryServer;
 let handleMcpRequest: (typeof import('./server'))['handleMcpRequest'];
@@ -54,6 +55,7 @@ describe('MCP server', () => {
     await Order.deleteMany({});
     await Review.deleteMany({});
     await seedProduct();
+    await seedCoupons();
   });
 
   test('initialize negotiates the protocol', async () => {
@@ -67,7 +69,7 @@ describe('MCP server', () => {
     expect(json.result.serverInfo.name).toBe('healthora');
   });
 
-  test('tools/list exposes all 16 registered tools', async () => {
+  test('tools/list exposes all 17 registered tools', async () => {
     const { json } = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const names = json.result.tools.map((t: { name: string }) => t.name).sort();
     expect(names).toEqual(
@@ -81,6 +83,7 @@ describe('MCP server', () => {
         'orders.getOrderItems',
         'orders.listUserOrders',
         'orders.updateOrderStatus',
+        'promotions.validateCoupon',
         'recommendations.getRelatedProducts',
         'reviews.listReviews',
         'reviews.moderateReview',
