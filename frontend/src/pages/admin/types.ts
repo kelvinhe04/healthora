@@ -8,6 +8,7 @@ import type {
   PaymentStatus,
   Product,
   ProductVariant,
+  RepurchaseReminderEntry,
 } from '../../types';
 import type { MatrixState } from './variantMatrix';
 import { emptyMatrixState } from './variantMatrix';
@@ -79,7 +80,8 @@ export type AdminPage =
   | "errors"
   | "returns"
   | "reviews"
-  | "audit";
+  | "audit"
+  | "repurchase";
 export interface AdminAppProps {
   onGoToStore: () => void;
 }
@@ -219,6 +221,13 @@ export type ErrorReportsData = {
 
 export type AuditLogsData = {
   items: AdminAuditLogEntry[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+export type RepurchaseRemindersData = {
+  items: RepurchaseReminderEntry[];
   total: number;
   page: number;
   limit: number;

@@ -23,11 +23,13 @@ import { adminReturnsRouter } from './routes/admin/adminReturns';
 import { returnsRouter } from './routes/returns';
 import { adminReviewsRouter } from './routes/admin/adminReviews';
 import { adminCategoriesRouter } from './routes/admin/adminCategories';
+import { adminRepurchaseRemindersRouter } from './routes/admin/adminRepurchaseReminders';
 import { accountRouter } from './routes/account';
 import { mcpAuth } from './mcp/auth';
 import { handleMcpRequest } from './mcp/server';
 import { sendOrderConfirmationEmail } from './lib/email';
 import { recalculateBestsellers, recalculateNew, recalculatePurchasesLastMonth } from './lib/bestsellers';
+import { scanAndSendRepurchaseReminders } from './lib/repurchase';
 import { reviewsRouter } from './routes/reviews';
 import { notificationsRouter, websocket } from './routes/notifications';
 import { newsletterRouter } from './routes/newsletter';
@@ -58,6 +60,16 @@ await clearCatalogCache();
 await recalculateBestsellers();
 await recalculateNew();
 await recalculatePurchasesLastMonth();
+
+// Recordatorio de recompra (HU-102): corre una vez al iniciar y despues cada 24h. No bloquea el
+// arranque del servidor (fire-and-forget) y se desactiva en tests para no mandar/crear datos
+// fuera de los tests que lo ejercitan explicitamente.
+if (process.env.NODE_ENV !== 'test') {
+  void scanAndSendRepurchaseReminders().catch((err) => logger.error({ err }, '[REPURCHASE] Error en el escaneo inicial'));
+  setInterval(() => {
+    scanAndSendRepurchaseReminders().catch((err) => logger.error({ err }, '[REPURCHASE] Error en el escaneo periodico'));
+  }, 24 * 60 * 60 * 1000).unref?.();
+}
 
 const app = new Hono();
 
@@ -105,6 +117,7 @@ app.route('/admin/audit-logs', adminAuditLogsRouter);
 app.route('/admin/returns', adminReturnsRouter);
 app.route('/admin/reviews', adminReviewsRouter);
 app.route('/admin/categories', adminCategoriesRouter);
+app.route('/admin/repurchase-reminders', adminRepurchaseRemindersRouter);
 
 // Remote MCP server (Model Context Protocol) - exposes read/write tools for catalog, variantes,
 // stock, ordenes, usuarios y ventas, importable desde Claude Code / Codex / conectores de

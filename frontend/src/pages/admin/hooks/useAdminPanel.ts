@@ -21,9 +21,10 @@ import {
   type ErrorReportsData,
   type OrderPaymentBucket,
   type PerformanceData,
+  type RepurchaseRemindersData,
   type SalesData,
 } from '../types';
-import { getNextFulfillmentStatus, paginateItems } from '../utils';
+import { ADMIN_PAGE_SIZE, getNextFulfillmentStatus, paginateItems } from '../utils';
 import { useAdminToken } from './useAdminToken';
 import { broadcastProductsChanged } from '../../../lib/crossTabSync';
 import { getEffectivePrice, getTotalStock } from '../../../lib/productVariants';
@@ -59,7 +60,7 @@ function orderMatchesSearch(order: AdminOrder, term: string): boolean {
   );
 }
 
-const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "performance", "errors", "audit"];
+const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "performance", "errors", "audit", "repurchase"];
 
 export function useAdminPanel({
   access,
@@ -329,6 +330,20 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     enabled: page === "errors",
   });
 
+  const [repurchaseRemindersPage, setRepurchaseRemindersPage] = useState(1);
+  const repurchaseRemindersQuery = useQuery({
+    queryKey: ["admin-repurchase-reminders", repurchaseRemindersPage],
+    queryFn: async () =>
+      api.admin.repurchaseReminders.list(await getAdminToken(), repurchaseRemindersPage, ADMIN_PAGE_SIZE) as Promise<RepurchaseRemindersData>,
+    enabled: page === "repurchase",
+  });
+  const repurchaseScanMutation = useMutation({
+    mutationFn: async () => api.admin.repurchaseReminders.scanNow(await getAdminToken()),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin-repurchase-reminders"] });
+    },
+  });
+
   const showOrdersSkeleton = useOnceLoading(
     "section_orders",
     ordersQuery.isLoading,
@@ -356,6 +371,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const showErrorsSkeleton = useOnceLoading(
     "section_errors",
     errorReportsQuery.isLoading,
+  );
+  const showRepurchaseSkeleton = useOnceLoading(
+    "section_repurchase",
+    repurchaseRemindersQuery.isLoading,
   );
 
   const orderStatusesMutation = useMutation({
@@ -943,5 +962,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     setErrorSourceFilter,
     errorReports,
     showErrorsSkeleton,
+    repurchaseRemindersPage,
+    setRepurchaseRemindersPage,
+    repurchaseReminders: repurchaseRemindersQuery.data,
+    showRepurchaseSkeleton,
+    repurchaseScanMutation,
   };
 }
