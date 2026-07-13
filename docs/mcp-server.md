@@ -19,7 +19,7 @@ Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`He
 - `wishlist.getUserWishlist` (HU-044): la wishlist es 100% client-side (`frontend/src/store/wishlistStore.ts`, Zustand + localStorage) — no existe ningún dato de servidor que un MCP tool pueda consultar. Requeriría migrar la wishlist a persistencia en base de datos primero.
 - Las tools restantes del doc (creación de cupones, devoluciones, exportación CSV, audit trail, analítica de cohortes/producto, descuentos masivos) — sus HU siguen pendientes o parciales.
 
-## Tools implementadas (17)
+## Tools implementadas (19)
 
 | Tool | HU | Qué hace | Auth |
 |---|---|---|---|
@@ -34,6 +34,7 @@ Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`He
 | `orders.getOrderItems` | HU-036 | Ítems de una orden con su variante/combo comprado | Servicio |
 | `users.updateUserRole` | HU-017 | Promueve/degrada un usuario (sincroniza con Clerk) | Servicio |
 | `analytics.getSalesReport` | HU-019 | Revenue, ticket promedio, unidades y top 5 productos en N días | Servicio |
+| `analytics.getProductAnalytics` | HU-054 | Embudo de checkout, abandono de carrito (PostHog) y errores recientes en N días | Servicio |
 | `reviews.listReviews` | HU-010 | Reseñas de un producto | Servicio |
 | `reviews.moderateReview` | HU-056 | Aprueba, oculta o elimina una reseña; recalcula el rating del producto | Servicio |
 | `recommendations.getRelatedProducts` | HU-045 | Productos relacionados (misma categoría/necesidad/marca/tag) | Servicio |

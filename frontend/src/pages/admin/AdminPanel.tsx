@@ -12,6 +12,7 @@ import { EarningsSection } from './sections/EarningsSection';
 import { ErrorsSection } from './sections/ErrorsSection';
 import { OrdersSection } from './sections/OrdersSection';
 import { PerformanceSection } from './sections/PerformanceSection';
+import { ProductAnalyticsSection } from './sections/ProductAnalyticsSection';
 import { ProductsSection } from './sections/ProductsSection';
 import { ReturnsSection } from './sections/ReturnsSection';
 import { ReviewsSection } from './sections/ReviewsSection';
@@ -112,6 +113,7 @@ function AdminPanelLayout({
         {page === "performance" && <PerformanceSection />}
         {page === "errors" && <ErrorsSection />}
         {page === "audit" && <AuditLogsSection />}
+        {page === "analytics" && <ProductAnalyticsSection />}
       </main>
 
       {/* Mounted at the layout level (not per-section) so it shows no matter which admin page

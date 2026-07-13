@@ -441,6 +441,20 @@ export const api = {
         undefined,
         token,
       ),
+    productAnalytics: (token: string, days?: number) =>
+      request<{
+        configured: boolean;
+        periodDays: number;
+        funnel: { checkoutStarted: number; checkoutCompleted: number; conversionRate: number };
+        cartAbandonment: { addedToCart: number; completedCheckout: number; abandonmentRate: number };
+        recentEvents: { event: string; timestamp: string; distinctId: string }[];
+        error?: string;
+        errors: { total: number; backend: number; frontend: number };
+      }>(
+        `/admin/analytics/product${days ? `?days=${days}` : ""}`,
+        undefined,
+        token,
+      ),
     errorReports: (token: string, source?: "backend" | "frontend") =>
       request<{ items: ErrorReport[]; total: number; page: number; limit: number }>(
         `/admin/error-reports${source ? `?source=${source}` : ""}`,

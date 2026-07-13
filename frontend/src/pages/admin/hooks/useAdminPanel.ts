@@ -21,6 +21,7 @@ import {
   type ErrorReportsData,
   type OrderPaymentBucket,
   type PerformanceData,
+  type ProductAnalyticsData,
   type SalesData,
 } from '../types';
 import { getNextFulfillmentStatus, paginateItems } from '../utils';
@@ -59,7 +60,7 @@ function orderMatchesSearch(order: AdminOrder, term: string): boolean {
   );
 }
 
-const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "performance", "errors", "audit"];
+const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "performance", "errors", "audit", "analytics"];
 
 export function useAdminPanel({
   access,
@@ -329,6 +330,14 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     enabled: page === "errors",
   });
 
+  const [analyticsPeriodDays, setAnalyticsPeriodDays] = useState(30);
+  const productAnalyticsQuery = useQuery({
+    queryKey: ["admin-product-analytics", analyticsPeriodDays],
+    queryFn: async () =>
+      api.admin.productAnalytics(await getAdminToken(), analyticsPeriodDays) as Promise<ProductAnalyticsData>,
+    enabled: page === "analytics",
+  });
+
   const showOrdersSkeleton = useOnceLoading(
     "section_orders",
     ordersQuery.isLoading,
@@ -356,6 +365,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const showErrorsSkeleton = useOnceLoading(
     "section_errors",
     errorReportsQuery.isLoading,
+  );
+  const showAnalyticsSkeleton = useOnceLoading(
+    "section_analytics",
+    productAnalyticsQuery.isLoading,
   );
 
   const orderStatusesMutation = useMutation({
@@ -943,5 +956,9 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     setErrorSourceFilter,
     errorReports,
     showErrorsSkeleton,
+    analyticsPeriodDays,
+    setAnalyticsPeriodDays,
+    productAnalytics: productAnalyticsQuery.data,
+    showAnalyticsSkeleton,
   };
 }
