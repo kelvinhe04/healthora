@@ -6,6 +6,7 @@ import { SkipToContent } from '../../components/shared/SkipToContent';
 import { NotificationCenter } from '../../components/shared/NotificationCenter';
 import type { AdminAccess } from './types';
 import { AdminPanelProvider, useAdminPanelContext } from './AdminPanelContext';
+import { AuditLogsSection } from './sections/AuditLogsSection';
 import { DashboardSection } from './sections/DashboardSection';
 import { EarningsSection } from './sections/EarningsSection';
 import { ErrorsSection } from './sections/ErrorsSection';
@@ -110,6 +111,7 @@ function AdminPanelLayout({
         {page === "earnings" && <EarningsSection />}
         {page === "performance" && <PerformanceSection />}
         {page === "errors" && <ErrorsSection />}
+        {page === "audit" && <AuditLogsSection />}
       </main>
 
       {/* Mounted at the layout level (not per-section) so it shows no matter which admin page

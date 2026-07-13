@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { requireAdmin } from '../../middleware/requireAdmin';
+import { auditAdminMutations } from '../../middleware/auditAdminAction';
 import type { AppEnv } from '../../types/hono';
 import { Category } from '../../db/models/Category';
 import {
@@ -31,6 +32,7 @@ const reassignPayloadSchema = z.object({
 
 export const adminCategoriesRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
+  .use('*', auditAdminMutations('categories'))
   .get('/', async (c) => c.json(await listAdminCategories()))
   .post('/', async (c) => {
     const parsed = await parseJson(c, categoryPayloadSchema);

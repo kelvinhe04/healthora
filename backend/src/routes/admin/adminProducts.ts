@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { requireAdmin } from "../../middleware/requireAdmin";
+import { auditAdminMutations } from "../../middleware/auditAdminAction";
 import type { AppEnv } from "../../types/hono";
 import { Product } from "../../db/models/Product";
 import { Category } from "../../db/models/Category";
@@ -164,6 +165,7 @@ const categoryDiscountRemoveSchema = z.object({
 
 export const adminProductsRouter = new Hono<AppEnv>()
   .use("*", requireAdmin)
+  .use("*", auditAdminMutations("products"))
   .get("/count", async (c) => c.json({ count: await Product.countDocuments() }))
   .get("/", async (c) => c.json(await Product.find().sort({ createdAt: -1 }).lean()))
   .post("/", async (c) => {
