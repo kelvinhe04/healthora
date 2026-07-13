@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { requireAdmin } from '../../middleware/requireAdmin';
+import { requireOwner } from '../../middleware/requireOwner';
 import type { AppEnv } from '../../types/hono';
 import { User } from '../../db/models/User';
 import { Order } from '../../db/models/Order';
@@ -97,7 +98,7 @@ export const adminUsersRouter = new Hono<AppEnv>()
 
     return c.json(combined);
   })
-  .patch('/:id/role', async (c) => {
+  .patch('/:id/role', requireOwner, async (c) => {
     const parsedParams = parseParams(c, userIdParamsSchema);
     if (!parsedParams.success) return parsedParams.response;
 
@@ -106,6 +107,12 @@ export const adminUsersRouter = new Hono<AppEnv>()
 
     const user = await User.findById(parsedParams.data.id);
     if (!user) return c.json({ error: 'Not found' }, 404);
+
+    // Defensa en profundidad: el owner no puede ser degradado por nadie, ni siquiera por si mismo
+    // vía esta ruta (aunque requireOwner ya garantiza que solo el owner llega hasta aca).
+    if (user.role === 'owner') {
+      return c.json({ error: 'No se puede cambiar el rol del owner' }, 403);
+    }
 
     const previousRole = user.role;
     user.role = parsedBody.data.role;
@@ -143,6 +150,10 @@ export const adminUsersRouter = new Hono<AppEnv>()
 
     const user = await User.findById(parsedParams.data.id);
     if (!user) return c.json({ error: 'Not found' }, 404);
+
+    if (user.role === 'owner') {
+      return c.json({ error: 'No se puede eliminar al owner' }, 403);
+    }
 
     await User.findByIdAndDelete(user._id);
 

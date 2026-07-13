@@ -215,7 +215,7 @@ export interface User {
   clerkId: string;
   name: string;
   email: string;
-  role: 'customer' | 'admin';
+  role: 'customer' | 'admin' | 'owner';
   createdAt: string;
 }
 

@@ -8,7 +8,8 @@
     "seed": "bun src/db/seed.ts",
     "seed:orders": "bun src/db/seed-orders.ts",
     "seed:reviews": "bun src/db/seed-reviews.ts",
-    "recompute-ratings": "bun src/db/recompute-ratings.ts"
+    "recompute-ratings": "bun src/db/recompute-ratings.ts",
+    "set-owner": "bun src/db/set-owner.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.3.0",

@@ -125,7 +125,7 @@ export type AdminUser = {
   _id: string;
   name?: string;
   email?: string;
-  role?: "customer" | "admin";
+  role?: "customer" | "admin" | "owner";
   orderCount?: number;
   ltv?: number;
   createdAt?: string;

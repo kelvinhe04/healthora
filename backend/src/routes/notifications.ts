@@ -38,7 +38,7 @@ function audienceFilter(clerkId: string, role: string) {
     { audience: 'user', recipientId: clerkId },
     { audience: 'all' },
   ];
-  if (role === 'admin') or.push({ audience: 'admin' });
+  if (role === 'admin' || role === 'owner') or.push({ audience: 'admin' });
   return { $or: or };
 }
 
