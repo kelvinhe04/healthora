@@ -98,7 +98,7 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
       );
     },
     onSuccess: (data) => {
-      setMessage(`${data.updated} de ${data.total} producto(s) actualizados.`);
+      setMessage(`${data.updated} de ${data.total} producto${data.total !== 1 ? 's' : ''} actualizado${data.total !== 1 ? 's' : ''}.`);
       invalidate();
     },
   });
@@ -109,7 +109,7 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
       return api.admin.products.removeCategoryDiscount(category, token!);
     },
     onSuccess: (data) => {
-      setMessage(`Descuento quitado de ${data.updated} producto(s).`);
+      setMessage(`Descuento quitado de ${data.updated} producto${data.updated !== 1 ? 's' : ''}.`);
       invalidate();
     },
   });

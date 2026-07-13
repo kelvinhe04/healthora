@@ -5,7 +5,7 @@ export const SHIPPING_METHOD_OPTIONS: { value: ShippingMethod; label: string }[]
   { value: 'pickup', label: 'Retiro en tienda' },
 ];
 
-const DELIVERY_RATE = { cost: 6.9, eta: '3-5 días' };
+const DELIVERY_RATE = { cost: 6.9, eta: '24h - 48h' };
 const FREE_SHIPPING_THRESHOLD = 50;
 
 export interface ResolvedShipping {
