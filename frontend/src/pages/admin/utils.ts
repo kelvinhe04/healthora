@@ -1,6 +1,6 @@
 import type { FulfillmentStatus, Product, ProductVariant } from '../../types';
 import type { ProductForm, VariantFormRow } from './types';
-import { fulfillmentStatusSequence } from './types';
+import { fulfillmentStatusSequence, pickupFulfillmentStatusSequence } from './types';
 import { getDefaultComboImage, getEffectivePrice, hasTwoDimensions, PRIMARY_VARIANT_TYPES, sizesFor } from '../../lib/productVariants';
 import { composeFromMatrix, decomposeToMatrix, emptyMatrixState } from './variantMatrix';
 import { CATEGORY_TO_NEED } from '../../lib/needs';
@@ -9,10 +9,12 @@ export const ADMIN_PAGE_SIZE = 10;
 
 export function getNextFulfillmentStatus(
   current: FulfillmentStatus | undefined,
+  shippingMethod?: 'delivery' | 'pickup',
 ): FulfillmentStatus | null {
-  const idx = fulfillmentStatusSequence.indexOf(current || 'unfulfilled');
-  return idx >= 0 && idx < fulfillmentStatusSequence.length - 1
-    ? fulfillmentStatusSequence[idx + 1]
+  const sequence = shippingMethod === 'pickup' ? pickupFulfillmentStatusSequence : fulfillmentStatusSequence;
+  const idx = sequence.indexOf(current || 'unfulfilled');
+  return idx >= 0 && idx < sequence.length - 1
+    ? sequence[idx + 1]
     : null;
 }
 
@@ -48,6 +50,8 @@ export function productToForm(p: Product): ProductForm {
     short: p.short || '',
     price: String(p.price),
     priceBefore: p.priceBefore ? String(p.priceBefore) : '',
+    discountStartsAt: p.discountStartsAt ? p.discountStartsAt.slice(0, 10) : '',
+    discountEndsAt: p.discountEndsAt ? p.discountEndsAt.slice(0, 10) : '',
     tag: p.tag || '',
     stock: String(p.stock),
     active: p.active,
@@ -71,6 +75,11 @@ export function productToForm(p: Product): ProductForm {
           label: v.label,
           type: v.type,
           price: String(v.price),
+          priceBefore: v.priceBefore ? String(v.priceBefore) : '',
+          discountStartsAt: v.discountStartsAt ? v.discountStartsAt.slice(0, 10) : '',
+          discountEndsAt: v.discountEndsAt ? v.discountEndsAt.slice(0, 10) : '',
+          categoryDiscount: Boolean(v.categoryDiscount),
+          ...(v.categoryDiscountRestore ? { categoryDiscountRestore: v.categoryDiscountRestore } : {}),
           stock: String(v.stock),
           sku: v.sku || '',
           color: v.color || '',
@@ -101,6 +110,13 @@ function variantRowToPayload(row: VariantFormRow, usedIds: Set<string>): Product
     ...(row.images[0] ? { imageUrl: row.images[0] } : {}),
     ...(row.images.length ? { images: row.images } : {}),
     ...(row.isDefault ? { isDefault: true } : {}),
+    ...(row.priceBefore.trim() ? { priceBefore: parseFloat(row.priceBefore) } : {}),
+    ...(row.priceBefore.trim() && row.discountStartsAt ? { discountStartsAt: row.discountStartsAt } : {}),
+    ...(row.priceBefore.trim() && row.discountEndsAt ? { discountEndsAt: row.discountEndsAt } : {}),
+    ...(row.priceBefore.trim() && row.categoryDiscount ? { categoryDiscount: true } : {}),
+    ...(row.priceBefore.trim() && row.categoryDiscount && row.categoryDiscountRestore
+      ? { categoryDiscountRestore: row.categoryDiscountRestore }
+      : {}),
   };
 }
 
@@ -181,7 +197,9 @@ export function formToPayload(f: ProductForm): Partial<Product> {
     need: CATEGORY_TO_NEED[f.category.trim()] ?? '',
     short: f.short.trim(),
     price,
-    ...(f.priceBefore ? { priceBefore: parseFloat(f.priceBefore) } : {}),
+    priceBefore: f.priceBefore ? parseFloat(f.priceBefore) : null,
+    discountStartsAt: f.priceBefore && f.discountStartsAt ? f.discountStartsAt : null,
+    discountEndsAt: f.priceBefore && f.discountEndsAt ? f.discountEndsAt : null,
     ...(f.tag ? { tag: normalizeTag(f.tag) } : {}),
     stock,
     active: f.active,

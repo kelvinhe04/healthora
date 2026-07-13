@@ -54,8 +54,39 @@ No se tocó **nada** en el rango HU-088 a HU-091 (4 historias: Pulido responsive
 
 ---
 
-## 2 issues más trabajadas en esta sesión
+## Más issues trabajadas en esta sesión
 
-_(se completa esta sección al terminar cada una)_
+### 1. HU-092 (#126) — Descuentos automáticos por producto y categoría
+
+**PR:** [#192](https://github.com/kelvinhe04/healthora/pull/192) · rama `feat/hu-092-descuentos-automaticos`
+
+- El modelo `Product` ya tenía `price`/`priceBefore`, y el catálogo/ficha ya renderizaban el tachado condicionalmente — pero `priceBefore` **no era editable desde el admin** (ni individual ni por categoría), y no existía concepto de vigencia (fecha inicio/fin).
+- Se agregó `discountStartsAt`/`discountEndsAt` al modelo, un helper `backend/src/lib/discounts.ts` que resuelve si el descuento está vigente **en el momento de la consulta** (evita necesitar un cron job para revertir el precio cuando expira — este proyecto no tiene infraestructura de jobs en background todavía, HU-079 sigue pendiente), y se conectó en 2 puntos sin tocar `checkout.ts`: `products.ts` (catálogo/ficha pública) y `resolveVariantPricing` (precio real cobrado, vía `buildPaidLineItem`).
+- Nuevo modal admin "Descuento por categoría" (aplicar/quitar de una sola vez) + inputs de precio-antes-de-descuento y vigencia en el editor de producto individual.
+- 11 tests unitarios nuevos para el helper de vigencia (`discounts.test.ts`).
+- **Fix posterior (mismo PR, antes de mergear)**: el descuento quedaba guardado pero no se reflejaba en el cliente — el cache del catálogo público (`backend/src/lib/cache.ts`) nunca se invalidaba tras editar un producto/descuento desde el admin, así que servía la respuesta vieja hasta que el TTL (60s) expiraba solo. Se agregó `clearCatalogCache()` tras crear/editar/borrar un producto y tras aplicar/quitar un descuento por categoría. De paso se agregó `priceBefore`/vigencia a nivel de **variante simple** (antes solo existía a nivel de producto), reusando la misma lógica de vigencia.
+- **Aclaración pedida durante la sesión**: esto NO duplica el editor de precio por variante/combinación (HU-032, ya existente) — ese es edición fina, manual, un producto a la vez; HU-092 es una campaña masiva por categoría con vigencia automática. Son complementarios.
+- A partir de esta aclaración se agregó al backlog: **HU-049 (#53) Gestión de cupones y descuentos (UI admin)** — hoy los cupones (`BIENVENIDA`, etc.) están hardcodeados en `backend/src/lib/promotions.ts` sin ninguna UI para administrarlos. Pendiente para la próxima ronda.
+
+### 2. HU-041 (#45) — Devoluciones y reembolsos
+
+**PR:** [#193](https://github.com/kelvinhe04/healthora/pull/193) · rama `feat/hu-041-devoluciones-reembolsos`
+
+- Nuevo modelo `Return` con estados `requested → approved → in_transit → refunded` (o `rejected`), ventana de 30 días desde `order.createdAt` (mismo plazo que ya se menciona en el email de confirmación de compra).
+- El reembolso es real contra Stripe (`stripe.refunds.create` sobre el `payment_intent` de la orden), no solo un cambio de estado cosmético; la orden pasa a `paymentStatus: 'refunded'`.
+- Cada cambio de estado dispara un email al cliente (`sendReturnStatusEmail`, nuevo en `lib/email.ts`).
+- Cliente: botón "Solicitar devolución" en el detalle de pedido (`Orders.tsx`), solo visible si la orden es elegible. Admin: nueva sección "Devoluciones" (filtro por estado, aprobar/rechazar/avanzar).
+- 3 tests unitarios (ventana de devolución) + 3 de integración (flujo feliz con reembolso simulado, fuera de ventana, solicitud duplicada).
+- **Gap conocido, documentado, no bloqueante**: no se implementó la MCP tool `returns.approveReturn` (documentada en el `.docx`, sección 6) — mismo gap que HU-092 con `promotions.applyDiscount`. La cobertura MCP del proyecto sigue en 12/24 tools (`docs/mcp-server.md`).
+
+### 3. Revisión manual de PR #188 (HU-038/HU-100) — se simplificó el alcance
+
+Durante la prueba manual del checkout (zona/velocidad de envío), el feedback fue: muy poca diferencia perceptible entre las ventanas de tiempo estándar/express, y en general "agrega mucha capa de error y validación" para lo que hace falta ahora. Se widened primero las ventanas (3-4 días vs mismo día/24h en capital, 5-7 vs 2-3 en interior) y se agregó autodetección de zona por ciudad (`guessZoneFromCity`) — pero la decisión final fue **eliminar la diferenciación por completo**:
+
+- `shippingZone` (capital/interior/pickup) × `shippingSpeed` (estándar/express) → un solo campo `shippingMethod: 'delivery' | 'pickup'`.
+- Envío a domicilio: tarifa plana $6.90, gratis sobre $50 (igual al comportamiento original pre-feature). Retiro en tienda: siempre gratis.
+- Se eliminó `guessZoneFromCity` (ya no hace falta autodetectar nada) y toda la UI de 2 niveles (zona + velocidad) se reemplazó por 2 botones simples.
+- De paso, corregido durante la misma revisión: placeholder de teléfono a formato panameño, y un bug real encontrado al probar manualmente — el campo de teléfono **no limitaba el largo del input** (se podía escribir un número de cualquier longitud). Nuevo `frontend/src/lib/phone.ts` (`formatPanamaPhone`) limita a 8 dígitos con guión automático, aplicado en los 3 formularios que piden teléfono (Checkout, editar dirección de un pedido, direcciones guardadas).
+- Contexto para quien lea esto después: la vuelta de diseño (zona+velocidad → binario simple) pasó completa dentro del mismo PR #188 sin mergear nada intermedio — no quedó "código muerto" de la versión con zona/velocidad, se reemplazó limpio.
 
 <!-- issue-log-placeholder -->

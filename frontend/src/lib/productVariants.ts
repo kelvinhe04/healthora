@@ -110,6 +110,52 @@ export function getDefaultComboImage(product: Product): string | undefined {
   return images?.[0] ?? variant.imageUrl ?? size?.imageUrl;
 }
 
+type DiscountSource = { priceBefore: number; discountStartsAt?: string | null; discountEndsAt?: string | null };
+
+/** A combo's own `priceBeforeBySize` entry wins over its primary variant's flat `priceBefore`,
+ * which in turn wins over the product's - mirroring the `??` fallback the rest of this file
+ * already uses for price/stock. A combo doesn't carry its own vigencia dates; it shares its
+ * primary variant's `discountStartsAt`/`discountEndsAt`. */
+function resolveDiscountSource(variant: ProductVariant | null, size: ProductVariant | null, product: Product): DiscountSource | null {
+  const comboPriceBefore = size ? variant?.priceBeforeBySize?.[size.id] : undefined;
+  if (comboPriceBefore != null) {
+    return { priceBefore: comboPriceBefore, discountStartsAt: variant?.discountStartsAt, discountEndsAt: variant?.discountEndsAt };
+  }
+  if (variant?.priceBefore != null) {
+    return { priceBefore: variant.priceBefore, discountStartsAt: variant.discountStartsAt, discountEndsAt: variant.discountEndsAt };
+  }
+  if (product.priceBefore != null) {
+    return { priceBefore: product.priceBefore, discountStartsAt: product.discountStartsAt, discountEndsAt: product.discountEndsAt };
+  }
+  return null;
+}
+
+// America/Panama has no DST, so it's always a fixed UTC-5 offset - see the backend's
+// `lib/discounts.ts` for why a date-only bound needs this shift before comparing against `now`.
+const PANAMA_UTC_OFFSET_MS = 5 * 60 * 60 * 1000;
+
+function panamaStartOfDay(dateOnly: string): Date {
+  return new Date(new Date(dateOnly).getTime() + PANAMA_UTC_OFFSET_MS);
+}
+
+function panamaEndOfDay(dateOnly: string): Date {
+  return new Date(panamaStartOfDay(dateOnly).getTime() + 24 * 60 * 60 * 1000 - 1);
+}
+
+/** Mirrors the backend's `lib/discounts.ts` `isDiscountActive` - kept in sync manually since this
+ * runs client-side (catalog cards render from whatever the API already sent, but the admin table
+ * reads the raw, un-scrubbed `/admin/products` list, so it needs its own vigencia check to avoid
+ * showing an expired discount as if it were still live). */
+function isDiscountActive(source: DiscountSource, now: Date = new Date()): boolean {
+  if (source.discountStartsAt && now < panamaStartOfDay(source.discountStartsAt)) return false;
+  if (source.discountEndsAt && now > panamaEndOfDay(source.discountEndsAt)) return false;
+  return true;
+}
+
+/** The real, current selling price - always `price` (or its override/size sum), regardless of any
+ * discount's vigencia. `priceBefore` + vigencia only control whether `getEffectivePriceBefore`
+ * shows a "was $X" badge; they never change what's actually charged (see the backend's
+ * `resolveVariantPricing`, which mirrors this). */
 export function getEffectivePrice(product: Product): number {
   const { variant, size } = pickDefaultCombo(product);
   const override = size ? variant?.priceBySize?.[size.id] : undefined;
@@ -118,8 +164,10 @@ export function getEffectivePrice(product: Product): number {
 }
 
 export function getEffectivePriceBefore(product: Product): number | undefined {
-  const { variant } = pickDefaultCombo(product);
-  return variant?.priceBefore ?? product.priceBefore;
+  const { variant, size } = pickDefaultCombo(product);
+  const discount = resolveDiscountSource(variant, size, product);
+  if (!discount) return undefined;
+  return isDiscountActive(discount) ? discount.priceBefore : undefined;
 }
 
 /** Reconstructs the exact ProductVariant (single or combo) that a persisted `variantId` refers to, for reorder/cart flows. */

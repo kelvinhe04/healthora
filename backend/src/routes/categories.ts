@@ -8,7 +8,7 @@ export const categoriesRouter = new Hono().get('/', async (c) => {
   const cached = await cacheGet<unknown[]>(cacheKey);
   if (cached && cached.length > 0) return cacheableJson(c, cached, 'catalogList');
 
-  const categories = await Category.find().lean();
+  const categories = await Category.find({ active: { $ne: false } }).sort({ label: 1 }).lean();
   if (categories.length > 0) await cacheSet(cacheKey, categories);
   return cacheableJson(c, categories, 'catalogList');
 });

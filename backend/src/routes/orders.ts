@@ -8,20 +8,22 @@ import { normalizeOrder } from '../lib/orderStatus';
 import { stripe } from '../lib/stripe';
 import { sendOrderConfirmationEmail } from '../lib/email';
 import {
-  addressSchema,
   cartItemSchema,
   emailField,
   moneyFromInput,
   objectIdSchema,
   optionalTextField,
+  orderAddressSchema,
   parseJson,
   parseParams,
   parseQuery,
+  requireFullAddress,
+  shippingMethodSchema,
   textField,
 } from '../lib/validation';
 import { buildPaidLineItem, resolveVariantImage } from '../lib/productVariants';
 import { decrementStock } from '../lib/inventory';
-import { notifyUser } from '../lib/realtime';
+import { notifyAdmins, notifyUser } from '../lib/realtime';
 import { scanAndNotifyLowStock } from '../lib/lowStock';
 
 const ordersQuerySchema = z.object({
@@ -46,6 +48,9 @@ const paidSessionMetadataSchema = z.object({
   discountAmount: moneyFromInput().default(0),
   tax: moneyFromInput().default(0),
   shipping: moneyFromInput().default(0),
+  shippingMethod: shippingMethodSchema.optional(),
+  shippingLabel: optionalTextField(160),
+  shippingEta: optionalTextField(80),
 });
 
 function parseSessionJsonMetadata<T>(value: string, schema: z.ZodType<T>) {
@@ -104,11 +109,18 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
 
   const metadata = parsedMetadata.data;
   const parsedCartItems = parseSessionJsonMetadata(metadata.cartItems, z.array(paidSessionCartItemSchema).min(1).max(100));
-  const parsedAddress = parseSessionJsonMetadata(metadata.address, addressSchema);
+  const parsedAddress = parseSessionJsonMetadata(metadata.address, orderAddressSchema);
   if (!parsedCartItems.success || !parsedAddress.success) return null;
 
   const cartItems = parsedCartItems.data as CheckoutCartItem[];
-  const address = parsedAddress.data as CheckoutAddress;
+  const parsedAddressData = parsedAddress.data as { name: string; phone: string; address?: string; city?: string; postal?: string };
+  const address: CheckoutAddress = {
+    name: parsedAddressData.name,
+    phone: parsedAddressData.phone,
+    address: parsedAddressData.address || '',
+    city: parsedAddressData.city || '',
+    postal: parsedAddressData.postal || '',
+  };
   const productIds = [...new Set(cartItems.map((item) => item.productId))];
   const products = await Product.find({ id: { $in: productIds }, active: true }).lean();
   if (products.length !== productIds.length) return null;
@@ -139,6 +151,9 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
     discountAmount,
     tax,
     shipping,
+    shippingMethod: metadata.shippingMethod,
+    shippingLabel: metadata.shippingLabel,
+    shippingEta: metadata.shippingEta,
     total,
     paymentStatus: 'paid',
     fulfillmentStatus: 'unfulfilled',
@@ -170,6 +185,9 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
         discountAmount,
         tax,
         shipping,
+        shippingLabel: metadata.shippingLabel,
+        shippingEta: metadata.shippingEta,
+        shippingMethod: metadata.shippingMethod,
         total,
         address,
         createdAt: createdOrder.createdAt,
@@ -194,6 +212,18 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
     });
   } catch (notifyError) {
     console.error('[ORDERS] order_paid notification failed:', notifyError);
+  }
+
+  try {
+    await notifyAdmins({
+      type: 'new_order',
+      title: 'Nuevo pedido',
+      body: `${metadata.customerName || 'Un cliente'} hizo un pedido de $${total.toFixed(2)} (#${createdOrder._id.toString().slice(-8).toUpperCase()}).`,
+      link: '/admin?section=orders',
+      data: { orderId: createdOrder._id.toString(), total },
+    });
+  } catch (notifyError) {
+    console.error('[ORDERS] new_order admin notification failed:', notifyError);
   }
 
   try {
@@ -307,6 +337,9 @@ export const ordersRouter = new Hono<AppEnv>()
     if (!['unfulfilled', 'processing'].includes(order.fulfillmentStatus as string)) {
       return c.json({ error: 'El pedido ya no puede cancelarse en este estado' }, 400);
     }
+    if (order.replacesOrderId) {
+      return c.json({ error: 'No puedes cancelar un pedido de reemplazo de una devolución' }, 400);
+    }
 
     const updated = await Order.findByIdAndUpdate(
       parsedParams.data.id,
@@ -330,17 +363,18 @@ export const ordersRouter = new Hono<AppEnv>()
       return c.json({ error: 'Solo puedes editar la dirección antes de que el pedido sea procesado' }, 400);
     }
 
-    const parsedBody = await parseJson(c, addressSchema);
+    const parsedBody = await parseJson(c, orderAddressSchema);
     if (!parsedBody.success) return parsedBody.response;
     const body = parsedBody.data;
     const { name, phone, address, city, postal } = body;
-    if (!name?.trim() || !phone?.trim() || !address?.trim() || !city?.trim() || !postal?.trim()) {
-      return c.json({ error: 'Todos los campos de dirección son requeridos' }, 400);
+    const isPickup = order.shippingMethod === 'pickup';
+    if (!name?.trim() || !phone?.trim() || (!isPickup && (!address?.trim() || !city?.trim() || !postal?.trim()))) {
+      return c.json({ error: 'Todos los campos requeridos deben completarse' }, 400);
     }
 
     const updated = await Order.findByIdAndUpdate(
       parsedParams.data.id,
-      { address: { name: name.trim(), phone: phone.trim(), address: address.trim(), city: city.trim(), postal: postal.trim() } },
+      { address: { name: name.trim(), phone: phone.trim(), address: address?.trim() || '', city: city?.trim() || '', postal: postal?.trim() || '' } },
       { returnDocument: 'after' }
     ).lean();
 

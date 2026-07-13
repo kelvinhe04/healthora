@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Product, ProductVariant } from '../../types';
 import { useRecentlyViewedStore } from '../../store/recentlyViewedStore';
 import { useProducts } from '../../hooks/useProducts';
-import { ProductCard } from './ProductCard';
+import { ProductRow } from './ProductRow';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 interface RecentlyViewedSectionProps {
@@ -23,24 +23,20 @@ export function RecentlyViewedSection({ onOpenProduct, onAdd, excludeProductId }
       .filter((id) => id !== excludeProductId)
       .map((id) => byId.get(id))
       .filter((p): p is Product => Boolean(p))
-      .slice(0, 8);
+      .slice(0, 12);
   }, [allProducts, excludeProductId, productIds]);
 
   if (products.length === 0) return null;
 
   return (
-    <section style={{ marginTop: isSmall ? 48 : 64 }}>
+    <section id="vistos-recientemente" style={{ marginTop: isSmall ? 48 : 64 }}>
       <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 10 }}>
         Continúa explorando
       </div>
       <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isSmall ? 32 : 40, letterSpacing: '-0.03em', margin: '0 0 24px', fontWeight: 400 }}>
         Vistos <em style={{ color: 'var(--green)' }}>recientemente</em>
       </h2>
-      <div style={{ display: 'grid', gridTemplateColumns: isSmall ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 20 }}>
-        {products.map((p) => (
-          <ProductCard key={p.id} product={p} onClick={onOpenProduct} onAdd={onAdd} sectionKey="recientes" />
-        ))}
-      </div>
+      <ProductRow products={products} onOpenProduct={onOpenProduct} onAdd={onAdd} sectionKey="recientes" />
     </section>
   );
 }

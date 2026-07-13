@@ -1,7 +1,8 @@
 import { connectDB } from './connection';
 import { Order } from './models/Order';
 import { Product } from './models/Product';
-import { recalculateBestsellers, recalculateNew } from '../lib/bestsellers';
+import { Return } from './models/Return';
+import { recalculateBestsellers, recalculateNew, NEW_TOP_N } from '../lib/bestsellers';
 import { resolveVariantPricing, resolveVariantImage } from '../lib/productVariants';
 
 type SeedProduct = {
@@ -48,6 +49,9 @@ function pickVariantId(product: SeedProduct): string | undefined {
   return randomChoice(variants).id;
 }
 
+// Mezcla nombres hispanos comunes en Panama con apellidos afroantillanos (herencia de la
+// construccion del Canal) y chino-panamenos (una de las comunidades mas grandes del pais) -
+// ambos igual de representativos que los apellidos espanoles.
 const NAMES = [
   'Sofia Martinez', 'Diego Hernandez', 'Valentina Garcia', 'Mateo Rodriguez', 'Camila Lopez',
   'Lucas Fernandez', 'Isabella Gonzalez', 'Santiago Perez', 'Luna Sanchez', 'Benjamin Torres',
@@ -55,30 +59,41 @@ const NAMES = [
   'Andres Castro', 'Catalina Ortiz', 'Felipe Morales', 'Antonia Romero', 'Joaquin Herrera',
   'Gabriel Ramos', 'Natalia Aguilar', 'Ricardo Mendoza', 'Karina Herrera', 'Eduardo Cruz',
   'Renata Flores', 'Oscar Ortega', 'Paula Reyes', 'Arturo Vargas', 'Diana Estrada',
+  'Kevin Chen', 'Ana Wong', 'Marcus Barrow', 'Denise Grant', 'Roberto Bernard',
+  'Yariela Prescott', 'Steven Chin', 'Ingrid Stephenson', 'Alvin Wu', 'Yolanda Watson',
 ];
 
+// Provincias/distritos de Panama - metro de Ciudad de Panama con mas peso (donde vive la mayoria
+// de la poblacion) y algunas cabeceras del interior. Los codigos postales son representativos del
+// formato panameno (4 digitos), no un listado oficial exacto.
 const CITIES = [
-  { city: 'Ciudad de México', postal: '06600' },
-  { city: 'Guadalajara', postal: '44100' },
-  { city: 'Monterrey', postal: '64000' },
-  { city: 'Puebla', postal: '72000' },
-  { city: 'Tijuana', postal: '22000' },
-  { city: 'León', postal: '37000' },
-  { city: 'Juárez', postal: '32000' },
-  { city: 'Zapopan', postal: '45100' },
-  { city: 'Mérida', postal: '97000' },
-  { city: 'San Luis Potosí', postal: '78000' },
-  { city: 'Querétaro', postal: '76000' },
-  { city: 'Aguascalientes', postal: '20000' },
+  { city: 'Ciudad de Panamá', postal: '0801' },
+  { city: 'Ciudad de Panamá', postal: '0819' },
+  { city: 'San Miguelito', postal: '0824' },
+  { city: 'Arraiján', postal: '0508' },
+  { city: 'La Chorrera', postal: '0501' },
+  { city: 'Tocumen', postal: '0834' },
+  { city: 'Colón', postal: '0301' },
+  { city: 'David', postal: '0427' },
+  { city: 'Santiago', postal: '0601' },
+  { city: 'Chitré', postal: '0701' },
+  { city: 'Las Tablas', postal: '0710' },
+  { city: 'Penonomé', postal: '0901' },
 ];
 
 const STREETS = [
-  'Av. Insurgentes Sur 1234', 'Av. Paulista 567', 'Av. 9 de Julio 890', 'Av. Reforma 234',
-  'Calle Mayor 345', 'Av. Libertadores 678', 'Calle Principal 901', 'Av. del Parque 234',
-  'Blvd. del Sol 567', 'Av. del Centro 890', 'Calle Granada 123', 'Av.',
+  'Calle 50, Bella Vista', 'Vía España, El Cangrejo', 'Av. Balboa, Punta Pacífica',
+  'Vía Israel, San Francisco', 'Av. Central, Casco Antiguo', 'Calle 74, San Francisco',
+  'Vía Cincuentenario, Costa del Este', 'Av. Ricardo J. Alfaro, Betania',
+  'Calle Uruguay, Bella Vista', 'Vía Brasil, Bella Vista', 'Av. Ramón Arias, El Dorado',
+  'Calle Primera, Obarrio', 'Av. Domingo Díaz, Juan Díaz', 'Calle José de Fábrega, Penonomé',
+  'Av. Central, David', 'Calle 3ra, Santiago',
 ];
 
 const FULFILLMENT_STATUSES = ['unfulfilled', 'processing', 'shipped', 'delivered'];
+// Retiro en tienda nunca pasa por "shipped", y su ultimo paso real es "picked_up" (el cliente ya
+// se lo llevo) - "delivered" ahi solo significa "listo para retirar" (ver pickupFulfillmentStatusSequence).
+const PICKUP_FULFILLMENT_STATUSES = ['unfulfilled', 'processing', 'delivered', 'picked_up'];
 const STATUS_VALUES = ['pending_payment', 'paid', 'processing', 'shipped', 'delivered'];
 
 function randomInt(min, max) {
@@ -89,9 +104,17 @@ function randomChoice<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+/** 8-digit Panama local number formatted "XXXX-XXXX", same shape as formatPanamaPhone on the
+ * frontend - mobile prefixes (6xxx) since that's what most customers give at checkout. */
+function randomPanamaPhone(): string {
+  return `6${randomInt(100, 999)}-${String(randomInt(0, 9999)).padStart(4, '0')}`;
+}
+
 function generateOrderData(index: number, products: SeedProduct[], today: Date) {
   const orderDate = new Date(today);
-  const daysAgo = randomInt(0, 180);
+  // Starts at 1, not 0 - seed data should never date an order "today", so today stays empty for
+  // whatever the person testing does live instead of blending in with generated history.
+  const daysAgo = randomInt(1, 180);
   orderDate.setDate(orderDate.getDate() - daysAgo);
   orderDate.setHours(randomInt(8, 20), randomInt(0, 59), randomInt(0, 59));
 
@@ -124,14 +147,21 @@ function generateOrderData(index: number, products: SeedProduct[], today: Date) 
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
   const tax = parseFloat((subtotal * 0.07).toFixed(2));
-  const shipping = subtotal >= 50 ? 0 : 6.90;
+
+  // ~1 in 4 orders is a store pickup, matching resolveShipping's real rules: free, "Retiro en
+  // tienda", ready in 24h, no delivery address needed (see orderAddressSchema).
+  const shippingMethod: 'delivery' | 'pickup' = Math.random() < 0.25 ? 'pickup' : 'delivery';
+  const shipping = shippingMethod === 'pickup' ? 0 : subtotal >= 50 ? 0 : 6.90;
+  const shippingLabel = shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio';
+  const shippingEta = shippingMethod === 'pickup' ? 'Listo en 24h' : '3-5 días';
   const total = parseFloat((subtotal + tax + shipping).toFixed(2));
 
   const name = randomChoice(NAMES);
   const cityInfo = randomChoice(CITIES);
+  const phone = randomPanamaPhone();
 
-  const fulfillmentStatus = randomChoice(FULFILLMENT_STATUSES);
-  const status = fulfillmentStatus === 'delivered' ? 'delivered' : fulfillmentStatus === 'processing' ? 'processing' : fulfillmentStatus === 'shipped' ? 'shipped' : 'paid';
+  const fulfillmentStatus = randomChoice(shippingMethod === 'pickup' ? PICKUP_FULFILLMENT_STATUSES : FULFILLMENT_STATUSES);
+  const status = fulfillmentStatus === 'delivered' || fulfillmentStatus === 'picked_up' ? 'delivered' : fulfillmentStatus === 'processing' ? 'processing' : fulfillmentStatus === 'shipped' ? 'shipped' : 'paid';
 
   const customerId = `user_${String(index + 1).padStart(4, '0')}`;
   const email = `${name.toLowerCase().replace(/ /g, '.').normalize("NFD").replace(/[\u0300-\u036f]/g, "")}@email.com`;
@@ -144,18 +174,23 @@ function generateOrderData(index: number, products: SeedProduct[], today: Date) 
     subtotal,
     tax,
     shipping,
+    shippingMethod,
+    shippingLabel,
+    shippingEta,
     total,
     paymentStatus: 'paid',
     fulfillmentStatus,
     status,
     stripeSessionId: `cs_test_${Math.random().toString(36).substring(2, 18)}`,
-    address: {
-      name: name,
-      phone: `+52 55 ${randomInt(1000, 9999)} ${randomInt(1000, 9999)}`,
-      address: `${randomChoice(STREETS)}, ${randomInt(1, 999)}`,
-      city: cityInfo.city,
-      postal: cityInfo.postal,
-    },
+    address: shippingMethod === 'pickup'
+      ? { name, phone }
+      : {
+          name,
+          phone,
+          address: `${randomChoice(STREETS)}, Casa ${randomInt(1, 199)}`,
+          city: cityInfo.city,
+          postal: cityInfo.postal,
+        },
     createdAt: orderDate,
     updatedAt: orderDate,
   };
@@ -176,6 +211,9 @@ async function seedOrders() {
   console.log(`Found ${products.length} products in database`);
 
   await Order.deleteMany({});
+  // Every Return points back at an Order (orderId) - reseeding orders orphans any existing
+  // returns (they'd reference orders that no longer exist), so they have to go together.
+  await Return.deleteMany({});
 
   const orders = [];
   const ORDER_COUNT = 180;
@@ -188,12 +226,12 @@ async function seedOrders() {
   await Order.insertMany(orders);
   console.log(`Seeded ${ORDER_COUNT} historical orders (last 6 months with real products)`);
 
-  // Stamp 4 random products with recent createdAt so recalculateNew() picks them up
+  // Stamp NEW_TOP_N random products with recent createdAt so recalculateNew() picks them up
   // Use the native collection to bypass Mongoose's createdAt immutability
-  const shuffled = [...products].sort(() => Math.random() - 0.5).slice(0, 4);
+  const shuffled = [...products].sort(() => Math.random() - 0.5).slice(0, NEW_TOP_N);
   const now = Date.now();
   for (let i = 0; i < shuffled.length; i++) {
-    const daysAgo = i; // 0, 1, 2, 3 days ago
+    const daysAgo = i + 1; // 1, 2, 3, ... days ago - same "never today" rule as the orders above.
     const recentDate = new Date(now - daysAgo * 24 * 60 * 60 * 1000);
     await Product.collection.updateOne({ id: shuffled[i].id }, { $set: { createdAt: recentDate } });
   }

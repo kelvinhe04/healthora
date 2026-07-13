@@ -4,6 +4,7 @@ import { Product } from '../db/models/Product';
 import { escapeRegex, parseParams, parseQuery, productIdSchema, textField } from '../lib/validation';
 import { cacheGet, cacheSet } from '../lib/cache';
 import { cacheableJson } from '../lib/httpCache';
+import { withEffectiveDiscount, type DiscountableProduct } from '../lib/discounts';
 
 const productQuerySchema = z.object({
   category: textField(120).optional(),
@@ -48,12 +49,12 @@ export const productsRouter = new Hono()
     else q = q.sort({ sortOrder: 1 });
 
     const cacheKey = `catalog:products:${JSON.stringify(query)}`;
-    const cached = await cacheGet<unknown[]>(cacheKey);
-    if (cached && cached.length > 0) return cacheableJson(c, cached, 'catalogList');
+    const cached = await cacheGet<(DiscountableProduct & Record<string, unknown>)[]>(cacheKey);
+    if (cached && cached.length > 0) return cacheableJson(c, cached.map((p) => withEffectiveDiscount(p)), 'catalogList');
 
     const result = await q.lean();
     if (result.length > 0) await cacheSet(cacheKey, result);
-    return cacheableJson(c, result, 'catalogList');
+    return cacheableJson(c, result.map((p) => withEffectiveDiscount(p)), 'catalogList');
   })
   .get("/count", async (c) => {
     const cacheKey = 'catalog:products:count';
@@ -71,5 +72,5 @@ export const productsRouter = new Hono()
 
     const p = await Product.findOne({ id: parsed.data.id, active: true }).lean();
     if (!p) return c.json({ error: 'Not found' }, 404);
-    return cacheableJson(c, p, 'catalogDetail');
+    return cacheableJson(c, withEffectiveDiscount(p), 'catalogDetail');
   });

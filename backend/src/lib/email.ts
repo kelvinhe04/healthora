@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { carrierLabel, getTrackingUrl } from './tracking';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -68,6 +69,9 @@ type EmailData = {
   discountAmount?: number;
   tax: number;
   shipping: number;
+  shippingLabel?: string;
+  shippingEta?: string;
+  shippingMethod?: string;
   total: number;
   address: Address;
   createdAt: Date;
@@ -81,6 +85,9 @@ type OrderStatusEmailData = {
   items: OrderItem[];
   total: number;
   address?: Address;
+  shippingMethod?: string;
+  carrier?: string;
+  trackingNumber?: string;
 };
 
 type NewsletterEmailData = {
@@ -112,6 +119,14 @@ const FULFILLMENT_EMAIL_COPY: Record<FulfillmentStatus, { label: string; title: 
     message: 'Marcamos tu pedido como entregado. Esperamos que disfrutes tus productos.',
     detail: 'Si algo no llegó correctamente, contáctanos para ayudarte.',
   },
+  // Only reachable for pickup orders in practice (see pickupFulfillmentStatusSequence) - a
+  // delivery order never transitions here, but the Record needs an entry for every status.
+  picked_up: {
+    label: 'Retirado',
+    title: 'Confirmamos tu retiro',
+    message: 'Confirmamos que retiraste tu pedido en tienda. ¡Gracias por comprar en Healthora!',
+    detail: 'Si algo no llegó correctamente, contáctanos para ayudarte.',
+  },
   cancelled: {
     label: 'Cancelado',
     title: 'Tu pedido fue cancelado',
@@ -119,6 +134,23 @@ const FULFILLMENT_EMAIL_COPY: Record<FulfillmentStatus, { label: string; title: 
     detail: 'Si tienes dudas sobre esta cancelación, nuestro equipo de soporte puede ayudarte.',
   },
 };
+
+/** Retiro en tienda no se "entrega": queda listo para que el cliente pase a recogerlo. */
+const PICKUP_FULFILLMENT_EMAIL_COPY_OVERRIDES: Partial<Record<FulfillmentStatus, { label: string; title: string; message: string; detail: string }>> = {
+  delivered: {
+    label: 'Listo para retirar',
+    title: 'Tu pedido está listo para retirar',
+    message: 'Tu pedido ya está preparado y disponible en nuestra tienda.',
+    detail: 'Puedes pasar a recogerlo con tu número de pedido en nuestro horario de atención.',
+  },
+};
+
+function getFulfillmentEmailCopy(fulfillmentStatus: FulfillmentStatus, shippingMethod?: string) {
+  if (shippingMethod === 'pickup') {
+    return PICKUP_FULFILLMENT_EMAIL_COPY_OVERRIDES[fulfillmentStatus] || FULFILLMENT_EMAIL_COPY[fulfillmentStatus];
+  }
+  return FULFILLMENT_EMAIL_COPY[fulfillmentStatus];
+}
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
@@ -238,13 +270,20 @@ function buildCompactProductList(items: OrderItem[]): string {
     .join('');
 }
 
-function buildFulfillmentSteps(currentStatus: FulfillmentStatus): string {
-  const steps: Array<{ status: FulfillmentStatus; label: string }> = [
-    { status: 'unfulfilled', label: 'Pendiente' },
-    { status: 'processing', label: 'Preparando' },
-    { status: 'shipped', label: 'Enviada' },
-    { status: 'delivered', label: 'Entregada' },
-  ];
+function buildFulfillmentSteps(currentStatus: FulfillmentStatus, shippingMethod?: string): string {
+  // Retiro en tienda no pasa por "Enviada": se prepara y queda listo para retirar.
+  const steps: Array<{ status: FulfillmentStatus; label: string }> = shippingMethod === 'pickup'
+    ? [
+      { status: 'unfulfilled', label: 'Pendiente' },
+      { status: 'processing', label: 'Preparando' },
+      { status: 'delivered', label: 'Listo para retirar' },
+    ]
+    : [
+      { status: 'unfulfilled', label: 'Pendiente' },
+      { status: 'processing', label: 'Preparando' },
+      { status: 'shipped', label: 'Enviada' },
+      { status: 'delivered', label: 'Entregada' },
+    ];
   const currentIndex = steps.findIndex((step) => step.status === currentStatus);
 
   if (currentStatus === 'cancelled') {
@@ -266,15 +305,13 @@ function buildFulfillmentSteps(currentStatus: FulfillmentStatus): string {
       const lineActive = index < currentIndex; // connector after this step is active if next step is also done
 
       const stepCell = `
-        <td align="center" style="vertical-align: top; width: 30px;">
+        <td align="center" style="vertical-align: top; width: 90px;">
           <table cellpadding="0" cellspacing="0" border="0" align="center">
             <tr>
               <td width="30" height="30" align="center" style="width: 30px; height: 30px; border-radius: 999px; background-color: ${isActive ? '#213a27' : '#dfe8e1'}; color: ${isActive ? '#c8ee2e' : '#7b8d81'}; font-size: 13px; line-height: 30px; font-weight: 800;">${index + 1}</td>
             </tr>
-            <tr>
-              <td align="center" style="padding-top: 6px; font-size: 11px; line-height: 14px; color: ${isActive ? '#213a27' : '#7b8d81'}; font-weight: 700; white-space: nowrap;">${step.label}</td>
-            </tr>
           </table>
+          <p style="margin: 6px 0 0 0; font-size: 11px; line-height: 14px; color: ${isActive ? '#213a27' : '#7b8d81'}; font-weight: 700; text-align: center;">${step.label}</p>
         </td>`;
 
       const connectorCell = isLast ? '' : `
@@ -300,7 +337,8 @@ function buildFulfillmentSteps(currentStatus: FulfillmentStatus): string {
 }
 
 export async function sendOrderConfirmationEmail(data: EmailData): Promise<void> {
-  const { customerName, customerEmail, orderId, items, subtotal, discountCode, discountAmount = 0, tax, shipping, total, address, createdAt } = data;
+  const { customerName, customerEmail, orderId, items, subtotal, discountCode, discountAmount = 0, tax, shipping, shippingLabel, shippingEta, shippingMethod, total, address, createdAt } = data;
+  const isPickup = shippingMethod === 'pickup';
 
   if (process.env.NODE_ENV === 'test') {
     return;
@@ -329,7 +367,7 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
 
   const safeCustomerName = escapeHtml(customerName);
   const safeOrderNumber = escapeHtml(orderId.slice(-8).toUpperCase());
-  const ordersUrl = `${getFrontendUrl()}/?view=orders`;
+  const ordersUrl = `${getFrontendUrl()}/orders?orderId=${orderId}`;
 
   const html = `
 <!DOCTYPE html>
@@ -424,9 +462,10 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
                 <tr>
                   <td style="padding: 14px 20px; border-top: 1px solid #e8efe9;">
                     <p style="margin: 0; font-size: 14px; color: #64756a;">Envío</p>
+                    ${shippingLabel ? `<p style="margin: 3px 0 0 0; font-size: 12px; color: #8a9a90;">${escapeHtml(shippingLabel)}${shippingEta ? ` · ${escapeHtml(shippingEta)}` : ''}</p>` : ''}
                   </td>
                   <td align="right" style="padding: 14px 20px; border-top: 1px solid #e8efe9;">
-                    <p style="margin: 0; font-size: 14px; color: #213a27; font-weight: 700;">${formatPrice(shipping)}</p>
+                    <p style="margin: 0; font-size: 14px; color: #213a27; font-weight: 700;">${shipping === 0 ? 'Gratis' : formatPrice(shipping)}</p>
                   </td>
                 </tr>
                 <tr>
@@ -451,12 +490,12 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
 
           <tr>
             <td style="padding: 0 38px 30px 38px;">
-              <p style="margin: 0 0 12px 0; font-size: 12px; color: #11845b; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">Dirección de envío</p>
+              <p style="margin: 0 0 12px 0; font-size: 12px; color: #11845b; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">${isPickup ? 'Retiro en tienda' : 'Dirección de envío'}</p>
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fbfdfb; border-radius: 18px; border: 1px solid #dfe8e1;">
                 <tr>
                   <td style="padding: 22px 24px;">
                     <p style="margin: 0; font-size: 16px; color: #213a27; font-weight: 800;">${escapeHtml(address.name)}</p>
-                    <p style="margin: 9px 0 0 0; font-size: 14px; line-height: 22px; color: #64756a;">${escapeHtml(address.city)}, ${escapeHtml(address.address)}, ${escapeHtml(address.postal)}</p>
+                    ${isPickup ? '' : `<p style="margin: 9px 0 0 0; font-size: 14px; line-height: 22px; color: #64756a;">${escapeHtml(address.city)}, ${escapeHtml(address.address)}, ${escapeHtml(address.postal)}</p>`}
                     <p style="margin: 5px 0 0 0; font-size: 14px; line-height: 21px; color: #64756a;">Tel. ${escapeHtml(address.phone)}</p>
                   </td>
                 </tr>
@@ -489,7 +528,7 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
                       Email: <strong>soporte@healthora.com</strong>
                     </p>
                     <p style="margin: 0 0 16px 0; font-size: 14px; color: #213a27;">
-                      Teléfono: <strong>+52 800 123 4567</strong>
+                      Teléfono: <strong>+507 800-1234</strong>
                     </p>
                     <p style="margin: 0; font-size: 13px; color: #64756a; line-height: 1.6; padding-top: 15px; border-top: 1px solid #dfe8e1;">
                       <strong>Política de devoluciones:</strong> Puedes devolver productos en un plazo de 30 días desde la recepción si el producto está sellado y en su empaque original.
@@ -542,27 +581,47 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
 }
 
 export async function sendOrderStatusUpdateEmail(data: OrderStatusEmailData): Promise<void> {
-  const { customerName, customerEmail, orderId, fulfillmentStatus, items, total, address } = data;
+  const { customerName, customerEmail, orderId, fulfillmentStatus, items, total, address, shippingMethod, carrier, trackingNumber } = data;
 
   if (!customerEmail) {
     console.error('[EMAIL] No customer email provided, skipping status update email');
     return;
   }
 
-  const copy = FULFILLMENT_EMAIL_COPY[fulfillmentStatus];
+  const copy = getFulfillmentEmailCopy(fulfillmentStatus, shippingMethod);
   const safeCustomerName = escapeHtml(customerName || 'cliente');
   const safeOrderNumber = escapeHtml(orderId.slice(-8).toUpperCase());
-  const ordersUrl = `${getFrontendUrl()}/?view=orders`;
+  const ordersUrl = `${getFrontendUrl()}/orders?orderId=${orderId}`;
+  const trackingUrl = getTrackingUrl(carrier, trackingNumber);
+  const trackingBlock = fulfillmentStatus === 'shipped' && trackingNumber
+    ? `
+      <tr>
+        <td style="padding: 0 38px 30px 38px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4fbef; border-radius: 18px; border: 1px solid #cfeac5;">
+            <tr>
+              <td style="padding: 20px 24px;">
+                <p style="margin: 0; font-size: 11px; color: #53725e; text-transform: uppercase; letter-spacing: 1.4px; font-weight: 800;">${escapeHtml(carrierLabel(carrier) || 'Courier')}</p>
+                <p style="margin: 7px 0 0 0; font-size: 20px; font-weight: 800; color: #213a27; letter-spacing: -0.3px;">
+                  ${trackingUrl ? `<a href="${trackingUrl}" style="color: #11845b; text-decoration: none;">${escapeHtml(trackingNumber)}</a>` : escapeHtml(trackingNumber)}
+                </p>
+                <p style="margin: 8px 0 0 0; font-size: 13px; color: #64756a;">Número de guía de tu envío${trackingUrl ? ' · toca para rastrearlo' : ''}</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    `
+    : '';
   const addressBlock = address
     ? `
       <tr>
         <td style="padding: 0 38px 30px 38px;">
-          <p style="margin: 0 0 12px 0; font-size: 12px; color: #11845b; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">Dirección de envío</p>
+          <p style="margin: 0 0 12px 0; font-size: 12px; color: #11845b; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">${shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Dirección de envío'}</p>
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fbfdfb; border-radius: 18px; border: 1px solid #dfe8e1;">
             <tr>
               <td style="padding: 22px 24px;">
                 <p style="margin: 0; font-size: 16px; color: #213a27; font-weight: 800;">${escapeHtml(address.name)}</p>
-                <p style="margin: 9px 0 0 0; font-size: 14px; line-height: 22px; color: #64756a;">${escapeHtml(address.city)}, ${escapeHtml(address.address)}, ${escapeHtml(address.postal)}</p>
+                ${shippingMethod === 'pickup' ? '' : `<p style="margin: 9px 0 0 0; font-size: 14px; line-height: 22px; color: #64756a;">${escapeHtml(address.city)}, ${escapeHtml(address.address)}, ${escapeHtml(address.postal)}</p>`}
                 <p style="margin: 5px 0 0 0; font-size: 14px; line-height: 21px; color: #64756a;">Tel. ${escapeHtml(address.phone)}</p>
               </td>
             </tr>
@@ -624,9 +683,11 @@ export async function sendOrderStatusUpdateEmail(data: OrderStatusEmailData): Pr
 
           <tr>
             <td style="padding: 0 38px 30px 38px;">
-              ${buildFulfillmentSteps(fulfillmentStatus)}
+              ${buildFulfillmentSteps(fulfillmentStatus, shippingMethod)}
             </td>
           </tr>
+
+          ${trackingBlock}
 
           <tr>
             <td style="padding: 0 38px 30px 38px;">
@@ -775,4 +836,156 @@ export async function sendNewsletterSubscriptionEmail(data: NewsletterEmailData)
   });
 
   console.log('[EMAIL] Newsletter subscription sent to:', data.email, 'MessageId:', info.messageId);
+}
+
+export const RETURN_STATUS_COPY: Record<string, { label: string; message: string }> = {
+  requested: { label: 'Solicitud recibida', message: 'recibimos tu solicitud de devolución y la estamos revisando.' },
+  approved: { label: 'Devolución aprobada', message: 'aprobamos tu devolución. Un mensajero pasará a recoger el producto en la dirección de tu pedido.' },
+  in_transit: { label: 'Producto en tránsito', message: 'registramos que tu producto está en camino de vuelta a nuestro almacén.' },
+  in_review: { label: 'Producto en revisión', message: 'recibimos tu producto y lo estamos revisando antes de continuar.' },
+  refunded: { label: 'Reembolso procesado', message: 'procesamos tu reembolso. Debería reflejarse en tu método de pago en los próximos días.' },
+  replaced: { label: 'Reemplazo en camino', message: 'confirmamos que te llegó el producto equivocado. Ya estamos preparando el envío del producto correcto, sin costo adicional.' },
+  rejected: { label: 'Devolución rechazada', message: 'no pudimos aprobar tu solicitud de devolución. Contáctanos si tienes preguntas.' },
+};
+
+// Used instead of RETURN_STATUS_COPY.rejected when the product was already back in our hands and
+// didn't match the original claim - see `rejectedAfterReview` on the Return model.
+const REJECTED_AFTER_REVIEW_COPY = {
+  label: 'Devolución rechazada',
+  message: 'revisamos el producto que recibimos y no coincide con lo reportado en tu solicitud, así que no pudimos aprobar la devolución. Contáctanos si tienes preguntas.',
+};
+
+// Sent once the admin confirms a `rejectedAfterReview` product physically left the store back
+// towards the customer - see `returnedToCustomerAt` on the Return model. Not a `status` value of
+// its own (the Return stays `rejected`), so this is looked up directly by
+// PATCH /admin/returns/:id/return-to-customer rather than through getReturnStatusCopy.
+export const RETURNED_TO_CUSTOMER_COPY: Record<'courier_pickup' | 'store_dropoff', { label: string; message: string }> = {
+  courier_pickup: {
+    label: 'Te devolvimos tu producto',
+    message: 'como no coincidía con lo reportado en tu solicitud de devolución, te lo enviamos de vuelta a la dirección de tu pedido.',
+  },
+  store_dropoff: {
+    label: 'Tu producto está listo para recoger',
+    message: 'como no coincidía con lo reportado en tu solicitud de devolución, ya puedes pasar a la tienda a recogerlo.',
+  },
+};
+
+export function getReturnedToCustomerCopy(returnMethod?: string) {
+  return RETURNED_TO_CUSTOMER_COPY[returnMethod === 'store_dropoff' ? 'store_dropoff' : 'courier_pickup'];
+}
+
+/** Un pedido de retiro en tienda nunca tuvo mensajero de ida, así que tampoco lo tiene de vuelta:
+ * el cliente trae el producto él mismo, sin paso "en tránsito". */
+const STORE_DROPOFF_RETURN_STATUS_COPY_OVERRIDES: Partial<Record<string, { label: string; message: string }>> = {
+  approved: { label: 'Devolución aprobada', message: 'aprobamos tu devolución. Puedes traer el producto a nuestra tienda cuando gustes, dentro de la ventana de devolución.' },
+  // Nada "en camino" via mensajero aquí, ni "te avisaremos cuando esté listo" - un reemplazo en
+  // tienda se crea directo en "listo para retirar" (ver isStorePickup en lib/returns.ts), porque
+  // se recoge en el mismo mostrador donde se entregó la devolución, no hay preparación de por medio.
+  replaced: { label: 'Reemplazo en tienda', message: 'confirmamos que te llegó el producto equivocado. Ya tenemos el producto correcto listo para que pases a recogerlo a la tienda, sin costo adicional.' },
+};
+
+/** All the messages above are written lowercase-first on purpose, to continue "Hola {name}, ..."
+ * in the status email body - but the in-app/push notification shows the same message standalone
+ * (no "Hola" lead-in), so it needs capitalizing there. Email usage stays untouched. */
+export function capitalizeSentence(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+export function getReturnStatusCopy(status: string, returnMethod?: string, rejectedAfterReview?: boolean) {
+  if (status === 'rejected' && rejectedAfterReview) return REJECTED_AFTER_REVIEW_COPY;
+  if (returnMethod === 'store_dropoff') {
+    return STORE_DROPOFF_RETURN_STATUS_COPY_OVERRIDES[status] || RETURN_STATUS_COPY[status];
+  }
+  return RETURN_STATUS_COPY[status];
+}
+
+export interface ReturnStatusEmailData {
+  customerName: string;
+  customerEmail: string;
+  orderId: string;
+  status: 'requested' | 'approved' | 'in_transit' | 'in_review' | 'refunded' | 'replaced' | 'rejected';
+  refundAmount: number;
+  returnMethod?: 'courier_pickup' | 'store_dropoff';
+  rejectedAfterReview?: boolean;
+  // Bypasses getReturnStatusCopy entirely - used for copy that isn't tied to a `status` value on
+  // the Return itself (e.g. RETURNED_TO_CUSTOMER_COPY, sent while the return stays `rejected`).
+  copyOverride?: { label: string; message: string };
+}
+
+export async function sendReturnStatusEmail(data: ReturnStatusEmailData): Promise<void> {
+  const { customerName, customerEmail, orderId, status, refundAmount, returnMethod, rejectedAfterReview, copyOverride } = data;
+  if (!customerEmail) {
+    console.error('[EMAIL] No customer email provided, skipping return status email');
+    return;
+  }
+
+  const copy = copyOverride ?? getReturnStatusCopy(status, returnMethod, rejectedAfterReview);
+  const safeCustomerName = escapeHtml(customerName || 'cliente');
+  const safeOrderNumber = escapeHtml(orderId.slice(-8).toUpperCase());
+  const ordersUrl = `${getFrontendUrl()}/?view=orders`;
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ${EMAIL_FONT_HEAD}
+  <title>Actualización de tu devolución - Healthora</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #eef6ef; font-family: ${EMAIL_SANS_FONT};">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #eef6ef;">
+    <tr>
+      <td align="center" style="padding: 34px 14px;">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 24px; overflow: hidden; border: 1px solid #dce9df;">
+          <tr>
+            <td style="background-color: #213a27; background-image: linear-gradient(135deg, #213a27 0%, #0f7c59 62%, #c8ee2e 160%); padding: 34px 38px;">
+              <p class="healthora-serif" style="margin: 0; font-family: ${EMAIL_SERIF_FONT}; font-size: 28px; font-weight: 400; color: #ffffff;">Healthora</p>
+              <h1 style="margin: 20px 0 0 0; font-size: 26px; line-height: 34px; font-weight: 800; color: #ffffff;">${escapeHtml(copy.label)}</h1>
+              <p style="margin: 10px 0 0 0; font-size: 15px; line-height: 23px; color: #e4f7e9;">Hola ${safeCustomerName}, ${escapeHtml(copy.message)}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 28px 38px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4fbef; border-radius: 18px; border: 1px solid #cfeac5;">
+                <tr>
+                  <td style="padding: 20px 22px;">
+                    <p style="margin: 0; font-size: 11px; color: #53725e; text-transform: uppercase; letter-spacing: 1.4px; font-weight: 800;">Pedido</p>
+                    <p style="margin: 6px 0 0 0; font-size: 18px; font-weight: 800; color: #213a27;">#${safeOrderNumber}</p>
+                    ${status === 'refunded' ? `<p style="margin: 10px 0 0 0; font-size: 14px; color: #64756a;">Monto reembolsado: <strong>${formatPrice(refundAmount)}</strong></p>` : ''}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 38px 32px 38px;" align="center">
+              <a href="${ordersUrl}" style="display: inline-block; background-color: #213a27; color: #c8ee2e; text-decoration: none; padding: 16px 34px; border-radius: 999px; font-size: 15px; font-weight: 800;">Ver mi pedido</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 28px 40px; background-color: #213a27;" align="center">
+              <p class="healthora-serif" style="margin: 0 0 6px 0; font-family: ${EMAIL_SERIF_FONT}; font-size: 24px; color: #ffffff;">Healthora</p>
+              <p style="margin: 0; font-size: 12px; color: #aebdaf;">© 2026 Healthora. Todos los derechos reservados.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+
+  try {
+    const info = await transporter.sendMail({
+      from: getSmtpFrom(),
+      to: customerEmail,
+      subject: `${copy.label}: pedido #${orderId.slice(-8).toUpperCase()} - Healthora`,
+      html,
+    });
+    console.log('[EMAIL] Return status update sent to:', customerEmail, 'MessageId:', info.messageId);
+  } catch (err) {
+    console.error('[EMAIL] Error sending return status email:', err);
+  }
 }

@@ -9,6 +9,9 @@ import { useBreakpoint } from '../../../hooks/useBreakpoint';
 import {
   fulfillmentStatusLabels,
   fulfillmentStatusOptions,
+  getOrderPaymentBucket,
+  orderPaymentStatusOptions,
+  orderShippingMethodOptions,
   type AdminAccess,
   type AdminOrder,
   type AdminPage,
@@ -16,6 +19,7 @@ import {
   type DashboardData,
   type EarningsData,
   type ErrorReportsData,
+  type OrderPaymentBucket,
   type PerformanceData,
   type SalesData,
 } from '../types';
@@ -37,6 +41,8 @@ export type UserSort = { key: UserSortKey | null; dir: 'asc' | 'desc' };
 
 export type AdminPanelState = ReturnType<typeof useAdminPanel>;
 
+const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "performance", "errors"];
+
 export function useAdminPanel({
   access,
   onGoToStore,
@@ -56,7 +62,7 @@ export function useAdminPanel({
   const [page, setPage] = useState<AdminPage>(() => {
     const sp = new URLSearchParams(window.location.search);
     const urlPage = sp.get("section") as AdminPage | null;
-    if (urlPage && ["dashboard","orders","products","users","sales","earnings","performance","errors"].includes(urlPage)) return urlPage;
+    if (urlPage && ADMIN_PAGES.includes(urlPage)) return urlPage;
     return (localStorage.getItem("healthora_admin_page") as AdminPage) || "dashboard";
   });
 
@@ -80,7 +86,20 @@ export function useAdminPanel({
       return next;
     }, { replace: true });
   }, [page]);
+
+  // Picks up a `?section=` change that happens *after* mount without a full page reload - e.g. a
+  // notification link (`/admin?section=returns`) clicked while already inside /admin. The effect
+  // above only writes page -> URL; without this, the URL bar would update but the visible section
+  // wouldn't, since `page` was already initialized once and nothing else read the URL back.
+  useEffect(() => {
+    const urlPage = searchParams.get("section") as AdminPage | null;
+    if (urlPage && ADMIN_PAGES.includes(urlPage) && urlPage !== page) {
+      setPage(urlPage);
+    }
+  }, [searchParams]);
 const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
+  const [orderShippingMethodFilter, setOrderShippingMethodFilter] = useState("");
+  const [orderPaymentFilter, setOrderPaymentFilter] = useState<OrderPaymentBucket>("");
   const [usersLoading, setUsersLoading] = useState(true);
 
   useEffect(() => {
@@ -188,6 +207,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     customerName: string;
     from: FulfillmentStatus;
     to: FulfillmentStatus;
+    shippingMethod?: 'delivery' | 'pickup';
   } | null>(null);
 
   useEffect(() => {
@@ -214,6 +234,21 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const productsCountQuery = useQuery({
     queryKey: ["admin-products-count"],
     queryFn: async () => api.admin.products.count(await getAdminToken()),
+  });
+  const returnsCountQuery = useQuery({
+    queryKey: ["admin-returns-count"],
+    queryFn: async () => api.admin.returns.count(await getAdminToken()),
+  });
+  // Only needed to cross-reference orders with their return (Pedidos' Pago column reflects a
+  // return in progress instead of the plain payment status) - no need to fetch it outside that page.
+  const ordersReturnsQuery = useQuery({
+    queryKey: ["admin", "returns"],
+    queryFn: async () => api.admin.returns.list(await getAdminToken()),
+    enabled: page === "orders",
+  });
+  const reviewsCountQuery = useQuery({
+    queryKey: ["admin-reviews-count"],
+    queryFn: async () => api.admin.reviews.count(await getAdminToken()),
   });
   const reviewsSummaryQuery = useReviewsSummary(page === "products");
   const reviewsSummary = reviewsSummaryQuery.data ?? {};
@@ -475,6 +510,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const orders = ordersQuery.data || [];
   const products = productsQuery.data || [];
   const users = usersQuery.data || [];
+  const orderReturnByOrderId = useMemo(
+    () => new Map((ordersReturnsQuery.data ?? []).map((r) => [r.orderId, r] as const)),
+    [ordersReturnsQuery.data],
+  );
   const customers = useMemo(
     () => users.filter((u) => u.role === "customer"),
     [users],
@@ -494,7 +533,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
 
   useEffect(() => {
     setOrdersPage(1);
-  }, [orderFulfillmentFilter, orderSearch, orderSort]);
+  }, [orderFulfillmentFilter, orderShippingMethodFilter, orderPaymentFilter, orderSearch, orderSort]);
 
   useEffect(() => {
     setProductsPage(1);
@@ -510,36 +549,33 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     }
   }, [page]);
 
+  const { data: adminCategories = [] } = useQuery({
+    queryKey: ['admin-categories'],
+    queryFn: async () => api.admin.categories.list(await getAdminToken()),
+  });
+
   const sidebarCounts = useMemo(
     () => ({
       orders: dashboardData?.kpis.totalOrders ?? orders.length,
       products: productsCountQuery.data?.count ?? 0,
+      categories: adminCategories.length,
       users: customers.length,
+      returns: returnsCountQuery.data?.count ?? 0,
+      reviews: reviewsCountQuery.data?.count ?? 0,
     }),
-    [dashboardData, orders.length, productsCountQuery.data, customers.length],
+    [dashboardData, orders.length, productsCountQuery.data, adminCategories.length, customers.length, returnsCountQuery.data, reviewsCountQuery.data],
   );
 
-  const STATIC_CATEGORIES = [
-    "Vitaminas",
-    "Cuidado personal",
-    "Cuidado del bebé",
-    "Suplementos de Bienestar",
-    "Salud de la piel",
-    "Fitness",
-    "Medicamentos",
-    "Hidratantes",
-    "Fragancias",
-    "Maquillaje",
-  ];
-
   const categories = useMemo(() => {
+    const fromApi = adminCategories
+      .filter((c) => c.active !== false)
+      .map((c) => c.id);
     const fromProducts =
       products.length > 0
-        ? [...new Set(products.map((p) => p.category))].sort()
+        ? [...new Set(products.map((p) => p.category))]
         : [];
-    const allCategories = new Set([...STATIC_CATEGORIES, ...fromProducts]);
-    return Array.from(allCategories).sort();
-  }, [products]);
+    return Array.from(new Set([...fromApi, ...fromProducts])).sort();
+  }, [adminCategories, products]);
 
   // Products matching only the search term (not the category filter) — used to count how many
   // products each category pill would show if selected, so the count reflects the active search
@@ -641,6 +677,34 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     [ordersForFulfillmentCounts],
   );
 
+  const orderShippingMethodCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        orderShippingMethodOptions.map((method) => [
+          method,
+          method
+            ? ordersForFulfillmentCounts.filter((o) => (o.shippingMethod || "delivery") === method).length
+            : ordersForFulfillmentCounts.length,
+        ]),
+      ),
+    [ordersForFulfillmentCounts],
+  );
+
+  const orderPaymentCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        orderPaymentStatusOptions.map((bucket) => [
+          bucket,
+          bucket
+            ? ordersForFulfillmentCounts.filter(
+                (o) => getOrderPaymentBucket(o, orderReturnByOrderId.get(o._id)) === bucket,
+              ).length
+            : ordersForFulfillmentCounts.length,
+        ]),
+      ),
+    [ordersForFulfillmentCounts, orderReturnByOrderId],
+  );
+
   const displayedOrders = useMemo(() => {
     const term = orderSearch.toLowerCase();
     const filtered = (orders || []).filter((o) => {
@@ -652,7 +716,13 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       const matchFulfillment =
         !orderFulfillmentFilter ||
         o.fulfillmentStatus === orderFulfillmentFilter;
-      return matchSearch && matchFulfillment;
+      const matchShippingMethod =
+        !orderShippingMethodFilter ||
+        (o.shippingMethod || "delivery") === orderShippingMethodFilter;
+      const matchPayment =
+        !orderPaymentFilter ||
+        getOrderPaymentBucket(o, orderReturnByOrderId.get(o._id)) === orderPaymentFilter;
+      return matchSearch && matchFulfillment && matchShippingMethod && matchPayment;
     });
     if (!orderSort.key) return filtered;
     const sorted = filtered.slice();
@@ -667,7 +737,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       });
     }
     return sorted;
-  }, [orders, orderSearch, orderFulfillmentFilter, orderSort]);
+  }, [orders, orderSearch, orderFulfillmentFilter, orderShippingMethodFilter, orderPaymentFilter, orderReturnByOrderId, orderSort]);
 
   const paginatedOrders = useMemo(
     () => paginateItems(displayedOrders, ordersPage),
@@ -747,11 +817,19 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     orderFulfillmentCounts,
     fulfillmentStatusOptions,
     fulfillmentStatusLabels,
+    orderShippingMethodFilter,
+    setOrderShippingMethodFilter,
+    orderShippingMethodCounts,
+    orderShippingMethodOptions,
+    orderPaymentFilter,
+    setOrderPaymentFilter,
+    orderPaymentCounts,
     orderSort,
     toggleOrderSort,
     clearOrderSort,
     displayedOrders,
     paginatedOrders,
+    orderReturnByOrderId,
     ordersPage,
     setOrdersPage,
     orderStatusDrafts,

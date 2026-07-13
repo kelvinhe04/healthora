@@ -7,7 +7,17 @@ describe('notificationPresentation', () => {
     expect(notificationPresentation('order_shipped').icon).toBe('truck');
     expect(notificationPresentation('low_stock').accent).toBe('var(--coral)');
     expect(notificationPresentation('new_review').icon).toBe('star');
+    expect(notificationPresentation('return_requested')).toEqual({ icon: 'arrow-left', accent: 'var(--coral)' });
+    expect(notificationPresentation('return_status')).toEqual({ icon: 'arrow-left', accent: 'var(--ink)' });
+    expect(notificationPresentation('new_order')).toEqual({ icon: 'bag', accent: 'var(--green)' });
     expect(notificationPresentation('broadcast').icon).toBe('bell');
+  });
+
+  test('order_status distinguishes delivered/picked_up from other fulfillment updates', () => {
+    expect(notificationPresentation('order_status').icon).toBe('receipt');
+    expect(notificationPresentation('order_status', { fulfillmentStatus: 'processing' }).icon).toBe('receipt');
+    expect(notificationPresentation('order_status', { fulfillmentStatus: 'delivered' })).toEqual({ icon: 'package', accent: 'var(--green)' });
+    expect(notificationPresentation('order_status', { fulfillmentStatus: 'picked_up' })).toEqual({ icon: 'package', accent: 'var(--green)' });
   });
 });
 

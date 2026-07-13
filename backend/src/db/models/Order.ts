@@ -16,6 +16,7 @@ const OrderSchema = new Schema(
         variantId: String,
         variantLabel: String,
         isSample: { type: Boolean, default: false },
+        taxExempt: { type: Boolean, default: false },
       },
     ],
     subtotal: Number,
@@ -23,6 +24,11 @@ const OrderSchema = new Schema(
     discountAmount: { type: Number, default: 0 },
     tax: Number,
     shipping: Number,
+    shippingMethod: { type: String, enum: ['delivery', 'pickup'] },
+    shippingLabel: String,
+    shippingEta: String,
+    carrier: String,
+    trackingNumber: String,
     total: Number,
     paymentStatus: {
       type: String,
@@ -31,7 +37,7 @@ const OrderSchema = new Schema(
     },
     fulfillmentStatus: {
       type: String,
-      enum: ['unfulfilled', 'processing', 'shipped', 'delivered', 'cancelled'],
+      enum: ['unfulfilled', 'processing', 'shipped', 'delivered', 'picked_up', 'cancelled'],
       default: 'unfulfilled',
     },
     status: {
@@ -41,6 +47,9 @@ const OrderSchema = new Schema(
     },
     stripeSessionId: { type: String, unique: true, sparse: true },
     stripePaymentIntentId: String,
+    // Set when this order is a no-charge replacement shipment created by resolving a Return as
+    // "replaced" instead of refunded (wrong/damaged item) - see lib/returns.ts.
+    replacesOrderId: { type: Schema.Types.ObjectId, ref: 'Order' },
     address: {
       name: String,
       phone: String,

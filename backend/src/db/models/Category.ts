@@ -5,6 +5,7 @@ const CategorySchema = new Schema({
   label: { type: String, required: true },
   sub: String,
   color: String,
+  active: { type: Boolean, default: true },
 });
 
 export const Category = model('Category', CategorySchema);

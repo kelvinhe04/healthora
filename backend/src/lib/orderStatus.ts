@@ -1,5 +1,9 @@
 export type PaymentStatus = 'pending_payment' | 'paid' | 'cancelled' | 'refunded';
-export type FulfillmentStatus = 'unfulfilled' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+// `picked_up` only applies to pickup orders: `delivered` means "ready at the store", `picked_up`
+// means the customer actually came and got it - see combineOrderStatus below for how it folds
+// into the legacy `status` field, and routes/returns.ts for why the distinction matters (a return
+// only makes sense once the customer actually has the product).
+export type FulfillmentStatus = 'unfulfilled' | 'processing' | 'shipped' | 'delivered' | 'picked_up' | 'cancelled';
 export type LegacyOrderStatus = 'pending_payment' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
 
 export function deriveStatusesFromLegacy(status?: string | null): { paymentStatus: PaymentStatus; fulfillmentStatus: FulfillmentStatus } {
@@ -26,7 +30,10 @@ export function combineOrderStatus(paymentStatus: PaymentStatus, fulfillmentStat
   if (paymentStatus === 'refunded') return 'refunded';
   if (paymentStatus === 'cancelled' || fulfillmentStatus === 'cancelled') return 'cancelled';
   if (paymentStatus === 'pending_payment') return 'pending_payment';
-  if (fulfillmentStatus === 'delivered') return 'delivered';
+  // Same coarse legacy bucket as `delivered` - both mean "fulfillment is done" for anything that
+  // only reads the legacy `status` (e.g. STATUS_CFG coloring). The delivered-vs-picked_up
+  // distinction lives in `fulfillmentStatus` itself for callers that need it.
+  if (fulfillmentStatus === 'picked_up' || fulfillmentStatus === 'delivered') return 'delivered';
   if (fulfillmentStatus === 'shipped') return 'shipped';
   if (fulfillmentStatus === 'processing') return 'processing';
   return 'paid';

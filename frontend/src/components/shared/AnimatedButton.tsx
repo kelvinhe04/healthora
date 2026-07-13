@@ -51,6 +51,7 @@ export function AnimatedButton({
   ...props
 }: AnimatedButtonProps) {
   const [hovered, setHovered] = useState(false);
+  const [pressed, setPressed] = useState(false);
 
   const base: CSSProperties = {
     position: 'relative',
@@ -68,8 +69,8 @@ export function AnimatedButton({
     outline: 'none',
     whiteSpace: 'nowrap',
     width: full ? '100%' : 'auto',
-    transition: 'background 180ms ease, filter 180ms ease, transform 180ms ease',
-    transform: hovered && !disabled ? 'translateY(-1px)' : 'translateY(0)',
+    transition: 'background 180ms ease, filter 180ms ease, transform 120ms ease',
+    transform: disabled ? 'translateY(0) scale(1)' : pressed ? 'scale(0.96)' : hovered ? 'translateY(-1px)' : 'translateY(0) scale(1)',
     ...sizeStyles[size],
     ...variantBase[variant],
     ...(hovered && !disabled ? variantHover[variant] : {}),
@@ -83,7 +84,9 @@ export function AnimatedButton({
       disabled={disabled}
       style={base}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => { setHovered(false); setPressed(false); }}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
     >
       <span>{text}</span>
       {icon && <span style={{ display: 'inline-flex', flexShrink: 0 }}>{icon}</span>}
