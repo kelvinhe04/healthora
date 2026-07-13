@@ -99,6 +99,8 @@ export interface Category {
   label: string;
   sub: string;
   color: string;
+  active?: boolean;
+  productCount?: number;
 }
 
 export interface CartItem {

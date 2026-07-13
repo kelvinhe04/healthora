@@ -60,6 +60,7 @@ export type AdminPage =
   | "dashboard"
   | "orders"
   | "products"
+  | "categories"
   | "users"
   | "sales"
   | "earnings"

@@ -207,6 +207,47 @@ export const api = {
         { method: "PATCH", body: JSON.stringify(body) },
         token,
       ),
+    categories: {
+      list: (token: string) =>
+        request<Category[]>("/admin/categories", undefined, token),
+      create: (
+        data: { id: string; label: string; sub?: string; color?: string; active?: boolean },
+        token: string,
+      ) =>
+        request<{ created: boolean; category: Category; productsReassigned: number }>(
+          "/admin/categories",
+          { method: "POST", body: JSON.stringify(data) },
+          token,
+        ),
+      update: (
+        id: string,
+        data: {
+          label?: string;
+          sub?: string;
+          color?: string;
+          active?: boolean;
+          newId?: string;
+        },
+        token: string,
+      ) =>
+        request<{ created: boolean; category: Category; productsReassigned: number }>(
+          `/admin/categories/${encodeURIComponent(id)}`,
+          { method: "PUT", body: JSON.stringify(data) },
+          token,
+        ),
+      reassignProducts: (id: string, toCategoryId: string, token: string) =>
+        request<{ fromId: string; toId: string; productsReassigned: number }>(
+          `/admin/categories/${encodeURIComponent(id)}/reassign-products`,
+          { method: "PATCH", body: JSON.stringify({ toCategoryId }) },
+          token,
+        ),
+      remove: (id: string, token: string, reassignTo?: string) =>
+        request<{ ok: boolean; id: string; productsReassigned: number }>(
+          `/admin/categories/${encodeURIComponent(id)}${reassignTo ? `?reassignTo=${encodeURIComponent(reassignTo)}` : ""}`,
+          { method: "DELETE" },
+          token,
+        ),
+    },
     products: {
       list: (token: string) =>
         request<Product[]>("/admin/products", undefined, token),
