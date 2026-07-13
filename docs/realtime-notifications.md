@@ -5,8 +5,9 @@ notificaciones **persistente** en el frontend. Cierra la issue #65.
 
 ## Qué resuelve
 
-Como **Cliente**, recibir avisos al instante (pago confirmado, pedido enviado/entregado) sin
-recargar. Como **Admin**, enterarse en el momento de **stock bajo** y **nuevas reseñas**.
+Como **Cliente**, recibir avisos al instante (pago confirmado, pedido enviado/entregado, estado de
+una devolución) sin recargar. Como **Admin**, enterarse en el momento de **stock bajo**, **nuevas
+reseñas** y **nuevas solicitudes de devolución**.
 
 ## Arquitectura
 
@@ -45,6 +46,8 @@ recargar. Como **Admin**, enterarse en el momento de **stock bajo** y **nuevas r
 | Pago confirmado | `routes/webhooks.ts` (Stripe `checkout.session.completed`) **y** `routes/orders.ts` (fallback, ver abajo) | cliente | `order_paid` |
 | Cambio de fulfillment (enviado, entregado…) | `routes/admin/adminOrders.ts` | cliente | `order_shipped` / `order_status` |
 | Nueva reseña | `routes/reviews.ts` | admins | `new_review` |
+| Nueva solicitud de devolución | `routes/returns.ts` | admins | `return_requested` |
+| Cambio de estado de una devolución (aprobada, en tránsito, reembolsada, rechazada) | `routes/admin/adminReturns.ts` | cliente | `return_status` |
 | Stock bajo (venta, ajuste MCP o edición admin) | `webhooks.ts` + `routes/orders.ts` + `mcp/tools/inventory.ts` + `routes/admin/adminProducts.ts` | admins | `low_stock` |
 | Difusión manual / agente | MCP `notifications.broadcast` | según `audience` | `broadcast` |
 

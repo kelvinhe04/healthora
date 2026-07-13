@@ -11,6 +11,7 @@ import { buildPaidLineItem } from '../lib/productVariants';
 import { decrementStock, validateCartStock } from '../lib/inventory';
 import { notifyAdmins, notifyUser } from '../lib/realtime';
 import { scanAndNotifyLowStock } from '../lib/lowStock';
+import { confirmReturnRefund } from '../lib/returns';
 import { recordCouponRedemption } from '../lib/promotions';
 
 type CheckoutAddress = {
@@ -270,6 +271,17 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
           }
         }
       }
+    }
+  } else if (event.type === 'refund.updated') {
+    // Source of truth for a return's refund (see lib/returns.ts#confirmReturnRefund) - mirrors
+    // checkout.session.completed being the source of truth for payment, rather than trusting the
+    // synchronous stripe.refunds.create() response.
+    const refund = event.data.object;
+    console.log('[WEBHOOK] refund.updated received:', refund.id, refund.status);
+    try {
+      await confirmReturnRefund(refund.id, refund.status ?? '');
+    } catch (error) {
+      console.error('[WEBHOOK] Failed to process refund.updated:', error);
     }
   }
 

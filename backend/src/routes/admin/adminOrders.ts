@@ -10,7 +10,7 @@ import { generateTrackingNumber } from '../../lib/tracking';
 import { objectIdSchema, optionalTextField, parseJson, parseParams, parseQuery } from '../../lib/validation';
 
 const paymentStatusSchema = z.enum(['pending_payment', 'paid', 'cancelled', 'refunded']);
-const fulfillmentStatusSchema = z.enum(['unfulfilled', 'processing', 'shipped', 'delivered', 'cancelled']);
+const fulfillmentStatusSchema = z.enum(['unfulfilled', 'processing', 'shipped', 'delivered', 'picked_up', 'cancelled']);
 
 const orderTrackingSchema = z.object({
   carrier: optionalTextField(60),
@@ -41,6 +41,8 @@ const fulfillmentLabels: Record<FulfillmentStatus, { title: string; body: string
   processing: { title: 'Pedido en preparación', body: 'Estamos preparando tu pedido para el envío.' },
   shipped: { title: 'Pedido enviado', body: 'Tu pedido va en camino. Te avisaremos cuando sea entregado.' },
   delivered: { title: 'Pedido entregado', body: 'Tu pedido fue entregado. ¡Gracias por comprar en Healthora!' },
+  // Only reachable for pickup orders in practice (see pickupFulfillmentStatusSequence).
+  picked_up: { title: 'Confirmamos tu retiro', body: 'Confirmamos que retiraste tu pedido en tienda. ¡Gracias por comprar en Healthora!' },
   cancelled: { title: 'Pedido cancelado', body: 'Tu pedido fue cancelado. Si tienes dudas, contáctanos.' },
 };
 

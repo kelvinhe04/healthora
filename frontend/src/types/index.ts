@@ -1,6 +1,8 @@
 export type PaymentStatus = 'pending_payment' | 'paid' | 'cancelled' | 'refunded';
 
-export type FulfillmentStatus = 'unfulfilled' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+// `picked_up` only applies to pickup orders: `delivered` means "ready at the store", `picked_up`
+// means the customer actually came and got it.
+export type FulfillmentStatus = 'unfulfilled' | 'processing' | 'shipped' | 'delivered' | 'picked_up' | 'cancelled';
 
 export type OrderStatus =
   | 'pending_payment'
@@ -155,7 +157,52 @@ export interface Order {
   fulfillmentStatus: FulfillmentStatus;
   stripeSessionId: string;
   stripePaymentIntentId?: string;
+  /** Set when this order is a no-charge replacement shipment created from a Return resolved as
+   * "replaced" (wrong/damaged item) instead of refunded. */
+  replacesOrderId?: string;
   address: OrderAddress;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ReturnStatus = 'requested' | 'approved' | 'in_transit' | 'in_review' | 'refund_pending' | 'refunded' | 'replaced' | 'rejected';
+
+/** How the product physically comes back: a courier picks it up (delivery orders) or the customer
+ * drops it off in person (pickup orders never had a courier on the way out either). */
+export type ReturnMethod = 'courier_pickup' | 'store_dropoff';
+
+/** What the customer asked for when requesting the return - the admin resolves toward this. */
+export type ReturnResolution = 'refund' | 'replacement';
+
+/** Classifies `reason` - damaged/wrong_item/defective are the store's fault (shipping is refunded
+ * along with the item on a refund resolution); changed_mind/other are the customer's own call. */
+export type ReasonCategory = 'damaged' | 'wrong_item' | 'defective' | 'changed_mind' | 'other';
+
+export interface ReturnItem {
+  productId: string;
+  productName: string;
+  qty: number;
+}
+
+export interface OrderReturn {
+  _id: string;
+  orderId: string;
+  customerId: string;
+  customerName?: string;
+  customerEmail?: string;
+  reason: string;
+  reasonCategory: ReasonCategory;
+  items: ReturnItem[];
+  refundAmount: number;
+  status: ReturnStatus;
+  returnMethod: ReturnMethod;
+  desiredResolution: ReturnResolution;
+  photos: string[];
+  pickupAddress?: OrderAddress;
+  replacementOrderId?: string;
+  stripeRefundId?: string;
+  rejectedAfterReview?: boolean;
+  returnedToCustomerAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -236,6 +283,8 @@ export type NotificationType =
   | 'new_order'
   | 'low_stock'
   | 'new_review'
+  | 'return_requested'
+  | 'return_status'
   | 'broadcast';
 
 /** A real-time notification (HU-061) as delivered by the REST inbox and the WebSocket channel. */

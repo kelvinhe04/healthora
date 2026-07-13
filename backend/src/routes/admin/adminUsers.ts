@@ -20,7 +20,7 @@ export const adminUsersRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
   .get('/', async (c) => {
     const users = await User.find().sort({ createdAt: -1 }).lean();
-    
+
     let clerkUsers: any[] = [];
     try {
       const response = await clerk.users.getUserList({ limit: 500 });
@@ -40,19 +40,62 @@ export const adminUsersRouter = new Hono<AppEnv>()
           ],
         }).lean();
         const ltv = orders.reduce((sum, order) => sum + ((order as { total?: number }).total || 0), 0);
-        
+
         const cUser = clerkUserMap.get(user.clerkId);
-        
-        return { 
-          ...user, 
-          orderCount: orders.length, 
+
+        return {
+          ...user,
+          orderCount: orders.length,
           ltv: Math.round(ltv * 100) / 100,
-          imageUrl: cUser?.imageUrl 
+          imageUrl: cUser?.imageUrl
         };
       })
     );
 
-    return c.json(enriched);
+    // Historical/seed orders don't all belong to a real registered account - group whatever's
+    // left by customerId so those "walk-in" customers still show up here instead of only the
+    // handful who actually signed up (this is a customer *directory* for the whole store, not
+    // just an account manager).
+    const registeredClerkIds = new Set(users.map((u) => u.clerkId));
+    const orderOnlyCustomers = await Order.aggregate([
+      {
+        $match: {
+          customerId: { $nin: Array.from(registeredClerkIds) },
+          $or: [
+            { paymentStatus: { $ne: 'cancelled' } },
+            { paymentStatus: { $exists: false }, status: { $ne: 'cancelled' } },
+          ],
+        },
+      },
+      {
+        $group: {
+          _id: '$customerId',
+          name: { $first: '$customerName' },
+          email: { $first: '$customerEmail' },
+          orderCount: { $sum: 1 },
+          ltv: { $sum: '$total' },
+          createdAt: { $min: '$createdAt' },
+        },
+      },
+    ]);
+
+    const synthesized = orderOnlyCustomers.map((group) => ({
+      _id: group._id,
+      clerkId: group._id,
+      name: group.name,
+      email: group.email,
+      role: 'customer' as const,
+      orderCount: group.orderCount,
+      ltv: Math.round((group.ltv || 0) * 100) / 100,
+      createdAt: group.createdAt,
+      imageUrl: undefined,
+    }));
+
+    const combined = [...enriched, ...synthesized].sort(
+      (a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime(),
+    );
+
+    return c.json(combined);
   })
   .patch('/:id/role', async (c) => {
     const parsedParams = parseParams(c, userIdParamsSchema);

@@ -3,6 +3,7 @@ import { Icon } from '../../components/shared/Icon';
 import { AnimatedButton } from '../../components/shared/AnimatedButton';
 import { ModalOverlay } from '../../components/shared/ModalOverlay';
 import { SkipToContent } from '../../components/shared/SkipToContent';
+import { NotificationCenter } from '../../components/shared/NotificationCenter';
 import type { AdminAccess } from './types';
 import { AdminPanelProvider, useAdminPanelContext } from './AdminPanelContext';
 import { DashboardSection } from './sections/DashboardSection';
@@ -11,6 +12,7 @@ import { ErrorsSection } from './sections/ErrorsSection';
 import { OrdersSection } from './sections/OrdersSection';
 import { PerformanceSection } from './sections/PerformanceSection';
 import { ProductsSection } from './sections/ProductsSection';
+import { ReturnsSection } from './sections/ReturnsSection';
 import { ReviewsSection } from './sections/ReviewsSection';
 import { CategoriesSection } from './sections/CategoriesSection';
 import { SalesSection } from './sections/SalesSection';
@@ -54,9 +56,15 @@ function AdminPanelLayout({
             <div style={{ width: 26, height: 26, borderRadius: 999, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--lime)", fontFamily: '"Instrument Serif", serif', fontSize: 16 }}>h</div>
             <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20, letterSpacing: "-0.02em" }}>Admin</span>
           </div>
-          <button type="button" onClick={() => setSidebarOpen(true)} aria-label="Abrir menú de administración" aria-expanded={sidebarOpen} style={{ background: "transparent", border: "1px solid var(--ink-06)", borderRadius: 999, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--ink)" }}>
-            <Icon name="menu" size={18} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <NotificationCenter
+              buttonStyle={{ background: "transparent", border: "1px solid var(--ink-06)", borderRadius: 999, padding: 7, cursor: "pointer", display: "flex", alignItems: "center", color: "var(--ink)" }}
+              iconSize={16}
+            />
+            <button type="button" onClick={() => setSidebarOpen(true)} aria-label="Abrir menú de administración" aria-expanded={sidebarOpen} style={{ background: "transparent", border: "1px solid var(--ink-06)", borderRadius: 999, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--ink)" }}>
+              <Icon name="menu" size={18} />
+            </button>
+          </div>
         </div>
       )}
 
@@ -96,6 +104,7 @@ function AdminPanelLayout({
         {page === "products" && <ProductsSection />}
         {page === "categories" && <CategoriesSection />}
         {page === "users" && <UsersSection />}
+        {page === "returns" && <ReturnsSection />}
         {page === "reviews" && <ReviewsSection />}
         {page === "sales" && <SalesSection />}
         {page === "earnings" && <EarningsSection />}

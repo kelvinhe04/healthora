@@ -18,13 +18,50 @@ import { PaginationControls } from '../components/PaginationControls';
 import { useAdminPanelContext } from '../AdminPanelContext';
 import type { OrderSortKey } from '../hooks/useAdminPanel';
 import { formatPanamaShortDate, formatPanamaTime } from '../../../lib/dates';
-import { getFulfillmentStatusLabel, orderShippingMethodLabels } from '../types';
+import { getFulfillmentStatusLabel, orderPaymentStatusLabels, orderPaymentStatusOptions, orderShippingMethodLabels } from '../types';
 import { carrierLabel, getTrackingUrl } from '../../../lib/tracking';
+import type { OrderReturn } from '../../../types';
 
 const ORDER_SORT_LABEL: Record<OrderSortKey, string> = {
   total: 'Total',
   date: 'Fecha',
 };
+
+// Mirrors the labels used in Devoluciones. A `rejected` return didn't move any money, so it falls
+// back to the order's real payment status (see paymentPillLabels below).
+function returnPaymentLabel(ret: OrderReturn): string | null {
+  switch (ret.status) {
+    case 'requested': return 'Solicitada';
+    case 'approved': return 'Aprobada';
+    case 'in_transit': return 'En tránsito';
+    case 'in_review': return 'En revisión';
+    case 'refund_pending': return 'Reembolso en proceso';
+    case 'refunded': return 'Reembolsada';
+    case 'replaced': return ret.returnMethod === 'store_dropoff' ? 'Reemplazo en tienda' : 'Reemplazo en camino';
+    case 'rejected': return null;
+  }
+}
+
+/** A replacement return never touches Stripe or the order's paymentStatus - the customer's money
+ * stayed exactly where it was, they just get a corrected reshipment as its own ($0) order. So the
+ * Pago cell shows both: the real payment status (still "Pagado") *and* the replacement's own
+ * progress, instead of the return label replacing it like it does for a refund-desired return
+ * (where money genuinely is/was in motion, so the return label alone is the accurate story). */
+function paymentPillLabels(order: { paymentStatus?: string; replacesOrderId?: string }, ret?: OrderReturn): string[] {
+  const baseLabel = order.replacesOrderId
+    ? 'Sin costo'
+    : order.paymentStatus === 'paid'
+      ? 'Pagado'
+      : order.paymentStatus === 'cancelled'
+        ? 'Cancelado'
+        : order.paymentStatus === 'refunded'
+          ? 'Reembolsado'
+          : 'Pendiente';
+  const returnLabel = ret ? returnPaymentLabel(ret) : null;
+  if (!returnLabel) return [baseLabel];
+  if (ret?.desiredResolution === 'replacement') return [baseLabel, returnLabel];
+  return [returnLabel];
+}
 
 export function OrdersSection() {
   const {
@@ -41,11 +78,15 @@ export function OrdersSection() {
   setOrderShippingMethodFilter,
   orderShippingMethodCounts,
   orderShippingMethodOptions,
+  orderPaymentFilter,
+  setOrderPaymentFilter,
+  orderPaymentCounts,
   orderSort,
   toggleOrderSort,
   clearOrderSort,
   displayedOrders,
   paginatedOrders,
+  orderReturnByOrderId,
   setOrdersPage,
   orderStatusDrafts,
   setOrderStatusDrafts,
@@ -286,6 +327,76 @@ export function OrdersSection() {
                     ))}
                   </div>
                 </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontFamily: '"JetBrains Mono", monospace',
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      color: "var(--ink-40)",
+                      flexShrink: 0,
+                      width: 48,
+                    }}
+                  >
+                    Pago
+                  </span>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {orderPaymentStatusOptions.map((bucket) => (
+                      <button
+                        key={bucket || "all"}
+                        onClick={() => setOrderPaymentFilter(bucket)}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "7px 14px",
+                          borderRadius: 999,
+                          fontSize: 12,
+                          cursor: "pointer",
+                          border:
+                            "1px solid " +
+                            (orderPaymentFilter === bucket
+                              ? "var(--ink)"
+                              : "var(--ink-20)"),
+                          background:
+                            orderPaymentFilter === bucket
+                              ? "var(--ink)"
+                              : "transparent",
+                          color:
+                            orderPaymentFilter === bucket
+                              ? "var(--cream)"
+                              : "var(--ink)",
+                          fontFamily: '"Geist", sans-serif',
+                        }}
+                      >
+                        <span>{orderPaymentStatusLabels[bucket]}</span>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontFamily: '"JetBrains Mono", monospace',
+                            opacity: orderPaymentFilter === bucket ? 0.8 : 0.6,
+                          }}
+                        >
+                          {orderPaymentCounts[bucket] ?? 0}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
             <Card
@@ -474,13 +585,13 @@ export function OrdersSection() {
                 </div>
               </div>
               <div style={{ overflowX: 'auto', width: '100%' }}>
-              <table style={{ ...tableStyle, minWidth: 680 }}>
+              <table style={{ ...tableStyle, minWidth: 1120 }}>
                 <thead>
                   <tr>
                     <th style={th}>Orden</th>
                     <th style={th}>Cliente / Dirección</th>
                     <th style={th}>Envío</th>
-                    <th style={th}>Productos</th>
+                    <th style={{ ...th, minWidth: 280 }}>Productos</th>
                     <SortableTh label="Total" sortKey="total" activeSort={orderSort} onSort={toggleOrderSort} />
                     <th style={th}>Pago</th>
                     <th style={th}>Estado</th>
@@ -496,7 +607,28 @@ export function OrdersSection() {
                           fontFamily: '"JetBrains Mono", monospace',
                         }}
                       >
-                        {order._id.slice(-8).toUpperCase()}
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+                          <span>{order._id.slice(-8).toUpperCase()}</span>
+                          {order.replacesOrderId && (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                padding: "2px 8px",
+                                borderRadius: 999,
+                                background: "color-mix(in oklab, var(--green) 12%, white)",
+                                border: "1px solid color-mix(in oklab, var(--green) 30%, white)",
+                                fontSize: 9,
+                                letterSpacing: "0.04em",
+                                color: "var(--green)",
+                                whiteSpace: "nowrap",
+                              }}
+                              title={`Reemplazo sin costo por una devolución del pedido #${order.replacesOrderId.slice(-8).toUpperCase()}`}
+                            >
+                              REEMPLAZO · #{order.replacesOrderId.slice(-8).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td style={td}>
                         <div style={{ fontWeight: 500 }}>
@@ -552,7 +684,7 @@ export function OrdersSection() {
                           );
                         })()}
                       </td>
-                      <td style={td}>
+                      <td style={{ ...td, minWidth: 280 }}>
                         <div
                           style={{
                             fontSize: 11,
@@ -593,17 +725,11 @@ export function OrdersSection() {
                         ${(order.total || 0).toFixed(2)}
                       </td>
                       <td style={td}>
-                        <StatusPill
-                          status={
-                            order.paymentStatus === "paid"
-                              ? "Pagado"
-                              : order.paymentStatus === "cancelled"
-                                ? "Cancelado"
-                                : order.paymentStatus === "refunded"
-                                  ? "Reembolsado"
-                                  : "Pendiente"
-                          }
-                        />
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+                          {paymentPillLabels(order, orderReturnByOrderId.get(order._id)).map((label) => (
+                            <StatusPill key={label} status={label} />
+                          ))}
+                        </div>
                       </td>
                       <td style={td}>
                         <div
@@ -621,9 +747,11 @@ export function OrdersSection() {
                               )
                             }
                           />
-                          {!["cancelled", "delivered"].includes(
-                            order.fulfillmentStatus || "unfulfilled",
-                          ) && (
+                          {/* Driven by getNextFulfillmentStatus itself (not a hardcoded terminal-state
+                              list) so a pickup order stays editable past "Entregada" (= listo para
+                              retirar) until it actually reaches "picked_up" - see
+                              pickupFulfillmentStatusSequence. */}
+                          {getNextFulfillmentStatus(order.fulfillmentStatus, order.shippingMethod) !== null && (
                             <>
                               <select
                                 value={(() => {
