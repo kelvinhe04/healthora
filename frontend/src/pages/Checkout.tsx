@@ -9,11 +9,12 @@ import { Icon } from '../components/shared/Icon';
 import { SignInModal } from '../components/chrome/SignInModal';
 import { api } from '../lib/api';
 import { useAuth } from '@clerk/clerk-react';
-import { canApplyPromotion, getAvailablePromotionCodes, getPromotion, normalizePromotionCode } from '../lib/promotions';
+import { normalizePromotionCode } from '../lib/promotions';
 import { useCartStore } from '../store/cartStore';
 import { getE2EAuthToken, getE2EUser } from '../lib/e2eAuth';
 import { resolveShipping, SHIPPING_METHOD_OPTIONS, type ShippingMethod } from '../lib/shipping';
 import { formatPanamaPhone } from '../lib/phone';
+import { computeItbms } from '../lib/tax';
 
 interface CheckoutProps {
   items: CartItem[];
@@ -78,6 +79,15 @@ function roundMoney(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+const SUGGESTED_PROMO_CODES = ['BIENVENIDA', 'PIEL25'];
+
+type ValidatedPromo = {
+  code: string;
+  label: string;
+  discountAmount: number;
+  discountedSubtotal: number;
+};
+
 export function Checkout({ items, onBack }: CheckoutProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
@@ -106,9 +116,9 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   const [error, setError] = useState('');
   const [addressError, setAddressError] = useState('');
   const [promoInput, setPromoInput] = useState('');
-  const [appliedPromoCode, setAppliedPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<ValidatedPromo | null>(null);
   const [promoError, setPromoError] = useState('');
-  const [hasPaidOrders, setHasPaidOrders] = useState(false);
+  const [promoValidating, setPromoValidating] = useState(false);
 
   const isAddressValid = address.name.trim() && address.phone.trim()
     && (shippingMethod === 'pickup' || (address.address.trim() && address.city.trim() && address.postal.trim()));
@@ -150,69 +160,65 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     };
   }, [getEffectiveToken, isSignedIn]);
 
-  useEffect(() => {
-    if (!isSignedIn) {
-      setHasPaidOrders(false);
-      return;
-    }
-
-    let cancelled = false;
-
-    const loadOrderEligibility = async () => {
-      try {
-        const token = await getEffectiveToken();
-        if (!token) return;
-        const orders = await api.orders.list(token);
-        if (cancelled) return;
-        const hasPaid = orders.some((order) => order.paymentStatus === 'paid' || order.status === 'paid');
-        setHasPaidOrders(hasPaid);
-        if (hasPaid && appliedPromoCode === 'BIENVENIDA') {
-          setAppliedPromoCode('');
-          setPromoInput('');
-        }
-      } catch (loadError) {
-        console.error('Failed to load order eligibility', loadError);
-      }
-    };
-
-    void loadOrderEligibility();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [appliedPromoCode, getEffectiveToken, isSignedIn]);
-
   const subtotal = roundMoney(items.reduce((s, it) => s + (it.variant?.price ?? it.product.price) * it.qty, 0));
-  const appliedPromo = appliedPromoCode ? getPromotion(appliedPromoCode, items) : null;
   const discountAmount = appliedPromo?.discountAmount ?? 0;
   const discountedSubtotal = roundMoney(Math.max(0, subtotal - discountAmount));
   const shippingResolved = resolveShipping(shippingMethod, discountedSubtotal);
   const shipping = shippingResolved.cost;
-  const tax = roundMoney(discountedSubtotal * 0.07);
+  const tax = computeItbms(
+    items.map((it) => ({ price: it.variant?.price ?? it.product.price, qty: it.qty, taxExempt: it.product.taxExempt })),
+    discountAmount,
+    subtotal,
+  );
   const total = roundMoney(discountedSubtotal + shipping + tax);
 
-  const handleApplyPromo = (code = promoInput) => {
+  const handleApplyPromo = async (code = promoInput) => {
     const normalizedCode = normalizePromotionCode(code);
-    const promotion = getPromotion(normalizedCode, items);
 
     if (!normalizedCode) {
       setPromoError('Ingresa un código de descuento.');
       return;
     }
 
-    if (!promotion) {
-      setAppliedPromoCode('');
-      setPromoError('Código inválido o sin productos elegibles.');
+    if (!isSignedIn) {
+      setPromoError('Inicia sesión para aplicar un cupón.');
       return;
     }
 
-    setAppliedPromoCode(promotion.code);
-    setPromoInput(promotion.code);
+    setPromoValidating(true);
     setPromoError('');
+    try {
+      const token = await getEffectiveToken();
+      if (!token) throw new Error('Sesión no disponible');
+      const result = await api.promotions.validate(
+        {
+          code: normalizedCode,
+          items: items.map((it) => ({
+            productId: it.product.id,
+            qty: it.qty,
+            ...(it.variant?.id ? { variantId: it.variant.id } : {}),
+          })),
+        },
+        token,
+      );
+      setAppliedPromo({
+        code: result.code,
+        label: result.label,
+        discountAmount: result.discountAmount,
+        discountedSubtotal: result.discountedSubtotal,
+      });
+      setPromoInput(result.code);
+      setPromoError('');
+    } catch (e: unknown) {
+      setAppliedPromo(null);
+      setPromoError(e instanceof Error ? e.message : 'No se pudo validar el cupón.');
+    } finally {
+      setPromoValidating(false);
+    }
   };
 
   const handleRemovePromo = () => {
-    setAppliedPromoCode('');
+    setAppliedPromo(null);
     setPromoInput('');
     setPromoError('');
   };
@@ -456,7 +462,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             <form
               onSubmit={(event) => {
                 event.preventDefault();
-                handleApplyPromo();
+                void handleApplyPromo();
               }}
               style={{ display: 'flex', gap: 8 }}
             >
@@ -468,7 +474,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                   setPromoError('');
                 }}
                 placeholder="BIENVENIDA"
-                disabled={processing}
+                disabled={processing || promoValidating}
                 style={{ flex: 1, minWidth: 0, height: 44, border: '1px solid var(--ink-20)', borderRadius: 999, background: 'var(--cream)', padding: '0 14px', outline: 'none', color: 'var(--ink)', fontSize: 13, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}
               />
               {appliedPromo ? (
@@ -476,18 +482,14 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                   Quitar
                 </button>
               ) : (
-                <AnimatedButton type="submit" disabled={processing} variant="primary" size="sm" text="Aplicar" />
+                <AnimatedButton type="submit" disabled={processing || promoValidating} variant="primary" size="sm" text={promoValidating ? 'Validando…' : 'Aplicar'} />
               )}
             </form>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-              {getAvailablePromotionCodes().filter((code) => {
-                if (code === 'BIENVENIDA' && hasPaidOrders) return false;
-                if (code === 'PIEL25' && !canApplyPromotion(code, items)) return false;
-                return true;
-              }).map((code) => {
+              {SUGGESTED_PROMO_CODES.map((code) => {
                 const isActive = appliedPromo?.code === code;
                 return (
-                  <button key={code} type="button" onClick={() => handleApplyPromo(code)} disabled={processing} style={{ border: isActive ? '1px solid var(--lime)' : '1px solid var(--ink-12)', background: isActive ? 'var(--lime)' : 'var(--cream)', color: isActive ? 'oklch(0.2 0.03 155)' : 'var(--ink)', borderRadius: 999, padding: '6px 9px', cursor: processing ? 'not-allowed' : 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>
+                  <button key={code} type="button" onClick={() => void handleApplyPromo(code)} disabled={processing || promoValidating} style={{ border: isActive ? '1px solid var(--lime)' : '1px solid var(--ink-12)', background: isActive ? 'var(--lime)' : 'var(--cream)', color: isActive ? 'oklch(0.2 0.03 155)' : 'var(--ink)', borderRadius: 999, padding: '6px 9px', cursor: processing || promoValidating ? 'not-allowed' : 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>
                     {code}
                   </button>
                 );
@@ -506,7 +508,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             {discountAmount > 0 && <Row k={`Descuento ${appliedPromo?.code}`} v={<span style={{ color: 'var(--green)' }}>-${discountAmount.toFixed(2)}</span>} />}
             {freeSample && <Row k="Muestra gratis" v={<span style={{ color: 'var(--green)' }}>$0.00</span>} />}
             <Row k={`Envío (${shippingResolved.eta})`} v={shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`} />
-            <Row k="Impuestos" v={`$${tax.toFixed(2)}`} />
+            <Row k="ITBMS" v={`$${tax.toFixed(2)}`} />
           </div>
           <div style={{ padding: '14px 0', borderTop: '1px solid var(--ink-06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <strong style={{ fontSize: 16, fontFamily: '"Geist", sans-serif' }}>Total</strong>

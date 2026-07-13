@@ -11,6 +11,11 @@ type ProductVariant = {
   images?: string[];
   imagesBySize?: Record<string, string[]>;
   stockBySize?: Record<string, number>;
+  priceBySize?: Record<string, number>;
+  priceBeforeBySize?: Record<string, number>;
+  categoryDiscount?: boolean;
+  categoryDiscountRestore?: { price: number; priceBefore?: number; discountStartsAt?: Date; discountEndsAt?: Date };
+  categoryDiscountRestoreBySize?: Record<string, { price: number; priceBefore?: number }>;
   availableFor?: string[];
 };
 
@@ -26,6 +31,7 @@ type ProductLike = {
   imageUrl?: string;
   images?: Array<{ url: string; isPrimary?: boolean }>;
   variants?: ProductVariant[];
+  taxExempt?: boolean;
 };
 
 // Mirrors frontend/src/lib/productVariants.ts - any non-size type can be the primary dimension
@@ -68,7 +74,10 @@ export function resolveVariantPricing(product: ProductLike, variantId?: string):
             : undefined;
     const stockField = stockOverride != null ? `stockBySize.${size.id}` : undefined;
     return {
-      price: primary.price + size.price,
+      // `priceBySize` is the actual, current selling price for this combo when set (whether from a
+      // manual override or a category discount) - falling straight to the additive sum here would
+      // silently charge a different amount than what the product page displays.
+      price: primary.priceBySize?.[size.id] ?? primary.price + size.price,
       stock,
       label: `${primary.label} · ${size.label}`,
       stockVariantId,
@@ -132,6 +141,7 @@ export function buildPaidLineItem(
       imageUrl: primaryImage,
       category: product.category,
       isSample: true,
+      taxExempt: Boolean(product.taxExempt),
     };
   }
 
@@ -150,6 +160,7 @@ export function buildPaidLineItem(
     isSample: false,
     variantId: item.variantId,
     variantLabel: resolved.label,
+    taxExempt: Boolean(product.taxExempt),
   };
 }
 
@@ -192,4 +203,20 @@ export function getCombinationCount(variants?: ProductVariant[]): number {
     count += sizes.filter((s) => !s.availableFor || s.availableFor.includes(p.id)).length;
   }
   return count;
+}
+
+/** Every purchasable sabor/color×tamaño pair in matrix mode, respecting each tamaño's
+ * `availableFor` restriction. Empty for simple-variant or no-variant products - callers that need
+ * to act on every combo (e.g. a bulk category discount) should branch on `hasTwoDimensions` first. */
+export function getVariantCombos(variants?: ProductVariant[]): { primary: ProductVariant; size: ProductVariant }[] {
+  if (!hasTwoDimensions(variants)) return [];
+  const sizes = variants!.filter((v) => v.type === 'size');
+  const primaries = variants!.filter((v) => PRIMARY_VARIANT_TYPES.includes(v.type));
+  const combos: { primary: ProductVariant; size: ProductVariant }[] = [];
+  for (const p of primaries) {
+    for (const s of sizes.filter((sz) => !sz.availableFor || sz.availableFor.includes(p.id))) {
+      combos.push({ primary: p, size: s });
+    }
+  }
+  return combos;
 }

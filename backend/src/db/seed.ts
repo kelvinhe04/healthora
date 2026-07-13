@@ -1,6 +1,8 @@
 import { connectDB } from './connection';
 import { Product } from './models/Product';
 import { Category } from './models/Category';
+import { isTaxExemptCategory } from '../lib/tax';
+import { seedCoupons } from './seed-coupons';
 
 const CATEGORY_FOLDER_BY_ID: Record<string, string> = {
   Vitaminas: 'vitaminas',
@@ -8273,9 +8275,12 @@ async function seed() {
       need: CATEGORY_TO_NEED[p.category] ?? '',
       stock: totalStockFor(p),
       sortOrder: i,
+      // ITBMS: exencion automatica por categoria (issue #43/HU-039), no editable a mano.
+      taxExempt: isTaxExemptCategory(p.category),
     })),
   );
   await Category.insertMany(CATEGORIES);
+  await seedCoupons();
   console.log(`Seeded ${PRODUCTS.length} products and ${CATEGORIES.length} categories`);
   process.exit(0);
 }

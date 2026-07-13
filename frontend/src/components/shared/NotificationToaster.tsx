@@ -39,7 +39,7 @@ export function NotificationToaster() {
 function ToastCard({ toast }: { toast: Toast }) {
   const dismiss = useNotificationToastStore((s) => s.dismiss);
   const go = useNotificationLink();
-  const { icon, accent } = notificationPresentation(toast.notification.type);
+  const { icon, accent } = notificationPresentation(toast.notification.type, toast.notification.data);
 
   useEffect(() => {
     const timer = window.setTimeout(() => dismiss(toast.id), AUTO_DISMISS_MS);

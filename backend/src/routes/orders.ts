@@ -337,6 +337,9 @@ export const ordersRouter = new Hono<AppEnv>()
     if (!['unfulfilled', 'processing'].includes(order.fulfillmentStatus as string)) {
       return c.json({ error: 'El pedido ya no puede cancelarse en este estado' }, 400);
     }
+    if (order.replacesOrderId) {
+      return c.json({ error: 'No puedes cancelar un pedido de reemplazo de una devolución' }, 400);
+    }
 
     const updated = await Order.findByIdAndUpdate(
       parsedParams.data.id,

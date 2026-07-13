@@ -6,6 +6,10 @@ import type {
   ProductFilters,
   SavedAddress,
   Review,
+  OrderReturn,
+  ReturnStatus,
+  ReturnResolution,
+  ReasonCategory,
   AdminReview,
   ReviewStatus,
   ReviewBan,
@@ -85,6 +89,40 @@ export const api = {
         token,
       ),
   },
+  returns: {
+    list: (token: string) => request<OrderReturn[]>("/returns", undefined, token),
+    create: (
+      body: {
+        orderId: string;
+        reason: string;
+        reasonCategory: ReasonCategory;
+        items: { productId: string; qty: number }[];
+        desiredResolution?: ReturnResolution;
+        photos: string[];
+      },
+      token: string,
+    ) =>
+      request<OrderReturn>(
+        "/returns",
+        { method: "POST", body: JSON.stringify(body) },
+        token,
+      ),
+    uploadPhoto: async (file: File, token: string): Promise<string> => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch(`${BASE}/returns/upload`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      return data.url;
+    },
+  },
   account: {
     addresses: {
       list: (token: string) =>
@@ -119,6 +157,27 @@ export const api = {
     ) =>
       request<{ url: string }>(
         "/checkout/session",
+        { method: "POST", body: JSON.stringify(body) },
+        token,
+      ),
+  },
+  promotions: {
+    validate: (
+      body: {
+        code: string;
+        items: { productId: string; qty: number; variantId?: string }[];
+      },
+      token: string,
+    ) =>
+      request<{
+        valid: true;
+        code: string;
+        label: string;
+        discountAmount: number;
+        subtotal: number;
+        discountedSubtotal: number;
+      }>(
+        "/promotions/validate",
         { method: "POST", body: JSON.stringify(body) },
         token,
       ),
@@ -207,6 +266,69 @@ export const api = {
         { method: "PATCH", body: JSON.stringify(body) },
         token,
       ),
+    returns: {
+      list: (token: string, status?: ReturnStatus) =>
+        request<OrderReturn[]>(
+          `/admin/returns${status ? `?status=${status}` : ""}`,
+          undefined,
+          token,
+        ),
+      count: (token: string) =>
+        request<{ count: number }>("/admin/returns/count", undefined, token),
+      updateStatus: (id: string, status: ReturnStatus, token: string) =>
+        request<OrderReturn>(
+          `/admin/returns/${id}/status`,
+          { method: "PATCH", body: JSON.stringify({ status }) },
+          token,
+        ),
+      markReturnedToCustomer: (id: string, token: string) =>
+        request<OrderReturn>(
+          `/admin/returns/${id}/return-to-customer`,
+          { method: "PATCH" },
+          token,
+        ),
+    },
+    categories: {
+      list: (token: string) =>
+        request<Category[]>("/admin/categories", undefined, token),
+      create: (
+        data: { id: string; label: string; sub?: string; color?: string; active?: boolean },
+        token: string,
+      ) =>
+        request<{ created: boolean; category: Category; productsReassigned: number }>(
+          "/admin/categories",
+          { method: "POST", body: JSON.stringify(data) },
+          token,
+        ),
+      update: (
+        id: string,
+        data: {
+          label?: string;
+          sub?: string;
+          color?: string;
+          active?: boolean;
+          newId?: string;
+        },
+        token: string,
+      ) =>
+        request<{ created: boolean; category: Category; productsReassigned: number }>(
+          `/admin/categories/${encodeURIComponent(id)}`,
+          { method: "PUT", body: JSON.stringify(data) },
+          token,
+        ),
+      reassignProducts: (id: string, toCategoryId: string, token: string) =>
+        request<{ fromId: string; toId: string; productsReassigned: number }>(
+          `/admin/categories/${encodeURIComponent(id)}/reassign-products`,
+          { method: "PATCH", body: JSON.stringify({ toCategoryId }) },
+          token,
+        ),
+      remove: (id: string, token: string, reassignTo?: string) =>
+        request<{ ok: boolean; id: string; productsReassigned: number }>(
+          `/admin/categories/${encodeURIComponent(id)}${reassignTo ? `?reassignTo=${encodeURIComponent(reassignTo)}` : ""}`,
+          { method: "DELETE" },
+          token,
+        ),
+    },
     products: {
       list: (token: string) =>
         request<Product[]>("/admin/products", undefined, token),
@@ -242,7 +364,7 @@ export const api = {
         },
         token: string,
       ) =>
-        request<{ updated: number; total: number; skippedMatrix: number }>(
+        request<{ updated: number; total: number }>(
           "/admin/products/discounts/apply-category",
           { method: "POST", body: JSON.stringify(body) },
           token,
@@ -271,6 +393,8 @@ export const api = {
           token,
         );
       },
+      count: (token: string) =>
+        request<{ count: number }>("/admin/reviews/count", undefined, token),
       updateStatus: (id: string, status: ReviewStatus, token: string) =>
         request<AdminReview>(
           `/admin/reviews/${id}`,

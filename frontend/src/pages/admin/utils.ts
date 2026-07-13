@@ -79,6 +79,8 @@ export function productToForm(p: Product): ProductForm {
           priceBefore: v.priceBefore ? String(v.priceBefore) : '',
           discountStartsAt: v.discountStartsAt ? v.discountStartsAt.slice(0, 10) : '',
           discountEndsAt: v.discountEndsAt ? v.discountEndsAt.slice(0, 10) : '',
+          categoryDiscount: Boolean(v.categoryDiscount),
+          ...(v.categoryDiscountRestore ? { categoryDiscountRestore: v.categoryDiscountRestore } : {}),
           stock: String(v.stock),
           sku: v.sku || '',
           color: v.color || '',
@@ -112,6 +114,10 @@ function variantRowToPayload(row: VariantFormRow, usedIds: Set<string>): Product
     ...(row.priceBefore.trim() ? { priceBefore: parseFloat(row.priceBefore) } : {}),
     ...(row.priceBefore.trim() && row.discountStartsAt ? { discountStartsAt: row.discountStartsAt } : {}),
     ...(row.priceBefore.trim() && row.discountEndsAt ? { discountEndsAt: row.discountEndsAt } : {}),
+    ...(row.priceBefore.trim() && row.categoryDiscount ? { categoryDiscount: true } : {}),
+    ...(row.priceBefore.trim() && row.categoryDiscount && row.categoryDiscountRestore
+      ? { categoryDiscountRestore: row.categoryDiscountRestore }
+      : {}),
   };
 }
 

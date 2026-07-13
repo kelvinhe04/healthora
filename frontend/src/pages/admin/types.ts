@@ -3,6 +3,7 @@ import type {
   FulfillmentStatus,
   OrderAddress,
   OrderLineItem,
+  OrderReturn,
   PaymentStatus,
   Product,
   ProductVariant,
@@ -27,6 +28,12 @@ export type VariantFormRow = {
   priceBefore: string;
   discountStartsAt: string;
   discountEndsAt: string;
+  /** Whether priceBefore came from the bulk "Descuento por categoría" tool (vs. hand-set here).
+   * No checkbox for this - carried through so an unrelated re-save doesn't silently wipe it. */
+  categoryDiscount: boolean;
+  /** Snapshot the category discount tool uses to restore a hand-set discount it discounted on top
+   * of. Opaque here - no editor for it, just carried through untouched. */
+  categoryDiscountRestore?: ProductVariant['categoryDiscountRestore'];
   stock: string;
   sku: string;
   color: string;
@@ -51,6 +58,7 @@ export const emptyVariantRow = (): VariantFormRow => ({
   priceBefore: '',
   discountStartsAt: '',
   discountEndsAt: '',
+  categoryDiscount: false,
   stock: '0',
   sku: '',
   color: '',
@@ -62,11 +70,13 @@ export type AdminPage =
   | "dashboard"
   | "orders"
   | "products"
+  | "categories"
   | "users"
   | "sales"
   | "earnings"
   | "performance"
   | "errors"
+  | "returns"
   | "reviews";
 export interface AdminAppProps {
   onGoToStore: () => void;
@@ -104,6 +114,7 @@ export type AdminOrder = {
   shippingEta?: string;
   address?: OrderAddress;
   createdAt?: string;
+  replacesOrderId?: string;
 };
 export type AdminUser = {
   _id: string;
@@ -204,6 +215,7 @@ export const fulfillmentStatusOptions: (FulfillmentStatus | "")[] = [
   "processing",
   "shipped",
   "delivered",
+  "picked_up",
 ];
 
 export const orderShippingMethodOptions: ("" | "delivery" | "pickup")[] = ["", "delivery", "pickup"];
@@ -214,6 +226,47 @@ export const orderShippingMethodLabels: Record<"" | "delivery" | "pickup", strin
   pickup: "Retiro en tienda",
 };
 
+// Coarser than the exact pill shown in the Pago column (which distinguishes the return's
+// fine-grained sub-status like "Aprobada"/"En tránsito", or "Reemplazo en camino" vs "Reemplazo en
+// tienda") - that level of detail belongs to Devoluciones' own filter. Here an admin just wants to
+// slice Pedidos by what happened to the order, so every in-flight return status (requested through
+// refund_pending, whichever resolution the customer asked for) collapses into one "en curso"
+// bucket, and "replaced" only applies once a replacement return is actually resolved.
+export type OrderPaymentBucket = "" | PaymentStatus | "return_pending" | "replaced" | "no_charge";
+
+export const orderPaymentStatusOptions: OrderPaymentBucket[] = [
+  "",
+  "paid",
+  "pending_payment",
+  "cancelled",
+  "refunded",
+  "return_pending",
+  "replaced",
+  "no_charge",
+];
+
+export const orderPaymentStatusLabels: Record<OrderPaymentBucket, string> = {
+  "": "Todos",
+  paid: "Pagado",
+  pending_payment: "Pendiente",
+  cancelled: "Cancelado",
+  refunded: "Reembolsado",
+  return_pending: "Devolución en curso",
+  replaced: "Reemplazo",
+  no_charge: "Sin costo",
+};
+
+/** Same precedence as the Pago column's own pill logic (OrdersSection.tsx#paymentPillLabels). */
+export function getOrderPaymentBucket(order: AdminOrder, ret?: OrderReturn): OrderPaymentBucket {
+  if (order.replacesOrderId) return "no_charge";
+  if (ret && ret.status !== "rejected") {
+    if (ret.status === "refunded") return "refunded";
+    if (ret.status === "replaced") return "replaced";
+    return "return_pending";
+  }
+  return order.paymentStatus ?? "pending_payment";
+}
+
 export const fulfillmentStatusSequence: FulfillmentStatus[] = [
   "unfulfilled",
   "processing",
@@ -221,11 +274,13 @@ export const fulfillmentStatusSequence: FulfillmentStatus[] = [
   "delivered",
 ];
 
-// Retiro en tienda no pasa por "Enviada": se prepara y queda listo para retirar.
+// Retiro en tienda no pasa por "Enviada": se prepara, queda listo para retirar y termina cuando
+// el cliente efectivamente lo retira ("delivered" != "picked_up" aquí - ver Order.ts).
 export const pickupFulfillmentStatusSequence: FulfillmentStatus[] = [
   "unfulfilled",
   "processing",
   "delivered",
+  "picked_up",
 ];
 
 export type ProductForm = {
@@ -295,10 +350,12 @@ export const fulfillmentStatusLabels: Record<FulfillmentStatus | "", string> = {
   processing: "Preparando",
   shipped: "Enviada",
   delivered: "Entregada",
+  picked_up: "Retirado",
   cancelled: "Cancelada",
 };
 
-/** "Entregada" no aplica a retiro en tienda: no se entrega nada, el cliente lo recoge. */
+/** "Entregada" no aplica a retiro en tienda: no se entrega nada, el cliente lo recoge - "delivered"
+ * ahi es "listo para retirar", "picked_up" es cuando ya lo recogio. */
 export function getFulfillmentStatusLabel(
   status: FulfillmentStatus | "",
   shippingMethod?: "delivery" | "pickup",

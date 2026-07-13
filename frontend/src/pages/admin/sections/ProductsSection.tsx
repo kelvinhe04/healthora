@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -28,11 +28,32 @@ import type { ProductSortKey } from '../hooks/useAdminPanel';
 import { getTotalStock, getEffectivePrice, getEffectivePriceBefore } from '../../../lib/productVariants';
 import { api } from '../../../lib/api';
 import { effectiveLowStockThreshold } from '../types';
+import type { Product } from '../../../types';
 
 const modalFieldLabel = { fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: 'var(--ink-60)', marginBottom: 6, display: 'block' };
 const modalInput = { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--ink-20)', background: 'var(--cream)', fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', boxSizing: 'border-box' as const };
 
-function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; onClose: () => void; categories: string[] }) {
+function ButtonSpinner() {
+  return (
+    <>
+      <span
+        style={{
+          display: 'inline-block',
+          width: 13,
+          height: 13,
+          borderRadius: '50%',
+          border: '2px solid currentColor',
+          borderTopColor: 'transparent',
+          opacity: 0.85,
+          animation: 'admin-btn-spin 0.6s linear infinite',
+        }}
+      />
+      <style>{'@keyframes admin-btn-spin { to { transform: rotate(360deg); } }'}</style>
+    </>
+  );
+}
+
+function CategoryDiscountModal({ open, onClose, categories, products }: { open: boolean; onClose: () => void; categories: string[]; products: Product[] }) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [category, setCategory] = useState('');
@@ -42,6 +63,19 @@ function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; o
   const [endsAt, setEndsAt] = useState('');
   const [message, setMessage] = useState('');
   const invalidRange = Boolean(startsAt && endsAt && endsAt < startsAt);
+
+  // "Con descuento activo" = tiene al menos un producto/variante/combo marcado por el propio
+  // descuento por categoría (categoryDiscount), sin importar si su vigencia ya venció - el precio
+  // sigue siendo el descontado hasta que se quite explícitamente. Para que el admin sepa de
+  // antemano, antes de aplicar/quitar, si esa categoría ya tiene uno corriendo.
+  const categoriesWithDiscount = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products) {
+      const hasDiscount = p.categoryDiscount || p.variants?.some((v) => v.categoryDiscount);
+      if (hasDiscount) set.add(p.category);
+    }
+    return categories.filter((c) => set.has(c));
+  }, [products, categories]);
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ['admin-products'] });
@@ -64,10 +98,7 @@ function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; o
       );
     },
     onSuccess: (data) => {
-      const skippedNote = data.skippedMatrix
-        ? ` ${data.skippedMatrix} con variante×tamaño no se tocaron (aún sin soporte para ese modo).`
-        : '';
-      setMessage(`${data.updated} de ${data.total} producto(s) actualizados.${skippedNote}`);
+      setMessage(`${data.updated} de ${data.total} producto(s) actualizados.`);
       invalidate();
     },
   });
@@ -87,6 +118,40 @@ function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; o
     <ModalOverlay open={open} onClose={onClose}>
       <div style={{ width: '100%', maxWidth: 420, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: 24 }}>
         <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 16px' }}>Descuento por categoría</h3>
+        {categoriesWithDiscount.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <label style={modalFieldLabel}>Con descuento activo</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {categoriesWithDiscount.map((c) => {
+                const selected = category === c;
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => { setCategory(c); setMessage(''); }}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '5px 12px',
+                      borderRadius: 999,
+                      fontSize: 12,
+                      fontFamily: '"Geist", sans-serif',
+                      cursor: 'pointer',
+                      border: '1px solid ' + (selected ? 'var(--green)' : 'var(--ink-20)'),
+                      background: selected ? 'var(--green)' : 'transparent',
+                      color: selected ? 'var(--cream)' : 'var(--ink)',
+                      transition: 'all 120ms',
+                    }}
+                  >
+                    <span style={{ width: 5, height: 5, borderRadius: 999, background: selected ? 'var(--cream)' : 'var(--green)' }} />
+                    {c}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <div style={{ marginBottom: 14 }}>
           <label style={modalFieldLabel}>Categoría</label>
           <select style={modalInput} value={category} onChange={(e) => { setCategory(e.target.value); setMessage(''); }}>
@@ -121,10 +186,22 @@ function CategoryDiscountModal({ open, onClose, categories }: { open: boolean; o
         {message && <div style={{ marginBottom: 14, fontSize: 13, color: 'var(--green)' }}>{message}</div>}
         {(applyMut.isError || removeMut.isError) && <div role="alert" style={{ marginBottom: 14, fontSize: 13, color: 'var(--coral)' }}>No se pudo completar la acción.</div>}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button type="button" onClick={() => removeMut.mutate()} disabled={!category || removeMut.isPending} style={{ padding: '10px 16px', borderRadius: 10, background: 'transparent', border: '1px solid var(--ink-12)', color: 'var(--coral)', cursor: 'pointer', fontSize: 13 }}>
-            Quitar descuento
-          </button>
-          <AnimatedButton variant="primary" disabled={!category || (parseFloat(value) || 0) <= 0 || invalidRange || applyMut.isPending} onClick={() => applyMut.mutate()} text={applyMut.isPending ? 'Aplicando…' : 'Aplicar descuento'} />
+          <AnimatedButton
+            variant="outline"
+            size="sm"
+            style={{ color: 'var(--coral)', borderColor: 'oklch(0.85 0.08 30)' }}
+            disabled={!category || removeMut.isPending}
+            onClick={() => removeMut.mutate()}
+            text={removeMut.isPending ? 'Quitando…' : 'Quitar descuento'}
+            icon={removeMut.isPending ? <ButtonSpinner /> : undefined}
+          />
+          <AnimatedButton
+            variant="primary"
+            disabled={!category || (parseFloat(value) || 0) <= 0 || invalidRange || applyMut.isPending}
+            onClick={() => applyMut.mutate()}
+            text={applyMut.isPending ? 'Aplicando…' : 'Aplicar descuento'}
+            icon={applyMut.isPending ? <ButtonSpinner /> : undefined}
+          />
         </div>
       </div>
     </ModalOverlay>
@@ -230,7 +307,7 @@ export function ProductsSection() {
                     <button
                       type="button"
                       onClick={() => setDiscountModalOpen(true)}
-                      style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif' }}
+                      style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif', whiteSpace: "nowrap" }}
                     >
                       Descuento por categoría
                     </button>
@@ -239,7 +316,7 @@ export function ProductsSection() {
                 )
               }
             />
-            <CategoryDiscountModal open={discountModalOpen} onClose={() => setDiscountModalOpen(false)} categories={categories} />
+            <CategoryDiscountModal open={discountModalOpen} onClose={() => setDiscountModalOpen(false)} categories={categories} products={products} />
 
             {/* Filter bar */}
             {showProductsSkeleton ? (

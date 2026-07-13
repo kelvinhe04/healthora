@@ -13,6 +13,7 @@ import { useMemo, useState, useEffect, useRef, memo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { useThemeStore } from "../../store/themeStore";
 import { Icon } from "../shared/Icon";
+import { NotificationCenter } from "../shared/NotificationCenter";
 import { formatPanamaDayMonth } from "../../lib/dates";
 
 let _adminSessionId = "";
@@ -494,21 +495,36 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; darkBg: string; da
   pending:              { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
   unfulfilled:                  { bg: "oklch(0.95 0.04 85)", fg: "oklch(0.45 0.05 85)", darkBg: "oklch(0.26 0.05 85)",  darkFg: "oklch(0.82 0.07 85)"  },
   "Pendiente de preparación":   { bg: "oklch(0.95 0.04 85)", fg: "oklch(0.45 0.05 85)", darkBg: "oklch(0.26 0.05 85)",  darkFg: "oklch(0.82 0.07 85)"  },
+  requested:                    { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
+  Solicitada:                   { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
+  "Reembolso en proceso":       { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
   // Blue — processing / in-prep / scheduled
   processing:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   Preparando:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   "En preparación":{ bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   Programado:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
+  approved:        { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
+  Aprobada:        { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
+  "En revisión":   { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   // Teal — shipped
-  shipped: { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
-  Enviada: { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  shipped:     { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  Enviada:     { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  in_transit:  { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  "En tránsito": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   "Envío a domicilio": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   "Retiro en tienda":  { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
+  replaced:    { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  "Reemplazo enviado": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  "Reemplazo en camino": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  "Reemplazo en tienda": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  "Sin costo": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   // Coral — cancelled / inactive
   cancelled: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Cancelado: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Cancelada: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Inactivo:  { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
+  rejected:  { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
+  Rechazada: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   hidden:    { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Oculta:    { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   // Purple — refunded
@@ -953,9 +969,11 @@ export function Card({
         minWidth: 0,
       }}
     >
-      {/* Title area — skeleton or real */}
+      {/* Title area — skeleton or real. Gets its own padding when `pad={0}` (a table-in-card
+          layout, where the table's own th/td cells carry the 24px horizontal padding instead) so
+          the title/sub text isn't flush against the card's edges. */}
       {title && (
-        <div style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 20, ...(pad === 0 ? { padding: "24px 24px 0" } : {}) }}>
           {loading ? (
             <>
               <SkeletonTitle size="md" width="45%" />
@@ -1197,11 +1215,13 @@ type AdminPage =
   | "dashboard"
   | "orders"
   | "products"
+  | "categories"
   | "users"
   | "sales"
   | "earnings"
   | "performance"
   | "errors"
+  | "returns"
   | "reviews";
 interface SidebarProps {
   page: AdminPage;
@@ -1237,7 +1257,14 @@ export function Sidebar({
       icon: "leaf",
       count: counts?.products,
     },
+    {
+      id: "categories",
+      label: "Categorías",
+      icon: "layers",
+      count: counts?.categories,
+    },
     { id: "users", label: "Clientes", icon: "user", count: counts?.users },
+    { id: "returns", label: "Devoluciones", icon: "arrow-left", count: counts?.returns },
     { id: "reviews", label: "Reseñas", icon: "star", count: counts?.reviews },
     { id: "sales", label: "Ventas", icon: "truck" },
     { id: "earnings", label: "Ganancias", icon: "percent" },
@@ -1256,57 +1283,81 @@ export function Sidebar({
         position: "sticky",
         top: 0,
         height: "100vh",
+        // `position: sticky` creates its own stacking context, so the notification dropdown's
+        // zIndex:90 only wins *inside* this aside - without an explicit zIndex here the whole
+        // sidebar (dropdown included) paints below the static main content next to it, which
+        // comes later in DOM order. Matches the mobile top bar's zIndex:50 (AdminPanel.tsx).
+        zIndex: 50,
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
+          justifyContent: "space-between",
           gap: 10,
           padding: "4px 8px 24px",
           borderBottom: "1px solid var(--ink-06)",
           marginBottom: 16,
         }}
       >
-        <div
-          style={{
-            width: 28,
-            height: 28,
+        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 999,
+              background: "var(--green)",
+              color: "var(--lime)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: '"Instrument Serif", serif',
+              fontSize: 18,
+              flexShrink: 0,
+            }}
+          >
+            h
+          </div>
+          <div>
+            <div
+              style={{
+                fontFamily: '"Instrument Serif", serif',
+                fontSize: 20,
+                letterSpacing: "-0.02em",
+                lineHeight: 1,
+              }}
+            >
+              Healthora
+            </div>
+            <div
+              style={{
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 9,
+                color: "var(--ink-60)",
+                letterSpacing: "0.12em",
+                marginTop: 2,
+              }}
+            >
+              ADMIN PANEL
+            </div>
+          </div>
+        </div>
+        <NotificationCenter
+          panelAlign="left"
+          buttonStyle={{
+            background: "transparent",
+            border: "1px solid var(--ink-06)",
             borderRadius: 999,
-            background: "var(--green)",
-            color: "var(--lime)",
+            padding: 7,
+            cursor: "pointer",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            fontFamily: '"Instrument Serif", serif',
-            fontSize: 18,
+            color: "var(--ink)",
+            flexShrink: 0,
           }}
-        >
-          h
-        </div>
-        <div>
-          <div
-            style={{
-              fontFamily: '"Instrument Serif", serif',
-              fontSize: 20,
-              letterSpacing: "-0.02em",
-              lineHeight: 1,
-            }}
-          >
-            Healthora
-          </div>
-          <div
-            style={{
-              fontFamily: '"JetBrains Mono", monospace',
-              fontSize: 9,
-              color: "var(--ink-60)",
-              letterSpacing: "0.12em",
-              marginTop: 2,
-            }}
-          >
-            ADMIN PANEL
-          </div>
-        </div>
+          iconSize={15}
+        />
       </div>
       <nav style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {items.map((it) => (
@@ -1331,7 +1382,7 @@ export function Sidebar({
           >
             <Icon name={it.icon} size={16} />
             <span style={{ flex: 1 }}>{it.label}</span>
-            {it.count && (
+            {it.count !== undefined && (
               <span
                 style={{
                   fontSize: 10,

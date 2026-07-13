@@ -6,7 +6,12 @@ import { Product } from "../../db/models/Product";
 import { Category } from "../../db/models/Category";
 import { recalculateNew } from "../../lib/bestsellers";
 import { scanAndNotifyLowStock } from "../../lib/lowStock";
-import { applyCategoryDiscount, isVigenciaRangeValid, removeCategoryDiscount } from "../../lib/discounts";
+import {
+  applyCategoryDiscount,
+  clearStaleCategoryDiscountMarkers,
+  isVigenciaRangeValid,
+  removeCategoryDiscount,
+} from "../../lib/discounts";
 import { clearCatalogCache } from "../../lib/cache";
 import {
   moneyFromInput,
@@ -46,6 +51,22 @@ const productVariantSchema = z
     priceBefore: moneyFromInput().nullable().optional(),
     discountStartsAt: z.coerce.date().nullable().optional(),
     discountEndsAt: z.coerce.date().nullable().optional(),
+    // Origin marker + restore snapshot for priceBefore/priceBeforeBySize - only ever written by
+    // discounts.ts (applyCategoryDiscount/removeCategoryDiscount). Accepted here purely so the
+    // admin editor's round-trip (which resends whatever it loaded) doesn't silently strip them on
+    // an unrelated save.
+    categoryDiscount: z.boolean().optional(),
+    categoryDiscountRestore: z
+      .object({
+        price: moneyFromInput(),
+        priceBefore: moneyFromInput().optional(),
+        discountStartsAt: z.coerce.date().optional(),
+        discountEndsAt: z.coerce.date().optional(),
+      })
+      .optional(),
+    categoryDiscountRestoreBySize: z
+      .record(z.string(), z.object({ price: moneyFromInput(), priceBefore: moneyFromInput().optional() }))
+      .optional(),
     stock: z.coerce.number().int().min(0).max(999999),
     sku: optionalTextField(120),
     color: optionalTextField(80),
@@ -54,6 +75,7 @@ const productVariantSchema = z
     imagesBySize: z.record(z.string(), z.array(textField(400)).max(20)).optional(),
     stockBySize: z.record(z.string(), z.coerce.number().int().min(0).max(999999)).optional(),
     priceBySize: z.record(z.string(), moneyFromInput()).optional(),
+    priceBeforeBySize: z.record(z.string(), moneyFromInput()).optional(),
     isDefault: z.coerce.boolean().default(false),
     availableFor: z.array(productIdSchema).max(50).optional(),
   })
@@ -194,6 +216,13 @@ export const adminProductsRouter = new Hono<AppEnv>()
 
       const parsedBody = await parseJson(c, productUpdateSchema);
       if (!parsedBody.success) return parsedBody.response;
+
+      // The editor round-trips categoryDiscount/categoryDiscountRestore(BySize) untouched (no
+      // checkbox for them), so a deliberate new price/priceBefore over one still marked as a
+      // category discount needs to clear that stale marker here - otherwise a later "quitar
+      // descuento por categoría" would revert past this hand-set edit. See clearStaleCategoryDiscountMarkers.
+      const before = await Product.findById(parsedParams.data.id).lean();
+      clearStaleCategoryDiscountMarkers(before, parsedBody.data);
 
       const product = await Product.findByIdAndUpdate(parsedParams.data.id, parsedBody.data, {
         returnDocument: "after",

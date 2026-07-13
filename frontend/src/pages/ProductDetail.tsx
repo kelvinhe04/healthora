@@ -14,6 +14,7 @@ import { RelatedProductsSection } from '../components/shared/RelatedProductsSect
 import { getRelatedProducts } from '../lib/relatedProducts';
 import { PRIMARY_VARIANT_TYPES, pickDefaultPrimary, sizesFor, pickDefaultSize, pickSizeKeepingCurrent, getPrimaryVariantStock } from '../lib/productVariants';
 import { renderInlineText, renderRichText } from '../lib/richText';
+import { isLowStock } from '../lib/stock';
 
 interface ProductDetailProps {
   product: Product;
@@ -165,7 +166,8 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
 
   const priceOverride = hasTwoDimensions && selectedSize ? selectedVariant?.priceBySize?.[selectedSize.id] : undefined;
   const effectivePrice = priceOverride ?? ((selectedVariant?.price ?? product.price) + (hasTwoDimensions ? (selectedSize?.price ?? 0) : 0));
-  const effectivePriceBefore = selectedVariant?.priceBefore ?? product.priceBefore;
+  const comboPriceBefore = hasTwoDimensions && selectedSize ? selectedVariant?.priceBeforeBySize?.[selectedSize.id] : undefined;
+  const effectivePriceBefore = comboPriceBefore ?? selectedVariant?.priceBefore ?? product.priceBefore;
   const effectiveStock = hasTwoDimensions
     ? (selectedSize && selectedVariant?.stockBySize?.[selectedSize.id]) ?? selectedSize?.stock ?? selectedVariant?.stock ?? product.stock
     : (selectedVariant?.stock ?? product.stock);
@@ -294,10 +296,15 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
                 <span style={{ width: 6, height: 6, background: 'oklch(0.5 0.15 30)', borderRadius: 999 }} />
                 AGOTADO
               </span>
+            ) : isLowStock(effectiveStock) ? (
+              <span style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'var(--coral)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 6, height: 6, background: 'var(--coral)', borderRadius: 999 }} />
+                SOLO QUEDAN {effectiveStock}
+              </span>
             ) : (
               <span style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 6, height: 6, background: 'var(--green)', borderRadius: 999 }} />
-                EN STOCK · {effectiveStock} unidades
+                EN STOCK
               </span>
             )}
           </div>
