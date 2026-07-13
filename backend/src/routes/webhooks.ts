@@ -5,7 +5,7 @@ import { Order } from '../db/models/Order';
 import { Product } from '../db/models/Product';
 import { normalizeOrder } from '../lib/orderStatus';
 import { sendOrderConfirmationEmail } from '../lib/email';
-import { recalculateBestsellers } from '../lib/bestsellers';
+import { recalculateBestsellers, recalculatePurchasesLastMonth } from '../lib/bestsellers';
 import { cartItemSchema, emailField, moneyFromInput, optionalTextField, orderAddressSchema, shippingMethodSchema, textField } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
 import { decrementStock, validateCartStock } from '../lib/inventory';
@@ -288,6 +288,7 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
   // Recalculate bestsellers after any payment event
   if (process.env.NODE_ENV !== 'test') {
     recalculateBestsellers().catch((e) => console.error('[bestsellers] recalc error:', e));
+    recalculatePurchasesLastMonth().catch((e) => console.error('[purchases-last-month] recalc error:', e));
   }
 
   console.log('[WEBHOOK] Request processed');

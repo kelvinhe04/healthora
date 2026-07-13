@@ -15,6 +15,7 @@ import { getRelatedProducts } from '../lib/relatedProducts';
 import { PRIMARY_VARIANT_TYPES, pickDefaultPrimary, sizesFor, pickDefaultSize, pickSizeKeepingCurrent, getPrimaryVariantStock } from '../lib/productVariants';
 import { renderInlineText, renderRichText } from '../lib/richText';
 import { isLowStock } from '../lib/stock';
+import { formatPurchasesLastMonth } from '../lib/purchases';
 
 interface ProductDetailProps {
   product: Product;
@@ -65,6 +66,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   const liveRating = liveReviews && liveReviews.length > 0
     ? Math.round(liveReviews.reduce((s, r) => s + r.rating, 0) / liveReviews.length * 10) / 10
     : 0;
+  const purchasesLabel = formatPurchasesLastMonth(product.purchasesLastMonth ?? 0);
   const baseGallery = product.images?.length
     ? product.images.slice(0, 4)
     : Array.from({ length: 4 }, (_, i) => ({
@@ -308,6 +310,10 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
               </span>
             )}
           </div>
+
+          {purchasesLabel && (
+            <div style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginBottom: 20 }}>{purchasesLabel} compraron el último mes</div>
+          )}
 
           <p style={{ fontSize: 17, lineHeight: 1.55, color: 'var(--ink-80)', marginBottom: product.variants?.length ? 20 : 32, maxWidth: 480 }}>{product.short}</p>
 

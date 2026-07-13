@@ -11,6 +11,7 @@ import { useCompareStore } from '../../store/compareStore';
 import { useWishlistStore } from '../../store/wishlistStore';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { isLowStock } from '../../lib/stock';
+import { formatPurchasesLastMonth } from '../../lib/purchases';
 
 // ─── Shared shimmer helper ────────────────────────────────────────────────────
 function ShimmerBox({ style }: { style?: CSSProperties }) {
@@ -114,6 +115,7 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
     : defaultVariant?.images?.[1] || product.images?.find((img, i) => img.url && img.url !== primaryImage && i !== 0)?.url || product.images?.[1]?.url;
   const effectivePrice = getEffectivePrice(product);
   const effectivePriceBefore = getEffectivePriceBefore(product);
+  const purchasesLabel = formatPurchasesLastMonth(product.purchasesLastMonth ?? 0);
   const showOverlayActions = isMobile || hover || isWishlisted || isCompared;
   const overlayActionStyle = {
     opacity: showOverlayActions ? (hover || isMobile ? 1 : 0.85) : 0,
@@ -273,6 +275,9 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
             <span style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>SIN RESEÑAS</span>
           )}
         </div>
+        {purchasesLabel && (
+          <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginBottom: 8 }}>{purchasesLabel} compraron el último mes</div>
+        )}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
           <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 22, color: 'var(--ink)' }}>${effectivePrice.toFixed(2)}</span>
           {effectivePriceBefore && <span style={{ fontSize: 13, color: 'var(--ink-40)', textDecoration: 'line-through' }}>${effectivePriceBefore.toFixed(2)}</span>}

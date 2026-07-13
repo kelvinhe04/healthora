@@ -24,6 +24,10 @@ const ProductSchema = new Schema(
     // so re-applying still discounts from the true original, avoiding compounding.
     categoryDiscountRestore: { type: Object },
     tag: String,
+    // Unidades vendidas en los ultimos 30 dias (ordenes pagadas), recalculado periodicamente -
+    // ver recalculatePurchasesLastMonth en lib/bestsellers.ts. Usado por el badge estilo Amazon
+    // "X compraron el ultimo mes" (HU-104); el frontend decide el umbral/formato de despliegue.
+    purchasesLastMonth: { type: Number, default: 0 },
     rating: { type: Number, default: 0 },
     reviews: { type: Number, default: 0 },
     short: String,
