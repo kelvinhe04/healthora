@@ -5,6 +5,7 @@ import { Order } from '../../db/models/Order';
 import { Product } from '../../db/models/Product';
 import { User } from '../../db/models/User';
 import { normalizeOrder } from '../../lib/orderStatus';
+import { LOW_STOCK_THRESHOLD } from '../../lib/realtime';
 
 const paidOrdersMatch = {
   $or: [
@@ -62,7 +63,13 @@ export const adminDashboardRouter = new Hono<AppEnv>()
     }
 
     const recentOrders = (await Order.find().sort({ createdAt: -1 }).limit(5).lean()).map((order) => normalizeOrder(order));
-    const lowStockProducts = await Product.find({ stock: { $lte: 5 }, active: true }).sort({ stock: 1 }).limit(6).lean();
+    // Respeta el umbral por producto (lowStockThreshold, HU-055) cuando esta definido, cae al
+    // default global si no. $expr compara dos campos del mismo documento, algo que un filtro
+    // plano no puede expresar.
+    const lowStockProducts = await Product.find({
+      active: true,
+      $expr: { $lte: ['$stock', { $ifNull: ['$lowStockThreshold', LOW_STOCK_THRESHOLD] }] },
+    }).sort({ stock: 1 }).limit(6).lean();
 
     return c.json({
       kpis: {

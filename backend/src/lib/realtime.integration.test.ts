@@ -202,6 +202,22 @@ describe('realtime notification hub', () => {
     const alert = await Notification.findOne({ type: 'low_stock' }).lean();
     expect((alert as { data: { variantId: string } }).data.variantId).toBe('vanilla:5lb');
   });
+
+  test('scanAndNotifyLowStock respects a per-product lowStockThreshold override (HU-055)', async () => {
+    // Stock de 12 no dispara con el default global (5), pero si con el umbral propio del
+    // producto (15) - un producto de alta rotacion que el admin quiere vigilar mas de cerca.
+    const highTurnover = { id: 'vitamin-c', name: 'Vitamina C', stock: 12, lowStockThreshold: 15 };
+    expect(await scanAndNotifyLowStock(highTurnover)).toHaveLength(1);
+
+    // Sin override (o threshold explicito) sigue cayendo al default global: 12 no es critico.
+    const normal = { id: 'vitamin-d', name: 'Vitamina D', stock: 12 };
+    expect(await scanAndNotifyLowStock(normal)).toHaveLength(0);
+
+    // Un threshold explicito en opts sigue ganando sobre el del producto (compatibilidad hacia
+    // atras con los call sites que ya pasaban su propio threshold).
+    const overridden = { id: 'vitamin-e', name: 'Vitamina E', stock: 12, lowStockThreshold: 15 };
+    expect(await scanAndNotifyLowStock(overridden, { threshold: 5 })).toHaveLength(0);
+  });
 });
 
 describe('notifications router', () => {

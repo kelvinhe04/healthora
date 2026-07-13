@@ -27,6 +27,7 @@ import { variantSummary } from '../utils';
 import type { ProductSortKey } from '../hooks/useAdminPanel';
 import { getTotalStock, getEffectivePrice, getEffectivePriceBefore } from '../../../lib/productVariants';
 import { api } from '../../../lib/api';
+import { effectiveLowStockThreshold } from '../types';
 import type { Product } from '../../../types';
 
 const modalFieldLabel = { fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: 'var(--ink-60)', marginBottom: 6, display: 'block' };
@@ -840,9 +841,30 @@ export function ProductsSection() {
                         style={{
                           ...td,
                           fontFamily: '"JetBrains Mono", monospace',
+                          ...(product.active && getTotalStock(product) <= effectiveLowStockThreshold(product)
+                            ? { color: 'var(--coral)', fontWeight: 600 }
+                            : {}),
                         }}
                       >
                         {getTotalStock(product)}
+                        {product.active && getTotalStock(product) <= effectiveLowStockThreshold(product) && (
+                          <span
+                            title={`Stock bajo (umbral: ${effectiveLowStockThreshold(product)})`}
+                            style={{
+                              marginLeft: 6,
+                              fontSize: 9,
+                              fontFamily: '"JetBrains Mono", monospace',
+                              letterSpacing: '0.04em',
+                              textTransform: 'uppercase',
+                              padding: '2px 6px',
+                              borderRadius: 999,
+                              background: 'color-mix(in oklab, var(--coral) 12%, white)',
+                              color: 'var(--coral)',
+                            }}
+                          >
+                            Bajo
+                          </span>
+                        )}
                       </td>
                       <td style={td}>
                         <ProductRatingCell summary={reviewsSummary[product.id]} />

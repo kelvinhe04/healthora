@@ -95,6 +95,10 @@ const ProductSchema = new Schema(
     ],
     active: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
+    // Umbral de stock bajo especifico de este producto (HU-055). Sin definir, se usa el default
+    // global LOW_STOCK_THRESHOLD (backend/src/lib/realtime.ts) tanto para las alertas en tiempo
+    // real como para el widget "Stock bajo" del dashboard.
+    lowStockThreshold: Number,
     // ITBMS (Panama VAT) exemption - certain medications/health items don't pay the 7% tax at
     // checkout. Derived automatically from `category` (see hooks below), not admin-editable.
     taxExempt: { type: Boolean, default: false },

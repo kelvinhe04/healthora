@@ -90,6 +90,9 @@ export interface Product {
   }[];
   variants?: ProductVariant[];
   active: boolean;
+  /** Umbral de stock bajo especifico de este producto (HU-055). Sin definir, se usa el default
+   * global del backend. */
+  lowStockThreshold?: number | null;
   taxExempt?: boolean;
   createdAt?: string;
   updatedAt?: string;
