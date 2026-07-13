@@ -4,7 +4,7 @@ import { stripe } from '../lib/stripe';
 import { Order } from '../db/models/Order';
 import { Product } from '../db/models/Product';
 import { normalizeOrder } from '../lib/orderStatus';
-import { sendOrderConfirmationEmail } from '../lib/email';
+import { enqueueEmailJob } from '../lib/jobQueue';
 import { recalculateAfterPayment } from '../lib/bestsellers';
 import { cartItemSchema, emailField, moneyFromInput, optionalTextField, orderAddressSchema, shippingMethodSchema, textField } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
@@ -169,7 +169,7 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
 
           if (customerEmail) {
             try {
-              await sendOrderConfirmationEmail({
+              await enqueueEmailJob('order_confirmation', {
                 customerName: metadata.customerName || 'cliente',
                 customerEmail: customerEmail,
                 orderId: order._id.toString(),
@@ -186,9 +186,9 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
                 address,
                 createdAt: order.createdAt,
               });
-              console.log('[WEBHOOK] Email sent successfully');
+              console.log('[WEBHOOK] Email queued successfully');
             } catch (emailError) {
-              console.error('[WEBHOOK] Email error:', emailError);
+              console.error('[WEBHOOK] Email queue error:', emailError);
             }
           }
 

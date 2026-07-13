@@ -4,7 +4,7 @@ import { requireAdmin } from '../../middleware/requireAdmin';
 import { auditAdminMutations } from '../../middleware/auditAdminAction';
 import type { AppEnv } from '../../types/hono';
 import { Order } from '../../db/models/Order';
-import { sendOrderStatusUpdateEmail } from '../../lib/email';
+import { enqueueEmailJob } from '../../lib/jobQueue';
 import { combineOrderStatus, normalizeOrder, type FulfillmentStatus } from '../../lib/orderStatus';
 import { notifyUser } from '../../lib/realtime';
 import { generateTrackingNumber } from '../../lib/tracking';
@@ -142,7 +142,7 @@ export const adminOrdersRouter = new Hono<AppEnv>()
     if (normalizedCurrent.fulfillmentStatus !== fulfillmentStatus) {
       if (order.customerEmail) {
         try {
-          await sendOrderStatusUpdateEmail({
+          await enqueueEmailJob('order_status_update', {
             customerName: order.customerName || 'cliente',
             customerEmail: order.customerEmail,
             orderId: order._id.toString(),
@@ -155,7 +155,7 @@ export const adminOrdersRouter = new Hono<AppEnv>()
             trackingNumber: order.trackingNumber,
           });
         } catch (emailError) {
-          console.error('[ADMIN_ORDERS] Failed to send status update email:', emailError);
+          console.error('[ADMIN_ORDERS] Failed to queue status update email:', emailError);
         }
       }
 

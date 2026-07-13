@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Order } from '../../db/models/Order';
 import { combineOrderStatus, normalizeOrder } from '../../lib/orderStatus';
-import { sendOrderStatusUpdateEmail } from '../../lib/email';
+import { enqueueEmailJob } from '../../lib/jobQueue';
 import { emailField, objectIdSchema, textField } from '../../lib/validation';
 import { errorResult, jsonResult } from '../toolHelpers';
 
@@ -66,7 +66,7 @@ export function registerOrderTools(server: McpServer) {
 
       if (normalizedCurrent.fulfillmentStatus !== nextFulfillmentStatus && order.customerEmail) {
         try {
-          await sendOrderStatusUpdateEmail({
+          await enqueueEmailJob('order_status_update', {
             customerName: order.customerName || 'cliente',
             customerEmail: order.customerEmail,
             orderId: order._id.toString(),
@@ -76,7 +76,7 @@ export function registerOrderTools(server: McpServer) {
             address: order.address,
           });
         } catch (emailError) {
-          console.error('[MCP] Failed to send status update email:', emailError);
+          console.error('[MCP] Failed to queue status update email:', emailError);
         }
       }
 

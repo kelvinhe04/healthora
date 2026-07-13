@@ -7,7 +7,7 @@ import { Return } from '../db/models/Return';
 import { objectIdSchema, parseJson, productIdSchema, textField } from '../lib/validation';
 import { isWithinReturnWindow, refundIncludesShipping, resolvePendingRefunds } from '../lib/returns';
 import { saveImageFile } from '../lib/imageStorage';
-import { sendReturnStatusEmail } from '../lib/email';
+import { enqueueEmailJob } from '../lib/jobQueue';
 import { notifyAdmins } from '../lib/realtime';
 import { computeItbms } from '../lib/tax';
 
@@ -142,14 +142,14 @@ export const returnsRouter = new Hono<AppEnv>()
       pickupAddress: returnMethod === 'courier_pickup' ? order.address : undefined,
     });
 
-    sendReturnStatusEmail({
+    enqueueEmailJob('return_status', {
       customerName: user.name || 'cliente',
       customerEmail: user.email || '',
       orderId: String(orderId),
       status: 'requested',
       refundAmount: returnDoc.refundAmount,
       returnMethod,
-    }).catch((err) => console.error('[RETURNS] Failed to send requested email:', err));
+    }).catch((err) => console.error('[RETURNS] Failed to queue requested email:', err));
 
     // Real-time alert to admins (HU-061), mirroring new_review. Best-effort - a notification
     // failure must not fail the return request itself.

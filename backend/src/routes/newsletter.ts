@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { sendNewsletterSubscriptionEmail } from '../lib/email';
+import { enqueueEmailJob } from '../lib/jobQueue';
 import { emailField, parseJson } from '../lib/validation';
 
 const newsletterSchema = z.object({
@@ -13,10 +13,10 @@ export const newsletterRouter = new Hono()
     if (!parsed.success) return parsed.response;
 
     try {
-      await sendNewsletterSubscriptionEmail({ email: parsed.data.email });
+      await enqueueEmailJob('newsletter_subscription', { email: parsed.data.email });
       return c.json({ success: true, message: 'Suscripcion confirmada' });
     } catch (error) {
-      console.error('[NEWSLETTER] Failed to send subscription email:', error);
-      return c.json({ error: 'No pudimos enviar el correo de suscripcion' }, 500);
+      console.error('[NEWSLETTER] Failed to queue subscription email:', error);
+      return c.json({ error: 'No pudimos procesar el correo de suscripcion' }, 500);
     }
   });

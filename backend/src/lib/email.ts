@@ -59,7 +59,7 @@ type Address = {
 
 type FulfillmentStatus = 'unfulfilled' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 
-type EmailData = {
+export type EmailData = {
   customerName: string;
   customerEmail: string;
   orderId: string;
@@ -77,7 +77,7 @@ type EmailData = {
   createdAt: Date;
 };
 
-type OrderStatusEmailData = {
+export type OrderStatusEmailData = {
   customerName: string;
   customerEmail: string;
   orderId: string;
@@ -90,7 +90,7 @@ type OrderStatusEmailData = {
   trackingNumber?: string;
 };
 
-type NewsletterEmailData = {
+export type NewsletterEmailData = {
   email: string;
 };
 

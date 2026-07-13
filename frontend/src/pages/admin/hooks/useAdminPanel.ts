@@ -18,12 +18,16 @@ import {
   type AdminUser,
   type DashboardData,
   type EarningsData,
+  type EmailJobsData,
+  type EmailJobsSummary,
+  type EmailJobStatus,
+  type EmailJobType,
   type ErrorReportsData,
   type OrderPaymentBucket,
   type PerformanceData,
   type SalesData,
 } from '../types';
-import { getNextFulfillmentStatus, paginateItems } from '../utils';
+import { ADMIN_PAGE_SIZE, getNextFulfillmentStatus, paginateItems } from '../utils';
 import { useAdminToken } from './useAdminToken';
 import { broadcastProductsChanged } from '../../../lib/crossTabSync';
 import { getEffectivePrice, getTotalStock } from '../../../lib/productVariants';
@@ -59,7 +63,7 @@ function orderMatchesSearch(order: AdminOrder, term: string): boolean {
   );
 }
 
-const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "performance", "errors", "audit"];
+const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "performance", "errors", "audit", "jobs"];
 
 export function useAdminPanel({
   access,
@@ -329,6 +333,37 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     enabled: page === "errors",
   });
 
+  const [jobStatusFilter, setJobStatusFilter] = useState<"" | EmailJobStatus>("");
+  const [jobTypeFilter, setJobTypeFilter] = useState<"" | EmailJobType>("");
+  const [jobsPage, setJobsPage] = useState(1);
+  const jobsQuery = useQuery({
+    queryKey: ["admin-email-jobs", jobStatusFilter, jobTypeFilter, jobsPage],
+    queryFn: async () =>
+      api.admin.emailJobs(await getAdminToken(), {
+        status: jobStatusFilter || undefined,
+        type: jobTypeFilter || undefined,
+        page: jobsPage,
+        limit: ADMIN_PAGE_SIZE,
+      }) as Promise<EmailJobsData>,
+    enabled: page === "jobs",
+  });
+  const jobsSummaryQuery = useQuery({
+    queryKey: ["admin-email-jobs-summary"],
+    queryFn: async () => api.admin.emailJobsSummary(await getAdminToken()) as Promise<EmailJobsSummary>,
+    enabled: page === "jobs",
+    refetchInterval: page === "jobs" ? 10000 : false,
+  });
+  useEffect(() => {
+    setJobsPage(1);
+  }, [jobStatusFilter, jobTypeFilter]);
+  const retryJobMutation = useMutation({
+    mutationFn: async (id: string) => api.admin.retryEmailJob(id, await getAdminToken()),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin-email-jobs"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-email-jobs-summary"] });
+    },
+  });
+
   const showOrdersSkeleton = useOnceLoading(
     "section_orders",
     ordersQuery.isLoading,
@@ -356,6 +391,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const showErrorsSkeleton = useOnceLoading(
     "section_errors",
     errorReportsQuery.isLoading,
+  );
+  const showJobsSkeleton = useOnceLoading(
+    "section_jobs",
+    jobsQuery.isLoading,
   );
 
   const orderStatusesMutation = useMutation({
@@ -943,5 +982,15 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     setErrorSourceFilter,
     errorReports,
     showErrorsSkeleton,
+    jobStatusFilter,
+    setJobStatusFilter,
+    jobTypeFilter,
+    setJobTypeFilter,
+    jobsPage,
+    setJobsPage,
+    jobs: jobsQuery.data,
+    jobsSummary: jobsSummaryQuery.data,
+    showJobsSkeleton,
+    retryJobMutation,
   };
 }

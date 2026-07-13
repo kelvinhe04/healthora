@@ -1,5 +1,8 @@
 import type {
   AdminAuditLogEntry,
+  AdminEmailJob,
+  EmailJobStatus,
+  EmailJobType,
   ErrorReport,
   FulfillmentStatus,
   OrderAddress,
@@ -79,7 +82,8 @@ export type AdminPage =
   | "errors"
   | "returns"
   | "reviews"
-  | "audit";
+  | "audit"
+  | "jobs";
 export interface AdminAppProps {
   onGoToStore: () => void;
 }
@@ -222,6 +226,32 @@ export type AuditLogsData = {
   total: number;
   page: number;
   limit: number;
+};
+
+export type EmailJobsData = {
+  items: AdminEmailJob[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+export type EmailJobsSummary = {
+  byStatus: Record<EmailJobStatus, number>;
+  total: number;
+};
+
+export const emailJobTypeLabels: Record<EmailJobType, string> = {
+  order_confirmation: "Confirmación de pedido",
+  order_status_update: "Actualización de pedido",
+  return_status: "Estado de devolución",
+  newsletter_subscription: "Suscripción a newsletter",
+};
+
+export const emailJobStatusLabels: Record<EmailJobStatus, string> = {
+  pending: "Pendiente",
+  processing: "Procesando",
+  completed: "Completado",
+  failed: "Fallido",
 };
 
 export const fulfillmentStatusOptions: (FulfillmentStatus | "")[] = [

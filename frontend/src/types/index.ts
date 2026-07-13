@@ -286,6 +286,28 @@ export interface AdminAuditLogEntry {
   createdAt: string;
 }
 
+export type EmailJobStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type EmailJobType =
+  | 'order_confirmation'
+  | 'order_status_update'
+  | 'return_status'
+  | 'newsletter_subscription';
+
+/** One queued/attempted email send (HU-079) - the background job queue processes these
+ * asynchronously instead of sending inline from the request that triggered them. */
+export interface AdminEmailJob {
+  _id: string;
+  type: EmailJobType;
+  status: EmailJobStatus;
+  attempts: number;
+  maxAttempts: number;
+  lastError?: string;
+  nextAttemptAt: string;
+  completedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ProductFilters {
   category?: string;
   need?: string;

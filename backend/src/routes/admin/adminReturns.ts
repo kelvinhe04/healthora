@@ -6,7 +6,8 @@ import { requireAdmin } from '../../middleware/requireAdmin';
 import { auditAdminMutations } from '../../middleware/auditAdminAction';
 import type { AppEnv } from '../../types/hono';
 import { objectIdSchema, parseJson, parseParams, parseQuery } from '../../lib/validation';
-import { sendReturnStatusEmail, getReturnStatusCopy, getReturnedToCustomerCopy, capitalizeSentence } from '../../lib/email';
+import { getReturnStatusCopy, getReturnedToCustomerCopy, capitalizeSentence } from '../../lib/email';
+import { enqueueEmailJob } from '../../lib/jobQueue';
 import { stripe } from '../../lib/stripe';
 import { notifyUser } from '../../lib/realtime';
 import { createReplacementOrder, resolvePendingRefunds } from '../../lib/returns';
@@ -92,7 +93,7 @@ export const adminReturnsRouter = new Hono<AppEnv>()
     if (rejectedAfterReview) returnDoc.rejectedAfterReview = true;
     await returnDoc.save();
 
-    sendReturnStatusEmail({
+    enqueueEmailJob('return_status', {
       customerName: returnDoc.customerName || 'cliente',
       customerEmail: returnDoc.customerEmail || '',
       orderId: String(returnDoc.orderId),
@@ -100,7 +101,7 @@ export const adminReturnsRouter = new Hono<AppEnv>()
       refundAmount: returnDoc.refundAmount,
       returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
       rejectedAfterReview,
-    }).catch((err) => console.error('[ADMIN_RETURNS] Failed to send status email:', err));
+    }).catch((err) => console.error('[ADMIN_RETURNS] Failed to queue status email:', err));
 
     // Real-time push to the customer (HU-061), mirroring the status email and the fulfillment
     // notification in adminOrders.ts. Best-effort - a notification failure must not fail the
@@ -145,7 +146,7 @@ export const adminReturnsRouter = new Hono<AppEnv>()
 
     const copy = getReturnedToCustomerCopy(returnDoc.returnMethod);
 
-    sendReturnStatusEmail({
+    enqueueEmailJob('return_status', {
       customerName: returnDoc.customerName || 'cliente',
       customerEmail: returnDoc.customerEmail || '',
       orderId: String(returnDoc.orderId),
@@ -153,7 +154,7 @@ export const adminReturnsRouter = new Hono<AppEnv>()
       refundAmount: returnDoc.refundAmount,
       returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
       copyOverride: copy,
-    }).catch((err) => console.error('[ADMIN_RETURNS] Failed to send returned-to-customer email:', err));
+    }).catch((err) => console.error('[ADMIN_RETURNS] Failed to queue returned-to-customer email:', err));
 
     if (returnDoc.customerId) {
       try {

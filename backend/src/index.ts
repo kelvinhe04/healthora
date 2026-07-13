@@ -23,10 +23,11 @@ import { adminReturnsRouter } from './routes/admin/adminReturns';
 import { returnsRouter } from './routes/returns';
 import { adminReviewsRouter } from './routes/admin/adminReviews';
 import { adminCategoriesRouter } from './routes/admin/adminCategories';
+import { adminJobsRouter } from './routes/admin/adminJobs';
 import { accountRouter } from './routes/account';
 import { mcpAuth } from './mcp/auth';
 import { handleMcpRequest } from './mcp/server';
-import { sendOrderConfirmationEmail } from './lib/email';
+import { enqueueEmailJob, startEmailQueueWorker } from './lib/jobQueue';
 import { recalculateBestsellers, recalculateNew, recalculatePurchasesLastMonth } from './lib/bestsellers';
 import { reviewsRouter } from './routes/reviews';
 import { notificationsRouter, websocket } from './routes/notifications';
@@ -58,6 +59,7 @@ await clearCatalogCache();
 await recalculateBestsellers();
 await recalculateNew();
 await recalculatePurchasesLastMonth();
+startEmailQueueWorker();
 
 const app = new Hono();
 
@@ -105,6 +107,7 @@ app.route('/admin/audit-logs', adminAuditLogsRouter);
 app.route('/admin/returns', adminReturnsRouter);
 app.route('/admin/reviews', adminReviewsRouter);
 app.route('/admin/categories', adminCategoriesRouter);
+app.route('/admin/email-jobs', adminJobsRouter);
 
 // Remote MCP server (Model Context Protocol) - exposes read/write tools for catalog, variantes,
 // stock, ordenes, usuarios y ventas, importable desde Claude Code / Codex / conectores de
@@ -122,7 +125,7 @@ app.post('/test-email', async (c) => {
   if (!parsed.success) return parsed.response;
 
   const { email, name } = parsed.data;
-  await sendOrderConfirmationEmail({
+  await enqueueEmailJob('order_confirmation', {
     customerName: name || 'Test User',
     customerEmail: email,
     orderId: 'test-order-12345678',
@@ -142,7 +145,7 @@ app.post('/test-email', async (c) => {
     },
     createdAt: new Date(),
   });
-  return c.json({ success: true, message: 'Email sent to ' + email });
+  return c.json({ success: true, message: 'Email encolado para ' + email });
 });
 
 app.notFound((c) => c.json({ error: 'Not found' }, 404));

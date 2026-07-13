@@ -3,7 +3,8 @@ import { Product } from '../db/models/Product';
 import { Return } from '../db/models/Return';
 import { decrementStock } from './inventory';
 import { scanAndNotifyLowStock } from './lowStock';
-import { sendReturnStatusEmail, getReturnStatusCopy } from './email';
+import { getReturnStatusCopy } from './email';
+import { enqueueEmailJob } from './jobQueue';
 import { notifyAdmins, notifyUser } from './realtime';
 import { stripe } from './stripe';
 
@@ -141,14 +142,14 @@ export async function confirmReturnRefund(stripeRefundId: string, stripeStatus: 
     await returnDoc.save();
     await Order.updateOne({ _id: returnDoc.orderId }, { paymentStatus: 'refunded', status: 'refunded' });
 
-    sendReturnStatusEmail({
+    enqueueEmailJob('return_status', {
       customerName: returnDoc.customerName || 'cliente',
       customerEmail: returnDoc.customerEmail || '',
       orderId: String(returnDoc.orderId),
       status: 'refunded',
       refundAmount: returnDoc.refundAmount,
       returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
-    }).catch((err) => console.error('[RETURNS] Failed to send refunded email:', err));
+    }).catch((err) => console.error('[RETURNS] Failed to queue refunded email:', err));
 
     if (returnDoc.customerId) {
       try {

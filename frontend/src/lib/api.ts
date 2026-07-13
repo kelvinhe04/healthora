@@ -15,6 +15,9 @@ import type {
   ReviewBan,
   ErrorReport,
   AdminAuditLogEntry,
+  AdminEmailJob,
+  EmailJobStatus,
+  EmailJobType,
   AppNotification,
   NotificationInbox,
 } from "../types";
@@ -474,5 +477,38 @@ export const api = {
         token,
       );
     },
+    emailJobs: (
+      token: string,
+      filters: {
+        status?: EmailJobStatus;
+        type?: EmailJobType;
+        page?: number;
+        limit?: number;
+      } = {},
+    ) => {
+      const params = new URLSearchParams();
+      if (filters.status) params.set("status", filters.status);
+      if (filters.type) params.set("type", filters.type);
+      if (filters.page && filters.page > 1) params.set("page", String(filters.page));
+      if (filters.limit) params.set("limit", String(filters.limit));
+      const query = params.toString();
+      return request<{ items: AdminEmailJob[]; total: number; page: number; limit: number }>(
+        `/admin/email-jobs${query ? `?${query}` : ""}`,
+        undefined,
+        token,
+      );
+    },
+    emailJobsSummary: (token: string) =>
+      request<{ byStatus: Record<EmailJobStatus, number>; total: number }>(
+        "/admin/email-jobs/summary",
+        undefined,
+        token,
+      ),
+    retryEmailJob: (id: string, token: string) =>
+      request<{ success: boolean }>(
+        `/admin/email-jobs/${id}/retry`,
+        { method: "POST" },
+        token,
+      ),
   },
 };

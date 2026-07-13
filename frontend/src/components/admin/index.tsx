@@ -488,6 +488,7 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; darkBg: string; da
   Activo:    { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
   published: { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
   Publicada: { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
+  Completado: { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
   // Amber — pending payment / unfulfilled
   Pendiente:            { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
   pending_payment:      { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
@@ -500,6 +501,7 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; darkBg: string; da
   "Reembolso en proceso":       { bg: "oklch(0.95 0.08 75)", fg: "oklch(0.5 0.12 75)",  darkBg: "oklch(0.28 0.08 75)",  darkFg: "oklch(0.88 0.13 75)"  },
   // Blue — processing / in-prep / scheduled
   processing:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
+  Procesando:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   Preparando:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   "En preparación":{ bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
   Programado:      { bg: "oklch(0.92 0.08 230)", fg: "oklch(0.4 0.12 230)",  darkBg: "oklch(0.28 0.09 230)", darkFg: "oklch(0.82 0.12 230)" },
@@ -525,6 +527,7 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; darkBg: string; da
   Inactivo:  { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   rejected:  { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Rechazada: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
+  Fallido:   { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   hidden:    { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Oculta:    { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   // Purple — refunded
@@ -1223,7 +1226,8 @@ type AdminPage =
   | "errors"
   | "returns"
   | "reviews"
-  | "audit";
+  | "audit"
+  | "jobs";
 interface SidebarProps {
   page: AdminPage;
   setPage: (p: AdminPage) => void;
@@ -1272,6 +1276,7 @@ export function Sidebar({
     { id: "performance", label: "Rendimiento", icon: "activity" },
     { id: "errors", label: "Errores", icon: "alert-circle" },
     { id: "audit", label: "Auditoría", icon: "lock" },
+    { id: "jobs", label: "Trabajos", icon: "repeat", count: counts?.jobs },
   ];
   return (
     <aside

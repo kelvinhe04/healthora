@@ -6,7 +6,7 @@ import { Order } from '../db/models/Order';
 import { Product } from '../db/models/Product';
 import { normalizeOrder } from '../lib/orderStatus';
 import { stripe } from '../lib/stripe';
-import { sendOrderConfirmationEmail } from '../lib/email';
+import { enqueueEmailJob } from '../lib/jobQueue';
 import {
   cartItemSchema,
   emailField,
@@ -176,7 +176,7 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
   const customerEmail = metadata.customerEmail || session.customer_email;
   if (customerEmail) {
     try {
-      await sendOrderConfirmationEmail({
+      await enqueueEmailJob('order_confirmation', {
         customerName: metadata.customerName || 'cliente',
         customerEmail: customerEmail,
         orderId: createdOrder._id.toString(),
@@ -193,9 +193,9 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
         address,
         createdAt: createdOrder.createdAt,
       });
-      console.log('[ORDERS] Confirmation email sent to:', customerEmail);
+      console.log('[ORDERS] Confirmation email queued for:', customerEmail);
     } catch (emailError) {
-      console.error('[ORDERS] Failed to send confirmation email:', emailError);
+      console.error('[ORDERS] Failed to queue confirmation email:', emailError);
     }
   }
 
