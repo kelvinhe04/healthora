@@ -41,7 +41,7 @@ export type UserSort = { key: UserSortKey | null; dir: 'asc' | 'desc' };
 
 export type AdminPanelState = ReturnType<typeof useAdminPanel>;
 
-const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "users", "returns", "reviews", "sales", "earnings", "performance", "errors"];
+const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "performance", "errors"];
 
 export function useAdminPanel({
   access,
@@ -549,38 +549,33 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     }
   }, [page]);
 
+  const { data: adminCategories = [] } = useQuery({
+    queryKey: ['admin-categories'],
+    queryFn: async () => api.admin.categories.list(await getAdminToken()),
+  });
+
   const sidebarCounts = useMemo(
     () => ({
       orders: dashboardData?.kpis.totalOrders ?? orders.length,
       products: productsCountQuery.data?.count ?? 0,
+      categories: adminCategories.length,
       users: customers.length,
       returns: returnsCountQuery.data?.count ?? 0,
       reviews: reviewsCountQuery.data?.count ?? 0,
     }),
-    [dashboardData, orders.length, productsCountQuery.data, customers.length, returnsCountQuery.data, reviewsCountQuery.data],
+    [dashboardData, orders.length, productsCountQuery.data, adminCategories.length, customers.length, returnsCountQuery.data, reviewsCountQuery.data],
   );
 
-  const STATIC_CATEGORIES = [
-    "Vitaminas",
-    "Cuidado personal",
-    "Cuidado del bebé",
-    "Suplementos de Bienestar",
-    "Salud de la piel",
-    "Fitness",
-    "Medicamentos",
-    "Hidratantes",
-    "Fragancias",
-    "Maquillaje",
-  ];
-
   const categories = useMemo(() => {
+    const fromApi = adminCategories
+      .filter((c) => c.active !== false)
+      .map((c) => c.id);
     const fromProducts =
       products.length > 0
-        ? [...new Set(products.map((p) => p.category))].sort()
+        ? [...new Set(products.map((p) => p.category))]
         : [];
-    const allCategories = new Set([...STATIC_CATEGORIES, ...fromProducts]);
-    return Array.from(allCategories).sort();
-  }, [products]);
+    return Array.from(new Set([...fromApi, ...fromProducts])).sort();
+  }, [adminCategories, products]);
 
   // Products matching only the search term (not the category filter) — used to count how many
   // products each category pill would show if selected, so the count reflects the active search

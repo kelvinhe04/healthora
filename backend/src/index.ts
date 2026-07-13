@@ -6,6 +6,7 @@ import { productsRouter } from './routes/products';
 import { categoriesRouter } from './routes/categories';
 import { ordersRouter } from './routes/orders';
 import { checkoutRouter } from './routes/checkout';
+import { promotionsRouter } from './routes/promotions';
 import { cartRouter } from './routes/cart';
 import { webhooksRouter } from './routes/webhooks';
 import { adminDashboardRouter } from './routes/admin/adminDashboard';
@@ -22,6 +23,7 @@ import { adminAuditLogsRouter } from './routes/admin/adminAuditLogs';
 import { adminReturnsRouter } from './routes/admin/adminReturns';
 import { returnsRouter } from './routes/returns';
 import { adminReviewsRouter } from './routes/admin/adminReviews';
+import { adminCategoriesRouter } from './routes/admin/adminCategories';
 import { accountRouter } from './routes/account';
 import { mcpAuth } from './mcp/auth';
 import { handleMcpRequest } from './mcp/server';
@@ -93,6 +95,7 @@ app.route('/newsletter', newsletterRouter);
 app.route('/error-reports', errorReportsRouter);
 app.route('/cart', cartRouter);
 app.route('/checkout', checkoutRouter);
+app.route('/promotions', promotionsRouter);
 app.route('/webhooks', webhooksRouter);
 app.route('/admin/access', adminAccessRouter);
 app.route('/admin/dashboard', adminDashboardRouter);
@@ -108,6 +111,7 @@ app.route('/admin/error-reports', adminErrorReportsRouter);
 app.route('/admin/audit-logs', adminAuditLogsRouter);
 app.route('/admin/returns', adminReturnsRouter);
 app.route('/admin/reviews', adminReviewsRouter);
+app.route('/admin/categories', adminCategoriesRouter);
 
 // Remote MCP server (Model Context Protocol) - exposes read/write tools for catalog, variantes,
 // stock, ordenes, usuarios y ventas, importable desde Claude Code / Codex / conectores de

@@ -12,6 +12,7 @@ import { decrementStock, validateCartStock } from '../lib/inventory';
 import { notifyAdmins, notifyUser } from '../lib/realtime';
 import { scanAndNotifyLowStock } from '../lib/lowStock';
 import { confirmReturnRefund } from '../lib/returns';
+import { recordCouponRedemption } from '../lib/promotions';
 
 type CheckoutAddress = {
   name: string;
@@ -161,6 +162,10 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
           });
 
           console.log('[WEBHOOK] Order created:', order._id, 'Email:', customerEmail);
+
+          if (discountCode) {
+            await recordCouponRedemption(discountCode);
+          }
 
           if (customerEmail) {
             try {

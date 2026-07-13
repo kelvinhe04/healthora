@@ -1215,6 +1215,7 @@ type AdminPage =
   | "dashboard"
   | "orders"
   | "products"
+  | "categories"
   | "users"
   | "sales"
   | "earnings"
@@ -1255,6 +1256,12 @@ export function Sidebar({
       label: "Productos",
       icon: "leaf",
       count: counts?.products,
+    },
+    {
+      id: "categories",
+      label: "Categorías",
+      icon: "layers",
+      count: counts?.categories,
     },
     { id: "users", label: "Clientes", icon: "user", count: counts?.users },
     { id: "returns", label: "Devoluciones", icon: "arrow-left", count: counts?.returns },
