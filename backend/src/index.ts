@@ -27,7 +27,7 @@ import { accountRouter } from './routes/account';
 import { mcpAuth } from './mcp/auth';
 import { handleMcpRequest } from './mcp/server';
 import { sendOrderConfirmationEmail } from './lib/email';
-import { recalculateBestsellers, recalculateNew } from './lib/bestsellers';
+import { recalculateBestsellers, recalculateNew, recalculatePurchasesLastMonth } from './lib/bestsellers';
 import { reviewsRouter } from './routes/reviews';
 import { notificationsRouter, websocket } from './routes/notifications';
 import { newsletterRouter } from './routes/newsletter';
@@ -57,6 +57,7 @@ await connectDB();
 await clearCatalogCache();
 await recalculateBestsellers();
 await recalculateNew();
+await recalculatePurchasesLastMonth();
 
 const app = new Hono();
 

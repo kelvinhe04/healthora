@@ -58,6 +58,7 @@ export interface Product {
   /** Whether this product's discount came from the bulk "Descuento por categoría" admin tool (vs. hand-set on this product's own editor). Never admin-editable directly. */
   categoryDiscount?: boolean;
   tag?: string;
+  purchasesLastMonth?: number;
   rating: number;
   reviews: number;
   short: string;

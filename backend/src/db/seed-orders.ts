@@ -2,7 +2,7 @@ import { connectDB } from './connection';
 import { Order } from './models/Order';
 import { Product } from './models/Product';
 import { Return } from './models/Return';
-import { recalculateBestsellers, recalculateNew, NEW_TOP_N } from '../lib/bestsellers';
+import { recalculateBestsellers, recalculateNew, recalculatePurchasesLastMonth, NEW_TOP_N } from '../lib/bestsellers';
 import { resolveVariantPricing, resolveVariantImage } from '../lib/productVariants';
 
 type SeedProduct = {
@@ -241,6 +241,8 @@ async function seedOrders() {
   await recalculateBestsellers();
   console.log('Recalculating new products...');
   await recalculateNew();
+  console.log('Recalculating purchases in the last month...');
+  await recalculatePurchasesLastMonth();
   console.log('Done.');
   process.exit(0);
 }

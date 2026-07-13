@@ -57,3 +57,42 @@ export async function recalculateNew(): Promise<void> {
 
   console.log(`[new-products] Tagged ${recentIds.length} products as Nuevo:`, recentIds);
 }
+
+const PURCHASES_WINDOW_DAYS = 30;
+
+export async function recalculatePurchasesLastMonth(): Promise<void> {
+  const since = new Date(Date.now() - PURCHASES_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+  // Units sold per product from paid orders in the last 30 days (rolling window, unlike
+  // recalculateBestsellers's all-time total).
+  const counts = await Order.aggregate<{ _id: string; totalSold: number }>([
+    { $match: { paymentStatus: 'paid', createdAt: { $gte: since } } },
+    { $unwind: '$items' },
+    { $group: { _id: '$items.productId', totalSold: { $sum: '$items.qty' } } },
+  ]);
+
+  await Product.updateMany({}, { $set: { purchasesLastMonth: 0 } });
+
+  if (counts.length > 0) {
+    await Product.bulkWrite(
+      counts.map((c) => ({
+        updateOne: {
+          filter: { id: c._id },
+          update: { $set: { purchasesLastMonth: c.totalSold } },
+        },
+      })),
+    );
+  }
+
+  console.log(`[purchases-last-month] Updated ${counts.length} products`);
+}
+
+// Best-effort, non-blocking - called from every code path that can flip an order to 'paid'
+// (Stripe webhook, and the orders.ts fallback that actually creates/confirms most paid orders in
+// local dev, since Stripe webhooks rarely reach localhost without CLI/ngrok forwarding). Skipped
+// under NODE_ENV=test so integration tests don't trigger background recalculation.
+export function recalculateAfterPayment(): void {
+  if (process.env.NODE_ENV === 'test') return;
+  recalculateBestsellers().catch((e) => console.error('[bestsellers] recalc error:', e));
+  recalculatePurchasesLastMonth().catch((e) => console.error('[purchases-last-month] recalc error:', e));
+}

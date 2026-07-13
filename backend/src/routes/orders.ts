@@ -25,6 +25,7 @@ import { buildPaidLineItem, resolveVariantImage } from '../lib/productVariants';
 import { decrementStock } from '../lib/inventory';
 import { notifyAdmins, notifyUser } from '../lib/realtime';
 import { scanAndNotifyLowStock } from '../lib/lowStock';
+import { recalculateAfterPayment } from '../lib/bestsellers';
 
 const ordersQuerySchema = z.object({
   stripeSessionId: textField(255).optional(),
@@ -236,6 +237,8 @@ async function createOrderFromPaidSession(stripeSessionId: string, clerkId: stri
     console.error('[ORDERS] low_stock notification failed:', notifyError);
   }
 
+  recalculateAfterPayment();
+
   return normalizeOrder(createdOrder.toObject());
 }
 
@@ -273,6 +276,8 @@ async function syncOrderPaymentFromStripe(order: Record<string, unknown>) {
           console.error('[ORDERS] order_paid (sync) notification failed:', notifyError);
         }
       }
+
+      recalculateAfterPayment();
 
       return updatedOrder ? normalizeOrder(updatedOrder) : normalizedOrder;
     }
