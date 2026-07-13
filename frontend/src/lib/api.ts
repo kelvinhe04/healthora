@@ -123,6 +123,27 @@ export const api = {
         token,
       ),
   },
+  promotions: {
+    validate: (
+      body: {
+        code: string;
+        items: { productId: string; qty: number; variantId?: string }[];
+      },
+      token: string,
+    ) =>
+      request<{
+        valid: true;
+        code: string;
+        label: string;
+        discountAmount: number;
+        subtotal: number;
+        discountedSubtotal: number;
+      }>(
+        "/promotions/validate",
+        { method: "POST", body: JSON.stringify(body) },
+        token,
+      ),
+  },
   reviews: {
     stats: () =>
       request<{ total: number; avgRating: number }>("/reviews/stats"),

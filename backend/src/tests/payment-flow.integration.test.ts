@@ -7,6 +7,7 @@ import { ordersRouter } from '../routes/orders';
 import { webhooksRouter } from '../routes/webhooks';
 import { Product } from '../db/models/Product';
 import { Order } from '../db/models/Order';
+import { seedCoupons } from '../db/seed-coupons';
 import { getLastTestStripeSession } from '../lib/stripe';
 
 process.env.NODE_ENV = 'test';
@@ -62,6 +63,7 @@ describe('payment integration flow', () => {
   beforeEach(async () => {
     await mongoose.connection.db?.dropDatabase();
     await seedProduct();
+    await seedCoupons();
   });
 
   afterAll(async () => {
@@ -90,6 +92,47 @@ describe('payment integration flow', () => {
     expect(session?.metadata?.customerEmail).toBe('buyer@example.com');
     expect(session?.metadata?.cartItems).toContain('vitamin-c-test');
     expect(session?.metadata?.address).toContain('123 Test St');
+  });
+
+  test('applies BIENVENIDA discount in checkout session metadata', async () => {
+    const app = createTestApp();
+
+    const response = await app.request('/checkout/session', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        items: [{ productId: 'vitamin-c-test', qty: 2 }],
+        address,
+        promoCode: 'BIENVENIDA',
+        shippingMethod: 'delivery',
+      }),
+    });
+
+    expect(response.status).toBe(200);
+
+    const session = getLastTestStripeSession();
+    expect(session?.metadata?.discountCode).toBe('BIENVENIDA');
+    expect(Number(session?.metadata?.discountAmount)).toBe(6);
+    expect(Number(session?.metadata?.discountedSubtotal)).toBe(34);
+  });
+
+  test('rejects invalid promo codes at checkout', async () => {
+    const app = createTestApp();
+
+    const response = await app.request('/checkout/session', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        address,
+        promoCode: 'NOPE',
+        shippingMethod: 'delivery',
+      }),
+    });
+
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toBeTruthy();
   });
 
   test('creates an order from a paid Stripe session when queried by session id', async () => {
