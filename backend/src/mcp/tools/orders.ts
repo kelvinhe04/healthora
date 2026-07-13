@@ -7,7 +7,7 @@ import { emailField, objectIdSchema, textField } from '../../lib/validation';
 import { errorResult, jsonResult } from '../toolHelpers';
 
 const paymentStatusEnum = z.enum(['pending_payment', 'paid', 'cancelled', 'refunded']);
-const fulfillmentStatusEnum = z.enum(['unfulfilled', 'processing', 'shipped', 'delivered', 'cancelled']);
+const fulfillmentStatusEnum = z.enum(['unfulfilled', 'processing', 'shipped', 'delivered', 'picked_up', 'cancelled']);
 
 export function registerOrderTools(server: McpServer) {
   server.registerTool(

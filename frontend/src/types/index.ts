@@ -1,6 +1,8 @@
 export type PaymentStatus = 'pending_payment' | 'paid' | 'cancelled' | 'refunded';
 
-export type FulfillmentStatus = 'unfulfilled' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+// `picked_up` only applies to pickup orders: `delivered` means "ready at the store", `picked_up`
+// means the customer actually came and got it.
+export type FulfillmentStatus = 'unfulfilled' | 'processing' | 'shipped' | 'delivered' | 'picked_up' | 'cancelled';
 
 export type OrderStatus =
   | 'pending_payment'
@@ -170,6 +172,10 @@ export type ReturnMethod = 'courier_pickup' | 'store_dropoff';
 /** What the customer asked for when requesting the return - the admin resolves toward this. */
 export type ReturnResolution = 'refund' | 'replacement';
 
+/** Classifies `reason` - damaged/wrong_item/defective are the store's fault (shipping is refunded
+ * along with the item on a refund resolution); changed_mind/other are the customer's own call. */
+export type ReasonCategory = 'damaged' | 'wrong_item' | 'defective' | 'changed_mind' | 'other';
+
 export interface ReturnItem {
   productId: string;
   productName: string;
@@ -183,14 +189,18 @@ export interface OrderReturn {
   customerName?: string;
   customerEmail?: string;
   reason: string;
+  reasonCategory: ReasonCategory;
   items: ReturnItem[];
   refundAmount: number;
   status: ReturnStatus;
   returnMethod: ReturnMethod;
   desiredResolution: ReturnResolution;
+  photos: string[];
   pickupAddress?: OrderAddress;
   replacementOrderId?: string;
   stripeRefundId?: string;
+  rejectedAfterReview?: boolean;
+  returnedToCustomerAt?: string;
   createdAt: string;
   updatedAt: string;
 }

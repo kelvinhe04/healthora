@@ -24,6 +24,7 @@ const updateStatusSchema = z.object({ status: reviewStatusSchema });
 
 export const adminReviewsRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
+  .get('/count', async (c) => c.json({ count: await Review.countDocuments() }))
   .get('/', async (c) => {
     const parsed = parseQuery(c, listQuerySchema);
     if (!parsed.success) return parsed.response;

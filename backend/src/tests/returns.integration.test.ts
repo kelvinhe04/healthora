@@ -37,6 +37,8 @@ const customerHeaders = {
   'x-test-name': 'Buyer Test',
 };
 
+const TEST_PHOTOS = ['https://example.com/evidence-1.jpg'];
+
 const adminHeaders = {
   'content-type': 'application/json',
   'x-test-clerk-id': 'admin_test_1',
@@ -104,14 +106,17 @@ describe('returns flow', () => {
       body: JSON.stringify({
         orderId: order._id.toString(),
         reason: 'Llegó dañado',
+        reasonCategory: 'damaged',
         items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        photos: TEST_PHOTOS,
       }),
     });
 
     expect(createResponse.status).toBe(201);
     const created = await createResponse.json();
     expect(created.status).toBe('requested');
-    expect(created.refundAmount).toBe(20);
+    // $20 item + $1.40 prorated ITBMS (7% of the returned item's price) - no shipping (order has none).
+    expect(created.refundAmount).toBe(21.4);
     expect(created.returnMethod).toBe('courier_pickup');
     expect(created.desiredResolution).toBe('refund');
 
@@ -155,7 +160,9 @@ describe('returns flow', () => {
       body: JSON.stringify({
         orderId: order._id.toString(),
         reason: 'Llegó dañado',
+        reasonCategory: 'damaged',
         items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        photos: TEST_PHOTOS,
       }),
     });
     const created = await createResponse.json();
@@ -188,7 +195,9 @@ describe('returns flow', () => {
       body: JSON.stringify({
         orderId: order._id.toString(),
         reason: 'Llegó dañado',
+        reasonCategory: 'damaged',
         items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        photos: TEST_PHOTOS,
       }),
     });
     const created = await createResponse.json();
@@ -225,8 +234,10 @@ describe('returns flow', () => {
       body: JSON.stringify({
         orderId: order._id.toString(),
         reason: 'Llegó un producto distinto al que pedí',
+        reasonCategory: 'wrong_item',
         items: [{ productId: 'vitamin-c-test', qty: 1 }],
         desiredResolution: 'replacement',
+        photos: TEST_PHOTOS,
       }),
     });
     const created = await createResponse.json();
@@ -259,9 +270,47 @@ describe('returns flow', () => {
     expect(product?.stock).toBe(9);
   });
 
+  test('replacement for a store-dropoff return starts ready for pickup, skipping prep/shipping', async () => {
+    const app = createTestApp();
+    await seedProduct();
+    const order = await seedPaidOrder({ shippingMethod: 'pickup', fulfillmentStatus: 'picked_up' });
+
+    const createResponse = await app.request('/returns', {
+      method: 'POST',
+      headers: customerHeaders,
+      body: JSON.stringify({
+        orderId: order._id.toString(),
+        reason: 'Llegó un producto distinto al que pedí',
+        reasonCategory: 'wrong_item',
+        items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        desiredResolution: 'replacement',
+        photos: TEST_PHOTOS,
+      }),
+    });
+    const created = await createResponse.json();
+    expect(created.returnMethod).toBe('store_dropoff');
+
+    const replaceResponse = await app.request(`/admin/returns/${created._id}/status`, {
+      method: 'PATCH',
+      headers: adminHeaders,
+      body: JSON.stringify({ status: 'replaced' }),
+    });
+    const replaced = await replaceResponse.json();
+
+    // Handed over at the same counter the customer just dropped the wrong item off at - no
+    // preparing/shipping leg to track, so it's already "listo para retirar" (delivered), not
+    // starting from `unfulfilled` like a courier replacement would.
+    const replacementOrder = await Order.findById(replaced.replacementOrderId).lean();
+    expect(replacementOrder?.shippingMethod).toBe('pickup');
+    expect(replacementOrder?.fulfillmentStatus).toBe('delivered');
+    expect(replacementOrder?.status).toBe('delivered');
+  });
+
   test('derives store_dropoff returnMethod for a pickup order (no courier on the way out either)', async () => {
     const app = createTestApp();
-    const order = await seedPaidOrder({ shippingMethod: 'pickup' });
+    // For pickup orders, `delivered` only means "ready at the store" - a return needs `picked_up`
+    // (the customer actually has the product), same gate as any other order (see routes/returns.ts).
+    const order = await seedPaidOrder({ shippingMethod: 'pickup', fulfillmentStatus: 'picked_up' });
 
     const createResponse = await app.request('/returns', {
       method: 'POST',
@@ -269,13 +318,55 @@ describe('returns flow', () => {
       body: JSON.stringify({
         orderId: order._id.toString(),
         reason: 'No era lo que esperaba',
+        reasonCategory: 'changed_mind',
         items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        photos: TEST_PHOTOS,
       }),
     });
 
     expect(createResponse.status).toBe(201);
     const created = await createResponse.json();
     expect(created.returnMethod).toBe('store_dropoff');
+  });
+
+  test('rejects a return request for an order that has not been delivered yet', async () => {
+    const app = createTestApp();
+    const order = await seedPaidOrder({ fulfillmentStatus: 'shipped' });
+
+    const response = await app.request('/returns', {
+      method: 'POST',
+      headers: customerHeaders,
+      body: JSON.stringify({
+        orderId: order._id.toString(),
+        reason: 'Llegó dañado',
+        reasonCategory: 'damaged',
+        items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        photos: TEST_PHOTOS,
+      }),
+    });
+
+    expect(response.status).toBe(400);
+    expect((await Return.countDocuments())).toBe(0);
+  });
+
+  test('rejects a return request for a pickup order that is only ready, not yet picked up', async () => {
+    const app = createTestApp();
+    const order = await seedPaidOrder({ shippingMethod: 'pickup', fulfillmentStatus: 'delivered' });
+
+    const response = await app.request('/returns', {
+      method: 'POST',
+      headers: customerHeaders,
+      body: JSON.stringify({
+        orderId: order._id.toString(),
+        reason: 'Llegó dañado',
+        reasonCategory: 'damaged',
+        items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        photos: TEST_PHOTOS,
+      }),
+    });
+
+    expect(response.status).toBe(400);
+    expect((await Return.countDocuments())).toBe(0);
   });
 
   test('rejects a return request outside the return window', async () => {
@@ -289,7 +380,9 @@ describe('returns flow', () => {
       body: JSON.stringify({
         orderId: order._id.toString(),
         reason: 'Cambié de opinión',
+        reasonCategory: 'changed_mind',
         items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        photos: TEST_PHOTOS,
       }),
     });
 
@@ -307,7 +400,9 @@ describe('returns flow', () => {
       body: JSON.stringify({
         orderId: order._id.toString(),
         reason: 'Primera solicitud',
+        reasonCategory: 'changed_mind',
         items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        photos: TEST_PHOTOS,
       }),
     });
 
@@ -317,10 +412,125 @@ describe('returns flow', () => {
       body: JSON.stringify({
         orderId: order._id.toString(),
         reason: 'Segunda solicitud',
+        reasonCategory: 'changed_mind',
         items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        photos: TEST_PHOTOS,
       }),
     });
 
     expect(secondResponse.status).toBe(409);
+  });
+
+  test('rejects a return request without evidence photos', async () => {
+    const app = createTestApp();
+    const order = await seedPaidOrder();
+
+    const response = await app.request('/returns', {
+      method: 'POST',
+      headers: customerHeaders,
+      body: JSON.stringify({
+        orderId: order._id.toString(),
+        reason: 'Llegó dañado',
+        reasonCategory: 'damaged',
+        items: [{ productId: 'vitamin-c-test', qty: 1 }],
+        photos: [],
+      }),
+    });
+
+    expect(response.status).toBe(400);
+    expect((await Return.countDocuments())).toBe(0);
+  });
+
+  test('refund includes shipping when the reason is the store\'s fault', async () => {
+    const app = createTestApp();
+    const order = await seedPaidOrder({ shipping: 6.9, total: 49.7 });
+
+    const createResponse = await app.request('/returns', {
+      method: 'POST',
+      headers: customerHeaders,
+      body: JSON.stringify({
+        orderId: order._id.toString(),
+        reason: 'Llegó dañado',
+        reasonCategory: 'damaged',
+        items: [{ productId: 'vitamin-c-test', qty: 2 }],
+        photos: TEST_PHOTOS,
+      }),
+    });
+
+    expect(createResponse.status).toBe(201);
+    const created = await createResponse.json();
+    // $40 items + $2.80 prorated ITBMS + $6.90 shipping (store's fault).
+    expect(created.refundAmount).toBe(49.7);
+  });
+
+  test('refund excludes shipping when the reason is the customer\'s own call', async () => {
+    const app = createTestApp();
+    const order = await seedPaidOrder({ shipping: 6.9, total: 49.7 });
+
+    const createResponse = await app.request('/returns', {
+      method: 'POST',
+      headers: customerHeaders,
+      body: JSON.stringify({
+        orderId: order._id.toString(),
+        reason: 'Ya no lo necesito',
+        reasonCategory: 'changed_mind',
+        items: [{ productId: 'vitamin-c-test', qty: 2 }],
+        photos: TEST_PHOTOS,
+      }),
+    });
+
+    expect(createResponse.status).toBe(201);
+    const created = await createResponse.json();
+    // $40 items + $2.80 prorated ITBMS - no shipping (customer's own call).
+    expect(created.refundAmount).toBe(42.8);
+  });
+
+  test('refund excludes ITBMS for a tax-exempt item (medicamentos)', async () => {
+    const app = createTestApp();
+    await seedProduct({ id: 'med-test', category: 'Medicamentos', taxExempt: true });
+    const order = await seedPaidOrder({
+      items: [{ productId: 'med-test', productName: 'Med Test', qty: 2, price: 20, taxExempt: true }],
+      tax: 0,
+    });
+
+    const createResponse = await app.request('/returns', {
+      method: 'POST',
+      headers: customerHeaders,
+      body: JSON.stringify({
+        orderId: order._id.toString(),
+        reason: 'Llegó dañado',
+        reasonCategory: 'damaged',
+        items: [{ productId: 'med-test', qty: 2 }],
+        photos: TEST_PHOTOS,
+      }),
+    });
+
+    expect(createResponse.status).toBe(201);
+    const created = await createResponse.json();
+    // Just the $40 items - no ITBMS to prorate back, medicamentos never paid it.
+    expect(created.refundAmount).toBe(40);
+  });
+
+  test('replacement never adds shipping to refundAmount, even for a store-fault reason', async () => {
+    const app = createTestApp();
+    await seedProduct();
+    const order = await seedPaidOrder({ shipping: 6.9, total: 49.7 });
+
+    const createResponse = await app.request('/returns', {
+      method: 'POST',
+      headers: customerHeaders,
+      body: JSON.stringify({
+        orderId: order._id.toString(),
+        reason: 'Llegó un producto distinto al que pedí',
+        reasonCategory: 'wrong_item',
+        items: [{ productId: 'vitamin-c-test', qty: 2 }],
+        desiredResolution: 'replacement',
+        photos: TEST_PHOTOS,
+      }),
+    });
+
+    expect(createResponse.status).toBe(201);
+    const created = await createResponse.json();
+    expect(created.refundAmount).toBe(40);
   });
 });

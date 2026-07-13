@@ -7,6 +7,24 @@ const ReturnSchema = new Schema(
     customerName: String,
     customerEmail: String,
     reason: { type: String, required: true },
+    // Structured classification of `reason`, used to decide whether the shipping cost is part of
+    // the refund - see REFUND_INCLUDES_SHIPPING in lib/returns.ts. damaged/wrong_item/defective are
+    // the store's fault (courier/warehouse mistake); changed_mind/other are the customer's call.
+    reasonCategory: {
+      type: String,
+      enum: ['damaged', 'wrong_item', 'defective', 'changed_mind', 'other'],
+      required: true,
+    },
+    // Evidence photos (JPEG/PNG/WEBP URLs from POST /returns/upload) - required for both refund and
+    // replacement requests so admin can verify the claim before approving.
+    photos: {
+      type: [String],
+      required: true,
+      validate: {
+        validator: (v: string[]) => v.length >= 1 && v.length <= 4,
+        message: 'Se requieren entre 1 y 4 fotos.',
+      },
+    },
     items: [
       {
         productId: String,
@@ -56,6 +74,16 @@ const ReturnSchema = new Schema(
       postal: String,
     },
     stripeRefundId: String,
+    // Set when the admin rejects from `in_review` (the physical product is already back and didn't
+    // match the claim), as opposed to rejecting a fresh `requested` return sight-unseen. Distinguishes
+    // the two in customer-facing copy and blocks silent resubmission via POST /returns - see
+    // routes/returns.ts. Never set for any other rejection path.
+    rejectedAfterReview: { type: Boolean, default: false },
+    // Only meaningful when rejectedAfterReview is true: the store is physically holding a product
+    // that doesn't belong to a refund/replacement anymore, so it has to go back to the customer
+    // (courier for courier_pickup returns, or the customer picks it up for store_dropoff). Set once
+    // the admin confirms that handoff happened - see PATCH /admin/returns/:id/return-to-customer.
+    returnedToCustomerAt: Date,
   },
   { timestamps: true }
 );

@@ -37,7 +37,7 @@ const OrderSchema = new Schema(
     },
     fulfillmentStatus: {
       type: String,
-      enum: ['unfulfilled', 'processing', 'shipped', 'delivered', 'cancelled'],
+      enum: ['unfulfilled', 'processing', 'shipped', 'delivered', 'picked_up', 'cancelled'],
       default: 'unfulfilled',
     },
     status: {

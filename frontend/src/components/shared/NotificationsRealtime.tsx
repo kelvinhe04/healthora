@@ -9,15 +9,22 @@ import type { AppNotification, NotificationInbox } from '../../types';
 const EMPTY_INBOX: NotificationInbox = { notifications: [], unread: 0 };
 const MAX_BACKOFF_MS = 30_000;
 
-/** Which admin list/dashboard queries to refresh when a given notification type arrives, so the
- * panel updates live instead of waiting for a manual reload. Only wired for the events that
- * actually carry an admin audience today (`new_review`, `low_stock`, `new_order`) — invalidating
- * query keys that aren't mounted (e.g. a customer's browser) is a harmless no-op, so this list is
- * safe to grow as more admin-facing events get their own notification type. */
-const ADMIN_INVALIDATION_BY_TYPE: Partial<Record<AppNotification['type'], string[][]>> = {
+/** Which list/dashboard queries to refresh when a given notification type arrives, so the panel
+ * updates live instead of waiting for a manual reload. Covers both admin-audience events
+ * (`new_review`, `low_stock`, `new_order`, `return_requested`) and user-audience events
+ * (`order_status`, `order_shipped`, `order_paid`, `return_status`) - each client only ever
+ * receives notifications addressed to it (see notifyUser/notifyAdmins), so invalidating a query
+ * key that isn't mounted on that client (e.g. an admin key on a customer's browser) is a harmless
+ * no-op. Safe to grow as more events get their own notification type. */
+const INVALIDATION_BY_TYPE: Partial<Record<AppNotification['type'], string[][]>> = {
   new_review: [['admin', 'reviews'], ['admin-dashboard']],
   low_stock: [['admin-products'], ['admin-products-count'], ['admin-dashboard']],
   new_order: [['admin-orders'], ['admin-dashboard']],
+  return_requested: [['admin', 'returns'], ['admin-dashboard'], ['admin-returns-count']],
+  order_paid: [['orders']],
+  order_shipped: [['orders']],
+  order_status: [['orders']],
+  return_status: [['returns'], ['orders']],
 };
 
 /** Headless component (mounted once at the app root) that keeps a live WebSocket to the backend
@@ -53,7 +60,7 @@ export function NotificationsRealtime() {
         mergePushedNotification(current ?? EMPTY_INBOX, notification),
       );
       pushToastRef.current(notification);
-      for (const queryKey of ADMIN_INVALIDATION_BY_TYPE[notification.type] ?? []) {
+      for (const queryKey of INVALIDATION_BY_TYPE[notification.type] ?? []) {
         void queryClient.invalidateQueries({ queryKey });
       }
     };

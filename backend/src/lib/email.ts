@@ -119,6 +119,14 @@ const FULFILLMENT_EMAIL_COPY: Record<FulfillmentStatus, { label: string; title: 
     message: 'Marcamos tu pedido como entregado. Esperamos que disfrutes tus productos.',
     detail: 'Si algo no llegó correctamente, contáctanos para ayudarte.',
   },
+  // Only reachable for pickup orders in practice (see pickupFulfillmentStatusSequence) - a
+  // delivery order never transitions here, but the Record needs an entry for every status.
+  picked_up: {
+    label: 'Retirado',
+    title: 'Confirmamos tu retiro',
+    message: 'Confirmamos que retiraste tu pedido en tienda. ¡Gracias por comprar en Healthora!',
+    detail: 'Si algo no llegó correctamente, contáctanos para ayudarte.',
+  },
   cancelled: {
     label: 'Cancelado',
     title: 'Tu pedido fue cancelado',
@@ -840,13 +848,51 @@ export const RETURN_STATUS_COPY: Record<string, { label: string; message: string
   rejected: { label: 'Devolución rechazada', message: 'no pudimos aprobar tu solicitud de devolución. Contáctanos si tienes preguntas.' },
 };
 
+// Used instead of RETURN_STATUS_COPY.rejected when the product was already back in our hands and
+// didn't match the original claim - see `rejectedAfterReview` on the Return model.
+const REJECTED_AFTER_REVIEW_COPY = {
+  label: 'Devolución rechazada',
+  message: 'revisamos el producto que recibimos y no coincide con lo reportado en tu solicitud, así que no pudimos aprobar la devolución. Contáctanos si tienes preguntas.',
+};
+
+// Sent once the admin confirms a `rejectedAfterReview` product physically left the store back
+// towards the customer - see `returnedToCustomerAt` on the Return model. Not a `status` value of
+// its own (the Return stays `rejected`), so this is looked up directly by
+// PATCH /admin/returns/:id/return-to-customer rather than through getReturnStatusCopy.
+export const RETURNED_TO_CUSTOMER_COPY: Record<'courier_pickup' | 'store_dropoff', { label: string; message: string }> = {
+  courier_pickup: {
+    label: 'Te devolvimos tu producto',
+    message: 'como no coincidía con lo reportado en tu solicitud de devolución, te lo enviamos de vuelta a la dirección de tu pedido.',
+  },
+  store_dropoff: {
+    label: 'Tu producto está listo para recoger',
+    message: 'como no coincidía con lo reportado en tu solicitud de devolución, ya puedes pasar a la tienda a recogerlo.',
+  },
+};
+
+export function getReturnedToCustomerCopy(returnMethod?: string) {
+  return RETURNED_TO_CUSTOMER_COPY[returnMethod === 'store_dropoff' ? 'store_dropoff' : 'courier_pickup'];
+}
+
 /** Un pedido de retiro en tienda nunca tuvo mensajero de ida, así que tampoco lo tiene de vuelta:
  * el cliente trae el producto él mismo, sin paso "en tránsito". */
 const STORE_DROPOFF_RETURN_STATUS_COPY_OVERRIDES: Partial<Record<string, { label: string; message: string }>> = {
   approved: { label: 'Devolución aprobada', message: 'aprobamos tu devolución. Puedes traer el producto a nuestra tienda cuando gustes, dentro de la ventana de devolución.' },
+  // Nada "en camino" via mensajero aquí, ni "te avisaremos cuando esté listo" - un reemplazo en
+  // tienda se crea directo en "listo para retirar" (ver isStorePickup en lib/returns.ts), porque
+  // se recoge en el mismo mostrador donde se entregó la devolución, no hay preparación de por medio.
+  replaced: { label: 'Reemplazo en tienda', message: 'confirmamos que te llegó el producto equivocado. Ya tenemos el producto correcto listo para que pases a recogerlo a la tienda, sin costo adicional.' },
 };
 
-export function getReturnStatusCopy(status: string, returnMethod?: string) {
+/** All the messages above are written lowercase-first on purpose, to continue "Hola {name}, ..."
+ * in the status email body - but the in-app/push notification shows the same message standalone
+ * (no "Hola" lead-in), so it needs capitalizing there. Email usage stays untouched. */
+export function capitalizeSentence(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+export function getReturnStatusCopy(status: string, returnMethod?: string, rejectedAfterReview?: boolean) {
+  if (status === 'rejected' && rejectedAfterReview) return REJECTED_AFTER_REVIEW_COPY;
   if (returnMethod === 'store_dropoff') {
     return STORE_DROPOFF_RETURN_STATUS_COPY_OVERRIDES[status] || RETURN_STATUS_COPY[status];
   }
@@ -857,19 +903,23 @@ export interface ReturnStatusEmailData {
   customerName: string;
   customerEmail: string;
   orderId: string;
-  status: 'requested' | 'approved' | 'in_transit' | 'refunded' | 'replaced' | 'rejected';
+  status: 'requested' | 'approved' | 'in_transit' | 'in_review' | 'refunded' | 'replaced' | 'rejected';
   refundAmount: number;
   returnMethod?: 'courier_pickup' | 'store_dropoff';
+  rejectedAfterReview?: boolean;
+  // Bypasses getReturnStatusCopy entirely - used for copy that isn't tied to a `status` value on
+  // the Return itself (e.g. RETURNED_TO_CUSTOMER_COPY, sent while the return stays `rejected`).
+  copyOverride?: { label: string; message: string };
 }
 
 export async function sendReturnStatusEmail(data: ReturnStatusEmailData): Promise<void> {
-  const { customerName, customerEmail, orderId, status, refundAmount, returnMethod } = data;
+  const { customerName, customerEmail, orderId, status, refundAmount, returnMethod, rejectedAfterReview, copyOverride } = data;
   if (!customerEmail) {
     console.error('[EMAIL] No customer email provided, skipping return status email');
     return;
   }
 
-  const copy = getReturnStatusCopy(status, returnMethod);
+  const copy = copyOverride ?? getReturnStatusCopy(status, returnMethod, rejectedAfterReview);
   const safeCustomerName = escapeHtml(customerName || 'cliente');
   const safeOrderNumber = escapeHtml(orderId.slice(-8).toUpperCase());
   const ordersUrl = `${getFrontendUrl()}/?view=orders`;

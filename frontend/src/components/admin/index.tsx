@@ -515,6 +515,9 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; darkBg: string; da
   "Retiro en tienda":  { bg: "oklch(0.92 0.1 140)",  fg: "oklch(0.35 0.1 140)",  darkBg: "oklch(0.26 0.07 140)", darkFg: "oklch(0.78 0.12 140)" },
   replaced:    { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   "Reemplazo enviado": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  "Reemplazo en camino": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  "Reemplazo en tienda": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
+  "Sin costo": { bg: "oklch(0.92 0.06 200)", fg: "oklch(0.4 0.08 200)",  darkBg: "oklch(0.27 0.07 200)", darkFg: "oklch(0.82 0.1 200)"  },
   // Coral — cancelled / inactive
   cancelled: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
   Cancelado: { bg: "oklch(0.93 0.1 30)", fg: "oklch(0.5 0.15 30)",  darkBg: "oklch(0.27 0.09 30)",  darkFg: "oklch(0.82 0.14 30)"  },
@@ -1273,6 +1276,11 @@ export function Sidebar({
         position: "sticky",
         top: 0,
         height: "100vh",
+        // `position: sticky` creates its own stacking context, so the notification dropdown's
+        // zIndex:90 only wins *inside* this aside - without an explicit zIndex here the whole
+        // sidebar (dropdown included) paints below the static main content next to it, which
+        // comes later in DOM order. Matches the mobile top bar's zIndex:50 (AdminPanel.tsx).
+        zIndex: 50,
       }}
     >
       <div
@@ -1367,7 +1375,7 @@ export function Sidebar({
           >
             <Icon name={it.icon} size={16} />
             <span style={{ flex: 1 }}>{it.label}</span>
-            {it.count && (
+            {it.count !== undefined && (
               <span
                 style={{
                   fontSize: 10,

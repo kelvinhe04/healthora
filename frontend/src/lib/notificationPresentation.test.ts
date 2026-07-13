@@ -12,6 +12,13 @@ describe('notificationPresentation', () => {
     expect(notificationPresentation('new_order')).toEqual({ icon: 'bag', accent: 'var(--green)' });
     expect(notificationPresentation('broadcast').icon).toBe('bell');
   });
+
+  test('order_status distinguishes delivered/picked_up from other fulfillment updates', () => {
+    expect(notificationPresentation('order_status').icon).toBe('receipt');
+    expect(notificationPresentation('order_status', { fulfillmentStatus: 'processing' }).icon).toBe('receipt');
+    expect(notificationPresentation('order_status', { fulfillmentStatus: 'delivered' })).toEqual({ icon: 'package', accent: 'var(--green)' });
+    expect(notificationPresentation('order_status', { fulfillmentStatus: 'picked_up' })).toEqual({ icon: 'package', accent: 'var(--green)' });
+  });
 });
 
 describe('relativeTime', () => {

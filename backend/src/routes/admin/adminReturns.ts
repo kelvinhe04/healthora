@@ -5,7 +5,7 @@ import { Order } from '../../db/models/Order';
 import { requireAdmin } from '../../middleware/requireAdmin';
 import type { AppEnv } from '../../types/hono';
 import { objectIdSchema, parseJson, parseParams, parseQuery } from '../../lib/validation';
-import { sendReturnStatusEmail, getReturnStatusCopy } from '../../lib/email';
+import { sendReturnStatusEmail, getReturnStatusCopy, getReturnedToCustomerCopy, capitalizeSentence } from '../../lib/email';
 import { stripe } from '../../lib/stripe';
 import { notifyUser } from '../../lib/realtime';
 import { createReplacementOrder, resolvePendingRefunds } from '../../lib/returns';
@@ -26,6 +26,7 @@ const updateStatusSchema = z.object({ status: adminSettableStatusSchema });
 
 export const adminReturnsRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
+  .get('/count', async (c) => c.json({ count: await Return.countDocuments() }))
   .get('/', async (c) => {
     const parsed = parseQuery(c, listQuerySchema);
     if (!parsed.success) return parsed.response;
@@ -46,6 +47,10 @@ export const adminReturnsRouter = new Hono<AppEnv>()
     if (!returnDoc) return c.json({ error: 'Devolución no encontrada' }, 404);
 
     const nextStatus = bodyParsed.data.status;
+    // Captured before any mutation below - a rejection out of `in_review` means the product is
+    // physically back and didn't match the claim, vs. rejecting a fresh `requested` return
+    // sight-unseen. Drives the distinct customer copy and the resubmission block in routes/returns.ts.
+    const rejectedAfterReview = nextStatus === 'rejected' && returnDoc.status === 'in_review';
 
     if (nextStatus === 'refunded' && !['refund_pending', 'refunded'].includes(returnDoc.status)) {
       const order = await Order.findById(returnDoc.orderId).lean();
@@ -82,6 +87,7 @@ export const adminReturnsRouter = new Hono<AppEnv>()
     }
 
     returnDoc.status = nextStatus;
+    if (rejectedAfterReview) returnDoc.rejectedAfterReview = true;
     await returnDoc.save();
 
     sendReturnStatusEmail({
@@ -91,6 +97,7 @@ export const adminReturnsRouter = new Hono<AppEnv>()
       status: nextStatus,
       refundAmount: returnDoc.refundAmount,
       returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
+      rejectedAfterReview,
     }).catch((err) => console.error('[ADMIN_RETURNS] Failed to send status email:', err));
 
     // Real-time push to the customer (HU-061), mirroring the status email and the fulfillment
@@ -98,16 +105,65 @@ export const adminReturnsRouter = new Hono<AppEnv>()
     // status update itself.
     if (returnDoc.customerId) {
       try {
-        const copy = getReturnStatusCopy(nextStatus, returnDoc.returnMethod);
+        const copy = getReturnStatusCopy(nextStatus, returnDoc.returnMethod, rejectedAfterReview);
         await notifyUser(returnDoc.customerId, {
           type: 'return_status',
           title: copy.label,
-          body: copy.message,
+          body: capitalizeSentence(copy.message),
           link: '/orders',
           data: { returnId: returnDoc._id.toString(), orderId: String(returnDoc.orderId), status: nextStatus },
         });
       } catch (notifyError) {
         console.error('[ADMIN_RETURNS] Failed to push return_status notification:', notifyError);
+      }
+    }
+
+    return c.json(returnDoc.toObject());
+  })
+  // Only applies to a return rejected *after* physical review (see `rejectedAfterReview`) - the
+  // store is holding a product that isn't going to be refunded or replaced, so it has to go back
+  // to the customer. This never touches `status` (stays `rejected`), it's a side marker for that
+  // reverse handoff - courier delivery for courier_pickup returns, in-store pickup otherwise.
+  .patch('/:id/return-to-customer', async (c) => {
+    const paramsParsed = parseParams(c, idParamsSchema);
+    if (!paramsParsed.success) return paramsParsed.response;
+
+    const returnDoc = await Return.findById(paramsParsed.data.id);
+    if (!returnDoc) return c.json({ error: 'Devolución no encontrada' }, 404);
+
+    if (returnDoc.status !== 'rejected' || !returnDoc.rejectedAfterReview) {
+      return c.json({ error: 'Solo aplica a devoluciones rechazadas después de revisión' }, 400);
+    }
+    if (returnDoc.returnedToCustomerAt) {
+      return c.json({ error: 'Ya se marcó como devuelto al cliente' }, 400);
+    }
+
+    returnDoc.returnedToCustomerAt = new Date();
+    await returnDoc.save();
+
+    const copy = getReturnedToCustomerCopy(returnDoc.returnMethod);
+
+    sendReturnStatusEmail({
+      customerName: returnDoc.customerName || 'cliente',
+      customerEmail: returnDoc.customerEmail || '',
+      orderId: String(returnDoc.orderId),
+      status: 'rejected',
+      refundAmount: returnDoc.refundAmount,
+      returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
+      copyOverride: copy,
+    }).catch((err) => console.error('[ADMIN_RETURNS] Failed to send returned-to-customer email:', err));
+
+    if (returnDoc.customerId) {
+      try {
+        await notifyUser(returnDoc.customerId, {
+          type: 'return_status',
+          title: copy.label,
+          body: capitalizeSentence(copy.message),
+          link: '/orders',
+          data: { returnId: returnDoc._id.toString(), orderId: String(returnDoc.orderId), status: 'rejected' },
+        });
+      } catch (notifyError) {
+        console.error('[ADMIN_RETURNS] Failed to push returned-to-customer notification:', notifyError);
       }
     }
 

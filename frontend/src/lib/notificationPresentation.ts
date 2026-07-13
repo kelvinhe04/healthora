@@ -3,14 +3,22 @@ import type { NotificationType } from '../types';
 /** Icon + accent colour for each notification type, shared by the toaster and the notification
  * center so a given event always looks the same wherever it appears. Values reference the Icon
  * component's names and the app's CSS colour variables. */
-export function notificationPresentation(type: NotificationType): { icon: string; accent: string } {
+export function notificationPresentation(
+  type: NotificationType,
+  data?: Record<string, unknown>,
+): { icon: string; accent: string } {
   switch (type) {
     case 'order_paid':
       return { icon: 'check', accent: 'var(--green)' };
     case 'order_shipped':
       return { icon: 'truck', accent: 'var(--green)' };
     case 'order_status':
-      return { icon: 'receipt', accent: 'var(--ink)' };
+      // 'receipt' looks like a little ticket, too close to the box/package silhouette people
+      // associate with "delivered" - split it off so entregado/retirado don't read the same as
+      // "en preparación" at a glance.
+      return (data?.fulfillmentStatus === 'delivered' || data?.fulfillmentStatus === 'picked_up')
+        ? { icon: 'package', accent: 'var(--green)' }
+        : { icon: 'receipt', accent: 'var(--ink)' };
     case 'new_order':
       return { icon: 'bag', accent: 'var(--green)' };
     case 'low_stock':

@@ -9,6 +9,17 @@ import { stripe } from './stripe';
 
 export const RETURN_WINDOW_DAYS = 30;
 
+export type ReasonCategory = 'damaged' | 'wrong_item' | 'defective' | 'changed_mind' | 'other';
+
+// Categories where the customer got a bad product through no fault of their own (warehouse packed
+// the wrong item, courier damaged it, unit doesn't work) - the store also eats the shipping cost on
+// a refund. changed_mind/other are the customer's own call, so only the item price comes back.
+const STORE_FAULT_REASONS = new Set<ReasonCategory>(['damaged', 'wrong_item', 'defective']);
+
+export function refundIncludesShipping(reasonCategory: ReasonCategory): boolean {
+  return STORE_FAULT_REASONS.has(reasonCategory);
+}
+
 export function isWithinReturnWindow(order: { createdAt: Date | string }, now: Date = new Date()): boolean {
   const orderDate = new Date(order.createdAt);
   const diffDays = (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
@@ -66,6 +77,12 @@ export async function createReplacementOrder(originalOrder: OriginalOrder, retur
     };
   });
 
+  // A store-dropoff replacement is handed over at the same counter the customer just returned the
+  // wrong item to - there's no preparing/shipping leg to track, so it starts already at the
+  // pickup-flow's "listo para retirar" milestone instead of `unfulfilled`. A courier replacement
+  // still has to be packed and shipped for real, so that one keeps the normal fulfillment sequence.
+  const isStorePickup = originalOrder.shippingMethod === 'pickup';
+
   const replacementOrder = await Order.create({
     customerId: originalOrder.customerId,
     customerName: originalOrder.customerName,
@@ -79,8 +96,8 @@ export async function createReplacementOrder(originalOrder: OriginalOrder, retur
     shippingLabel: originalOrder.shippingLabel,
     shippingEta: originalOrder.shippingEta,
     paymentStatus: 'paid',
-    fulfillmentStatus: 'unfulfilled',
-    status: 'paid',
+    fulfillmentStatus: isStorePickup ? 'delivered' : 'unfulfilled',
+    status: isStorePickup ? 'delivered' : 'paid',
     address: originalOrder.address,
     replacesOrderId: originalOrder._id,
   });

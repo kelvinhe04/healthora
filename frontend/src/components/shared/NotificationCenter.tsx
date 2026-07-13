@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useNotificationLink } from '../../hooks/useNotificationLink';
 import { notificationPresentation, relativeTime } from '../../lib/notificationPresentation';
@@ -22,6 +22,28 @@ export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'r
   const { notifications, unread, markRead, markAllRead, dismiss, clearAll } = useNotifications();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  // Viewport-relative position for the panel, so it never overflows off-screen - the trigger
+  // button can sit close to the screen edge (e.g. a packed mobile header), and anchoring the
+  // ~360px panel purely to the button's own edge (via CSS `right: 0`) let it run off the left
+  // side of the viewport there.
+  const [panelRect, setPanelRect] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    const updatePosition = () => {
+      const btn = wrapperRef.current;
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const margin = 12;
+      const width = Math.min(360, window.innerWidth - margin * 2);
+      const idealLeft = panelAlign === 'left' ? rect.left : rect.right - width;
+      const left = Math.min(Math.max(idealLeft, margin), window.innerWidth - width - margin);
+      setPanelRect({ top: rect.bottom + 10, left, width });
+    };
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    return () => window.removeEventListener('resize', updatePosition);
+  }, [open, panelAlign]);
 
   useEffect(() => {
     if (!open) return;
@@ -74,15 +96,15 @@ export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'r
         )}
       </button>
 
-      {open && (
+      {open && panelRect && (
         <div
           role="dialog"
           aria-label="Centro de notificaciones"
           style={{
-            position: 'absolute',
-            top: 'calc(100% + 10px)',
-            ...(panelAlign === 'left' ? { left: 0 } : { right: 0 }),
-            width: 'min(360px, calc(100vw - 32px))',
+            position: 'fixed',
+            top: panelRect.top,
+            left: panelRect.left,
+            width: panelRect.width,
             maxHeight: 'min(70vh, 480px)',
             display: 'flex',
             flexDirection: 'column',
@@ -199,7 +221,7 @@ function NotificationRow({
   onClose: () => void;
 }) {
   const go = useNotificationLink();
-  const { icon, accent } = notificationPresentation(notification.type);
+  const { icon, accent } = notificationPresentation(notification.type, notification.data);
 
   const handleActivate = () => {
     if (!notification.read) onRead();

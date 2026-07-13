@@ -9,6 +9,7 @@ import type {
   OrderReturn,
   ReturnStatus,
   ReturnResolution,
+  ReasonCategory,
   AdminReview,
   ReviewStatus,
   ReviewBan,
@@ -91,7 +92,14 @@ export const api = {
   returns: {
     list: (token: string) => request<OrderReturn[]>("/returns", undefined, token),
     create: (
-      body: { orderId: string; reason: string; items: { productId: string; qty: number }[]; desiredResolution?: ReturnResolution },
+      body: {
+        orderId: string;
+        reason: string;
+        reasonCategory: ReasonCategory;
+        items: { productId: string; qty: number }[];
+        desiredResolution?: ReturnResolution;
+        photos: string[];
+      },
       token: string,
     ) =>
       request<OrderReturn>(
@@ -99,6 +107,21 @@ export const api = {
         { method: "POST", body: JSON.stringify(body) },
         token,
       ),
+    uploadPhoto: async (file: File, token: string): Promise<string> => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch(`${BASE}/returns/upload`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      return data.url;
+    },
   },
   account: {
     addresses: {
@@ -229,10 +252,18 @@ export const api = {
           undefined,
           token,
         ),
+      count: (token: string) =>
+        request<{ count: number }>("/admin/returns/count", undefined, token),
       updateStatus: (id: string, status: ReturnStatus, token: string) =>
         request<OrderReturn>(
           `/admin/returns/${id}/status`,
           { method: "PATCH", body: JSON.stringify({ status }) },
+          token,
+        ),
+      markReturnedToCustomer: (id: string, token: string) =>
+        request<OrderReturn>(
+          `/admin/returns/${id}/return-to-customer`,
+          { method: "PATCH" },
           token,
         ),
     },
@@ -300,6 +331,8 @@ export const api = {
           token,
         );
       },
+      count: (token: string) =>
+        request<{ count: number }>("/admin/reviews/count", undefined, token),
       updateStatus: (id: string, status: ReviewStatus, token: string) =>
         request<AdminReview>(
           `/admin/reviews/${id}`,
