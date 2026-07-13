@@ -1,10 +1,12 @@
 import { Hono } from 'hono';
 import { requireAdmin } from '../../middleware/requireAdmin';
+import { auditAdminMutations } from '../../middleware/auditAdminAction';
 import type { AppEnv } from '../../types/hono';
 import { saveImageFile } from '../../lib/imageStorage';
 
 export const adminUploadsRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
+  .use('*', auditAdminMutations('uploads'))
   .post('/image', async (c) => {
     const body = await c.req.parseBody();
     const file = body.file;

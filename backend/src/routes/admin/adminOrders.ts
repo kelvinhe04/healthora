@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { requireAdmin } from '../../middleware/requireAdmin';
+import { auditAdminMutations } from '../../middleware/auditAdminAction';
 import type { AppEnv } from '../../types/hono';
 import { Order } from '../../db/models/Order';
 import { sendOrderStatusUpdateEmail } from '../../lib/email';
@@ -58,6 +59,7 @@ function getFulfillmentPushLabel(fulfillmentStatus: FulfillmentStatus, shippingM
 
 export const adminOrdersRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
+  .use('*', auditAdminMutations('orders'))
   .get('/', async (c) => {
     const parsedQuery = parseQuery(c, adminOrdersQuerySchema);
     if (!parsedQuery.success) return parsedQuery.response;

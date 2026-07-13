@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Return } from '../../db/models/Return';
 import { Order } from '../../db/models/Order';
 import { requireAdmin } from '../../middleware/requireAdmin';
+import { auditAdminMutations } from '../../middleware/auditAdminAction';
 import type { AppEnv } from '../../types/hono';
 import { objectIdSchema, parseJson, parseParams, parseQuery } from '../../lib/validation';
 import { sendReturnStatusEmail, getReturnStatusCopy, getReturnedToCustomerCopy, capitalizeSentence } from '../../lib/email';
@@ -26,6 +27,7 @@ const updateStatusSchema = z.object({ status: adminSettableStatusSchema });
 
 export const adminReturnsRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
+  .use('*', auditAdminMutations('returns'))
   .get('/count', async (c) => c.json({ count: await Return.countDocuments() }))
   .get('/', async (c) => {
     const parsed = parseQuery(c, listQuerySchema);

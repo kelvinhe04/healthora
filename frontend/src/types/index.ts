@@ -269,6 +269,22 @@ export interface ErrorReport {
   updatedAt: string;
 }
 
+/** One entry of the append-only admin audit trail (HU-051) - "admin.access" fires on every admin
+ * request (see backend/src/middleware/requireAdmin.ts), while resource-scoped actions like
+ * "products.update" only fire on a successful mutation (see auditAdminAction.ts). */
+export interface AdminAuditLogEntry {
+  _id: string;
+  actorClerkId?: string;
+  actorEmail?: string;
+  actorRole?: string;
+  action: string;
+  resource?: string;
+  targetClerkId?: string;
+  targetEmail?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
 export interface ProductFilters {
   category?: string;
   need?: string;
