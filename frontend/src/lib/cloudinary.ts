@@ -40,10 +40,19 @@ export function imageSizesForSize(size: ImageSizeKey): string {
   return sizesBySize[size];
 }
 
+const OWN_UPLOAD_URL_RE = /^https:\/\/res\.cloudinary\.com\/([^/]+)\/image\/upload\//;
+
 /** CDN fetch transform via Cloudinary. Sin cloud name devuelve la URL original. */
 export function optimizeImageUrl(url: string, width = 800): string {
   if (!url || !isCloudinaryEnabled()) return url;
-  if (url.includes('res.cloudinary.com')) return url;
+
+  // Imagen ya subida/migrada a nuestra propia cuenta: insertar la transformacion directo en la
+  // delivery URL (mas barato que un fetch transform, y evita servir el original a tamaño completo).
+  const ownMatch = url.match(OWN_UPLOAD_URL_RE);
+  if (ownMatch) {
+    if (ownMatch[1] !== cloudName) return url;
+    return url.replace(OWN_UPLOAD_URL_RE, (prefix) => `${prefix}f_auto,q_auto:good,w_${width}/`);
+  }
 
   // Cloudinary fetch exige URL absoluta; el catálogo usa rutas /products/...
   let absolute = url;

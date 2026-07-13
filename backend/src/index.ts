@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { serveStatic } from 'hono/bun';
 import { connectDB } from './db/connection';
 import { productsRouter } from './routes/products';
 import { categoriesRouter } from './routes/categories';
@@ -61,13 +60,7 @@ await recalculateNew();
 
 const app = new Hono();
 
-app.use('*', async (c, next) => {
-  // Uploaded product images must be embeddable cross-origin (the frontend runs on a
-  // different port in dev, and on a different domain entirely in prod) - the global
-  // same-origin CORP from securityHeaders would otherwise silently block <img> tags.
-  if (c.req.path.startsWith('/uploads/')) return next();
-  return securityHeaders(c, next);
-});
+app.use('*', securityHeaders);
 app.use('*', requestLogger);
 app.use('*', errorTracking);
 app.use('*', performanceMetrics);
@@ -102,7 +95,6 @@ app.route('/admin/dashboard', adminDashboardRouter);
 app.route('/admin/orders', adminOrdersRouter);
 app.route('/admin/products', adminProductsRouter);
 app.route('/admin/uploads', adminUploadsRouter);
-app.use('/uploads/*', serveStatic({ root: './' }));
 app.route('/admin/users', adminUsersRouter);
 app.route('/admin/sales', adminSalesRouter);
 app.route('/admin/earnings', adminEarningsRouter);

@@ -41,6 +41,24 @@ export type UserSort = { key: UserSortKey | null; dir: 'asc' | 'desc' };
 
 export type AdminPanelState = ReturnType<typeof useAdminPanel>;
 
+/** Matches the Pedidos search box against id/cliente/email *and* each line item's product/variant
+ * name - `items` already comes fully populated from `GET /admin/orders` (no pagination), so this
+ * needs no backend change. Without this, searching a product name silently returned nothing even
+ * though the order exists, since the search never looked past the order-level fields. */
+function orderMatchesSearch(order: AdminOrder, term: string): boolean {
+  if (!term) return true;
+  return (
+    order._id.toLowerCase().includes(term) ||
+    !!order.customerName?.toLowerCase().includes(term) ||
+    !!order.customerEmail?.toLowerCase().includes(term) ||
+    !!order.items?.some(
+      (item) =>
+        item.productName?.toLowerCase().includes(term) ||
+        item.variantLabel?.toLowerCase().includes(term),
+    )
+  );
+}
+
 const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "performance", "errors"];
 
 export function useAdminPanel({
@@ -656,12 +674,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const ordersForFulfillmentCounts = useMemo(() => {
     const term = orderSearch.toLowerCase();
     if (!term) return orders || [];
-    return (orders || []).filter(
-      (o) =>
-        o._id.toLowerCase().includes(term) ||
-        o.customerName?.toLowerCase().includes(term) ||
-        o.customerEmail?.toLowerCase().includes(term),
-    );
+    return (orders || []).filter((o) => orderMatchesSearch(o, term));
   }, [orders, orderSearch]);
 
   const orderFulfillmentCounts = useMemo(
@@ -708,11 +721,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const displayedOrders = useMemo(() => {
     const term = orderSearch.toLowerCase();
     const filtered = (orders || []).filter((o) => {
-      const matchSearch =
-        !term ||
-        o._id.toLowerCase().includes(term) ||
-        o.customerName?.toLowerCase().includes(term) ||
-        o.customerEmail?.toLowerCase().includes(term);
+      const matchSearch = orderMatchesSearch(o, term);
       const matchFulfillment =
         !orderFulfillmentFilter ||
         o.fulfillmentStatus === orderFulfillmentFilter;
