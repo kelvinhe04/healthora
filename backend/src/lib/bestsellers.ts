@@ -86,3 +86,13 @@ export async function recalculatePurchasesLastMonth(): Promise<void> {
 
   console.log(`[purchases-last-month] Updated ${counts.length} products`);
 }
+
+// Best-effort, non-blocking - called from every code path that can flip an order to 'paid'
+// (Stripe webhook, and the orders.ts fallback that actually creates/confirms most paid orders in
+// local dev, since Stripe webhooks rarely reach localhost without CLI/ngrok forwarding). Skipped
+// under NODE_ENV=test so integration tests don't trigger background recalculation.
+export function recalculateAfterPayment(): void {
+  if (process.env.NODE_ENV === 'test') return;
+  recalculateBestsellers().catch((e) => console.error('[bestsellers] recalc error:', e));
+  recalculatePurchasesLastMonth().catch((e) => console.error('[purchases-last-month] recalc error:', e));
+}
