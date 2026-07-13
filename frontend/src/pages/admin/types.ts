@@ -98,7 +98,10 @@ export type DashboardData = {
   };
   dailySales: { revenue: number; date: string }[];
   recentOrders: AdminOrder[];
-  lowStockProducts: Product[];
+  /** Una entrada por celda de stock critica (producto sin variantes, variante simple, o combo
+   * sabor/color x tamaño) - no por producto, para no esconder un combo critico detras del total
+   * sano del producto (#153). `variantLabel` es null para un producto sin variantes. */
+  lowStockCells: { variantId: string | null; variantLabel: string | null; stock: number; product: Product }[];
 };
 export type AdminOrder = {
   _id: string;
