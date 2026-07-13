@@ -21,8 +21,3 @@ export function getCorsOrigins(): string[] {
   const single = process.env.FRONTEND_URL?.trim();
   return single ? [single] : ['http://localhost:5173'];
 }
-
-export function getPublicBackendUrl(): string {
-  const url = process.env.PUBLIC_BACKEND_URL?.trim();
-  return (url || `http://localhost:${process.env.PORT || 3002}`).replace(/\/+$/, '');
-}

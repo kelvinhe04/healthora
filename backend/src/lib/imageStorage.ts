@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { getPublicBackendUrl } from './appEnv';
+import { uploadToCloudinary } from './cloudinaryUpload';
 
 const ALLOWED_MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -22,18 +22,17 @@ export function slugifyFolder(value: string): string {
   );
 }
 
-/** Shared by the admin multipart upload route and the MCP base64 upload tool - both end up with
- * raw bytes + a mime type by the time they get here, just via different transports. */
+/** Shared by the admin multipart upload route, el upload de fotos de devolucion, y la MCP tool de
+ * imagen de variante - todos terminan con bytes crudos + un mime type por el momento en que llegan
+ * aca, solo difiere el transporte. */
 export async function saveImageFile(buffer: Uint8Array, mimeType: string, folder: string): Promise<string> {
   const ext = ALLOWED_MIME_TO_EXT[mimeType];
   if (!ext) throw new Error('Formato no soportado. Usa JPEG, PNG o WEBP.');
   if (buffer.byteLength > MAX_IMAGE_SIZE) throw new Error('La imagen no puede pesar más de 5MB.');
 
   const safeFolder = slugifyFolder(folder);
-  const filename = `${randomUUID()}.${ext}`;
-  const relativePath = `products/${safeFolder}/${filename}`;
-  const diskPath = `./uploads/${relativePath}`;
+  const publicId = `healthora/uploads/products/${safeFolder}/${randomUUID()}`;
 
-  await Bun.write(diskPath, buffer);
-  return `${getPublicBackendUrl()}/uploads/${relativePath}`;
+  const result = await uploadToCloudinary(buffer, { publicId, mimeType });
+  return result.secure_url;
 }
