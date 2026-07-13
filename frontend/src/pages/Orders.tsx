@@ -914,7 +914,7 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
         setReorderMessage('Ningún producto de este pedido está disponible ahora.');
       } else {
         setCartOpen(true);
-        setReorderMessage(`${addedLines} producto(s) agregados al carrito.`);
+        setReorderMessage(`${addedLines} producto${addedLines !== 1 ? 's' : ''} agregado${addedLines !== 1 ? 's' : ''} al carrito.`);
       }
     } finally {
       setIsReordering(false);

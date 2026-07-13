@@ -358,7 +358,7 @@ export function ReturnsSection() {
         sub={
           search || statusFilter || methodFilter
             ? `${displayedReturns.length} resultado${displayedReturns.length !== 1 ? 's' : ''} de ${items.length}`
-            : `${items.length} solicitud(es)`
+            : `${items.length} solicitud${items.length !== 1 ? 's' : ''}`
         }
         pad={0}
         loading={isLoading}

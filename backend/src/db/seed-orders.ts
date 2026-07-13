@@ -153,7 +153,7 @@ function generateOrderData(index: number, products: SeedProduct[], today: Date) 
   const shippingMethod: 'delivery' | 'pickup' = Math.random() < 0.25 ? 'pickup' : 'delivery';
   const shipping = shippingMethod === 'pickup' ? 0 : subtotal >= 50 ? 0 : 6.90;
   const shippingLabel = shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio';
-  const shippingEta = shippingMethod === 'pickup' ? 'Listo en 24h' : '3-5 días';
+  const shippingEta = shippingMethod === 'pickup' ? 'Listo en 24h' : '24h - 48h';
   const total = parseFloat((subtotal + tax + shipping).toFixed(2));
 
   const name = randomChoice(NAMES);

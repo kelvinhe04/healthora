@@ -104,7 +104,7 @@ export const adminCategoriesRouter = new Hono<AppEnv>()
       if (!reassignTo) {
         return c.json(
           {
-            error: `La categoría tiene ${productCount} producto(s). Indica reassignTo o reasígnalos antes de eliminar.`,
+            error: `La categoría tiene ${productCount} producto${productCount !== 1 ? 's' : ''}. Indica reassignTo o reasígnalos antes de eliminar.`,
           },
           409,
         );

@@ -693,7 +693,7 @@ export function OrdersSection() {
                             marginBottom: 6,
                           }}
                         >
-                          {order.items?.length ?? 0} producto(s)
+                          {order.items?.length ?? 0} producto{(order.items?.length ?? 0) !== 1 ? "s" : ""}
                         </div>
                         <div
                           style={{
