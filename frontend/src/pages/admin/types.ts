@@ -1,4 +1,5 @@
 import type {
+  AdminAuditLogEntry,
   ErrorReport,
   FulfillmentStatus,
   OrderAddress,
@@ -77,7 +78,8 @@ export type AdminPage =
   | "performance"
   | "errors"
   | "returns"
-  | "reviews";
+  | "reviews"
+  | "audit";
 export interface AdminAppProps {
   onGoToStore: () => void;
 }
@@ -210,6 +212,13 @@ export type PerformanceData = {
 
 export type ErrorReportsData = {
   items: ErrorReport[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+export type AuditLogsData = {
+  items: AdminAuditLogEntry[];
   total: number;
   page: number;
   limit: number;

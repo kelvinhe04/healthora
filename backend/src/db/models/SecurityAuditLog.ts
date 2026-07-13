@@ -23,15 +23,21 @@ const SecurityAuditLogSchema = new Schema(
   }
 );
 
-SecurityAuditLogSchema.pre('save', function blockExistingDocumentSave(next) {
-  if (!this.isNew) return next(immutableOperationError);
-  return next();
+// No `next` callback param: Mongoose 9 dropped callback-style hooks (a `next`-shaped param on
+// pre('save') now receives SaveOptions, not a callback - calling it throws "next is not a
+// function"). Throwing synchronously is what actually aborts the operation on this version.
+SecurityAuditLogSchema.pre('save', function blockExistingDocumentSave() {
+  if (!this.isNew) throw immutableOperationError;
 });
 
+// { document: true, query: true } is required for deleteOne/updateOne/replaceOne specifically -
+// those exist as both a Document instance method and a Model static/query method, and without
+// this option Mongoose only wires the hook to one of the two, letting the other bypass it.
 SecurityAuditLogSchema.pre(
   ['updateOne', 'updateMany', 'findOneAndUpdate', 'replaceOne', 'deleteOne', 'deleteMany', 'findOneAndDelete'],
-  function blockMutableOperations(next) {
-    next(immutableOperationError);
+  { document: true, query: true },
+  function blockMutableOperations() {
+    throw immutableOperationError;
   }
 );
 

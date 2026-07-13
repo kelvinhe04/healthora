@@ -14,6 +14,7 @@ import type {
   ReviewStatus,
   ReviewBan,
   ErrorReport,
+  AdminAuditLogEntry,
   AppNotification,
   NotificationInbox,
 } from "../types";
@@ -446,5 +447,32 @@ export const api = {
         undefined,
         token,
       ),
+    auditLogs: (
+      token: string,
+      filters: {
+        action?: string;
+        actorClerkId?: string;
+        actorEmail?: string;
+        from?: string;
+        to?: string;
+        page?: number;
+        limit?: number;
+      } = {},
+    ) => {
+      const params = new URLSearchParams();
+      if (filters.action) params.set("action", filters.action);
+      if (filters.actorClerkId) params.set("actorClerkId", filters.actorClerkId);
+      if (filters.actorEmail) params.set("actorEmail", filters.actorEmail);
+      if (filters.from) params.set("from", filters.from);
+      if (filters.to) params.set("to", filters.to);
+      if (filters.page && filters.page > 1) params.set("page", String(filters.page));
+      if (filters.limit) params.set("limit", String(filters.limit));
+      const query = params.toString();
+      return request<{ items: AdminAuditLogEntry[]; total: number; page: number; limit: number }>(
+        `/admin/audit-logs${query ? `?${query}` : ""}`,
+        undefined,
+        token,
+      );
+    },
   },
 };

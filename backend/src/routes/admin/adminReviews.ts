@@ -4,6 +4,7 @@ import { Review } from '../../db/models/Review';
 import { ReviewBan } from '../../db/models/ReviewBan';
 import { Product } from '../../db/models/Product';
 import { requireAdmin } from '../../middleware/requireAdmin';
+import { auditAdminMutations } from '../../middleware/auditAdminAction';
 import type { AppEnv } from '../../types/hono';
 import { escapeRegex, intFromInput, objectIdSchema, parseJson, parseParams, parseQuery, textField } from '../../lib/validation';
 import { recomputeProductRating } from '../../lib/productRatings';
@@ -24,6 +25,7 @@ const updateStatusSchema = z.object({ status: reviewStatusSchema });
 
 export const adminReviewsRouter = new Hono<AppEnv>()
   .use('*', requireAdmin)
+  .use('*', auditAdminMutations('reviews'))
   .get('/count', async (c) => c.json({ count: await Review.countDocuments() }))
   .get('/', async (c) => {
     const parsed = parseQuery(c, listQuerySchema);

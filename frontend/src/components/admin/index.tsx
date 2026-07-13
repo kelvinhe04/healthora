@@ -1222,7 +1222,8 @@ type AdminPage =
   | "performance"
   | "errors"
   | "returns"
-  | "reviews";
+  | "reviews"
+  | "audit";
 interface SidebarProps {
   page: AdminPage;
   setPage: (p: AdminPage) => void;
@@ -1270,6 +1271,7 @@ export function Sidebar({
     { id: "earnings", label: "Ganancias", icon: "percent" },
     { id: "performance", label: "Rendimiento", icon: "activity" },
     { id: "errors", label: "Errores", icon: "alert-circle" },
+    { id: "audit", label: "Auditoría", icon: "lock" },
   ];
   return (
     <aside

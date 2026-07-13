@@ -4,6 +4,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Product } from '../db/models/Product';
 import { Order } from '../db/models/Order';
 import { Review } from '../db/models/Review';
+import { SecurityAuditLog } from '../db/models/SecurityAuditLog';
 import { seedCoupons } from '../db/seed-coupons';
 
 let mongo: MongoMemoryServer;
@@ -54,6 +55,9 @@ describe('MCP server', () => {
     await Product.deleteMany({});
     await Order.deleteMany({});
     await Review.deleteMany({});
+    // SecurityAuditLog blocks deleteMany at the schema level (append-only, HU-051) - go through
+    // the native collection to clean up between tests instead.
+    await SecurityAuditLog.collection.deleteMany({});
     await seedProduct();
     await seedCoupons();
   });
@@ -69,12 +73,13 @@ describe('MCP server', () => {
     expect(json.result.serverInfo.name).toBe('healthora');
   });
 
-  test('tools/list exposes all 17 registered tools', async () => {
+  test('tools/list exposes all 18 registered tools', async () => {
     const { json } = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const names = json.result.tools.map((t: { name: string }) => t.name).sort();
     expect(names).toEqual(
       [
         'analytics.getSalesReport',
+        'audit.getAdminActions',
         'catalog.listProducts',
         'catalog.upsertProduct',
         'categories.upsertCategory',
@@ -106,6 +111,30 @@ describe('MCP server', () => {
     expect(payload.count).toBe(1);
     expect(payload.products[0].id).toBe('combo-product');
     expect(payload.products[0].combinations).toBe(2);
+  });
+
+  test('audit.getAdminActions filters the append-only trail by actor email and action', async () => {
+    await SecurityAuditLog.create({
+      actorEmail: 'admin@healthora.test',
+      action: 'products.update',
+      resource: 'PUT /admin/products/combo-product',
+      metadata: { targetId: 'combo-product' },
+    });
+    await SecurityAuditLog.create({
+      actorEmail: 'other@healthora.test',
+      action: 'categories.delete',
+      resource: 'DELETE /admin/categories/vitaminas',
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 100,
+      method: 'tools/call',
+      params: { name: 'audit.getAdminActions', arguments: { actorEmail: 'admin@healthora.test' } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.total).toBe(1);
+    expect(payload.items[0].action).toBe('products.update');
   });
 
   test('inventory.adjustStock without delta is read-only and reflects stockBySize override', async () => {
