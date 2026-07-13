@@ -3611,7 +3611,7 @@ const PRODUCTS = [
     color: 'oklch(0.93 0.04 18)',
     swatchColor: 'oklch(0.73 0.13 18)',
     label: 'Nature Made\nFor Her',
-    imageUrl: 'https://www.naturemade.com/cdn/shop/files/NMHL000378PK002122ADVANCEDMULTIFORHERGUMMIES_5A009500ccfrontnf_1_1500x.png?v=1757008094',
+    imageUrl: 'https://res.cloudinary.com/dysmxobrk/image/upload/v1783957010/healthora/products/external/ext-7.png',
   },
 {
     id: 'nature-made-advanced-multivitamin-gummies-for-her-50',
@@ -3644,7 +3644,7 @@ const PRODUCTS = [
     color: 'oklch(0.92 0.04 40)',
     swatchColor: 'oklch(0.74 0.11 40)',
     label: 'Nature Made\n50+',
-    imageUrl: 'https://www.naturemade.com/cdn/shop/files/NMHL000548PK002111ADVMULTIFORHER50_5A009500ccfrontnf_1500x.png?v=1736794769',
+    imageUrl: 'https://res.cloudinary.com/dysmxobrk/image/upload/v1783957012/healthora/products/external/ext-8.png',
     variants: [
       { id: '84ct-pack1', label: '84 Count (Pack of 1)', type: 'count', price: 11.68, priceBefore: 19.99, stock: 38, isDefault: true, imageUrl: 'https://res.cloudinary.com/dysmxobrk/image/upload/v1783923533/healthora/products/vitaminas/nature-made-advanced-multivitamin-gummies-for-her-50-pack1-1.png', images: [
         'https://res.cloudinary.com/dysmxobrk/image/upload/v1783923533/healthora/products/vitaminas/nature-made-advanced-multivitamin-gummies-for-her-50-pack1-1.png',
@@ -3691,8 +3691,8 @@ const PRODUCTS = [
     swatchColor: 'oklch(0.76 0.12 28)',
     label: 'Multi For\nHer',
     variants: [
-      { id: '70ct', label: '70 gummies', type: 'count', price: 9.79, stock: 71, isDefault: true, imageUrl: 'https://www.naturemade.com/cdn/shop/files/NM_4143_PK002583_MULTI_FOR_HER_GUMMIES_5A008_300cc_front_1500x.png?v=1768248027' },
-      { id: '150ct', label: '150 gummies', type: 'count', price: 18.99, stock: 38, imageUrl: 'https://www.naturemade.com/cdn/shop/files/NM_4121_PK002582_MULTI_FOR_HER_GUMMIES_5B010_625cc_front_1500x.png?v=1768249866' },
+      { id: '70ct', label: '70 gummies', type: 'count', price: 9.79, stock: 71, isDefault: true, imageUrl: 'https://res.cloudinary.com/dysmxobrk/image/upload/v1783957003/healthora/products/external/ext-3.png' },
+      { id: '150ct', label: '150 gummies', type: 'count', price: 18.99, stock: 38, imageUrl: 'https://res.cloudinary.com/dysmxobrk/image/upload/v1783957001/healthora/products/external/ext-2.png' },
     ],
   },
   {
@@ -3726,8 +3726,8 @@ const PRODUCTS = [
     swatchColor: 'oklch(0.72 0.14 75)',
     label: 'Multi +\nOmega-3\nFor Her',
     variants: [
-      { id: '80ct', label: '80 gummies', type: 'count', price: 17.79, stock: 47, isDefault: true, imageUrl: 'https://www.naturemade.com/cdn/shop/files/NM_4214PK001875MULTIOMEGA3HERGUMMIES_5A009500ccfront_1_1500x.png?v=1731453117' },
-      { id: '150ct', label: '150 gummies', type: 'count', price: 27.69, stock: 23, imageUrl: 'https://www.naturemade.com/cdn/shop/files/NM4275PK001880MULTIOMEGA3HERGUMMIES_5B010750ccfront_1500x.png?v=1731453236' },
+      { id: '80ct', label: '80 gummies', type: 'count', price: 17.79, stock: 47, isDefault: true, imageUrl: 'https://res.cloudinary.com/dysmxobrk/image/upload/v1783957005/healthora/products/external/ext-4.png' },
+      { id: '150ct', label: '150 gummies', type: 'count', price: 27.69, stock: 23, imageUrl: 'https://res.cloudinary.com/dysmxobrk/image/upload/v1783957007/healthora/products/external/ext-5.png' },
     ],
   },
   {
@@ -3802,7 +3802,7 @@ const PRODUCTS = [
     color: 'oklch(0.91 0.04 95)',
     swatchColor: 'oklch(0.67 0.13 95)',
     label: 'D3 + K2',
-    imageUrl: 'https://www.naturemade.com/cdn/shop/files/NM4345PK001937VITD3_K2_5A044150ccfront_1500x.png?v=1747848941',
+    imageUrl: 'https://res.cloudinary.com/dysmxobrk/image/upload/v1783957009/healthora/products/external/ext-6.png',
   },
   {
     id: 'nature-made-extra-strength-vitamin-c-500-mg-gummies',
@@ -3916,7 +3916,7 @@ const PRODUCTS = [
     color: 'oklch(0.90 0.05 255)',
     swatchColor: 'oklch(0.60 0.11 255)',
     label: 'Power Plus\nMen',
-    imageUrl: 'https://cdn.shopify.com/s/files/1/0972/0322/4875/files/power-plus-mens-multivitamin-gummy-90-gummies-vf11150.jpg?v=1774966821',
+    imageUrl: 'https://res.cloudinary.com/dysmxobrk/image/upload/v1783956998/healthora/products/external/ext-1.jpg',
   },
   {
     id: 'natures-bounty-biotin-10000-mcg-120-rapid-release-softgels',
