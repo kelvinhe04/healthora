@@ -5,6 +5,8 @@ import type {
   OrderAddress,
   ProductFilters,
   SavedAddress,
+  ProductSubscription,
+  SubscriptionIntervalDays,
   Review,
   OrderReturn,
   ReturnStatus,
@@ -161,6 +163,32 @@ export const api = {
         { method: "POST", body: JSON.stringify(body) },
         token,
       ),
+  },
+  subscriptions: {
+    list: (token: string) =>
+      request<ProductSubscription[]>("/subscriptions", undefined, token),
+    create: (
+      body: {
+        productId: string;
+        variantId?: string;
+        qty: number;
+        intervalDays: SubscriptionIntervalDays;
+        address: OrderAddress;
+        shippingMethod: "delivery" | "pickup";
+      },
+      token: string,
+    ) =>
+      request<{ url: string }>(
+        "/subscriptions",
+        { method: "POST", body: JSON.stringify(body) },
+        token,
+      ),
+    pause: (id: string, token: string) =>
+      request<ProductSubscription>(`/subscriptions/${id}/pause`, { method: "POST" }, token),
+    resume: (id: string, token: string) =>
+      request<ProductSubscription>(`/subscriptions/${id}/resume`, { method: "POST" }, token),
+    cancel: (id: string, token: string) =>
+      request<ProductSubscription>(`/subscriptions/${id}`, { method: "DELETE" }, token),
   },
   promotions: {
     validate: (

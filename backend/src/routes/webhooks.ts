@@ -13,6 +13,11 @@ import { notifyAdmins, notifyUser } from '../lib/realtime';
 import { scanAndNotifyLowStock } from '../lib/lowStock';
 import { confirmReturnRefund } from '../lib/returns';
 import { recordCouponRedemption } from '../lib/promotions';
+import {
+  handleSubscriptionCanceled,
+  handleSubscriptionCheckoutCompleted,
+  handleSubscriptionInvoicePaid,
+} from '../lib/subscriptions';
 
 type CheckoutAddress = {
   name: string;
@@ -77,7 +82,15 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
     return c.json({ error: 'Invalid signature' }, 400);
   }
 
-  if (event.type === 'checkout.session.completed') {
+  if (event.type === 'checkout.session.completed' && event.data.object.mode === 'subscription') {
+    const session = event.data.object;
+    console.log('[WEBHOOK] checkout.session.completed (subscription) received:', session.subscription);
+    try {
+      await handleSubscriptionCheckoutCompleted(session);
+    } catch (error) {
+      console.error('[WEBHOOK] Failed to activate subscription:', error);
+    }
+  } else if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     console.log('[WEBHOOK] checkout.session.completed received for session:', session.id);
     const existingOrder = await Order.findOne({ stripeSessionId: session.id }).lean();
@@ -282,6 +295,22 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
       await confirmReturnRefund(refund.id, refund.status ?? '');
     } catch (error) {
       console.error('[WEBHOOK] Failed to process refund.updated:', error);
+    }
+  } else if (event.type === 'invoice.payment_succeeded') {
+    const invoice = event.data.object;
+    console.log('[WEBHOOK] invoice.payment_succeeded received:', invoice.subscription, invoice.billing_reason);
+    try {
+      await handleSubscriptionInvoicePaid(invoice);
+    } catch (error) {
+      console.error('[WEBHOOK] Failed to process subscription renewal:', error);
+    }
+  } else if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object;
+    console.log('[WEBHOOK] customer.subscription.deleted received:', subscription.id);
+    try {
+      await handleSubscriptionCanceled(subscription);
+    } catch (error) {
+      console.error('[WEBHOOK] Failed to mark subscription canceled:', error);
     }
   }
 

@@ -5,6 +5,9 @@ const UserSchema = new Schema(
     clerkId: { type: String, required: true, unique: true },
     name: String,
     email: String,
+    // Un solo Stripe Customer por usuario, creado la primera vez que hace falta (ej. suscribirse a
+    // reposición automática, HU-101) - ver lib/stripeCustomer.ts. No se crea al registrarse.
+    stripeCustomerId: { type: String, default: null },
     // 'owner' es un tercer nivel por encima de 'admin' (admin supremo, HU-222): una sola cuenta,
     // no asignable desde la UI/API (ver rolePayloadSchema en adminUsers.ts) - solo por acceso
     // directo a la base de datos (bun run set-owner). Nunca se degrada automaticamente aunque

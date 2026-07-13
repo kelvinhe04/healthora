@@ -1,11 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { CSSProperties } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import type { Product, ProductVariant } from '../types';
 import { ProductImage } from '../components/shared/ProductImage';
 import { Stars } from '../components/shared/Stars';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
+import { SubscribeModal } from '../components/shared/SubscribeModal';
+import { SignInModal } from '../components/chrome/SignInModal';
 import { useProducts } from '../hooks/useProducts';
 import { useReviews } from '../hooks/useReviews';
 import { ReviewSection } from '../components/shared/ReviewSection';
@@ -51,6 +54,9 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
   const isMobile = bp === 'mobile';
   const isTablet = bp === 'tablet';
   const isSmall = isMobile || isTablet;
+  const { isSignedIn } = useUser();
+  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState('benefits');
   const [added, setAdded] = useState(false);
@@ -489,6 +495,16 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
             <AnimatedButton variant="primary" size="lg" onClick={handleAdd} disabled={effectiveStock === 0} style={{ flex: 1, width: isMobile ? '100%' : undefined }} text={effectiveStock === 0 ? 'Sin stock' : added ? '✓ Agregado al carrito' : `Agregar al carrito · $${(effectivePrice * qty).toFixed(2)}`} />
           </div>
           <AnimatedButton aria-label="Comprar ahora con un clic" variant="outline" full onClick={() => onBuyNow(product, qty, cartVariant)} disabled={effectiveStock === 0} text="Comprar ahora con un clic" />
+          <AnimatedButton
+            aria-label="Suscribirme a reposición automática"
+            variant="ghost"
+            full
+            icon={<Icon name="repeat" size={14} />}
+            onClick={() => (isSignedIn ? setShowSubscribeModal(true) : setShowSignInModal(true))}
+            disabled={effectiveStock === 0}
+            style={{ marginTop: 8 }}
+            text="Suscribirme a reposición automática"
+          />
 
           <div style={{ marginTop: 24, background: 'var(--cream-2)', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid var(--ink-06)' }}>
             {[{ icon: 'truck', t: 'Envío gratis en órdenes sobre $50' }, { icon: 'shield', t: 'Pago seguro con Stripe · 3D Secure' }, { icon: 'check', t: 'Productos verificados por farmacéuticos' }].map((row) => (
@@ -569,6 +585,17 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
       />
 
       <ReviewSection productId={product.id} />
+
+      <SubscribeModal
+        open={showSubscribeModal}
+        onClose={() => setShowSubscribeModal(false)}
+        productId={product.id}
+        variantId={cartVariant?.id}
+        productLabel={`${product.name}${cartVariant ? ` · ${cartVariant.label}` : ''}`}
+        unitPrice={effectivePrice}
+        defaultQty={qty}
+      />
+      <SignInModal open={showSignInModal} onClose={() => setShowSignInModal(false)} />
     </div>
   );
 }

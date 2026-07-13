@@ -128,6 +128,31 @@ export interface SavedAddress extends OrderAddress {
   isDefault: boolean;
 }
 
+export const SUBSCRIPTION_INTERVAL_DAYS = [7, 15, 30, 60] as const;
+export type SubscriptionIntervalDays = (typeof SUBSCRIPTION_INTERVAL_DAYS)[number];
+export type SubscriptionStatus = 'active' | 'paused' | 'canceled';
+
+export interface ProductSubscription {
+  _id: string;
+  productId: string;
+  productName: string;
+  variantId?: string;
+  variantLabel?: string;
+  imageUrl?: string;
+  qty: number;
+  unitPrice: number;
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  total: number;
+  intervalDays: SubscriptionIntervalDays;
+  status: SubscriptionStatus;
+  nextBillingDate?: string;
+  shippingMethod: 'delivery' | 'pickup';
+  address: OrderAddress;
+  createdAt: string;
+}
+
 export interface OrderLineItem {
   productId: string;
   productName: string;

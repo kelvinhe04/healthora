@@ -50,6 +50,9 @@ const OrderSchema = new Schema(
     // Set when this order is a no-charge replacement shipment created by resolving a Return as
     // "replaced" instead of refunded (wrong/damaged item) - see lib/returns.ts.
     replacesOrderId: { type: Schema.Types.ObjectId, ref: 'Order' },
+    // Set when this order was generated automatically by a recurring reposición (HU-101) instead
+    // of an interactive checkout - see lib/subscriptions.ts#createSubscriptionOrder.
+    subscriptionId: { type: Schema.Types.ObjectId, ref: 'ProductSubscription' },
     address: {
       name: String,
       phone: String,
