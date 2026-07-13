@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { User } from '../db/models/User';
-import { validatePromotionForCart } from '../lib/promotions';
-import { emailField, optionalTextField, productIdSchema } from '../lib/validation';
+import { User } from '../../db/models/User';
+import { validatePromotionForCart } from '../../lib/promotions';
+import { emailField, optionalTextField, productIdSchema } from '../../lib/validation';
 import { errorResult, jsonResult } from '../toolHelpers';
 
 export function registerPromotionTools(server: McpServer) {
