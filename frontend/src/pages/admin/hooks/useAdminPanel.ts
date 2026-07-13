@@ -143,6 +143,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const clearOrderSort = useCallback(() => setOrderSort({ key: null, dir: 'asc' }), []);
 
   const [userSearch, setUserSearch] = useState("");
+  const [userRoleFilter, setUserRoleFilter] = useState<"" | "customer" | "admin" | "owner">("");
   const [userSort, setUserSort] = useState<UserSort>({ key: null, dir: 'asc' });
   const toggleUserSort = useCallback((key: UserSortKey) => {
     setUserSort((current) => {
@@ -493,7 +494,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     onError: (e: Error) => setDeleteError(e.message),
   });
 
-  const _roleMutation = useMutation({
+  const roleMutation = useMutation({
     mutationFn: async ({
       id,
       role,
@@ -532,10 +533,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     () => new Map((ordersReturnsQuery.data ?? []).map((r) => [r.orderId, r] as const)),
     [ordersReturnsQuery.data],
   );
-  const customers = useMemo(
-    () => users.filter((u) => u.role === "customer"),
-    [users],
-  );
+  // Antes filtraba solo role === "customer", lo que dejaba admins/owner fuera de esta misma
+  // pantalla - inalcanzables para la gestion de roles (HU-222), aunque el backend/MCP ya podian
+  // tocarlos. La pantalla sigue enfocada en clientes (LTV, ordenes) pero ya no los esconde.
+  const customers = users;
   const sales = salesQuery.data;
   const earnings = earningsQuery.data;
   const performanceData = performanceQuery.data;
@@ -758,13 +759,35 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     [displayedProducts, productsPage],
   );
 
+  // Cuenta por rol solo con el termino de busqueda aplicado (no el filtro de rol activo) - mismo
+  // patron que ordersForFulfillmentCounts, para que el numero en cada pill no cambie a 0 apenas
+  // se selecciona esa misma pill.
+  const usersForRoleCounts = useMemo(() => {
+    const term = userSearch.toLowerCase();
+    if (!term) return customers;
+    return customers.filter(
+      (u) => u.name?.toLowerCase().includes(term) || u.email?.toLowerCase().includes(term),
+    );
+  }, [customers, userSearch]);
+
+  const userRoleCounts = useMemo(
+    () => ({
+      "": usersForRoleCounts.length,
+      customer: usersForRoleCounts.filter((u) => (u.role || "customer") === "customer").length,
+      admin: usersForRoleCounts.filter((u) => u.role === "admin").length,
+      owner: usersForRoleCounts.filter((u) => u.role === "owner").length,
+    }),
+    [usersForRoleCounts],
+  );
+
   const displayedUsers = useMemo(() => {
     const term = userSearch.toLowerCase();
     const filtered = customers.filter(
       (u) =>
-        !term ||
-        u.name?.toLowerCase().includes(term) ||
-        u.email?.toLowerCase().includes(term),
+        (!term ||
+          u.name?.toLowerCase().includes(term) ||
+          u.email?.toLowerCase().includes(term)) &&
+        (!userRoleFilter || (u.role || "customer") === userRoleFilter),
     );
     if (!userSort.key) return filtered;
     const sorted = filtered.slice();
@@ -781,7 +804,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       });
     }
     return sorted;
-  }, [customers, userSearch, userSort]);
+  }, [customers, userSearch, userRoleFilter, userSort]);
 
   const paginatedUsers = useMemo(
     () => paginateItems(displayedUsers, usersPage),
@@ -891,12 +914,16 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     bulkDeleteMutation,
     deleteAllMutation,
     userDeleteMutation,
+    roleMutation,
     deleteError,
     setDeleteError,
     showUsersSkeleton,
     users,
     userSearch,
     setUserSearch,
+    userRoleFilter,
+    setUserRoleFilter,
+    userRoleCounts,
     userSort,
     toggleUserSort,
     clearUserSort,

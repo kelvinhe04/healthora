@@ -12,7 +12,12 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || process.env.CLERK_ADMIN_EMAILS
   .map((email) => email.trim().toLowerCase())
   .filter(Boolean);
 
-function resolveRole(email?: string | null, metadataRole?: string | null) {
+/** `currentRole` guards 'owner' from ever being silently downgraded here: Clerk/ADMIN_EMAILS only
+ * ever resolve to 'admin' or 'customer', and this function runs on every authenticated request
+ * (see both call sites below) - without this guard, the owner's role would get overwritten back
+ * to 'admin' on their very next request after being set (HU-222, bun run set-owner). */
+function resolveRole(email?: string | null, metadataRole?: string | null, currentRole?: string | null) {
+  if (currentRole === 'owner') return 'owner';
   if (email && ADMIN_EMAILS.includes(email.toLowerCase())) return 'admin';
   if (metadataRole === 'admin') return 'admin';
   return 'customer';
@@ -80,7 +85,7 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
 
     const clerkUser = await clerk.users.getUser(clerkId);
     const email = clerkUser.emailAddresses[0]?.emailAddress;
-    const role = resolveRole(email, clerkUser.publicMetadata?.role as string | undefined);
+    const role = resolveRole(email, clerkUser.publicMetadata?.role as string | undefined, user.role);
     const nextName = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim();
 
     if (user.email !== email || user.role !== role || user.name !== nextName) {

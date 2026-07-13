@@ -8,7 +8,7 @@ export const requireAdmin = createMiddleware<AppEnv>(async (c, next) => {
   if (authResponse) return authResponse;
 
   const user = c.get('user');
-  if (user.role !== 'admin') {
+  if (user.role !== 'admin' && user.role !== 'owner') {
     recordSecurityEvent(c, {
       actor: user,
       action: 'admin.access_denied',

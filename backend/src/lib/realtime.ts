@@ -44,7 +44,7 @@ export function registerSocket(identity: SocketIdentity, socket: RealtimeSocket)
   }
   set.add(socket);
 
-  if (identity.role === 'admin') adminSockets.add(socket);
+  if (identity.role === 'admin' || identity.role === 'owner') adminSockets.add(socket);
 }
 
 /** Drop a socket from every registry on close/error. Safe to call more than once. */
