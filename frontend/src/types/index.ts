@@ -128,6 +128,14 @@ export interface SavedAddress extends OrderAddress {
   isDefault: boolean;
 }
 
+export interface SavedPaymentMethod {
+  id: string;
+  brand?: string;
+  last4?: string;
+  expMonth?: number;
+  expYear?: number;
+}
+
 export interface OrderLineItem {
   productId: string;
   productName: string;

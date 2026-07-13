@@ -4,6 +4,7 @@ import { clerkAuth } from '../middleware/clerkAuth';
 import type { AppEnv } from '../types/hono';
 import { Product } from '../db/models/Product';
 import { stripe } from '../lib/stripe';
+import { getOrCreateStripeCustomer } from '../lib/stripeCustomer';
 import { validatePromotionForCart } from '../lib/promotions';
 import { cartItemSchema, optionalTextField, orderAddressSchema, parseJson, productIdSchema, requireFullAddress, shippingMethodSchema } from '../lib/validation';
 import { buildPaidLineItem } from '../lib/productVariants';
@@ -97,10 +98,15 @@ export const checkoutRouter = new Hono<AppEnv>()
 
     try {
       const origin = c.req.header('origin');
+      // A Stripe Customer (not just an email) lets the hosted Checkout page show this customer's
+      // saved cards (HU-059) and offer to save a new one, instead of always asking for a fresh
+      // card number.
+      const stripeCustomerId = await getOrCreateStripeCustomer(user.clerkId, user.email, user.name);
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
-        customer_email: user.email,
+        customer: stripeCustomerId,
+        saved_payment_method_options: { payment_method_save: 'enabled' },
         line_items: [
           ...lineItems.map((i) => ({
           price_data: {
