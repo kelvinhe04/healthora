@@ -166,10 +166,31 @@ const adminSalesRouter = new Hono()
       { $limit: 5 },
     ]);
 
+    // Top combos sabor/color x tamaño vendidos (no solo top productos): items.variantLabel viene
+    // poblado en cada orden real (checkout) y en el seed de pedidos ficticios (bun run seed:orders),
+    // asi que agrupa por producto+combo en vez de por producto entero (#154).
+    const topVariantsRaw = await Order.aggregate([
+      { $match: { paymentStatus: "paid" } },
+      { $unwind: "$items" },
+      { $match: { "items.variantLabel": { $exists: true, $nin: [null, ""] } } },
+      {
+        $group: {
+          _id: { productId: "$items.productId", variantLabel: "$items.variantLabel" },
+          units: { $sum: "$items.qty" },
+          revenue: { $sum: { $multiply: ["$items.price", "$items.qty"] } },
+        },
+      },
+      { $sort: { units: -1 } },
+      { $limit: 8 },
+    ]);
+
     const ids = topProducts.map(function (i) {
       return i._id;
     });
-    const products = await Product.find({ id: { $in: ids } })
+    const variantProductIds = topVariantsRaw.map(function (v) {
+      return v._id.productId;
+    });
+    const products = await Product.find({ id: { $in: [...ids, ...variantProductIds] } })
       .select("id name brand category")
       .lean();
     const map = new Map(
@@ -177,6 +198,17 @@ const adminSalesRouter = new Hono()
         return [p.id, p];
       }),
     );
+
+    const topVariants = topVariantsRaw.map(function (v) {
+      const p = map.get(v._id.productId);
+      return {
+        productId: v._id.productId,
+        productName: p ? p.name : "Unknown",
+        variantLabel: v._id.variantLabel,
+        units: v.units,
+        revenue: v.revenue,
+      };
+    });
 
     const dailyMap = new Map(
       daily.map(function (entry) {
@@ -221,6 +253,7 @@ const adminSalesRouter = new Hono()
       topProducts: topProductNames,
       topCategories,
       topBrands,
+      topVariants,
     });
   });
 

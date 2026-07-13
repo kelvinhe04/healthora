@@ -146,6 +146,9 @@ export type SalesData = {
   topProducts?: { _id: string; revenue: number; units: number }[];
   topCategories?: { _id: string; units: number; revenue: number }[];
   topBrands?: { _id: string; units: number; revenue: number }[];
+  /** Combos sabor/color x tamaño mas vendidos (no solo productos) - agrupado por
+   * items.variantLabel, distinto por producto (#154). */
+  topVariants?: { productId: string; productName: string; variantLabel: string; units: number; revenue: number }[];
 };
 export type EarningsData = {
   monthly?: { month: string; revenue: number; orders: number }[];

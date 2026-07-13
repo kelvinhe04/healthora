@@ -436,6 +436,120 @@ export function SalesSection() {
                 </Card>
               </div>
             </div>
+            <div style={{ marginTop: 24 }}>
+              <Card
+                title="Top variantes vendidas"
+                sub="Combos sabor/color x tamaño con más unidades vendidas"
+                loading={showSalesSkeleton}
+                skeletonContent={
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 16,
+                    }}
+                  >
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <div key={i}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            marginBottom: 6,
+                          }}
+                        >
+                          <Skeleton height={11} width={20} borderRadius={4} />
+                          <Skeleton height={13} width="55%" borderRadius={4} />
+                          <Skeleton height={13} width={48} borderRadius={4} />
+                        </div>
+                        <Skeleton height={6} width="100%" borderRadius={999} />
+                      </div>
+                    ))}
+                  </div>
+                }
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 16,
+                  }}
+                >
+                  {(sales?.topVariants || []).length === 0 ? (
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "var(--ink-60)",
+                      }}
+                    >
+                      No hay datos de variantes vendidas.
+                    </div>
+                  ) : (
+                    (sales?.topVariants || []).map((row, i) => (
+                      <div key={`${row.productId}-${row.variantLabel}`}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            marginBottom: 6,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontFamily: '"JetBrains Mono", monospace',
+                              color: "var(--ink-60)",
+                              width: 20,
+                            }}
+                          >
+                            #{i + 1}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: 14,
+                              fontWeight: 500,
+                              flex: 1,
+                            }}
+                          >
+                            {row.productName}{" "}
+                            <span style={{ color: "var(--ink-60)", fontWeight: 400 }}>
+                              · {row.variantLabel}
+                            </span>
+                          </span>
+                          <span
+                            style={{
+                              fontSize: 14,
+                              fontFamily: '"JetBrains Mono", monospace',
+                            }}
+                          >
+                            {row.units} uds
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            height: 6,
+                            background: "var(--ink-06)",
+                            borderRadius: 999,
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: "100%",
+                              width: `${(row.units / Math.max(...((sales?.topVariants || []).map((r) => r.units) || [1]))) * 100}%`,
+                              background: "var(--green)",
+                              borderRadius: 999,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </Card>
+            </div>
           </>
     </>
   );
