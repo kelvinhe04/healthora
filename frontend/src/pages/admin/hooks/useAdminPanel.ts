@@ -16,6 +16,7 @@ import {
   type AdminOrder,
   type AdminPage,
   type AdminUser,
+  type CohortReportData,
   type DashboardData,
   type EarningsData,
   type ErrorReportsData,
@@ -59,7 +60,7 @@ function orderMatchesSearch(order: AdminOrder, term: string): boolean {
   );
 }
 
-const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "performance", "errors", "audit"];
+const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "performance", "errors", "audit", "reports"];
 
 export function useAdminPanel({
   access,
@@ -329,6 +330,17 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     enabled: page === "errors",
   });
 
+  const [reportsRange, setReportsRange] = useState<{ from: string; to: string }>({ from: "", to: "" });
+  const reportsQuery = useQuery({
+    queryKey: ["admin-reports-cohorts", reportsRange.from, reportsRange.to],
+    queryFn: async () =>
+      api.admin.cohortReport(await getAdminToken(), {
+        from: reportsRange.from || undefined,
+        to: reportsRange.to || undefined,
+      }) as Promise<CohortReportData>,
+    enabled: page === "reports",
+  });
+
   const showOrdersSkeleton = useOnceLoading(
     "section_orders",
     ordersQuery.isLoading,
@@ -356,6 +368,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const showErrorsSkeleton = useOnceLoading(
     "section_errors",
     errorReportsQuery.isLoading,
+  );
+  const showReportsSkeleton = useOnceLoading(
+    "section_reports",
+    reportsQuery.isLoading,
   );
 
   const orderStatusesMutation = useMutation({
@@ -541,6 +557,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const earnings = earningsQuery.data;
   const performanceData = performanceQuery.data;
   const errorReports = errorReportsQuery.data;
+  const cohortReport = reportsQuery.data;
   const dashboardData = dashboardQuery.data;
 
   const [dashboardReady, setDashboardReady] = useState(false);
@@ -943,5 +960,9 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     setErrorSourceFilter,
     errorReports,
     showErrorsSkeleton,
+    reportsRange,
+    setReportsRange,
+    cohortReport,
+    showReportsSkeleton,
   };
 }

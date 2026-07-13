@@ -23,6 +23,7 @@ import { adminReturnsRouter } from './routes/admin/adminReturns';
 import { returnsRouter } from './routes/returns';
 import { adminReviewsRouter } from './routes/admin/adminReviews';
 import { adminCategoriesRouter } from './routes/admin/adminCategories';
+import { adminReportsRouter } from './routes/admin/adminReports';
 import { accountRouter } from './routes/account';
 import { mcpAuth } from './mcp/auth';
 import { handleMcpRequest } from './mcp/server';
@@ -105,6 +106,7 @@ app.route('/admin/audit-logs', adminAuditLogsRouter);
 app.route('/admin/returns', adminReturnsRouter);
 app.route('/admin/reviews', adminReviewsRouter);
 app.route('/admin/categories', adminCategoriesRouter);
+app.route('/admin/reports', adminReportsRouter);
 
 // Remote MCP server (Model Context Protocol) - exposes read/write tools for catalog, variantes,
 // stock, ordenes, usuarios y ventas, importable desde Claude Code / Codex / conectores de

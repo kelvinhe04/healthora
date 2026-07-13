@@ -16,6 +16,7 @@ import { ProductsSection } from './sections/ProductsSection';
 import { ReturnsSection } from './sections/ReturnsSection';
 import { ReviewsSection } from './sections/ReviewsSection';
 import { CategoriesSection } from './sections/CategoriesSection';
+import { ReportsSection } from './sections/ReportsSection';
 import { SalesSection } from './sections/SalesSection';
 import { UsersSection } from './sections/UsersSection';
 
@@ -109,6 +110,7 @@ function AdminPanelLayout({
         {page === "reviews" && <ReviewsSection />}
         {page === "sales" && <SalesSection />}
         {page === "earnings" && <EarningsSection />}
+        {page === "reports" && <ReportsSection />}
         {page === "performance" && <PerformanceSection />}
         {page === "errors" && <ErrorsSection />}
         {page === "audit" && <AuditLogsSection />}

@@ -433,6 +433,13 @@ export const api = {
       ),
     sales: (token: string) =>
       request<unknown>("/admin/sales", undefined, token),
+    cohortReport: (token: string, filters: { from?: string; to?: string } = {}) => {
+      const params = new URLSearchParams();
+      if (filters.from) params.set("from", filters.from);
+      if (filters.to) params.set("to", filters.to);
+      const query = params.toString();
+      return request<unknown>(`/admin/reports/cohorts${query ? `?${query}` : ""}`, undefined, token);
+    },
     earnings: (token: string) =>
       request<unknown>("/admin/earnings", undefined, token),
     performance: (token: string, minutes?: number) =>
