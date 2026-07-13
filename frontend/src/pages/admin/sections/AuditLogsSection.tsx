@@ -25,24 +25,47 @@ const inputStyle = {
   fontSize: 13,
 };
 
+/** Traduce el nombre tecnico de la accion (guardado en ingles/dot-notation en Mongo, ej.
+ * "products.update") a una etiqueta legible en español para la tabla y el filtro. El valor crudo
+ * sigue siendo lo que viaja al backend (comparacion exacta en `listAuditLogs`) - el <select> del
+ * filtro mapea la etiqueta en español de vuelta al valor crudo por su `value`. */
+const ACTION_LABELS: Record<string, string> = {
+  'admin.access': 'Acceso al panel',
+  'admin.access_denied': 'Acceso denegado',
+  'auth.login': 'Inicio de sesión',
+  'user.role_changed': 'Rol de usuario cambiado',
+  'products.create': 'Producto creado',
+  'products.update': 'Producto actualizado',
+  'products.delete': 'Producto eliminado',
+  'categories.create': 'Categoría creada',
+  'categories.update': 'Categoría actualizada',
+  'categories.delete': 'Categoría eliminada',
+  'orders.create': 'Pedido creado',
+  'orders.update': 'Pedido actualizado',
+  'orders.delete': 'Pedido eliminado',
+  'reviews.create': 'Reseña creada / autor baneado',
+  'reviews.update': 'Reseña moderada',
+  'reviews.delete': 'Reseña eliminada / baneo quitado',
+  'returns.create': 'Devolución creada',
+  'returns.update': 'Devolución actualizada',
+  'returns.delete': 'Devolución eliminada',
+  'uploads.create': 'Imagen subida',
+  'uploads.update': 'Imagen actualizada',
+  'uploads.delete': 'Imagen eliminada',
+};
+
+function translateAction(action: string): string {
+  return ACTION_LABELS[action] ?? action;
+}
+
 export function AuditLogsSection() {
   const getAdminToken = useAdminToken();
-  const [actionInput, setActionInput] = useState('');
   const [action, setAction] = useState('');
   const [actorEmailInput, setActorEmailInput] = useState('');
   const [actorEmail, setActorEmail] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [page, setPage] = useState(1);
-
-  // Debounced: evita un request por cada tecla mientras se escribe.
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setAction(actionInput.trim());
-      setPage(1);
-    }, 300);
-    return () => clearTimeout(timeout);
-  }, [actionInput]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -91,13 +114,17 @@ export function AuditLogsSection() {
               aria-label="Filtrar por email del actor"
               style={{ ...inputStyle, width: 220 }}
             />
-            <input
-              value={actionInput}
-              onChange={(e) => setActionInput(e.target.value)}
-              placeholder="Acción (ej. products.update)"
+            <select
+              value={action}
+              onChange={(e) => { setAction(e.target.value); setPage(1); }}
               aria-label="Filtrar por acción"
               style={{ ...inputStyle, width: 200 }}
-            />
+            >
+              <option value="">Todas las acciones</option>
+              {Object.entries(ACTION_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
             <input
               type="date"
               value={from}
@@ -159,7 +186,7 @@ export function AuditLogsSection() {
                   </td>
                   <td style={td}>{entry.actorEmail || entry.actorClerkId || '—'}</td>
                   <td style={td}>
-                    <StatusPill status={entry.action} />
+                    <StatusPill status={translateAction(entry.action)} />
                   </td>
                   <td style={{ ...td, fontFamily: '"JetBrains Mono", monospace', fontSize: 12 }}>
                     {entry.resource || '—'}
