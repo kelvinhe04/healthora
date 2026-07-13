@@ -6,6 +6,7 @@ import { Product } from '../../db/models/Product';
 import { User } from '../../db/models/User';
 import { normalizeOrder } from '../../lib/orderStatus';
 import { LOW_STOCK_THRESHOLD } from '../../lib/realtime';
+import { enumerateStockCells } from '../../lib/lowStock';
 
 const paidOrdersMatch = {
   $or: [
@@ -63,13 +64,21 @@ export const adminDashboardRouter = new Hono<AppEnv>()
     }
 
     const recentOrders = (await Order.find().sort({ createdAt: -1 }).limit(5).lean()).map((order) => normalizeOrder(order));
+    // Stock bajo se evalua por celda (producto sin variantes, variante simple, o combo
+    // sabor/color x tamaño), no por el total del producto - un producto con 100 unidades
+    // repartidas en 5 combos puede tener uno de ellos en 0 sin que el total lo delate (#153).
     // Respeta el umbral por producto (lowStockThreshold, HU-055) cuando esta definido, cae al
-    // default global si no. $expr compara dos campos del mismo documento, algo que un filtro
-    // plano no puede expresar.
-    const lowStockProducts = await Product.find({
-      active: true,
-      $expr: { $lte: ['$stock', { $ifNull: ['$lowStockThreshold', LOW_STOCK_THRESHOLD] }] },
-    }).sort({ stock: 1 }).limit(6).lean();
+    // default global si no.
+    const activeProducts = await Product.find({ active: true }).lean();
+    const allLowStockCells = activeProducts
+      .flatMap((product) => {
+        const threshold = product.lowStockThreshold ?? LOW_STOCK_THRESHOLD;
+        return enumerateStockCells(product)
+          .filter((cell) => cell.stock <= threshold)
+          .map((cell) => ({ variantId: cell.variantId, variantLabel: cell.variantLabel, stock: cell.stock, product }));
+      })
+      .sort((a, b) => a.stock - b.stock);
+    const lowStockCells = allLowStockCells.slice(0, 6);
 
     return c.json({
       kpis: {
@@ -78,10 +87,10 @@ export const adminDashboardRouter = new Hono<AppEnv>()
         totalOrders,
         monthOrders: monthOrders.length,
         totalUsers,
-        lowStock: lowStockProducts.length,
+        lowStock: allLowStockCells.length,
       },
       dailySales,
       recentOrders,
-      lowStockProducts,
+      lowStockCells,
     });
   });
