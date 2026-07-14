@@ -13,7 +13,6 @@ import type {
   AdminReview,
   ReviewStatus,
   ReviewBan,
-  ErrorReport,
   AdminAuditLogEntry,
   AppNotification,
   NotificationInbox,
@@ -435,12 +434,6 @@ export const api = {
       request<unknown>("/admin/sales", undefined, token),
     earnings: (token: string) =>
       request<unknown>("/admin/earnings", undefined, token),
-    performance: (token: string, minutes?: number) =>
-      request<unknown>(
-        `/admin/performance${minutes ? `?minutes=${minutes}` : ""}`,
-        undefined,
-        token,
-      ),
     productAnalytics: (token: string, days?: number) =>
       request<{
         configured: boolean;
@@ -449,15 +442,8 @@ export const api = {
         cartAbandonment: { addedToCart: number; completedCheckout: number; abandonmentRate: number };
         recentEvents: { event: string; timestamp: string; distinctId: string }[];
         error?: string;
-        errors: { total: number; backend: number; frontend: number };
       }>(
         `/admin/analytics/product${days ? `?days=${days}` : ""}`,
-        undefined,
-        token,
-      ),
-    errorReports: (token: string, source?: "backend" | "frontend") =>
-      request<{ items: ErrorReport[]; total: number; page: number; limit: number }>(
-        `/admin/error-reports${source ? `?source=${source}` : ""}`,
         undefined,
         token,
       ),

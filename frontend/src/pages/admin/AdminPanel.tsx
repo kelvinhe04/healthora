@@ -9,9 +9,7 @@ import { AdminPanelProvider, useAdminPanelContext } from './AdminPanelContext';
 import { AuditLogsSection } from './sections/AuditLogsSection';
 import { DashboardSection } from './sections/DashboardSection';
 import { EarningsSection } from './sections/EarningsSection';
-import { ErrorsSection } from './sections/ErrorsSection';
 import { OrdersSection } from './sections/OrdersSection';
-import { PerformanceSection } from './sections/PerformanceSection';
 import { ProductAnalyticsSection } from './sections/ProductAnalyticsSection';
 import { ProductsSection } from './sections/ProductsSection';
 import { ReturnsSection } from './sections/ReturnsSection';
@@ -110,8 +108,6 @@ function AdminPanelLayout({
         {page === "reviews" && <ReviewsSection />}
         {page === "sales" && <SalesSection />}
         {page === "earnings" && <EarningsSection />}
-        {page === "performance" && <PerformanceSection />}
-        {page === "errors" && <ErrorsSection />}
         {page === "audit" && <AuditLogsSection />}
         {page === "analytics" && <ProductAnalyticsSection />}
       </main>
