@@ -763,6 +763,105 @@ export async function sendOrderStatusUpdateEmail(data: OrderStatusEmailData): Pr
   }
 }
 
+export type RepurchaseReminderEmailData = {
+  customerName: string;
+  customerEmail: string;
+  productId: string;
+  productName: string;
+};
+
+/** No genera ningun cobro (a diferencia de una suscripcion) - solo invita al cliente a volver a
+ * comprar el producto que probablemente ya se le esta acabando (HU-102). */
+export async function sendRepurchaseReminderEmail(data: RepurchaseReminderEmailData): Promise<void> {
+  const { customerName, customerEmail, productId, productName } = data;
+
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+
+  if (!customerEmail) {
+    console.error('[EMAIL] No customer email provided, skipping repurchase reminder email');
+    return;
+  }
+
+  const safeCustomerName = escapeHtml(customerName);
+  const safeProductName = escapeHtml(productName);
+  const productUrl = `${getFrontendUrl()}/product/${encodeURIComponent(productId)}`;
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ${EMAIL_FONT_HEAD}
+  <title>¿Se te está acabando ${safeProductName}? - Healthora</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #eef6ef; font-family: ${EMAIL_SANS_FONT};">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #eef6ef;">
+    <tr>
+      <td align="center" style="padding: 34px 14px;">
+        <table width="620" cellpadding="0" cellspacing="0" border="0" style="max-width: 620px; width: 100%; background-color: #ffffff; border-radius: 24px; overflow: hidden; border: 1px solid #dce9df;">
+          <tr>
+            <td style="background-color: #213a27; background-image: linear-gradient(135deg, #213a27 0%, #0f7c59 62%, #c8ee2e 160%); padding: 36px 38px 40px 38px;">
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td class="healthora-serif" width="48" height="48" align="center" style="width: 48px; height: 48px; border-radius: 999px; background-color: #c8ee2e; color: #213a27; font-family: ${EMAIL_SERIF_FONT}; font-size: 34px; line-height: 48px;">h</td>
+                  <td style="padding-left: 12px; vertical-align: middle;">
+                    <p class="healthora-serif" style="margin: 0; font-family: ${EMAIL_SERIF_FONT}; font-size: 28px; line-height: 26px; font-weight: 400; color: #ffffff; letter-spacing: -0.7px;">Healthora</p>
+                    <p class="healthora-mono" style="margin: 3px 0 0 0; font-family: ${EMAIL_MONO_FONT}; font-size: 12px; line-height: 16px; color: #c8ee2e; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase;">Recordatorio</p>
+                  </td>
+                </tr>
+              </table>
+              <h1 style="margin: 30px 0 0 0; font-size: 30px; line-height: 37px; font-weight: 800; color: #ffffff; letter-spacing: -0.7px;">¿Se te está acabando ${safeProductName}?</h1>
+              <p style="margin: 10px 0 0 0; font-size: 16px; line-height: 25px; color: #e4f7e9;">Hola ${safeCustomerName}, según tu última compra, es un buen momento para pedir más antes de que se te acabe.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px 38px 10px 38px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4fbef; border-radius: 18px; border: 1px solid #cfeac5;">
+                <tr>
+                  <td style="padding: 22px 24px;">
+                    <p style="margin: 0; font-size: 11px; color: #53725e; text-transform: uppercase; letter-spacing: 1.4px; font-weight: 800;">Producto</p>
+                    <p style="margin: 8px 0 0 0; font-size: 17px; line-height: 24px; font-weight: 800; color: #213a27;">${safeProductName}</p>
+                    <p style="margin: 12px 0 0 0; font-size: 14px; line-height: 22px; color: #64756a;">Esto no genera ningún cobro - es solo un aviso para que no te quedes sin él.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 26px 38px 38px 38px;" align="center">
+              <a href="${productUrl}" style="display: inline-block; background-color: #213a27; color: #c8ee2e; text-decoration: none; padding: 16px 34px; border-radius: 999px; font-size: 15px; line-height: 18px; font-weight: 800; letter-spacing: 0.2px;">Volver a comprar</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 28px 38px; background-color: #213a27;" align="center">
+              <p class="healthora-serif" style="margin: 0 0 8px 0; font-family: ${EMAIL_SERIF_FONT}; font-size: 28px; font-weight: 400; color: #ffffff; letter-spacing: -0.7px;">Healthora</p>
+              <p style="margin: 0; font-size: 12px; color: #aebdaf;">Tu salud, nuestra prioridad.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+
+  try {
+    const info = await transporter.sendMail({
+      from: getSmtpFrom(),
+      to: customerEmail,
+      subject: `¿Se te está acabando ${productName}? - Healthora`,
+      html,
+    });
+    console.log('[EMAIL] Repurchase reminder sent to:', customerEmail, 'MessageId:', info.messageId);
+  } catch (err) {
+    console.error('[EMAIL] Error sending repurchase reminder email:', err);
+  }
+}
+
 export async function sendNewsletterSubscriptionEmail(data: NewsletterEmailData): Promise<void> {
   const safeEmail = escapeHtml(data.email);
   const shopUrl = getFrontendUrl();

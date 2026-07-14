@@ -103,6 +103,10 @@ const ProductSchema = new Schema(
     // global LOW_STOCK_THRESHOLD (backend/src/lib/realtime.ts) tanto para las alertas en tiempo
     // real como para el widget "Stock bajo" del dashboard.
     lowStockThreshold: Number,
+    // Cuantos dias le dura a un cliente este producto desde la compra, usado para estimar cuando
+    // se le esta por acabar y mandarle un recordatorio de recompra (HU-102). Sin definir, se usa
+    // el default por categoria - ver CATEGORY_REORDER_CYCLE_DAYS en lib/repurchase.ts.
+    reorderCycleDays: Number,
     // ITBMS (Panama VAT) exemption - certain medications/health items don't pay the 7% tax at
     // checkout. Derived automatically from `category` (see hooks below), not admin-editable.
     taxExempt: { type: Boolean, default: false },

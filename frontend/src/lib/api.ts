@@ -14,6 +14,7 @@ import type {
   ReviewStatus,
   ReviewBan,
   AdminAuditLogEntry,
+  RepurchaseReminderEntry,
   AppNotification,
   NotificationInbox,
   Coupon,
@@ -530,6 +531,20 @@ export const api = {
         undefined,
         token,
       );
+    },
+    repurchaseReminders: {
+      list: (token: string, page = 1, limit = 25) =>
+        request<{ items: RepurchaseReminderEntry[]; total: number; page: number; limit: number }>(
+          `/admin/repurchase-reminders?page=${page}&limit=${limit}`,
+          undefined,
+          token,
+        ),
+      scanNow: (token: string) =>
+        request<{ scanned: number; sent: number }>(
+          "/admin/repurchase-reminders/scan",
+          { method: "POST" },
+          token,
+        ),
     },
   },
 };

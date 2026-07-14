@@ -284,6 +284,22 @@ export interface AdminAuditLogEntry {
   createdAt: string;
 }
 
+/** One repurchase reminder email sent (HU-102) - the backend estimates when a customer will run
+ * out of a previously-bought product (last purchase date + reorder cycle by category/product) and
+ * sends a no-charge reminder. One row per (customer, product, purchase cycle) actually sent. */
+export interface RepurchaseReminderEntry {
+  _id: string;
+  customerId: string;
+  customerEmail: string;
+  productId: string;
+  productName?: string;
+  lastPurchaseDate: string;
+  estimatedRunOutDate: string;
+  reorderCycleDays: number;
+  sentAt: string;
+  createdAt: string;
+}
+
 export interface ProductFilters {
   category?: string;
   need?: string;
