@@ -70,7 +70,7 @@ export function ReportsSection() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: isSmall ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+          gridTemplateColumns: isSmall ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
           gap: 16,
           marginBottom: 28,
         }}
@@ -96,13 +96,6 @@ export function ReportsSection() {
           sub="ingresos por cliente"
           loading={showReportsSkeleton}
           animKey="reports_ltv"
-        />
-        <KpiCard
-          label="Ticket promedio"
-          value={cohortReport ? `$${cohortReport.overall.averageOrderValue.toFixed(2)}` : '—'}
-          sub="por orden pagada"
-          loading={showReportsSkeleton}
-          animKey="reports_aov"
         />
       </div>
 
