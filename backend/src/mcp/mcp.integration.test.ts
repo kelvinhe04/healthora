@@ -73,7 +73,7 @@ describe('MCP server', () => {
     expect(json.result.serverInfo.name).toBe('healthora');
   });
 
-  test('tools/list exposes all 18 registered tools', async () => {
+  test('tools/list exposes all 19 registered tools', async () => {
     const { json } = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const names = json.result.tools.map((t: { name: string }) => t.name).sort();
     expect(names).toEqual(
@@ -92,6 +92,7 @@ describe('MCP server', () => {
         'recommendations.getRelatedProducts',
         'reviews.listReviews',
         'reviews.moderateReview',
+        'search.reindexCatalog',
         'users.updateUserRole',
         'variants.upsertVariant',
         'variants.updateVariantStock',
@@ -238,5 +239,16 @@ describe('MCP server', () => {
       params: { name: 'not.a.real.tool', arguments: {} },
     });
     expect(json.error || json.result?.isError).toBeTruthy();
+  });
+
+  test('search.reindexCatalog clears catalog cache', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 10,
+      method: 'tools/call',
+      params: { name: 'search.reindexCatalog', arguments: {} },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.ok).toBe(true);
   });
 });
