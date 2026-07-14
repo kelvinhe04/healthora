@@ -222,6 +222,23 @@ export interface User {
 
 export type ReviewStatus = 'pending' | 'published' | 'hidden';
 
+export type Coupon = {
+  _id?: string;
+  code: string;
+  label: string;
+  discountType: 'percent' | 'fixed';
+  percentOff?: number;
+  amountOff?: number;
+  eligibleCategories: string[];
+  expiresAt?: string | null;
+  active: boolean;
+  maxUses?: number | null;
+  usesCount?: number;
+  firstPurchaseOnly: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export interface Review {
   _id: string;
   productId: string;
@@ -251,25 +268,6 @@ export interface ReviewBan {
   createdAt: string;
 }
 
-export interface ErrorReport {
-  _id: string;
-  source: 'backend' | 'frontend';
-  name?: string;
-  message: string;
-  stack?: string;
-  severity: 'error' | 'fatal';
-  route?: string;
-  method?: string;
-  statusCode?: number;
-  userId?: string;
-  userEmail?: string;
-  posthogDistinctId?: string;
-  posthogSessionId?: string;
-  userAgent?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 /** One entry of the append-only admin audit trail (HU-051) - "admin.access" fires on every admin
  * request (see backend/src/middleware/requireAdmin.ts), while resource-scoped actions like
  * "products.update" only fire on a successful mutation (see auditAdminAction.ts). */
@@ -283,6 +281,22 @@ export interface AdminAuditLogEntry {
   targetClerkId?: string;
   targetEmail?: string;
   metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+/** One repurchase reminder email sent (HU-102) - the backend estimates when a customer will run
+ * out of a previously-bought product (last purchase date + reorder cycle by category/product) and
+ * sends a no-charge reminder. One row per (customer, product, purchase cycle) actually sent. */
+export interface RepurchaseReminderEntry {
+  _id: string;
+  customerId: string;
+  customerEmail: string;
+  productId: string;
+  productName?: string;
+  lastPurchaseDate: string;
+  estimatedRunOutDate: string;
+  reorderCycleDays: number;
+  sentAt: string;
   createdAt: string;
 }
 

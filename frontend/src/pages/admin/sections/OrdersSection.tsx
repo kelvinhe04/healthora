@@ -15,11 +15,13 @@ import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { PaginationControls } from '../components/PaginationControls';
+import { useAdminToken } from '../hooks/useAdminToken';
 import { useAdminPanelContext } from '../AdminPanelContext';
 import type { OrderSortKey } from '../hooks/useAdminPanel';
 import { formatPanamaShortDate, formatPanamaTime } from '../../../lib/dates';
 import { getFulfillmentStatusLabel, orderPaymentStatusLabels, orderPaymentStatusOptions, orderShippingMethodLabels } from '../types';
 import { carrierLabel, getTrackingUrl } from '../../../lib/tracking';
+import { api } from '../../../lib/api';
 import type { OrderReturn } from '../../../types';
 
 const ORDER_SORT_LABEL: Record<OrderSortKey, string> = {
@@ -64,6 +66,7 @@ function paymentPillLabels(order: { paymentStatus?: string; replacesOrderId?: st
 }
 
 export function OrdersSection() {
+  const getAdminToken = useAdminToken();
   const {
   orders,
   showOrdersSkeleton,
@@ -108,6 +111,27 @@ export function OrdersSection() {
                 </>
               }
               sub="Cambia estados y monitorea el ciclo completo de la orden."
+              actions={
+                showOrdersSkeleton ? undefined : (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const token = await getAdminToken();
+                      const csv = await api.admin.exportOrdersCsv(token);
+                      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = 'orders-export.csv';
+                      link.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif', whiteSpace: "nowrap" }}
+                  >
+                    Exportar CSV
+                  </button>
+                )
+              }
             />
             {showOrdersSkeleton ? (
               <div
