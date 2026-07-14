@@ -16,14 +16,16 @@ import {
   type AdminOrder,
   type AdminPage,
   type AdminUser,
+  type CohortCustomersData,
+  type CohortReportData,
   type DashboardData,
   type EarningsData,
-  type ErrorReportsData,
   type OrderPaymentBucket,
-  type PerformanceData,
+  type ProductAnalyticsData,
+  type RepurchaseRemindersData,
   type SalesData,
 } from '../types';
-import { getNextFulfillmentStatus, paginateItems } from '../utils';
+import { ADMIN_PAGE_SIZE, getNextFulfillmentStatus, paginateItems } from '../utils';
 import { useAdminToken } from './useAdminToken';
 import { broadcastProductsChanged } from '../../../lib/crossTabSync';
 import { getEffectivePrice, getTotalStock } from '../../../lib/productVariants';
@@ -59,7 +61,7 @@ function orderMatchesSearch(order: AdminOrder, term: string): boolean {
   );
 }
 
-const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "performance", "errors", "audit"];
+const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "coupons", "users", "returns", "reviews", "sales", "earnings", "reports", "audit", "repurchase", "analytics"];
 
 export function useAdminPanel({
   access,
@@ -313,20 +315,45 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     enabled: page === "earnings",
   });
 
-  const [performanceWindow, setPerformanceWindow] = useState(1440);
-  const performanceQuery = useQuery({
-    queryKey: ["admin-performance", performanceWindow],
+  const [analyticsPeriodDays, setAnalyticsPeriodDays] = useState(30);
+  const productAnalyticsQuery = useQuery({
+    queryKey: ["admin-product-analytics", analyticsPeriodDays],
     queryFn: async () =>
-      api.admin.performance(await getAdminToken(), performanceWindow) as Promise<PerformanceData>,
-    enabled: page === "performance",
+      api.admin.productAnalytics(await getAdminToken(), analyticsPeriodDays) as Promise<ProductAnalyticsData>,
+    enabled: page === "analytics",
   });
 
-  const [errorSourceFilter, setErrorSourceFilter] = useState<"" | "backend" | "frontend">("");
-  const errorReportsQuery = useQuery({
-    queryKey: ["admin-error-reports", errorSourceFilter],
+  const [repurchaseRemindersPage, setRepurchaseRemindersPage] = useState(1);
+  const repurchaseRemindersQuery = useQuery({
+    queryKey: ["admin-repurchase-reminders", repurchaseRemindersPage],
     queryFn: async () =>
-      api.admin.errorReports(await getAdminToken(), errorSourceFilter || undefined) as Promise<ErrorReportsData>,
-    enabled: page === "errors",
+      api.admin.repurchaseReminders.list(await getAdminToken(), repurchaseRemindersPage, ADMIN_PAGE_SIZE) as Promise<RepurchaseRemindersData>,
+    enabled: page === "repurchase",
+  });
+  const repurchaseScanMutation = useMutation({
+    mutationFn: async () => api.admin.repurchaseReminders.scanNow(await getAdminToken()),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin-repurchase-reminders"] });
+    },
+  });
+
+  const [reportsRange, setReportsRange] = useState<{ from: string; to: string }>({ from: "", to: "" });
+  const reportsQuery = useQuery({
+    queryKey: ["admin-reports-cohorts", reportsRange.from, reportsRange.to],
+    queryFn: async () =>
+      api.admin.cohortReport(await getAdminToken(), {
+        from: reportsRange.from || undefined,
+        to: reportsRange.to || undefined,
+      }) as Promise<CohortReportData>,
+    enabled: page === "reports",
+  });
+
+  const [selectedCohortMonth, setSelectedCohortMonth] = useState<string | null>(null);
+  const cohortCustomersQuery = useQuery({
+    queryKey: ["admin-reports-cohort-customers", selectedCohortMonth],
+    queryFn: async () =>
+      api.admin.cohortCustomers(await getAdminToken(), selectedCohortMonth as string) as Promise<CohortCustomersData>,
+    enabled: page === "reports" && !!selectedCohortMonth,
   });
 
   const showOrdersSkeleton = useOnceLoading(
@@ -349,13 +376,17 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     "section_earnings",
     earningsQuery.isLoading,
   );
-  const showPerformanceSkeleton = useOnceLoading(
-    "section_performance",
-    performanceQuery.isLoading,
+  const showAnalyticsSkeleton = useOnceLoading(
+    "section_analytics",
+    productAnalyticsQuery.isLoading,
   );
-  const showErrorsSkeleton = useOnceLoading(
-    "section_errors",
-    errorReportsQuery.isLoading,
+  const showRepurchaseSkeleton = useOnceLoading(
+    "section_repurchase",
+    repurchaseRemindersQuery.isLoading,
+  );
+  const showReportsSkeleton = useOnceLoading(
+    "section_reports",
+    reportsQuery.isLoading,
   );
 
   const orderStatusesMutation = useMutation({
@@ -539,8 +570,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const customers = users;
   const sales = salesQuery.data;
   const earnings = earningsQuery.data;
-  const performanceData = performanceQuery.data;
-  const errorReports = errorReportsQuery.data;
+  const cohortReport = reportsQuery.data;
+  const cohortCustomers = cohortCustomersQuery.data;
   const dashboardData = dashboardQuery.data;
 
   const [dashboardReady, setDashboardReady] = useState(false);
@@ -935,13 +966,22 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     sales,
     showEarningsSkeleton,
     earnings,
-    performanceWindow,
-    setPerformanceWindow,
-    performanceData,
-    showPerformanceSkeleton,
-    errorSourceFilter,
-    setErrorSourceFilter,
-    errorReports,
-    showErrorsSkeleton,
+    repurchaseRemindersPage,
+    setRepurchaseRemindersPage,
+    repurchaseReminders: repurchaseRemindersQuery.data,
+    showRepurchaseSkeleton,
+    repurchaseScanMutation,
+    analyticsPeriodDays,
+    setAnalyticsPeriodDays,
+    productAnalytics: productAnalyticsQuery.data,
+    showAnalyticsSkeleton,
+    reportsRange,
+    setReportsRange,
+    cohortReport,
+    showReportsSkeleton,
+    selectedCohortMonth,
+    setSelectedCohortMonth,
+    cohortCustomers,
+    loadingCohortCustomers: cohortCustomersQuery.isLoading,
   };
 }

@@ -7,6 +7,7 @@ import type {
   SavedAddress,
   ProductSubscription,
   SubscriptionIntervalDays,
+  SavedPaymentMethod,
   Review,
   OrderReturn,
   ReturnStatus,
@@ -15,10 +16,11 @@ import type {
   AdminReview,
   ReviewStatus,
   ReviewBan,
-  ErrorReport,
   AdminAuditLogEntry,
+  RepurchaseReminderEntry,
   AppNotification,
   NotificationInbox,
+  Coupon,
 } from "../types";
 import type { CartItem } from "../types";
 
@@ -83,6 +85,8 @@ export const api = {
       request<Order>(`/orders/${id}`, undefined, token),
     bySession: (sessionId: string, token: string) =>
       request<Order>(`/orders?stripeSessionId=${sessionId}`, undefined, token),
+    byPaymentIntent: (paymentIntentId: string, token: string) =>
+      request<Order>(`/orders?stripePaymentIntentId=${paymentIntentId}`, undefined, token),
     cancel: (id: string, token: string) =>
       request<Order>(`/orders/${id}/cancel`, { method: "PATCH" }, token),
     updateAddress: (id: string, address: OrderAddress, token: string) =>
@@ -137,6 +141,28 @@ export const api = {
           token,
         ),
     },
+    paymentMethods: {
+      list: (token: string) =>
+        request<SavedPaymentMethod[]>("/account/payment-methods", undefined, token),
+      createSetupIntent: (token: string) =>
+        request<{ clientSecret: string }>(
+          "/account/payment-methods/setup-intent",
+          { method: "POST" },
+          token,
+        ),
+      remove: (id: string, token: string) =>
+        request<{ ok: boolean }>(
+          `/account/payment-methods/${id}`,
+          { method: "DELETE" },
+          token,
+        ),
+      setDefault: (id: string, token: string) =>
+        request<{ ok: boolean }>(
+          `/account/payment-methods/${id}/default`,
+          { method: "PATCH" },
+          token,
+        ),
+    },
   },
   cart: {
     get: (token: string) => request<CartItem[]>("/cart", undefined, token),
@@ -144,6 +170,16 @@ export const api = {
       request<CartItem[]>(
         "/cart",
         { method: "PUT", body: JSON.stringify({ items }) },
+        token,
+      ),
+  },
+  wishlist: {
+    get: (token: string) =>
+      request<{ productIds: string[] }>("/wishlist", undefined, token),
+    save: (productIds: string[], token: string) =>
+      request<{ productIds: string[] }>(
+        "/wishlist",
+        { method: "PUT", body: JSON.stringify({ productIds }) },
         token,
       ),
   },
@@ -160,6 +196,21 @@ export const api = {
     ) =>
       request<{ url: string }>(
         "/checkout/session",
+        { method: "POST", body: JSON.stringify(body) },
+        token,
+      ),
+    createPaymentIntent: (
+      body: {
+        items: { productId: string; qty: number; variantId?: string }[];
+        address: object;
+        promoCode?: string;
+        freeSampleId?: string;
+        shippingMethod: "delivery" | "pickup";
+      },
+      token: string,
+    ) =>
+      request<{ clientSecret: string; paymentIntentId: string }>(
+        "/checkout/payment-intent",
         { method: "POST", body: JSON.stringify(body) },
         token,
       ),
@@ -295,6 +346,25 @@ export const api = {
         { method: "PATCH", body: JSON.stringify(body) },
         token,
       ),
+    exportOrdersCsv: async (
+      token: string,
+      filters: { paymentStatus?: string; fulfillmentStatus?: string; limit?: number } = {},
+    ) => {
+      const params = new URLSearchParams();
+      if (filters.paymentStatus) params.set("paymentStatus", filters.paymentStatus);
+      if (filters.fulfillmentStatus) params.set("fulfillmentStatus", filters.fulfillmentStatus);
+      if (filters.limit) params.set("limit", String(filters.limit));
+      const query = params.toString();
+      const res = await fetch(`${BASE}/admin/orders/export.csv${query ? `?${query}` : ""}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-cache",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      return res.text();
+    },
     returns: {
       list: (token: string, status?: ReturnStatus) =>
         request<OrderReturn[]>(
@@ -405,6 +475,43 @@ export const api = {
           token,
         ),
     },
+    catalog: {
+      reindex: (token: string) =>
+        request<{ ok: boolean; message: string }>(
+          "/admin/catalog/reindex",
+          { method: "POST" },
+          token,
+        ),
+    },
+    coupons: {
+      list: (token: string) => request<Coupon[]>("/admin/coupons", undefined, token),
+      create: (
+        data: {
+          code: string;
+          label: string;
+          discountType: "percent" | "fixed";
+          percentOff?: number;
+          amountOff?: number;
+          eligibleCategories?: string[];
+          expiresAt?: string | null;
+          active?: boolean;
+          maxUses?: number | null;
+          firstPurchaseOnly?: boolean;
+        },
+        token: string,
+      ) =>
+        request<Coupon>("/admin/coupons", { method: "POST", body: JSON.stringify(data) }, token),
+      update: (
+        code: string,
+        data: { label?: string; active?: boolean; expiresAt?: string | null; maxUses?: number | null },
+        token: string,
+      ) =>
+        request<Coupon>(
+          `/admin/coupons/${encodeURIComponent(code)}`,
+          { method: "PATCH", body: JSON.stringify(data) },
+          token,
+        ),
+    },
     reviews: {
       list: (
         token: string,
@@ -463,15 +570,41 @@ export const api = {
       request<unknown>("/admin/sales", undefined, token),
     earnings: (token: string) =>
       request<unknown>("/admin/earnings", undefined, token),
-    performance: (token: string, minutes?: number) =>
-      request<unknown>(
-        `/admin/performance${minutes ? `?minutes=${minutes}` : ""}`,
+    cohortReport: (
+      token: string,
+      range: { from?: string; to?: string } = {},
+    ) => {
+      const params = new URLSearchParams();
+      if (range.from) params.set("from", range.from);
+      if (range.to) params.set("to", range.to);
+      const query = params.toString();
+      return request<unknown>(
+        `/admin/reports/cohorts${query ? `?${query}` : ""}`,
         undefined,
         token,
-      ),
-    errorReports: (token: string, source?: "backend" | "frontend") =>
-      request<{ items: ErrorReport[]; total: number; page: number; limit: number }>(
-        `/admin/error-reports${source ? `?source=${source}` : ""}`,
+      );
+    },
+    cohortCustomers: (token: string, cohortMonth: string) =>
+      request<{
+        cohortMonth: string;
+        customers: {
+          customerId: string;
+          customerName?: string;
+          customerEmail?: string;
+          firstPurchaseDate: string;
+          activeOffsets: number[];
+        }[];
+      }>(`/admin/reports/cohorts/${cohortMonth}/customers`, undefined, token),
+    productAnalytics: (token: string, days?: number) =>
+      request<{
+        configured: boolean;
+        periodDays: number;
+        funnel: { checkoutStarted: number; checkoutCompleted: number; conversionRate: number };
+        cartAbandonment: { addedToCart: number; completedCheckout: number; abandonmentRate: number };
+        recentEvents: { event: string; timestamp: string; distinctId: string }[];
+        error?: string;
+      }>(
+        `/admin/analytics/product${days ? `?days=${days}` : ""}`,
         undefined,
         token,
       ),
@@ -501,6 +634,20 @@ export const api = {
         undefined,
         token,
       );
+    },
+    repurchaseReminders: {
+      list: (token: string, page = 1, limit = 25) =>
+        request<{ items: RepurchaseReminderEntry[]; total: number; page: number; limit: number }>(
+          `/admin/repurchase-reminders?page=${page}&limit=${limit}`,
+          undefined,
+          token,
+        ),
+      scanNow: (token: string) =>
+        request<{ scanned: number; sent: number }>(
+          "/admin/repurchase-reminders/scan",
+          { method: "POST" },
+          token,
+        ),
     },
   },
 };

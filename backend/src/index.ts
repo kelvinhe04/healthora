@@ -16,32 +16,32 @@ import { adminUploadsRouter } from './routes/admin/adminUploads';
 import { adminUsersRouter } from './routes/admin/adminUsers';
 import { adminSalesRouter } from './routes/admin/adminSales';
 import { adminEarningsRouter } from './routes/admin/adminEarnings';
-import { adminPerformanceRouter } from './routes/admin/adminPerformance';
-import { adminErrorReportsRouter } from './routes/admin/adminErrorReports';
 import { adminAuditLogsRouter } from './routes/admin/adminAuditLogs';
 import { adminReturnsRouter } from './routes/admin/adminReturns';
 import { returnsRouter } from './routes/returns';
 import { adminReviewsRouter } from './routes/admin/adminReviews';
 import { adminCategoriesRouter } from './routes/admin/adminCategories';
+import { adminRepurchaseRemindersRouter } from './routes/admin/adminRepurchaseReminders';
+import { adminAnalyticsRouter } from './routes/admin/adminAnalytics';
+import { adminCatalogRouter } from './routes/admin/adminCatalog';
+import { adminCouponsRouter } from './routes/admin/adminCoupons';
+import { adminReportsRouter } from './routes/admin/adminReports';
+import { wishlistRouter } from './routes/wishlist';
 import { accountRouter } from './routes/account';
 import { subscriptionsRouter } from './routes/subscriptions';
 import { mcpAuth } from './mcp/auth';
 import { handleMcpRequest } from './mcp/server';
 import { sendOrderConfirmationEmail } from './lib/email';
 import { recalculateBestsellers, recalculateNew, recalculatePurchasesLastMonth } from './lib/bestsellers';
+import { scanAndSendRepurchaseReminders } from './lib/repurchase';
 import { reviewsRouter } from './routes/reviews';
 import { notificationsRouter, websocket } from './routes/notifications';
 import { newsletterRouter } from './routes/newsletter';
 import { ipRateLimit } from './middleware/rateLimit';
-import { errorReportsRouter } from './routes/errorReports';
 import { swaggerUI } from '@hono/swagger-ui';
 import { openApiDocument } from './openapi';
 import { emailField, parseJson, textField } from './lib/validation';
 import { z } from 'zod';
-import { performanceMetrics } from './middleware/performanceMetrics';
-import { captureException } from './lib/errorTracking';
-import { shutdownPostHog } from './lib/posthog';
-import { errorTracking } from './middleware/errorTracking';
 import { logger } from './lib/logger';
 import { requestLogger } from './middleware/requestLogger';
 import { getCorsOrigins } from './lib/appEnv';
@@ -60,12 +60,20 @@ await recalculateBestsellers();
 await recalculateNew();
 await recalculatePurchasesLastMonth();
 
+// Recordatorio de recompra (HU-102): corre una vez al iniciar y despues cada 24h. No bloquea el
+// arranque del servidor (fire-and-forget) y se desactiva en tests para no mandar/crear datos
+// fuera de los tests que lo ejercitan explicitamente.
+if (process.env.NODE_ENV !== 'test') {
+  void scanAndSendRepurchaseReminders().catch((err) => logger.error({ err }, '[REPURCHASE] Error en el escaneo inicial'));
+  setInterval(() => {
+    scanAndSendRepurchaseReminders().catch((err) => logger.error({ err }, '[REPURCHASE] Error en el escaneo periodico'));
+  }, 24 * 60 * 60 * 1000).unref?.();
+}
+
 const app = new Hono();
 
 app.use('*', securityHeaders);
 app.use('*', requestLogger);
-app.use('*', errorTracking);
-app.use('*', performanceMetrics);
 app.use('*', ipRateLimit);
 const corsOrigins = getCorsOrigins();
 app.use(
@@ -88,8 +96,8 @@ app.route('/subscriptions', subscriptionsRouter);
 app.route('/reviews', reviewsRouter);
 app.route('/notifications', notificationsRouter);
 app.route('/newsletter', newsletterRouter);
-app.route('/error-reports', errorReportsRouter);
 app.route('/cart', cartRouter);
+app.route('/wishlist', wishlistRouter);
 app.route('/checkout', checkoutRouter);
 app.route('/promotions', promotionsRouter);
 app.route('/webhooks', webhooksRouter);
@@ -101,12 +109,15 @@ app.route('/admin/uploads', adminUploadsRouter);
 app.route('/admin/users', adminUsersRouter);
 app.route('/admin/sales', adminSalesRouter);
 app.route('/admin/earnings', adminEarningsRouter);
-app.route('/admin/performance', adminPerformanceRouter);
-app.route('/admin/error-reports', adminErrorReportsRouter);
 app.route('/admin/audit-logs', adminAuditLogsRouter);
 app.route('/admin/returns', adminReturnsRouter);
 app.route('/admin/reviews', adminReviewsRouter);
 app.route('/admin/categories', adminCategoriesRouter);
+app.route('/admin/repurchase-reminders', adminRepurchaseRemindersRouter);
+app.route('/admin/analytics', adminAnalyticsRouter);
+app.route('/admin/catalog', adminCatalogRouter);
+app.route('/admin/coupons', adminCouponsRouter);
+app.route('/admin/reports', adminReportsRouter);
 
 // Remote MCP server (Model Context Protocol) - exposes read/write tools for catalog, variantes,
 // stock, ordenes, usuarios y ventas, importable desde Claude Code / Codex / conectores de
@@ -164,25 +175,3 @@ Bun.serve({
 });
 
 logger.info({ port }, 'Healthora backend running');
-
-process.on('uncaughtException', (error) => {
-  captureException({
-    source: 'backend',
-    error,
-    severity: 'fatal',
-    metadata: { handler: 'uncaughtException' },
-  });
-});
-
-process.on('unhandledRejection', (reason) => {
-  captureException({
-    source: 'backend',
-    error: reason,
-    severity: 'fatal',
-    metadata: { handler: 'unhandledRejection' },
-  });
-});
-
-process.on('beforeExit', () => {
-  void shutdownPostHog();
-});

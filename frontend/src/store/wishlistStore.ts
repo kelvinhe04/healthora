@@ -7,6 +7,8 @@ interface WishlistState {
   remove: (productId: string) => void;
   clear: () => void;
   contains: (productId: string) => boolean;
+  replaceProductIds: (productIds: string[]) => void;
+  mergeProductIds: (productIds: string[]) => void;
 }
 
 export const useWishlistStore = create<WishlistState>()(
@@ -25,6 +27,9 @@ export const useWishlistStore = create<WishlistState>()(
       remove: (productId) => set((s) => ({ productIds: s.productIds.filter((id) => id !== productId) })),
       clear: () => set({ productIds: [] }),
       contains: (productId) => get().productIds.includes(productId),
+      replaceProductIds: (productIds) => set({ productIds }),
+      mergeProductIds: (productIds) =>
+        set((s) => ({ productIds: [...new Set([...s.productIds, ...productIds])] })),
     }),
     { name: 'healthora-wishlist' },
   ),

@@ -14,12 +14,9 @@ No es un servicio aparte: corre dentro del mismo proceso Bun/Hono que ya está d
 
 ## Regla de alcance: MCP ⊆ UI
 
-Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`Healthora-Historias-de-Usuario.docx`, sección 6). De las 24 tools documentadas en el `.docx`, se implementaron las que corresponden a una HU ya implementada (ver `docs/seguimiento-hu.md`). Quedó afuera:
+Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`Healthora-Historias-de-Usuario.docx`, sección 6). Las **24 tools del `.docx`** están cubiertas; además hay **2 extras** (`search.reindexCatalog`, `variants.uploadVariantImage`) — **26 en total**.
 
-- `wishlist.getUserWishlist` (HU-044): la wishlist es 100% client-side (`frontend/src/store/wishlistStore.ts`, Zustand + localStorage) — no existe ningún dato de servidor que un MCP tool pueda consultar. Requeriría migrar la wishlist a persistencia en base de datos primero.
-- Las tools restantes del doc (creación de cupones, devoluciones, exportación CSV, audit trail, analítica de cohortes/producto, descuentos masivos) — sus HU siguen pendientes o parciales.
-
-## Tools implementadas (17)
+## Tools implementadas (26)
 
 | Tool | HU | Qué hace | Auth |
 |---|---|---|---|
@@ -28,17 +25,27 @@ Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`He
 | `categories.upsertCategory` | HU-048 | Crea o actualiza una categoría; con `newId` renombra y reasigna productos | Servicio |
 | `variants.upsertVariant` | HU-032 | Crea o actualiza una variante dentro de un producto | Servicio |
 | `variants.updateVariantStock` | HU-034 | Fija el stock (valor absoluto) de una combinación sabor×tamaño o variante simple | Servicio |
+| `variants.uploadVariantImage` | — | Sube una imagen de variante a Cloudinary | Servicio |
 | `inventory.adjustStock` | HU-037 | Consulta el stock actual, o lo ajusta con un delta (+/-) | Servicio |
 | `orders.listUserOrders` | HU-009 | Lista las órdenes de un usuario (email o customerId) | Servicio |
 | `orders.updateOrderStatus` | HU-018 | Cambia paymentStatus/fulfillmentStatus (envía el email al cliente, igual que el admin) | Servicio |
 | `orders.getOrderItems` | HU-036 | Ítems de una orden con su variante/combo comprado | Servicio |
+| `orders.exportOrdersCsv` | HU-050 | Exporta pedidos a CSV con filtros opcionales | Servicio |
 | `users.updateUserRole` | HU-017 | Promueve/degrada un usuario (sincroniza con Clerk) | Servicio |
 | `analytics.getSalesReport` | HU-019 | Revenue, ticket promedio, unidades y top 5 productos en N días | Servicio |
+| `analytics.getProductAnalytics` | HU-054 | Embudo de checkout, abandono de carrito (PostHog) y errores recientes en N días | Servicio |
+| `analytics.getCohortReport` | HU-052 | Cohortes por mes de primera compra, retención y LTV | Servicio |
 | `reviews.listReviews` | HU-010 | Reseñas de un producto | Servicio |
 | `reviews.moderateReview` | HU-056 | Aprueba, oculta o elimina una reseña; recalcula el rating del producto | Servicio |
 | `recommendations.getRelatedProducts` | HU-045 | Productos relacionados (misma categoría/necesidad/marca/tag) | Servicio |
 | `notifications.broadcast` | HU-061 | Difunde una notificación en tiempo real (WebSockets) a todos, admins o un cliente; queda persistida en el centro de notificaciones | Servicio |
 | `promotions.validateCoupon` | HU-040 | Valida un cupón contra ítems del carrito (subtotal elegible, expiración, primera compra) | Servicio |
+| `promotions.applyDiscount` | HU-092 | Aplica o quita un descuento masivo por categoría | Servicio |
+| `coupons.createCoupon` | HU-049 | Crea un cupón promocional | Servicio |
+| `returns.approveReturn` | HU-041 | Avanza el estado de una devolución/reembolso | Servicio |
+| `search.reindexCatalog` | — | Invalida la caché del catálogo | Servicio |
+| `audit.getAdminActions` | HU-051 | Consulta el registro de auditoría administrativa | Servicio |
+| `wishlist.getUserWishlist` | HU-044 | Lista la wishlist persistida de un usuario (email o customerId) | Servicio |
 
 Código en `backend/src/mcp/` — un archivo por módulo bajo `tools/`, más `server.ts` (arma el `McpServer` y el transporte) y `auth.ts` (middleware de autenticación).
 
@@ -98,4 +105,4 @@ Configuración → Connectors → Agregar conector personalizado:
 
 ## Tests
 
-`backend/src/mcp/mcp.integration.test.ts` (mongodb-memory-server): `initialize`, `tools/list` (verifica las 17 tools registradas), y `tools/call` contra un producto matrix real (sabor×tamaño con `stockBySize`) y reseñas (aprobar/ocultar/eliminar), incluyendo casos de error (tool inexistente, reviewId inexistente).
+`backend/src/mcp/mcp.integration.test.ts` (mongodb-memory-server): `initialize`, `tools/list` (verifica las 26 tools registradas), y `tools/call` contra un producto matrix real (sabor×tamaño con `stockBySize`) y reseñas (aprobar/ocultar/eliminar), incluyendo casos de error (tool inexistente, reviewId inexistente).

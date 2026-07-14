@@ -1,5 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { captureFrontendException } from '../lib/posthog';
+import { Component, type ReactNode } from 'react';
 import { ErrorPage } from '../pages/ErrorPage';
 
 type ErrorBoundaryProps = {
@@ -18,13 +17,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    captureFrontendException(error, {
-      handler: 'react.error_boundary',
-      componentStack: info.componentStack,
-    });
-  }
-
   private handleReset = () => {
     this.setState({ hasError: false });
     this.props.onReset?.();
@@ -40,7 +32,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               Algo salió <em style={{ color: 'var(--coral)' }}>mal</em>
             </>
           }
-          message="Ya registramos el error. Puedes reintentar o volver al inicio."
+          message="Puedes reintentar o volver al inicio."
           onHome={() => {
             window.location.href = '/';
           }}
