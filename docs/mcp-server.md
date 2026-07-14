@@ -14,9 +14,9 @@ No es un servicio aparte: corre dentro del mismo proceso Bun/Hono que ya está d
 
 ## Regla de alcance: MCP ⊆ UI
 
-Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`Healthora-Historias-de-Usuario.docx`, sección 6). Las **24 tools del `.docx`** están cubiertas; además hay **2 extras** (`search.reindexCatalog`, `variants.uploadVariantImage`) — **26 en total**.
+Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`Healthora-Historias-de-Usuario.docx`, sección 6). Las **24 tools del `.docx`** están cubiertas; además hay **6 extras** — **30 en total**.
 
-## Tools implementadas (26)
+## Tools implementadas (30)
 
 | Tool | HU | Qué hace | Auth |
 |---|---|---|---|
@@ -32,17 +32,21 @@ Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`He
 | `orders.getOrderItems` | HU-036 | Ítems de una orden con su variante/combo comprado | Servicio |
 | `orders.exportOrdersCsv` | HU-050 | Exporta pedidos a CSV con filtros opcionales | Servicio |
 | `users.updateUserRole` | HU-017 | Promueve/degrada un usuario (sincroniza con Clerk) | Servicio |
+| `dashboard.getSummary` | HU-015 | KPIs del dashboard, ventas 30 días, pedidos recientes y stock bajo | Servicio |
 | `analytics.getSalesReport` | HU-019 | Revenue, ticket promedio, unidades y top 5 productos en N días | Servicio |
 | `analytics.getProductAnalytics` | HU-054 | Embudo de checkout, abandono de carrito (PostHog) y errores recientes en N días | Servicio |
 | `analytics.getCohortReport` | HU-052 | Cohortes por mes de primera compra, retención y LTV | Servicio |
 | `reviews.listReviews` | HU-010 | Reseñas de un producto | Servicio |
 | `reviews.moderateReview` | HU-056 | Aprueba, oculta o elimina una reseña; recalcula el rating del producto | Servicio |
+| `reviews.banAuthor` | HU-194 | Banea al autor de una reseña para ese producto y elimina la reseña | Servicio |
 | `recommendations.getRelatedProducts` | HU-045 | Productos relacionados (misma categoría/necesidad/marca/tag) | Servicio |
 | `notifications.broadcast` | HU-061 | Difunde una notificación en tiempo real (WebSockets) a todos, admins o un cliente; queda persistida en el centro de notificaciones | Servicio |
 | `promotions.validateCoupon` | HU-040 | Valida un cupón contra ítems del carrito (subtotal elegible, expiración, primera compra) | Servicio |
 | `promotions.applyDiscount` | HU-092 | Aplica o quita un descuento masivo por categoría | Servicio |
 | `coupons.createCoupon` | HU-049 | Crea un cupón promocional | Servicio |
+| `coupons.listCoupons` | HU-049 | Lista cupones promocionales del admin | Servicio |
 | `returns.approveReturn` | HU-041 | Avanza el estado de una devolución/reembolso | Servicio |
+| `returns.listReturns` | HU-041 | Lista solicitudes de devolución con filtro opcional por estado | Servicio |
 | `search.reindexCatalog` | — | Invalida la caché del catálogo | Servicio |
 | `audit.getAdminActions` | HU-051 | Consulta el registro de auditoría administrativa | Servicio |
 | `wishlist.getUserWishlist` | HU-044 | Lista la wishlist persistida de un usuario (email o customerId) | Servicio |
@@ -105,4 +109,4 @@ Configuración → Connectors → Agregar conector personalizado:
 
 ## Tests
 
-`backend/src/mcp/mcp.integration.test.ts` (mongodb-memory-server): `initialize`, `tools/list` (verifica las 26 tools registradas), y `tools/call` contra un producto matrix real (sabor×tamaño con `stockBySize`) y reseñas (aprobar/ocultar/eliminar), incluyendo casos de error (tool inexistente, reviewId inexistente).
+`backend/src/mcp/mcp.integration.test.ts` (mongodb-memory-server): `initialize`, `tools/list` (verifica las 30 tools registradas), y `tools/call` contra un producto matrix real (sabor×tamaño con `stockBySize`) y reseñas (aprobar/ocultar/eliminar), incluyendo casos de error (tool inexistente, reviewId inexistente).

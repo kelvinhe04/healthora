@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { Coupon } from '../../db/models/Coupon';
 import { createCoupon } from '../../lib/coupons';
 import { moneyFromInput, optionalTextField, textField } from '../../lib/validation';
 import { errorResult, jsonResult } from '../toolHelpers';
@@ -57,6 +58,23 @@ export function registerCouponTools(server: McpServer) {
       } catch (error) {
         return errorResult(error instanceof Error ? error.message : 'No se pudo crear el cupón.');
       }
+    },
+  );
+
+  server.registerTool(
+    'coupons.listCoupons',
+    {
+      title: 'Listar cupones promocionales',
+      description:
+        'Lista los cupones del admin, más recientes primero. Equivalente a la tabla de la sección Cupones (HU-049).',
+      inputSchema: {
+        activeOnly: z.coerce.boolean().optional().describe('Si true, solo cupones activos.'),
+      },
+    },
+    async ({ activeOnly }) => {
+      const filter = activeOnly ? { active: true } : {};
+      const coupons = await Coupon.find(filter).sort({ createdAt: -1 }).lean();
+      return jsonResult({ count: coupons.length, coupons });
     },
   );
 }

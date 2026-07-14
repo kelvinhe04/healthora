@@ -4,6 +4,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Product } from '../db/models/Product';
 import { Order } from '../db/models/Order';
 import { Review } from '../db/models/Review';
+import { ReviewBan } from '../db/models/ReviewBan';
 import { SecurityAuditLog } from '../db/models/SecurityAuditLog';
 import { Return } from '../db/models/Return';
 import { Coupon } from '../db/models/Coupon';
@@ -58,6 +59,7 @@ describe('MCP server', () => {
     await Product.deleteMany({});
     await Order.deleteMany({});
     await Review.deleteMany({});
+    await ReviewBan.deleteMany({});
     // SecurityAuditLog blocks deleteMany at the schema level (append-only, HU-051) - go through
     // the native collection to clean up between tests instead.
     await SecurityAuditLog.collection.deleteMany({});
@@ -79,7 +81,7 @@ describe('MCP server', () => {
     expect(json.result.serverInfo.name).toBe('healthora');
   });
 
-  test('tools/list exposes all 26 registered tools', async () => {
+  test('tools/list exposes all 30 registered tools', async () => {
     const { json } = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const names = json.result.tools.map((t: { name: string }) => t.name).sort();
     expect(names).toEqual(
@@ -92,6 +94,8 @@ describe('MCP server', () => {
         'catalog.upsertProduct',
         'categories.upsertCategory',
         'coupons.createCoupon',
+        'coupons.listCoupons',
+        'dashboard.getSummary',
         'inventory.adjustStock',
         'notifications.broadcast',
         'orders.exportOrdersCsv',
@@ -102,6 +106,8 @@ describe('MCP server', () => {
         'promotions.validateCoupon',
         'recommendations.getRelatedProducts',
         'returns.approveReturn',
+        'returns.listReturns',
+        'reviews.banAuthor',
         'reviews.listReviews',
         'reviews.moderateReview',
         'search.reindexCatalog',
@@ -395,5 +401,92 @@ describe('MCP server', () => {
     expect(payload.maxOffset).toBe(11);
     expect(Array.isArray(payload.cohorts)).toBe(true);
     expect(payload.overall).toBeDefined();
+  });
+
+  test('coupons.listCoupons returns seeded coupons', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 17,
+      method: 'tools/call',
+      params: { name: 'coupons.listCoupons', arguments: {} },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.count).toBeGreaterThanOrEqual(1);
+    expect(payload.coupons[0].code).toBeDefined();
+  });
+
+  test('returns.listReturns returns requested returns', async () => {
+    const order = await Order.create({
+      customerId: 'user-1',
+      customerEmail: 'buyer@test.com',
+      items: [{ productId: 'combo-product', productName: 'Combo Product', qty: 1, price: 10 }],
+      subtotal: 10,
+      tax: 0.7,
+      shipping: 0,
+      total: 10.7,
+      paymentStatus: 'paid',
+      fulfillmentStatus: 'delivered',
+      status: 'paid',
+    });
+    await Return.create({
+      orderId: order._id,
+      customerId: 'user-1',
+      customerEmail: 'buyer@test.com',
+      reason: 'No me sirve',
+      reasonCategory: 'changed_mind',
+      photos: ['https://example.com/photo.jpg'],
+      items: [{ productId: 'combo-product', productName: 'Combo Product', qty: 1 }],
+      refundAmount: 10.7,
+      status: 'requested',
+      returnMethod: 'store_dropoff',
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 18,
+      method: 'tools/call',
+      params: { name: 'returns.listReturns', arguments: { status: 'requested' } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.count).toBe(1);
+    expect(payload.returns[0].status).toBe('requested');
+  });
+
+  test('reviews.banAuthor bans the review author for the product', async () => {
+    const review = await Review.create({
+      productId: 'combo-product',
+      userId: 'user-ban-1',
+      userName: 'Spammer',
+      rating: 1,
+      body: 'Spam',
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 19,
+      method: 'tools/call',
+      params: { name: 'reviews.banAuthor', arguments: { reviewId: String(review._id) } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.productId).toBe('combo-product');
+    expect(payload.userName).toBe('Spammer');
+
+    const deleted = await Review.findById(review._id).lean();
+    expect(deleted).toBeNull();
+    const ban = await ReviewBan.findOne({ productId: 'combo-product', userId: 'user-ban-1' }).lean();
+    expect(ban?.userName).toBe('Spammer');
+  });
+
+  test('dashboard.getSummary returns kpis', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 20,
+      method: 'tools/call',
+      params: { name: 'dashboard.getSummary', arguments: {} },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.kpis).toBeDefined();
+    expect(Array.isArray(payload.dailySales)).toBe(true);
+    expect(payload.dailySales).toHaveLength(30);
   });
 });

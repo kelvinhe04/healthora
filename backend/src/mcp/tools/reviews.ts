@@ -3,6 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Review } from '../../db/models/Review';
 import { objectIdSchema, productIdSchema } from '../../lib/validation';
 import { errorResult, jsonResult } from '../toolHelpers';
+import { banReviewAuthor } from '../../lib/reviewModeration';
 import { recomputeProductRating } from '../../lib/productRatings';
 
 export function registerReviewTools(server: McpServer) {
@@ -47,6 +48,23 @@ export function registerReviewTools(server: McpServer) {
       if (!review) return errorResult('Reseña no encontrada.');
       await recomputeProductRating(review.productId);
       return jsonResult(review);
+    },
+  );
+
+  server.registerTool(
+    'reviews.banAuthor',
+    {
+      title: 'Banear autor de una reseña',
+      description:
+        'Banea al autor de una reseña para ese producto y elimina la reseña. Equivalente al botón Banear del admin (HU-194).',
+      inputSchema: {
+        reviewId: objectIdSchema,
+      },
+    },
+    async ({ reviewId }) => {
+      const result = await banReviewAuthor(reviewId, 'mcp-service');
+      if (!result.ok) return errorResult(result.error);
+      return jsonResult(result);
     },
   );
 }
