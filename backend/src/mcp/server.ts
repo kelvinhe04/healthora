@@ -12,6 +12,7 @@ import { registerNotificationTools } from './tools/notifications';
 import { registerCategoryTools } from './tools/categories';
 import { registerPromotionTools } from './tools/promotions';
 import { registerAuditTools } from './tools/audit';
+import { registerReturnTools } from './tools/returns';
 import { registerSearchTools } from './tools/search';
 import { registerCouponTools } from './tools/coupons';
 
@@ -29,6 +30,7 @@ function createMcpServer(): McpServer {
   registerCategoryTools(server);
   registerPromotionTools(server);
   registerAuditTools(server);
+  registerReturnTools(server);
   registerSearchTools(server);
   registerCouponTools(server);
   return server;

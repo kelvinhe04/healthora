@@ -16,6 +16,7 @@ import type {
   AdminAuditLogEntry,
   AppNotification,
   NotificationInbox,
+  Coupon,
 } from "../types";
 import type { CartItem } from "../types";
 
@@ -266,6 +267,25 @@ export const api = {
         { method: "PATCH", body: JSON.stringify(body) },
         token,
       ),
+    exportOrdersCsv: async (
+      token: string,
+      filters: { paymentStatus?: string; fulfillmentStatus?: string; limit?: number } = {},
+    ) => {
+      const params = new URLSearchParams();
+      if (filters.paymentStatus) params.set("paymentStatus", filters.paymentStatus);
+      if (filters.fulfillmentStatus) params.set("fulfillmentStatus", filters.fulfillmentStatus);
+      if (filters.limit) params.set("limit", String(filters.limit));
+      const query = params.toString();
+      const res = await fetch(`${BASE}/admin/orders/export.csv${query ? `?${query}` : ""}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-cache",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      return res.text();
+    },
     returns: {
       list: (token: string, status?: ReturnStatus) =>
         request<OrderReturn[]>(

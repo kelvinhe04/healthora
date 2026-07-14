@@ -5,6 +5,7 @@ import { Product } from '../db/models/Product';
 import { Order } from '../db/models/Order';
 import { Review } from '../db/models/Review';
 import { SecurityAuditLog } from '../db/models/SecurityAuditLog';
+import { Return } from '../db/models/Return';
 import { Coupon } from '../db/models/Coupon';
 import { seedCoupons } from '../db/seed-coupons';
 
@@ -59,6 +60,7 @@ describe('MCP server', () => {
     // SecurityAuditLog blocks deleteMany at the schema level (append-only, HU-051) - go through
     // the native collection to clean up between tests instead.
     await SecurityAuditLog.collection.deleteMany({});
+    await Return.deleteMany({});
     await Coupon.deleteMany({});
     await seedProduct();
     await seedCoupons();
@@ -75,7 +77,7 @@ describe('MCP server', () => {
     expect(json.result.serverInfo.name).toBe('healthora');
   });
 
-  test('tools/list exposes all 21 registered tools', async () => {
+  test('tools/list exposes all 24 registered tools', async () => {
     const { json } = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const names = json.result.tools.map((t: { name: string }) => t.name).sort();
     expect(names).toEqual(
@@ -89,11 +91,14 @@ describe('MCP server', () => {
         'coupons.createCoupon',
         'inventory.adjustStock',
         'notifications.broadcast',
+        'orders.exportOrdersCsv',
         'orders.getOrderItems',
         'orders.listUserOrders',
         'orders.updateOrderStatus',
+        'promotions.applyDiscount',
         'promotions.validateCoupon',
         'recommendations.getRelatedProducts',
+        'returns.approveReturn',
         'reviews.listReviews',
         'reviews.moderateReview',
         'search.reindexCatalog',
@@ -275,5 +280,84 @@ describe('MCP server', () => {
     const payload = JSON.parse(json.result.content[0].text);
     expect(payload.code).toBe('SAVE10');
     expect(payload.percentOff).toBe(10);
+  });
+
+  test('promotions.applyDiscount applies a category discount', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 12,
+      method: 'tools/call',
+      params: {
+        name: 'promotions.applyDiscount',
+        arguments: { action: 'apply', category: 'Vitaminas', discountType: 'percent', value: 10 },
+      },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.updated).toBeGreaterThanOrEqual(1);
+  });
+
+  test('returns.approveReturn advances a return to approved', async () => {
+    const order = await Order.create({
+      customerId: 'user-1',
+      customerEmail: 'buyer@test.com',
+      items: [{ productId: 'combo-product', productName: 'Combo Product', qty: 1, price: 10 }],
+      subtotal: 10,
+      tax: 0.7,
+      shipping: 0,
+      total: 10.7,
+      paymentStatus: 'paid',
+      fulfillmentStatus: 'delivered',
+      status: 'paid',
+    });
+    const returnDoc = await Return.create({
+      orderId: order._id,
+      customerId: 'user-1',
+      customerEmail: 'buyer@test.com',
+      reason: 'No me sirve',
+      reasonCategory: 'changed_mind',
+      photos: ['https://example.com/photo.jpg'],
+      items: [{ productId: 'combo-product', productName: 'Combo Product', qty: 1 }],
+      refundAmount: 10.7,
+      status: 'requested',
+      returnMethod: 'store_dropoff',
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 13,
+      method: 'tools/call',
+      params: {
+        name: 'returns.approveReturn',
+        arguments: { returnId: String(returnDoc._id), status: 'approved' },
+      },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.status).toBe('approved');
+  });
+
+  test('orders.exportOrdersCsv returns csv payload', async () => {
+    await Order.create({
+      customerId: 'user-1',
+      customerEmail: 'buyer@test.com',
+      items: [{ productId: 'combo-product', productName: 'Combo Product', qty: 1, price: 10 }],
+      subtotal: 10,
+      tax: 0.7,
+      shipping: 0,
+      total: 10.7,
+      paymentStatus: 'paid',
+      fulfillmentStatus: 'delivered',
+      status: 'paid',
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 14,
+      method: 'tools/call',
+      params: { name: 'orders.exportOrdersCsv', arguments: { limit: 10 } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.format).toBe('csv');
+    expect(payload.rowCount).toBeGreaterThanOrEqual(1);
+    expect(payload.csv).toContain('orderId');
   });
 });
