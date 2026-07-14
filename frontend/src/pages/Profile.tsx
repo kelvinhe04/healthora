@@ -40,7 +40,7 @@ function AddCardForm({ onSaved, onCancel }: { onSaved: () => void; onCancel: () 
       if (!cardElement) throw new Error('No se pudo cargar el formulario de tarjeta');
 
       const result = await stripe.confirmCardSetup(clientSecret, {
-        payment_method: { card: cardElement },
+        payment_method: { card: cardElement, allow_redisplay: 'always' },
       });
 
       if (result.error) {
@@ -58,7 +58,7 @@ function AddCardForm({ onSaved, onCancel }: { onSaved: () => void; onCancel: () 
   return (
     <form onSubmit={handleSubmit} style={{ marginTop: 14 }}>
       <div style={{ border: '1px solid var(--ink-10)', borderRadius: 12, padding: '14px 16px', background: 'var(--cream)' }}>
-        <CardElement options={{ style: { base: { fontSize: '14px', color: 'var(--ink)' } } }} />
+        <CardElement options={{ disableLink: true, style: { base: { fontSize: '14px', color: 'var(--ink)' } } }} />
       </div>
       {error && (
         <p style={{ color: 'oklch(0.5 0.15 30)', fontSize: 12, marginTop: 8, fontFamily: '"Geist", sans-serif' }}>{error}</p>
