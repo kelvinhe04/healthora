@@ -6,6 +6,7 @@ import { CardElement, Elements, useElements, useStripe } from '@stripe/react-str
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { Icon } from '../components/shared/Icon';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
+import { StripeCardInput } from '../components/shared/StripeCardInput';
 import { api } from '../lib/api';
 
 interface ProfileProps {
@@ -57,9 +58,7 @@ function AddCardForm({ onSaved, onCancel }: { onSaved: () => void; onCancel: () 
 
   return (
     <form onSubmit={handleSubmit} style={{ marginTop: 14 }}>
-      <div style={{ border: '1px solid var(--ink-10)', borderRadius: 12, padding: '14px 16px', background: 'var(--cream)' }}>
-        <CardElement options={{ disableLink: true, style: { base: { fontSize: '14px', color: 'var(--ink)' } } }} />
-      </div>
+      <StripeCardInput />
       {error && (
         <p style={{ color: 'oklch(0.5 0.15 30)', fontSize: 12, marginTop: 8, fontFamily: '"Geist", sans-serif' }}>{error}</p>
       )}

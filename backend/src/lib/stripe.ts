@@ -10,6 +10,16 @@ type TestStripeSession = {
   payment_intent?: string;
 };
 
+type TestPaymentIntent = {
+  id: string;
+  client_secret: string;
+  amount: number;
+  currency: string;
+  customer?: string;
+  metadata?: Record<string, string>;
+  status: string;
+};
+
 type TestCustomer = {
   id: string;
   email?: string;
@@ -19,7 +29,9 @@ type TestCustomer = {
 
 let testSession: TestStripeSession | null = null;
 let testCustomerCounter = 0;
+let testPaymentIntentCounter = 0;
 const testPaymentMethodsByCustomer = new Map<string, { id: string; customer: string; card: { brand: string; last4: string; exp_month: number; exp_year: number } }[]>();
+const testPaymentIntentsById = new Map<string, TestPaymentIntent>();
 const testCustomersById = new Map<string, TestCustomer>();
 
 export function getLastTestStripeSession() {
@@ -92,6 +104,27 @@ export const stripe = process.env.NODE_ENV === 'test'
           customer: payload.customer,
         }),
       },
+      paymentIntents: {
+        create: async (payload: { amount: number; currency: string; customer?: string; metadata?: Record<string, string> }) => {
+          testPaymentIntentCounter += 1;
+          const paymentIntent: TestPaymentIntent = {
+            id: `pi_test_${testPaymentIntentCounter}`,
+            client_secret: `pi_test_${testPaymentIntentCounter}_secret`,
+            amount: payload.amount,
+            currency: payload.currency,
+            customer: payload.customer,
+            metadata: payload.metadata,
+            status: 'requires_payment_method',
+          };
+          testPaymentIntentsById.set(paymentIntent.id, paymentIntent);
+          return paymentIntent;
+        },
+        retrieve: async (id: string) => {
+          const paymentIntent = testPaymentIntentsById.get(id);
+          if (!paymentIntent) throw Object.assign(new Error('No such payment_intent'), { statusCode: 404 });
+          return paymentIntent;
+        },
+      },
       paymentMethods: {
         list: async (payload: { customer: string }) => ({
           data: testPaymentMethodsByCustomer.get(payload.customer) ?? [],
@@ -130,12 +163,22 @@ export function seedTestPaymentMethod(customer: string, card: { id: string; bran
   testPaymentMethodsByCustomer.set(customer, methods);
 }
 
+/** Test-only seam: flips a test PaymentIntent to 'succeeded' so orders.ts's poll-before-webhook
+ * fallback (GET /orders?stripePaymentIntentId=) has something to retrieve, without a real
+ * Stripe.js confirmCardPayment round-trip (there's no browser in a bun:test run). */
+export function markTestPaymentIntentSucceeded(id: string) {
+  const paymentIntent = testPaymentIntentsById.get(id);
+  if (paymentIntent) paymentIntent.status = 'succeeded';
+}
+
 /** Call from a test's `beforeEach` - this module-level state outlives `dropDatabase()` (it isn't
  * stored in Mongo), so reusing a fixed payment method id like `pm_visa_test` across tests without
  * this would let a stale entry from an earlier test shadow the current test's fresh one. */
 export function resetTestStripeState() {
   testSession = null;
   testPaymentMethodsByCustomer.clear();
+  testPaymentIntentsById.clear();
+  testPaymentIntentCounter = 0;
   testCustomersById.clear();
   testCustomerCounter = 0;
 }

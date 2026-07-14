@@ -1,24 +1,27 @@
 import { useAuth } from '@clerk/clerk-react';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
-import { useOrderBySession } from '../hooks/useOrders';
+import { useOrderByPaymentIntent, useOrderBySession } from '../hooks/useOrders';
 import { useCartStore } from '../store/cartStore';
 import { api } from '../lib/api';
 import { useEffect, useRef } from 'react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { trackCheckoutCompleted } from '../lib/analyticsEvents';
 
-interface SuccessProps { onBack: () => void; sessionId: string; }
+interface SuccessProps { onBack: () => void; sessionId: string; paymentIntentId?: string; }
 
-export function Success({ onBack, sessionId }: SuccessProps) {
+export function Success({ onBack, sessionId, paymentIntentId = '' }: SuccessProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const { getToken, isSignedIn } = useAuth();
-  const { data: order, isLoading, isError } = useOrderBySession(sessionId);
+  const bySession = useOrderBySession(sessionId);
+  const byPaymentIntent = useOrderByPaymentIntent(paymentIntentId);
+  const { data: order, isLoading, isError } = paymentIntentId ? byPaymentIntent : bySession;
   const clearCart = useCartStore((s) => s.clear);
   const replaceItems = useCartStore((s) => s.replaceItems);
   const didSyncRemoteClearRef = useRef(false);
   const didTrackCompletedRef = useRef(false);
+  const reference = sessionId || paymentIntentId;
 
   useEffect(() => { clearCart(); }, [clearCart]);
 
@@ -29,7 +32,7 @@ export function Success({ onBack, sessionId }: SuccessProps) {
   }, [order]);
 
   useEffect(() => {
-    if (!sessionId || !isSignedIn || didSyncRemoteClearRef.current) return;
+    if (!reference || !isSignedIn || didSyncRemoteClearRef.current) return;
 
     didSyncRemoteClearRef.current = true;
 
@@ -44,7 +47,7 @@ export function Success({ onBack, sessionId }: SuccessProps) {
         didSyncRemoteClearRef.current = false;
       }
     })();
-  }, [getToken, isSignedIn, replaceItems, sessionId]);
+  }, [getToken, isSignedIn, replaceItems, reference]);
 
   if (isError) {
     return (

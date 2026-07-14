@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useId, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { useUser } from '@clerk/clerk-react';
+import { useNavigate } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
+import { loadStripe } from '@stripe/stripe-js';
+import { CardElement, Elements, useElements, useStripe } from '@stripe/react-stripe-js';
 import { useBreakpoint } from '../hooks/useBreakpoint';
-import type { CartItem, OrderAddress, SavedAddress } from '../types';
+import type { CartItem, OrderAddress, SavedAddress, SavedPaymentMethod } from '../types';
 import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
+import { StripeCardInput } from '../components/shared/StripeCardInput';
 import { SignInModal } from '../components/chrome/SignInModal';
 import { api } from '../lib/api';
 import { useAuth } from '@clerk/clerk-react';
@@ -16,6 +21,18 @@ import { resolveShipping, SHIPPING_METHOD_OPTIONS, type ShippingMethod } from '.
 import { formatPanamaPhone } from '../lib/phone';
 import { computeItbms } from '../lib/tax';
 import { trackCheckoutStarted } from '../lib/analyticsEvents';
+
+const stripePromise = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+  : null;
+
+type CheckoutRequestBody = {
+  items: { productId: string; qty: number; variantId?: string }[];
+  address: OrderAddress;
+  promoCode?: string;
+  freeSampleId?: string;
+  shippingMethod: ShippingMethod;
+};
 
 interface CheckoutProps {
   items: CartItem[];
@@ -89,7 +106,180 @@ type ValidatedPromo = {
   discountedSubtotal: number;
 };
 
+function PaymentMethodRow({ method, selected, onSelect }: { method: SavedPaymentMethod; selected: boolean; onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        textAlign: 'left',
+        border: selected ? '1px solid var(--green)' : '1px solid var(--ink-06)',
+        background: selected ? 'var(--ink-06)' : 'var(--cream)',
+        borderRadius: 12,
+        padding: '12px 16px',
+        cursor: 'pointer',
+        fontFamily: '"Geist", sans-serif',
+      }}
+    >
+      <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Icon name="credit-card" size={18} />
+        <span style={{ fontSize: 13, textTransform: 'capitalize' }}>{method.brand} •••• {method.last4}</span>
+        <span style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>
+          {String(method.expMonth).padStart(2, '0')}/{method.expYear}
+        </span>
+      </span>
+      {selected && <Icon name="check" size={16} />}
+    </button>
+  );
+}
+
+const NEW_CARD_OPTION = 'new';
+
+/**
+ * Rendered inside <Elements> (useStripe/useElements only work below the provider). Owns the
+ * saved-cards selector and the actual stripe.confirmCardPayment call - everything here is our own
+ * UI (see StripeCardInput), no Stripe-hosted page and no Link takeover (HU-059 investigation).
+ */
+function CheckoutPaymentStep({
+  isSignedIn,
+  getEffectiveToken,
+  total,
+  processing,
+  setProcessing,
+  error,
+  setError,
+  buildCheckoutBody,
+  onSuccess,
+}: {
+  isSignedIn: boolean;
+  getEffectiveToken: () => Promise<string | null | undefined>;
+  total: number;
+  processing: boolean;
+  setProcessing: (value: boolean) => void;
+  error: string;
+  setError: (value: string) => void;
+  buildCheckoutBody: () => CheckoutRequestBody;
+  onSuccess: (paymentIntentId: string) => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const savedCardsQuery = useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: async () => {
+      const token = await getEffectiveToken();
+      if (!token) return [];
+      return api.account.paymentMethods.list(token);
+    },
+    enabled: isSignedIn,
+  });
+  const savedCards = savedCardsQuery.data ?? [];
+  const activeSelection = selectedId
+    ?? (savedCards.find((m) => m.isDefault)?.id ?? savedCards[0]?.id ?? NEW_CARD_OPTION);
+
+  const handlePay = async () => {
+    if (!stripe || !elements) return;
+    setProcessing(true);
+    setError('');
+    try {
+      const token = await getEffectiveToken();
+      if (!token) throw new Error('Sesión no disponible');
+      const { clientSecret, paymentIntentId } = await api.checkout.createPaymentIntent(buildCheckoutBody(), token);
+
+      const confirmResult = activeSelection !== NEW_CARD_OPTION
+        ? await stripe.confirmCardPayment(clientSecret, { payment_method: activeSelection })
+        : await (async () => {
+            const cardElement = elements.getElement(CardElement);
+            if (!cardElement) throw new Error('No se pudo cargar el formulario de tarjeta');
+            // Cards entered here are a one-time payment, never saved - saving a card only happens
+            // explicitly in Profile, so this never sets allow_redisplay/setup_future_usage.
+            return stripe.confirmCardPayment(clientSecret, {
+              payment_method: { card: cardElement },
+            });
+          })();
+
+      if (confirmResult.error) {
+        setError(confirmResult.error.message || 'No se pudo procesar el pago');
+        return;
+      }
+      if (confirmResult.paymentIntent?.status === 'succeeded') {
+        onSuccess(paymentIntentId);
+      } else {
+        setError('El pago no se pudo confirmar. Intenta de nuevo.');
+      }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error al procesar el pago');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <div style={{ marginTop: 20 }}>
+      {savedCards.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
+          {savedCards.map((method) => (
+            <PaymentMethodRow
+              key={method.id}
+              method={method}
+              selected={activeSelection === method.id}
+              onSelect={() => setSelectedId(method.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setSelectedId(NEW_CARD_OPTION)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          width: '100%',
+          textAlign: 'left',
+          border: activeSelection === NEW_CARD_OPTION ? '1px solid var(--green)' : '1px solid var(--ink-06)',
+          background: activeSelection === NEW_CARD_OPTION ? 'var(--ink-06)' : 'var(--cream)',
+          borderRadius: 12,
+          padding: '12px 16px',
+          cursor: 'pointer',
+          fontFamily: '"Geist", sans-serif',
+          fontSize: 13,
+          color: 'var(--ink)',
+        }}
+      >
+        <Icon name="plus" size={14} /> Usar tarjeta nueva
+      </button>
+
+      {activeSelection === NEW_CARD_OPTION && (
+        <div style={{ marginTop: 12 }}>
+          <StripeCardInput />
+        </div>
+      )}
+
+      {error && <div role="alert" style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{error}</div>}
+      <AnimatedButton
+        aria-label={processing ? 'Procesando pago' : `Pagar $${total.toFixed(2)}`}
+        variant="primary"
+        size="lg"
+        full
+        onClick={handlePay}
+        style={{ marginTop: 20 }}
+        icon={<Icon name="lock" size={14} />}
+        disabled={processing || !stripe}
+        text={processing ? 'Procesando pago…' : `Pagar $${total.toFixed(2)}`}
+      />
+    </div>
+  );
+}
+
 export function Checkout({ items, onBack }: CheckoutProps) {
+  const navigate = useNavigate();
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const isTablet = bp === 'tablet';
@@ -229,36 +419,20 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     setPromoError('');
   };
 
-  const handlePay = async () => {
-    if (!isAddressValid) {
-      setAddressError('Por favor completa todos los campos requeridos');
-      return;
-    }
-    setProcessing(true);
-    setError('');
-    try {
-      const token = await getEffectiveToken();
-      const { url } = await api.checkout.createSession(
-        {
-          items: items.map((it) => ({
-            productId: it.product.id,
-            qty: it.qty,
-            ...(it.variant?.id ? { variantId: it.variant.id } : {}),
-          })),
-          address,
-          promoCode: appliedPromo?.code,
-          freeSampleId: freeSample?.id,
-          shippingMethod,
-        },
-        token!
-      );
-      window.location.href = url;
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Error al procesar el pago';
-      if (appliedPromo) setPromoError(message);
-      setError(message);
-      setProcessing(false);
-    }
+  const buildCheckoutBody = (): CheckoutRequestBody => ({
+    items: items.map((it) => ({
+      productId: it.product.id,
+      qty: it.qty,
+      ...(it.variant?.id ? { variantId: it.variant.id } : {}),
+    })),
+    address,
+    promoCode: appliedPromo?.code,
+    freeSampleId: freeSample?.id,
+    shippingMethod,
+  });
+
+  const handlePaymentSuccess = (paymentIntentId: string) => {
+    void navigate({ to: '/success', search: { payment_intent: paymentIntentId } });
   };
 
   return (
@@ -420,13 +594,27 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                 <div style={stepNum}>03</div>
                 <h2 style={stepTitle}>Método de pago</h2>
               </div>
-              <span style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>STRIPE CHECKOUT</span>
+              <span style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>PAGO SEGURO</span>
             </div>
-            <div style={{ marginTop: 20, padding: 18, border: '1px solid var(--ink-20)', borderRadius: 14, background: 'var(--cream-2)', fontSize: 14, fontFamily: '"Geist", sans-serif', color: 'var(--ink-80)', lineHeight: 1.6 }}>
-              Serás redirigido a Stripe Checkout para completar el pago de forma segura. Acepta tarjetas Visa, Mastercard, Amex y más.
-            </div>
-            {error && <div role="alert" style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{error}</div>}
-            <AnimatedButton aria-label={processing ? 'Redirigiendo a Stripe' : `Pagar $${total.toFixed(2)}`} variant="primary" size="lg" full onClick={handlePay} style={{ marginTop: 20 }} icon={<Icon name="lock" size={14} />} disabled={processing} text={processing ? 'Redirigiendo a Stripe…' : `Pagar $${total.toFixed(2)}`} />
+            {stripePromise ? (
+              <Elements stripe={stripePromise}>
+                <CheckoutPaymentStep
+                  isSignedIn={isSignedIn}
+                  getEffectiveToken={getEffectiveToken}
+                  total={total}
+                  processing={processing}
+                  setProcessing={setProcessing}
+                  error={error}
+                  setError={setError}
+                  buildCheckoutBody={buildCheckoutBody}
+                  onSuccess={handlePaymentSuccess}
+                />
+              </Elements>
+            ) : (
+              <p style={{ marginTop: 20, fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>
+                Falta configurar VITE_STRIPE_PUBLISHABLE_KEY para procesar pagos.
+              </p>
+            )}
           </section>
         </div>
 

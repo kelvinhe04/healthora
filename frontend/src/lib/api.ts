@@ -83,6 +83,8 @@ export const api = {
       request<Order>(`/orders/${id}`, undefined, token),
     bySession: (sessionId: string, token: string) =>
       request<Order>(`/orders?stripeSessionId=${sessionId}`, undefined, token),
+    byPaymentIntent: (paymentIntentId: string, token: string) =>
+      request<Order>(`/orders?stripePaymentIntentId=${paymentIntentId}`, undefined, token),
     cancel: (id: string, token: string) =>
       request<Order>(`/orders/${id}/cancel`, { method: "PATCH" }, token),
     updateAddress: (id: string, address: OrderAddress, token: string) =>
@@ -192,6 +194,21 @@ export const api = {
     ) =>
       request<{ url: string }>(
         "/checkout/session",
+        { method: "POST", body: JSON.stringify(body) },
+        token,
+      ),
+    createPaymentIntent: (
+      body: {
+        items: { productId: string; qty: number; variantId?: string }[];
+        address: object;
+        promoCode?: string;
+        freeSampleId?: string;
+        shippingMethod: "delivery" | "pickup";
+      },
+      token: string,
+    ) =>
+      request<{ clientSecret: string; paymentIntentId: string }>(
+        "/checkout/payment-intent",
         { method: "POST", body: JSON.stringify(body) },
         token,
       ),
