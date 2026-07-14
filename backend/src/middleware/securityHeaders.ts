@@ -10,6 +10,8 @@ export const securityHeaders = secureHeaders({
       'https://*.stripe.com',
       'https://*.clerk.accounts.dev',
       'https://*.clerk.com',
+      'https://*.posthog.com',
+      'https://*.i.posthog.com',
     ],
     fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
     formAction: ["'self'"],

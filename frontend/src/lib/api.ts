@@ -491,6 +491,19 @@ export const api = {
       request<unknown>("/admin/sales", undefined, token),
     earnings: (token: string) =>
       request<unknown>("/admin/earnings", undefined, token),
+    productAnalytics: (token: string, days?: number) =>
+      request<{
+        configured: boolean;
+        periodDays: number;
+        funnel: { checkoutStarted: number; checkoutCompleted: number; conversionRate: number };
+        cartAbandonment: { addedToCart: number; completedCheckout: number; abandonmentRate: number };
+        recentEvents: { event: string; timestamp: string; distinctId: string }[];
+        error?: string;
+      }>(
+        `/admin/analytics/product${days ? `?days=${days}` : ""}`,
+        undefined,
+        token,
+      ),
     auditLogs: (
       token: string,
       filters: {

@@ -21,6 +21,7 @@ import { adminReturnsRouter } from './routes/admin/adminReturns';
 import { returnsRouter } from './routes/returns';
 import { adminReviewsRouter } from './routes/admin/adminReviews';
 import { adminCategoriesRouter } from './routes/admin/adminCategories';
+import { adminAnalyticsRouter } from './routes/admin/adminAnalytics';
 import { adminCatalogRouter } from './routes/admin/adminCatalog';
 import { adminCouponsRouter } from './routes/admin/adminCoupons';
 import { accountRouter } from './routes/account';
@@ -95,6 +96,7 @@ app.route('/admin/audit-logs', adminAuditLogsRouter);
 app.route('/admin/returns', adminReturnsRouter);
 app.route('/admin/reviews', adminReviewsRouter);
 app.route('/admin/categories', adminCategoriesRouter);
+app.route('/admin/analytics', adminAnalyticsRouter);
 app.route('/admin/catalog', adminCatalogRouter);
 app.route('/admin/coupons', adminCouponsRouter);
 

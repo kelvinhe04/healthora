@@ -75,11 +75,10 @@ export type AdminPage =
   | "users"
   | "sales"
   | "earnings"
-  | "performance"
-  | "errors"
   | "returns"
   | "reviews"
-  | "audit";
+  | "audit"
+  | "analytics";
 export interface AdminAppProps {
   onGoToStore: () => void;
 }
@@ -172,6 +171,21 @@ export type AuditLogsData = {
   total: number;
   page: number;
   limit: number;
+};
+
+export type ProductAnalyticsData = {
+  configured: boolean;
+  periodDays: number;
+  funnel: { checkoutStarted: number; checkoutCompleted: number; conversionRate: number };
+  cartAbandonment: { addedToCart: number; completedCheckout: number; abandonmentRate: number };
+  recentEvents: { event: string; timestamp: string; distinctId: string }[];
+  error?: string;
+};
+
+export const productAnalyticsEventLabels: Record<string, string> = {
+  checkout_started: 'Checkout iniciado',
+  checkout_completed: 'Checkout completado',
+  add_to_cart: 'Agregado al carrito',
 };
 
 export const fulfillmentStatusOptions: (FulfillmentStatus | "")[] = [

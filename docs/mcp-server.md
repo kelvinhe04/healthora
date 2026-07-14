@@ -36,6 +36,7 @@ Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`He
 | `orders.exportOrdersCsv` | — | Exporta pedidos a CSV con filtros opcionales | Servicio |
 | `users.updateUserRole` | HU-017 | Promueve/degrada un usuario (sincroniza con Clerk) | Servicio |
 | `analytics.getSalesReport` | HU-019 | Revenue, ticket promedio, unidades y top 5 productos en N días | Servicio |
+| `analytics.getProductAnalytics` | HU-054 | Embudo de checkout, abandono de carrito (PostHog) y errores recientes en N días | Servicio |
 | `reviews.listReviews` | HU-010 | Reseñas de un producto | Servicio |
 | `reviews.moderateReview` | HU-056 | Aprueba, oculta o elimina una reseña; recalcula el rating del producto | Servicio |
 | `recommendations.getRelatedProducts` | HU-045 | Productos relacionados (misma categoría/necesidad/marca/tag) | Servicio |
