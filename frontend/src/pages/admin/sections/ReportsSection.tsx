@@ -31,6 +31,10 @@ export function ReportsSection() {
   const cohorts = cohortReport?.cohorts ?? [];
   const maxOffset = cohorts.reduce((max, cohort) => Math.max(max, cohort.retention.length - 1), 0);
   const offsets = Array.from({ length: maxOffset + 1 }, (_, i) => i);
+  // Mes 0 = mes de la primera compra: por definición siempre es 100% de retención para
+  // cualquier cohorte, así que no aporta señal en el heatmap - se omite de esa tabla nada más
+  // (el LTV acumulado del mes 0 sí varía por cohorte, esa tabla sigue mostrándolo).
+  const retentionOffsets = offsets.slice(1);
 
   return (
     <>
@@ -89,7 +93,7 @@ export function ReportsSection() {
           mode="dark"
           label="LTV promedio"
           value={cohortReport ? `$${cohortReport.overall.averageRevenuePerCustomer.toFixed(2)}` : '—'}
-          sub="revenue por cliente"
+          sub="ingresos por cliente"
           loading={showReportsSkeleton}
           animKey="reports_ltv"
         />
@@ -112,12 +116,12 @@ export function ReportsSection() {
         >
           {cohorts.length > 0 ? (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ ...tableStyle, minWidth: 640 + offsets.length * 90 }}>
+              <table style={{ ...tableStyle, minWidth: 480 + retentionOffsets.length * 90 }}>
                 <thead>
                   <tr>
                     <th style={th}>Cohorte</th>
                     <th style={th}>Clientes</th>
-                    {offsets.map((offset) => (
+                    {retentionOffsets.map((offset) => (
                       <th key={offset} style={{ ...th, textAlign: 'center' }}>
                         Mes {offset}
                       </th>
@@ -129,7 +133,7 @@ export function ReportsSection() {
                     <tr key={cohort.cohortMonth} style={trStyle}>
                       <td style={{ ...td, fontWeight: 600, whiteSpace: 'nowrap' }}>{cohort.cohortMonth}</td>
                       <td style={td}>{cohort.customers}</td>
-                      {offsets.map((offset) => {
+                      {retentionOffsets.map((offset) => {
                         const cell = cohort.retention[offset];
                         return (
                           <td
@@ -158,7 +162,7 @@ export function ReportsSection() {
 
         <Card
           title="LTV acumulado por cliente"
-          sub="Revenue acumulado por cliente inicial de la cohorte, mes a mes"
+          sub="Ingresos acumulados por cliente inicial de la cohorte, mes a mes"
           pad={0}
           loading={showReportsSkeleton}
           skeletonContent={<Skeleton height={240} borderRadius={8} />}
