@@ -222,6 +222,23 @@ export interface User {
 
 export type ReviewStatus = 'pending' | 'published' | 'hidden';
 
+export type Coupon = {
+  _id?: string;
+  code: string;
+  label: string;
+  discountType: 'percent' | 'fixed';
+  percentOff?: number;
+  amountOff?: number;
+  eligibleCategories: string[];
+  expiresAt?: string | null;
+  active: boolean;
+  maxUses?: number | null;
+  usesCount?: number;
+  firstPurchaseOnly: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export interface Review {
   _id: string;
   productId: string;
@@ -249,6 +266,25 @@ export interface ReviewBan {
   userName: string;
   bannedBy: string;
   createdAt: string;
+}
+
+export interface ErrorReport {
+  _id: string;
+  source: 'backend' | 'frontend';
+  name?: string;
+  message: string;
+  stack?: string;
+  severity: 'error' | 'fatal';
+  route?: string;
+  method?: string;
+  statusCode?: number;
+  userId?: string;
+  userEmail?: string;
+  posthogDistinctId?: string;
+  posthogSessionId?: string;
+  userAgent?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /** One entry of the append-only admin audit trail (HU-051) - "admin.access" fires on every admin

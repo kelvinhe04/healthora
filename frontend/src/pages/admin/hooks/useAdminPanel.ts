@@ -18,7 +18,9 @@ import {
   type AdminUser,
   type DashboardData,
   type EarningsData,
+  type ErrorReportsData,
   type OrderPaymentBucket,
+  type PerformanceData,
   type SalesData,
 } from '../types';
 import { getNextFulfillmentStatus, paginateItems } from '../utils';
@@ -57,7 +59,7 @@ function orderMatchesSearch(order: AdminOrder, term: string): boolean {
   );
 }
 
-const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "users", "returns", "reviews", "sales", "earnings", "audit"];
+const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "coupons", "users", "returns", "reviews", "sales", "earnings", "performance", "errors", "audit"];
 
 export function useAdminPanel({
   access,
@@ -311,6 +313,22 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     enabled: page === "earnings",
   });
 
+  const [performanceWindow, setPerformanceWindow] = useState(1440);
+  const performanceQuery = useQuery({
+    queryKey: ["admin-performance", performanceWindow],
+    queryFn: async () =>
+      api.admin.performance(await getAdminToken(), performanceWindow) as Promise<PerformanceData>,
+    enabled: page === "performance",
+  });
+
+  const [errorSourceFilter, setErrorSourceFilter] = useState<"" | "backend" | "frontend">("");
+  const errorReportsQuery = useQuery({
+    queryKey: ["admin-error-reports", errorSourceFilter],
+    queryFn: async () =>
+      api.admin.errorReports(await getAdminToken(), errorSourceFilter || undefined) as Promise<ErrorReportsData>,
+    enabled: page === "errors",
+  });
+
   const showOrdersSkeleton = useOnceLoading(
     "section_orders",
     ordersQuery.isLoading,
@@ -331,6 +349,15 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     "section_earnings",
     earningsQuery.isLoading,
   );
+  const showPerformanceSkeleton = useOnceLoading(
+    "section_performance",
+    performanceQuery.isLoading,
+  );
+  const showErrorsSkeleton = useOnceLoading(
+    "section_errors",
+    errorReportsQuery.isLoading,
+  );
+
   const orderStatusesMutation = useMutation({
     mutationFn: async ({
       id,
@@ -512,6 +539,8 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const customers = users;
   const sales = salesQuery.data;
   const earnings = earningsQuery.data;
+  const performanceData = performanceQuery.data;
+  const errorReports = errorReportsQuery.data;
   const dashboardData = dashboardQuery.data;
 
   const [dashboardReady, setDashboardReady] = useState(false);
@@ -906,5 +935,13 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     sales,
     showEarningsSkeleton,
     earnings,
+    performanceWindow,
+    setPerformanceWindow,
+    performanceData,
+    showPerformanceSkeleton,
+    errorSourceFilter,
+    setErrorSourceFilter,
+    errorReports,
+    showErrorsSkeleton,
   };
 }
