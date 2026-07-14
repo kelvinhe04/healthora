@@ -179,7 +179,8 @@ function CheckoutPaymentStep({
     enabled: isSignedIn,
   });
   const savedCards = savedCardsQuery.data ?? [];
-  const activeSelection = selectedId ?? (savedCards[0]?.id ?? NEW_CARD_OPTION);
+  const activeSelection = selectedId
+    ?? (savedCards.find((m) => m.isDefault)?.id ?? savedCards[0]?.id ?? NEW_CARD_OPTION);
 
   const handlePay = async () => {
     if (!stripe || !elements) return;
