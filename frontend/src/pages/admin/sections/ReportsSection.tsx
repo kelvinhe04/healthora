@@ -154,8 +154,6 @@ export function ReportsSection() {
                             border: 'none',
                             padding: 0,
                             cursor: 'pointer',
-                            textDecoration: 'underline',
-                            textUnderlineOffset: 3,
                           }}
                         >
                           {cohort.cohortMonth}
