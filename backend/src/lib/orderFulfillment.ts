@@ -121,27 +121,28 @@ export async function createPaidOrder(params: {
 
   const customerEmail = metadata.customerEmail || customerEmailFallback;
   if (customerEmail) {
-    try {
-      await sendOrderConfirmationEmail({
-        customerName: metadata.customerName || 'cliente',
-        customerEmail,
-        orderId: order._id.toString(),
-        items: lineItems,
-        subtotal,
-        discountCode,
-        discountAmount,
-        tax,
-        shipping,
-        shippingLabel: metadata.shippingLabel,
-        shippingEta: metadata.shippingEta,
-        shippingMethod: metadata.shippingMethod,
-        total,
-        address,
-        createdAt: order.createdAt,
-      });
-    } catch (emailError) {
+    // Not awaited: SMTP can take several seconds to respond (and, e.g., Gmail's daily send-limit
+    // rejection is itself a slow round-trip) - the webhook handler shouldn't block its response
+    // on it. Errors are still caught and logged, just asynchronously.
+    sendOrderConfirmationEmail({
+      customerName: metadata.customerName || 'cliente',
+      customerEmail,
+      orderId: order._id.toString(),
+      items: lineItems,
+      subtotal,
+      discountCode,
+      discountAmount,
+      tax,
+      shipping,
+      shippingLabel: metadata.shippingLabel,
+      shippingEta: metadata.shippingEta,
+      shippingMethod: metadata.shippingMethod,
+      total,
+      address,
+      createdAt: order.createdAt,
+    }).catch((emailError) => {
       console.error('[ORDER_FULFILLMENT] Failed to send confirmation email:', emailError);
-    }
+    });
   }
 
   for (const item of lineItems) {

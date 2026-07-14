@@ -6,6 +6,10 @@ import { recalculateAfterPayment } from '../lib/bestsellers';
 import { createPaidOrder, orderMetadataSchema } from '../lib/orderFulfillment';
 import { notifyUser } from '../lib/realtime';
 import { confirmReturnRefund } from '../lib/returns';
+import {
+  handleSubscriptionCanceled,
+  handleSubscriptionInvoicePaid,
+} from '../lib/subscriptions';
 
 export const webhooksRouter = new Hono().post('/stripe', async (c) => {
   console.log('[WEBHOOK] Received request');
@@ -122,6 +126,22 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
       await confirmReturnRefund(refund.id, refund.status ?? '');
     } catch (error) {
       console.error('[WEBHOOK] Failed to process refund.updated:', error);
+    }
+  } else if (event.type === 'invoice.payment_succeeded') {
+    const invoice = event.data.object;
+    console.log('[WEBHOOK] invoice.payment_succeeded received:', invoice.subscription, invoice.billing_reason);
+    try {
+      await handleSubscriptionInvoicePaid(invoice);
+    } catch (error) {
+      console.error('[WEBHOOK] Failed to process subscription renewal:', error);
+    }
+  } else if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object;
+    console.log('[WEBHOOK] customer.subscription.deleted received:', subscription.id);
+    try {
+      await handleSubscriptionCanceled(subscription);
+    } catch (error) {
+      console.error('[WEBHOOK] Failed to mark subscription canceled:', error);
     }
   }
 

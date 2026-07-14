@@ -7,11 +7,16 @@ import { useStorefrontNav } from '../../hooks/useStorefrontNav';
 import { useRecentlyViewedStore } from '../../store/recentlyViewedStore';
 
 export const Route = createFileRoute('/_storefront/product/$productId')({
+  validateSearch: (search: Record<string, unknown>): { subscribe?: true } => ({
+    subscribe: search.subscribe === true || search.subscribe === '1' ? true : undefined,
+  }),
   component: ProductDetailRoute,
 });
 
 function ProductDetailRoute() {
   const { productId } = Route.useParams();
+  const { subscribe } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const router = useRouter();
   const { openProduct, onAdd, onBuyNow } = useStorefrontNav();
   const { data: product, isLoading, isError } = useProduct(productId);
@@ -53,6 +58,8 @@ function ProductDetailRoute() {
       onBuyNow={onBuyNow}
       onOpenProduct={openProduct}
       onBack={() => router.history.back()}
+      subscribeModalOpen={!!subscribe}
+      onSubscribeModalOpenChange={(open) => navigate({ search: open ? { subscribe: true } : {}, replace: true })}
     />
   );
 }

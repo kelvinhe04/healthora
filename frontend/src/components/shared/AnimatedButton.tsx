@@ -10,6 +10,9 @@ interface AnimatedButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
   full?: boolean;
   icon?: ReactNode;
+  /** Shows a spinner in place of `icon` and keeps the button at full opacity (instead of the
+   * usual disabled dimming) so a long-running action reads as "working", not "stuck/dead". */
+  loading?: boolean;
 }
 
 const variantBase: Record<Variant, CSSProperties> = {
@@ -46,6 +49,7 @@ export function AnimatedButton({
   size = 'md',
   full,
   icon,
+  loading,
   style,
   disabled,
   ...props
@@ -65,7 +69,7 @@ export function AnimatedButton({
     letterSpacing: '-0.01em',
     border: 'none',
     cursor: disabled ? 'not-allowed' : 'pointer',
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled && !loading ? 0.5 : 1,
     outline: 'none',
     whiteSpace: 'nowrap',
     width: full ? '100%' : 'auto',
@@ -88,8 +92,23 @@ export function AnimatedButton({
       onMouseDown={() => setPressed(true)}
       onMouseUp={() => setPressed(false)}
     >
+      {loading && (
+        <span
+          aria-hidden="true"
+          style={{
+            width: 14,
+            height: 14,
+            borderRadius: '50%',
+            border: '2px solid currentColor',
+            borderTopColor: 'transparent',
+            animation: 'button-spin 0.7s linear infinite',
+            display: 'inline-block',
+            flexShrink: 0,
+          }}
+        />
+      )}
       <span>{text}</span>
-      {icon && <span style={{ display: 'inline-flex', flexShrink: 0 }}>{icon}</span>}
+      {icon && !loading && <span style={{ display: 'inline-flex', flexShrink: 0 }}>{icon}</span>}
     </button>
   );
 }

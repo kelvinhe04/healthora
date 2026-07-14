@@ -75,6 +75,9 @@ type EmailData = {
   total: number;
   address: Address;
   createdAt: Date;
+  isSubscription?: boolean;
+  subscriptionIntervalDays?: number;
+  nextBillingDate?: Date;
 };
 
 type OrderStatusEmailData = {
@@ -337,7 +340,7 @@ function buildFulfillmentSteps(currentStatus: FulfillmentStatus, shippingMethod?
 }
 
 export async function sendOrderConfirmationEmail(data: EmailData): Promise<void> {
-  const { customerName, customerEmail, orderId, items, subtotal, discountCode, discountAmount = 0, tax, shipping, shippingLabel, shippingEta, shippingMethod, total, address, createdAt } = data;
+  const { customerName, customerEmail, orderId, items, subtotal, discountCode, discountAmount = 0, tax, shipping, shippingLabel, shippingEta, shippingMethod, total, address, createdAt, isSubscription, subscriptionIntervalDays, nextBillingDate } = data;
   const isPickup = shippingMethod === 'pickup';
 
   if (process.env.NODE_ENV === 'test') {
@@ -394,12 +397,14 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
                         <td class="healthora-serif" width="48" height="48" align="center" style="width: 48px; height: 48px; border-radius: 999px; background-color: #c8ee2e; color: #213a27; font-family: ${EMAIL_SERIF_FONT}; font-size: 34px; line-height: 48px; font-weight: 400;">h</td>
                         <td style="padding-left: 12px; vertical-align: middle;">
                           <p class="healthora-serif" style="margin: 0; font-family: ${EMAIL_SERIF_FONT}; font-size: 28px; line-height: 26px; font-weight: 400; color: #ffffff; letter-spacing: -0.7px;">Healthora</p>
-                          <p class="healthora-mono" style="margin: 3px 0 0 0; font-family: ${EMAIL_MONO_FONT}; font-size: 12px; line-height: 16px; color: #c8ee2e; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase;">Pedido confirmado</p>
+                          <p class="healthora-mono" style="margin: 3px 0 0 0; font-family: ${EMAIL_MONO_FONT}; font-size: 12px; line-height: 16px; color: #c8ee2e; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase;">${isSubscription ? 'Reposición automática' : 'Pedido confirmado'}</p>
                         </td>
                       </tr>
                     </table>
-                    <h1 style="margin: 30px 0 0 0; font-size: 31px; line-height: 38px; font-weight: 800; color: #ffffff; letter-spacing: -0.7px;">Gracias por tu compra</h1>
-                    <p style="margin: 10px 0 0 0; font-size: 16px; line-height: 25px; color: #e4f7e9;">Hola ${safeCustomerName}, recibimos tu pago y tu pedido ya está confirmado.</p>
+                    <h1 style="margin: 30px 0 0 0; font-size: 31px; line-height: 38px; font-weight: 800; color: #ffffff; letter-spacing: -0.7px;">${isSubscription ? 'Tu reposición automática se generó' : 'Gracias por tu compra'}</h1>
+                    <p style="margin: 10px 0 0 0; font-size: 16px; line-height: 25px; color: #e4f7e9;">${isSubscription
+                      ? `Hola ${safeCustomerName}, cobramos tu tarjeta y preparamos un nuevo pedido de tu reposición automática${subscriptionIntervalDays ? ` (cada ${subscriptionIntervalDays} días)` : ''}.`
+                      : `Hola ${safeCustomerName}, recibimos tu pago y tu pedido ya está confirmado.`}</p>
                   </td>
                 </tr>
               </table>
@@ -428,6 +433,20 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
               </table>
             </td>
           </tr>
+
+          ${isSubscription && nextBillingDate ? `
+          <tr>
+            <td style="padding: 0 38px 12px 38px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fbfdfb; border-radius: 18px; border: 1px solid #dfe8e1;">
+                <tr>
+                  <td style="padding: 16px 24px;">
+                    <p style="margin: 0; font-size: 13px; color: #64756a;">Próximo cobro y envío: <strong style="color: #213a27;">${formatDate(nextBillingDate)}</strong>. Puedes pausar o cancelar cuando quieras desde tu perfil.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          ` : ''}
 
           <tr>
             <td style="padding: 18px 38px 20px 38px;">
