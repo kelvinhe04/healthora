@@ -516,6 +516,17 @@ export const api = {
         token,
       );
     },
+    cohortCustomers: (token: string, cohortMonth: string) =>
+      request<{
+        cohortMonth: string;
+        customers: {
+          customerId: string;
+          customerName?: string;
+          customerEmail?: string;
+          firstPurchaseDate: string;
+          activeOffsets: number[];
+        }[];
+      }>(`/admin/reports/cohorts/${cohortMonth}/customers`, undefined, token),
     productAnalytics: (token: string, days?: number) =>
       request<{
         configured: boolean;

@@ -185,6 +185,19 @@ export type CohortReportData = {
   generatedAt: string;
 };
 
+export type CohortCustomer = {
+  customerId: string;
+  customerName?: string;
+  customerEmail?: string;
+  firstPurchaseDate: string;
+  activeOffsets: number[];
+};
+
+export type CohortCustomersData = {
+  cohortMonth: string;
+  customers: CohortCustomer[];
+};
+
 export type EarningsData = {
   monthly?: { month: string; revenue: number; orders: number }[];
   summary?: {

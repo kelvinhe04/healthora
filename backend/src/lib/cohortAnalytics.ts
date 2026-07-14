@@ -192,3 +192,85 @@ export async function getCohortReport(opts: { from?: Date; to?: Date } = {}): Pr
     opts,
   );
 }
+
+export type CohortCustomerDetail = {
+  customerId: string;
+  customerName?: string;
+  customerEmail?: string;
+  firstPurchaseDate: string;
+  /** Month offsets (relative to cohortMonth, same scale as CohortRow.retention) where this
+   * customer placed at least one paid order - lets the admin panel show, per person, which of the
+   * heatmap's columns they actually contributed to instead of just the aggregate percent. */
+  activeOffsets: number[];
+};
+
+type RawCustomerOrdersWithIdentity = RawCustomerOrders & { customerName?: string; customerEmail?: string };
+
+/** Same cohort-membership rule as buildCohortReport (first paid order's calendar month), but
+ * returns the individual customers instead of an aggregate percentage - drill-down for a specific
+ * cohort row in the admin panel ("who exactly are these N customers, and which months did each of
+ * them come back"). */
+export function buildCohortCustomerList(
+  rawCustomers: RawCustomerOrdersWithIdentity[],
+  cohortMonth: string,
+  now?: Date,
+): CohortCustomerDetail[] {
+  const nowMonth = monthKey(now ?? new Date());
+  const maxAvailableOffset = Math.min(MAX_OFFSET, monthsBetween(cohortMonth, nowMonth));
+
+  const result: CohortCustomerDetail[] = [];
+  for (const row of rawCustomers) {
+    const orderDates = row.orders
+      .filter((o) => o.date)
+      .map((o) => new Date(o.date))
+      .sort((a, b) => a.getTime() - b.getTime());
+    if (orderDates.length === 0) continue;
+    if (monthKey(orderDates[0]) !== cohortMonth) continue;
+
+    const activeMonths = new Set(orderDates.map((d) => monthKey(d)));
+    const activeOffsets: number[] = [];
+    for (let offset = 0; offset <= maxAvailableOffset; offset += 1) {
+      if (activeMonths.has(addMonths(cohortMonth, offset))) activeOffsets.push(offset);
+    }
+
+    result.push({
+      customerId: row.customerId,
+      customerName: row.customerName,
+      customerEmail: row.customerEmail,
+      firstPurchaseDate: orderDates[0].toISOString(),
+      activeOffsets,
+    });
+  }
+
+  return result.sort((a, b) => new Date(a.firstPurchaseDate).getTime() - new Date(b.firstPurchaseDate).getTime());
+}
+
+export async function getCohortCustomers(cohortMonth: string, now?: Date): Promise<CohortCustomerDetail[]> {
+  const rows = await Order.aggregate<{
+    _id: string;
+    customerName?: string;
+    customerEmail?: string;
+    orders: { date: Date; total: number }[];
+  }>([
+    { $match: { paymentStatus: 'paid' } },
+    {
+      $group: {
+        _id: '$customerId',
+        customerName: { $first: '$customerName' },
+        customerEmail: { $first: '$customerEmail' },
+        orders: { $push: { date: '$createdAt', total: '$total' } },
+      },
+    },
+  ]);
+
+  return buildCohortCustomerList(
+    rows.map((row) => ({
+      customerId: row._id,
+      customerName: row.customerName,
+      customerEmail: row.customerEmail,
+      orders: row.orders,
+    })),
+    cohortMonth,
+    now,
+  );
+}

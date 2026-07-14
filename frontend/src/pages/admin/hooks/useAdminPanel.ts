@@ -16,6 +16,7 @@ import {
   type AdminOrder,
   type AdminPage,
   type AdminUser,
+  type CohortCustomersData,
   type CohortReportData,
   type DashboardData,
   type EarningsData,
@@ -347,6 +348,14 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     enabled: page === "reports",
   });
 
+  const [selectedCohortMonth, setSelectedCohortMonth] = useState<string | null>(null);
+  const cohortCustomersQuery = useQuery({
+    queryKey: ["admin-reports-cohort-customers", selectedCohortMonth],
+    queryFn: async () =>
+      api.admin.cohortCustomers(await getAdminToken(), selectedCohortMonth as string) as Promise<CohortCustomersData>,
+    enabled: page === "reports" && !!selectedCohortMonth,
+  });
+
   const showOrdersSkeleton = useOnceLoading(
     "section_orders",
     ordersQuery.isLoading,
@@ -562,6 +571,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const sales = salesQuery.data;
   const earnings = earningsQuery.data;
   const cohortReport = reportsQuery.data;
+  const cohortCustomers = cohortCustomersQuery.data;
   const dashboardData = dashboardQuery.data;
 
   const [dashboardReady, setDashboardReady] = useState(false);
@@ -969,5 +979,9 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     setReportsRange,
     cohortReport,
     showReportsSkeleton,
+    selectedCohortMonth,
+    setSelectedCohortMonth,
+    cohortCustomers,
+    loadingCohortCustomers: cohortCustomersQuery.isLoading,
   };
 }
