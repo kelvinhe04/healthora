@@ -1216,6 +1216,7 @@ type AdminPage =
   | "orders"
   | "products"
   | "categories"
+  | "coupons"
   | "users"
   | "sales"
   | "earnings"
@@ -1263,6 +1264,7 @@ export function Sidebar({
       icon: "layers",
       count: counts?.categories,
     },
+    { id: "coupons", label: "Cupones", icon: "percent" },
     { id: "users", label: "Clientes", icon: "user", count: counts?.users },
     { id: "returns", label: "Devoluciones", icon: "arrow-left", count: counts?.returns },
     { id: "reviews", label: "Reseñas", icon: "star", count: counts?.reviews },

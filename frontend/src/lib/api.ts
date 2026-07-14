@@ -376,6 +376,43 @@ export const api = {
           token,
         ),
     },
+    catalog: {
+      reindex: (token: string) =>
+        request<{ ok: boolean; message: string }>(
+          "/admin/catalog/reindex",
+          { method: "POST" },
+          token,
+        ),
+    },
+    coupons: {
+      list: (token: string) => request<Coupon[]>("/admin/coupons", undefined, token),
+      create: (
+        data: {
+          code: string;
+          label: string;
+          discountType: "percent" | "fixed";
+          percentOff?: number;
+          amountOff?: number;
+          eligibleCategories?: string[];
+          expiresAt?: string | null;
+          active?: boolean;
+          maxUses?: number | null;
+          firstPurchaseOnly?: boolean;
+        },
+        token: string,
+      ) =>
+        request<Coupon>("/admin/coupons", { method: "POST", body: JSON.stringify(data) }, token),
+      update: (
+        code: string,
+        data: { label?: string; active?: boolean; expiresAt?: string | null; maxUses?: number | null },
+        token: string,
+      ) =>
+        request<Coupon>(
+          `/admin/coupons/${encodeURIComponent(code)}`,
+          { method: "PATCH", body: JSON.stringify(data) },
+          token,
+        ),
+    },
     reviews: {
       list: (
         token: string,
