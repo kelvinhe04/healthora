@@ -1,6 +1,5 @@
 import type {
   AdminAuditLogEntry,
-  ErrorReport,
   FulfillmentStatus,
   OrderAddress,
   OrderLineItem,
@@ -165,56 +164,6 @@ export type EarningsData = {
     net: number;
     orders: number;
   };
-};
-
-export type PerformanceData = {
-  summary: {
-    totalRequests: number;
-    throughputPerMinute: number;
-    avgLatencyMs: number;
-    p95LatencyMs: number;
-    errorRate: number;
-    slowRequests: number;
-  };
-  alerts: {
-    slowThresholdMs: number;
-    p95ThresholdMs: number;
-    errorRateThresholdPercent: number;
-    p95Breached: boolean;
-    errorRateBreached: boolean;
-  };
-  endpoints: {
-    endpoint: string;
-    requests: number;
-    throughputPerMinute: number;
-    avgLatencyMs: number;
-    p95LatencyMs: number;
-    maxLatencyMs: number;
-    errorRate: number;
-    slowRequests: number;
-  }[];
-  recent: {
-    _id: string;
-    method: string;
-    route: string;
-    statusCode: number;
-    latencyMs: number;
-    slow: boolean;
-    error: boolean;
-    createdAt: string;
-  }[];
-  window: {
-    from: string;
-    to: string;
-    minutes: number;
-  };
-};
-
-export type ErrorReportsData = {
-  items: ErrorReport[];
-  total: number;
-  page: number;
-  limit: number;
 };
 
 export type AuditLogsData = {

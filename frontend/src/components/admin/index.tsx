@@ -1219,8 +1219,6 @@ type AdminPage =
   | "users"
   | "sales"
   | "earnings"
-  | "performance"
-  | "errors"
   | "returns"
   | "reviews"
   | "audit";
@@ -1269,8 +1267,6 @@ export function Sidebar({
     { id: "reviews", label: "Reseñas", icon: "star", count: counts?.reviews },
     { id: "sales", label: "Ventas", icon: "truck" },
     { id: "earnings", label: "Ganancias", icon: "percent" },
-    { id: "performance", label: "Rendimiento", icon: "activity" },
-    { id: "errors", label: "Errores", icon: "alert-circle" },
     { id: "audit", label: "Auditoría", icon: "lock" },
   ];
   return (

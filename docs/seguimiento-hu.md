@@ -25,11 +25,9 @@ Registro vivo de qué HU está hecha, en curso o pendiente, con su rama/PR. Actu
 | HU-091 | Migración del frontend a TanStack Start (SSR) | `feat/hu-091-tanstack-start` / PR #103 | Kelvin | Migrado a TanStack Router/Start en modo SPA (sin servidor). Rutas de archivo reales con URLs limpias reemplazan el switch de vistas por `?view=...`. Build y Playwright verificados. |
 | HU-065 | Logs de auditoría de seguridad | `HU-065-logs-de-auditoria-de-seguridad` / PR #104 | Roy | Modelo `SecurityAuditLog`, middleware de registro y endpoint admin `/admin/audit-logs`. |
 | HU-066 | Logging estructurado | `HU-066-logging-estructurado` / PR #105 | Roy | Logger (pino) + `requestLogger` middleware, reemplaza `console.log` por logs estructurados en `index.ts`. |
-| HU-067 | Error tracking con PostHog | `HU-067-error-tracking-con-posthog` / PR #107 | Roy | Captura de excepciones (backend y frontend), `ErrorBoundary`, reporte de errores vía PostHog + endpoint admin. Mergeado resolviendo conflicto con HU-065/066 en `backend/src/index.ts` y `package.json`/`bun.lock` (ambas features tocan el bootstrap del servidor). |
-| HU-068 | APM y métricas de rendimiento | `HU-068-apm-y-metricas-de-rendimiento` / PR #108 | Roy | Middleware de métricas de performance + endpoint admin `/admin/performance`. |
 | HU-083 | Páginas de error (404, 500) | `feat/hu-083-errores` / merge directo a `main` (`ae755a9`) | EiJassiel | `ErrorPage`, `NotFoundView`, `RouteErrorView` y `ErrorBoundary` integrados con TanStack Router. |
 | HU-086 | Documentación API (OpenAPI/Swagger) | `feat/hu-086-openapi` / merge directo a `main` (`36b7465`) | EiJassiel | Spec en `/openapi.json` y Swagger UI en `/docs` (solo backend). |
-| HU-087 | Refactor del componente admin monolítico | `feat/hu-087-refactor-admin` / merge directo a `main` (`118e928`) | EiJassiel | `AdminApp` dividido en secciones, hooks y componentes; conserva paneles de rendimiento y errores (HU-068/067). |
+| HU-087 | Refactor del componente admin monolítico | `feat/hu-087-refactor-admin` / merge directo a `main` (`118e928`) | EiJassiel | `AdminApp` dividido en secciones, hooks y componentes. |
 | HU-082 | Accesibilidad (WCAG 2.1 AA) | `feat/hu-082-accesibilidad` / merge directo a `main` (`015c27c`) | EiJassiel | Skip link, landmarks, `:focus-visible`, modales con focus trap, labels ARIA y `e2e/a11y.spec.ts`. |
 | HU-076 | Estrategia de rollback | `feat/hu-076-rollback` / merge directo a `main` (`9d39d30`) | EiJassiel | `docs/rollback-strategy.md`, `tooling/ops/health-check.ps1`, `tag-release.ps1`. |
 | HU-075 | Entorno staging | `feat/hu-075-staging` / merge directo a `main` | EiJassiel | `APP_ENV`, `CORS_ORIGINS`, `.env.staging.example` y `docs/staging-environment.md`. |
@@ -89,7 +87,7 @@ Ramas secuenciales desde `main` (una a la vez, todas tocan `backend/src/index.ts
 | 2 | HU-064 | Security headers (CSP, HSTS, X-Frame) |
 | 7 | HU-069 | Alertas y monitoreo de uptime |
 
-HU-065/066/067/068 ya mergeadas a `main` (ver tabla de Completadas), fuera de orden respecto al plan original (Roy las abrió antes que 062/064) — 062 y 064 siguen pendientes.
+HU-065/066 ya mergeadas a `main` (ver tabla de Completadas), fuera de orden respecto al plan original (Roy las abrió antes que 062/064) — 062 y 064 siguen pendientes. HU-067/068 se mergearon y luego se revirtieron (no funcionales, sin actor de negocio real, se sacaron del alcance).
 
 En pausa hasta que variantes/UI se estabilicen: HU-081 (HTTP cache — toca API/backend).
 
