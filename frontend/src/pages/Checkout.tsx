@@ -20,6 +20,7 @@ import { getE2EAuthToken, getE2EUser } from '../lib/e2eAuth';
 import { resolveShipping, SHIPPING_METHOD_OPTIONS, type ShippingMethod } from '../lib/shipping';
 import { formatPanamaPhone } from '../lib/phone';
 import { computeItbms } from '../lib/tax';
+import { trackCheckoutStarted } from '../lib/analyticsEvents';
 
 const stripePromise = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
@@ -360,6 +361,11 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     subtotal,
   );
   const total = roundMoney(discountedSubtotal + shipping + tax);
+
+  // Fires once per mount with the cart snapshot at the moment the checkout page is reached - an
+  // intentional page-view-style event (not a sync effect), so an empty deps array is correct here.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { trackCheckoutStarted(items.length, subtotal); }, []);
 
   const handleApplyPromo = async (code = promoInput) => {
     const normalizedCode = normalizePromotionCode(code);

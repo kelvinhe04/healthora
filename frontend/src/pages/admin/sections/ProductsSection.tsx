@@ -281,6 +281,14 @@ export function ProductsSection() {
   } = useAdminPanelContext();
 
   const [discountModalOpen, setDiscountModalOpen] = useState(false);
+  const { getToken } = useAuth();
+  const reindexMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Sesión expirada');
+      return api.admin.catalog.reindex(token);
+    },
+  });
 
   return (
     <>
@@ -304,6 +312,14 @@ export function ProductsSection() {
                   <Skeleton height={40} width={152} borderRadius={999} />
                 ) : (
                   <>
+                    <button
+                      type="button"
+                      onClick={() => reindexMutation.mutate()}
+                      disabled={reindexMutation.isPending}
+                      style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif', whiteSpace: "nowrap" }}
+                    >
+                      {reindexMutation.isPending ? 'Refrescando…' : 'Refrescar catálogo'}
+                    </button>
                     <button
                       type="button"
                       onClick={() => setDiscountModalOpen(true)}

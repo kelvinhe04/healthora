@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CartItem, Product, ProductVariant } from '../types';
+import { trackAddToCart } from '../lib/analyticsEvents';
 
 const GUEST_OWNER = '__guest__';
 
@@ -67,6 +68,8 @@ export const useCartStore = create<CartState>()(
           const nextItems = existing
             ? ownerItems.map((i) => matchItem(i, product.id, variant?.id) ? { ...i, qty: currentQty + allowed } : i)
             : [...ownerItems, { product, qty: allowed, variant }];
+
+          trackAddToCart(product.id, product.name, variant?.price ?? product.price, allowed);
 
           return {
             items: nextItems,

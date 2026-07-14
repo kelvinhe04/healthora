@@ -20,11 +20,19 @@ type TestPaymentIntent = {
   status: string;
 };
 
+type TestCustomer = {
+  id: string;
+  email?: string;
+  name?: string;
+  invoice_settings: { default_payment_method: string | null };
+};
+
 let testSession: TestStripeSession | null = null;
 let testCustomerCounter = 0;
 let testPaymentIntentCounter = 0;
 const testPaymentMethodsByCustomer = new Map<string, { id: string; customer: string; card: { brand: string; last4: string; exp_month: number; exp_year: number } }[]>();
 const testPaymentIntentsById = new Map<string, TestPaymentIntent>();
+const testCustomersById = new Map<string, TestCustomer>();
 
 export function getLastTestStripeSession() {
   return testSession;
@@ -65,7 +73,27 @@ export const stripe = process.env.NODE_ENV === 'test'
       customers: {
         create: async (payload: { email?: string; name?: string }) => {
           testCustomerCounter += 1;
-          return { id: `cus_test_${testCustomerCounter}`, email: payload.email, name: payload.name };
+          const customer: TestCustomer = {
+            id: `cus_test_${testCustomerCounter}`,
+            email: payload.email,
+            name: payload.name,
+            invoice_settings: { default_payment_method: null },
+          };
+          testCustomersById.set(customer.id, customer);
+          return customer;
+        },
+        retrieve: async (id: string) => {
+          const customer = testCustomersById.get(id);
+          if (!customer) throw Object.assign(new Error('No such customer'), { statusCode: 404 });
+          return customer;
+        },
+        update: async (id: string, payload: { invoice_settings?: { default_payment_method?: string | null } }) => {
+          const customer = testCustomersById.get(id);
+          if (!customer) throw Object.assign(new Error('No such customer'), { statusCode: 404 });
+          if (payload.invoice_settings?.default_payment_method !== undefined) {
+            customer.invoice_settings.default_payment_method = payload.invoice_settings.default_payment_method;
+          }
+          return customer;
         },
       },
       setupIntents: {
@@ -151,4 +179,6 @@ export function resetTestStripeState() {
   testPaymentMethodsByCustomer.clear();
   testPaymentIntentsById.clear();
   testPaymentIntentCounter = 0;
+  testCustomersById.clear();
+  testCustomerCounter = 0;
 }

@@ -19,6 +19,7 @@ const UserSchema = new Schema(
         qty: { type: Number, required: true, min: 1 },
       },
     ],
+    wishlist: [{ type: String }],
     addresses: [
       {
         label: { type: String, default: '' },

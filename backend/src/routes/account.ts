@@ -13,6 +13,10 @@ type StripePaymentMethod = {
   card?: { brand: string; last4: string; exp_month: number; exp_year: number };
 };
 
+type StripeCustomerWithDefaultPm = {
+  invoice_settings?: { default_payment_method?: string | { id: string } | null };
+};
+
 const addressesPayloadSchema = z.object({
   addresses: z.array(savedAddressSchema).max(20).default([]),
 });
@@ -72,10 +76,13 @@ export const accountRouter = new Hono<AppEnv>()
       .lean();
     if (!currentUser?.stripeCustomerId) return c.json([]);
 
-    const methods = await stripe.paymentMethods.list({
-      customer: currentUser.stripeCustomerId,
-      type: 'card',
-    });
+    const [methods, customer] = await Promise.all([
+      stripe.paymentMethods.list({ customer: currentUser.stripeCustomerId, type: 'card' }),
+      stripe.customers.retrieve(currentUser.stripeCustomerId) as Promise<StripeCustomerWithDefaultPm>,
+    ]);
+    const defaultPmId = typeof customer.invoice_settings?.default_payment_method === 'string'
+      ? customer.invoice_settings.default_payment_method
+      : customer.invoice_settings?.default_payment_method?.id;
 
     return c.json(
       (methods.data as StripePaymentMethod[]).map((pm) => ({
@@ -84,6 +91,7 @@ export const accountRouter = new Hono<AppEnv>()
         last4: pm.card?.last4,
         expMonth: pm.card?.exp_month,
         expYear: pm.card?.exp_year,
+        isDefault: pm.id === defaultPmId,
       })),
     );
   })
@@ -120,5 +128,31 @@ export const accountRouter = new Hono<AppEnv>()
     }
 
     await stripe.paymentMethods.detach(id);
+    return c.json({ ok: true });
+  })
+  .patch('/payment-methods/:id/default', async (c) => {
+    const id = c.req.param('id');
+    const currentUser = await User.findOne({ clerkId: c.get('user').clerkId })
+      .select('stripeCustomerId')
+      .lean();
+    if (!currentUser?.stripeCustomerId) return c.json({ error: 'No tienes métodos de pago guardados' }, 404);
+
+    let paymentMethod: StripePaymentMethod;
+    try {
+      paymentMethod = await stripe.paymentMethods.retrieve(id);
+    } catch {
+      return c.json({ error: 'Método de pago no encontrado' }, 404);
+    }
+
+    // Same ownership check as DELETE (IDOR guard) - without it any authenticated user could set
+    // someone else's card as their own "default" by guessing/reusing a payment method id.
+    if (paymentMethod.customer !== currentUser.stripeCustomerId) {
+      return c.json({ error: 'Método de pago no encontrado' }, 404);
+    }
+
+    await stripe.customers.update(currentUser.stripeCustomerId, {
+      invoice_settings: { default_payment_method: id },
+    });
+
     return c.json({ ok: true });
   });
