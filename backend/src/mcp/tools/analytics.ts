@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Order } from '../../db/models/Order';
+import { getCohortReport } from '../../lib/cohortAnalytics';
 import { getProductAnalytics } from '../../lib/posthogAnalytics';
 import { jsonResult } from '../toolHelpers';
 
@@ -67,6 +68,26 @@ export function registerAnalyticsTools(server: McpServer) {
     async ({ days }) => {
       const analytics = await getProductAnalytics(days);
       return jsonResult(analytics);
+    },
+  );
+
+  server.registerTool(
+    'analytics.getCohortReport',
+    {
+      title: 'Reporte de cohortes y LTV',
+      description:
+        'Agrupa clientes por el mes de su primera compra pagada (cohorte) y calcula retención y LTV acumulado por mes. Equivalente al reporte Cohortes/LTV del admin (HU-052).',
+      inputSchema: {
+        from: z.string().optional().describe('Fecha ISO: solo cohortes cuyo primer mes de compra sea igual o posterior.'),
+        to: z.string().optional().describe('Fecha ISO: solo cohortes cuyo primer mes de compra sea igual o anterior.'),
+      },
+    },
+    async ({ from, to }) => {
+      const report = await getCohortReport({
+        from: from ? new Date(from) : undefined,
+        to: to ? new Date(to) : undefined,
+      });
+      return jsonResult(report);
     },
   );
 }

@@ -7,6 +7,7 @@ import { Review } from '../db/models/Review';
 import { SecurityAuditLog } from '../db/models/SecurityAuditLog';
 import { Return } from '../db/models/Return';
 import { Coupon } from '../db/models/Coupon';
+import { User } from '../db/models/User';
 import { seedCoupons } from '../db/seed-coupons';
 
 let mongo: MongoMemoryServer;
@@ -62,6 +63,7 @@ describe('MCP server', () => {
     await SecurityAuditLog.collection.deleteMany({});
     await Return.deleteMany({});
     await Coupon.deleteMany({});
+    await User.deleteMany({});
     await seedProduct();
     await seedCoupons();
   });
@@ -77,11 +79,12 @@ describe('MCP server', () => {
     expect(json.result.serverInfo.name).toBe('healthora');
   });
 
-  test('tools/list exposes all 24 registered tools', async () => {
+  test('tools/list exposes all 26 registered tools', async () => {
     const { json } = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const names = json.result.tools.map((t: { name: string }) => t.name).sort();
     expect(names).toEqual(
       [
+        'analytics.getCohortReport',
         'analytics.getProductAnalytics',
         'analytics.getSalesReport',
         'audit.getAdminActions',
@@ -106,6 +109,7 @@ describe('MCP server', () => {
         'variants.upsertVariant',
         'variants.updateVariantStock',
         'variants.uploadVariantImage',
+        'wishlist.getUserWishlist',
       ].sort(),
     );
   });
@@ -359,5 +363,37 @@ describe('MCP server', () => {
     expect(payload.format).toBe('csv');
     expect(payload.rowCount).toBeGreaterThanOrEqual(1);
     expect(payload.csv).toContain('orderId');
+  });
+
+  test('wishlist.getUserWishlist returns saved product ids', async () => {
+    await User.create({
+      clerkId: 'wish-user-1',
+      email: 'wish@test.com',
+      wishlist: ['combo-product'],
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 15,
+      method: 'tools/call',
+      params: { name: 'wishlist.getUserWishlist', arguments: { email: 'wish@test.com' } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.count).toBe(1);
+    expect(payload.productIds).toEqual(['combo-product']);
+    expect(payload.products[0].id).toBe('combo-product');
+  });
+
+  test('analytics.getCohortReport returns cohort structure', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 16,
+      method: 'tools/call',
+      params: { name: 'analytics.getCohortReport', arguments: {} },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.maxOffset).toBe(11);
+    expect(Array.isArray(payload.cohorts)).toBe(true);
+    expect(payload.overall).toBeDefined();
   });
 });

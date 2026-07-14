@@ -1223,8 +1223,9 @@ type AdminPage =
   | "returns"
   | "reviews"
   | "audit"
-  | "repurchase"
-  | "analytics";
+  | "analytics"
+  | "reports"
+  | "repurchase";
 interface SidebarProps {
   page: AdminPage;
   setPage: (p: AdminPage) => void;
@@ -1271,6 +1272,7 @@ export function Sidebar({
     { id: "reviews", label: "Reseñas", icon: "star", count: counts?.reviews },
     { id: "sales", label: "Ventas", icon: "truck" },
     { id: "earnings", label: "Ganancias", icon: "percent" },
+    { id: "reports", label: "Cohortes", icon: "layers" },
     { id: "audit", label: "Auditoría", icon: "lock" },
     { id: "repurchase", label: "Recompra", icon: "bell" },
     { id: "analytics", label: "Analítica", icon: "package" },

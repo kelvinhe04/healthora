@@ -16,6 +16,7 @@ import {
   type AdminOrder,
   type AdminPage,
   type AdminUser,
+  type CohortReportData,
   type DashboardData,
   type EarningsData,
   type OrderPaymentBucket,
@@ -59,7 +60,7 @@ function orderMatchesSearch(order: AdminOrder, term: string): boolean {
   );
 }
 
-const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "coupons", "users", "returns", "reviews", "sales", "earnings", "audit", "repurchase", "analytics"];
+const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "coupons", "users", "returns", "reviews", "sales", "earnings", "reports", "audit", "repurchase", "analytics"];
 
 export function useAdminPanel({
   access,
@@ -335,6 +336,17 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     },
   });
 
+  const [reportsRange, setReportsRange] = useState<{ from: string; to: string }>({ from: "", to: "" });
+  const reportsQuery = useQuery({
+    queryKey: ["admin-reports-cohorts", reportsRange.from, reportsRange.to],
+    queryFn: async () =>
+      api.admin.cohortReport(await getAdminToken(), {
+        from: reportsRange.from || undefined,
+        to: reportsRange.to || undefined,
+      }) as Promise<CohortReportData>,
+    enabled: page === "reports",
+  });
+
   const showOrdersSkeleton = useOnceLoading(
     "section_orders",
     ordersQuery.isLoading,
@@ -362,6 +374,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const showRepurchaseSkeleton = useOnceLoading(
     "section_repurchase",
     repurchaseRemindersQuery.isLoading,
+  );
+  const showReportsSkeleton = useOnceLoading(
+    "section_reports",
+    reportsQuery.isLoading,
   );
 
   const orderStatusesMutation = useMutation({
@@ -545,6 +561,7 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const customers = users;
   const sales = salesQuery.data;
   const earnings = earningsQuery.data;
+  const cohortReport = reportsQuery.data;
   const dashboardData = dashboardQuery.data;
 
   const [dashboardReady, setDashboardReady] = useState(false);
@@ -948,5 +965,9 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     setAnalyticsPeriodDays,
     productAnalytics: productAnalyticsQuery.data,
     showAnalyticsSkeleton,
+    reportsRange,
+    setReportsRange,
+    cohortReport,
+    showReportsSkeleton,
   };
 }

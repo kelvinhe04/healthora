@@ -146,6 +146,16 @@ export const api = {
         token,
       ),
   },
+  wishlist: {
+    get: (token: string) =>
+      request<{ productIds: string[] }>("/wishlist", undefined, token),
+    save: (productIds: string[], token: string) =>
+      request<{ productIds: string[] }>(
+        "/wishlist",
+        { method: "PUT", body: JSON.stringify({ productIds }) },
+        token,
+      ),
+  },
   checkout: {
     createSession: (
       body: {
@@ -492,6 +502,20 @@ export const api = {
       request<unknown>("/admin/sales", undefined, token),
     earnings: (token: string) =>
       request<unknown>("/admin/earnings", undefined, token),
+    cohortReport: (
+      token: string,
+      range: { from?: string; to?: string } = {},
+    ) => {
+      const params = new URLSearchParams();
+      if (range.from) params.set("from", range.from);
+      if (range.to) params.set("to", range.to);
+      const query = params.toString();
+      return request<unknown>(
+        `/admin/reports/cohorts${query ? `?${query}` : ""}`,
+        undefined,
+        token,
+      );
+    },
     productAnalytics: (token: string, days?: number) =>
       request<{
         configured: boolean;

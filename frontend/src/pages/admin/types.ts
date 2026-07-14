@@ -79,8 +79,9 @@ export type AdminPage =
   | "returns"
   | "reviews"
   | "audit"
-  | "repurchase"
-  | "analytics";
+  | "analytics"
+  | "reports"
+  | "repurchase";
 export interface AdminAppProps {
   onGoToStore: () => void;
 }
@@ -156,6 +157,34 @@ export type SalesData = {
    * items.variantLabel, distinto por producto (#154). */
   topVariants?: { productId: string; productName: string; variantLabel: string; units: number; revenue: number }[];
 };
+
+export type CohortRetentionCell = {
+  offset: number;
+  activeCustomers: number;
+  percent: number;
+  revenue: number;
+};
+export type CohortLtvCell = { offset: number; value: number };
+export type CohortRow = {
+  cohortMonth: string;
+  customers: number;
+  retention: CohortRetentionCell[];
+  cumulativeLtv: CohortLtvCell[];
+};
+export type CohortReportData = {
+  from: string | null;
+  to: string | null;
+  maxOffset: number;
+  cohorts: CohortRow[];
+  overall: {
+    totalCustomers: number;
+    averageOrdersPerCustomer: number;
+    averageRevenuePerCustomer: number;
+    averageOrderValue: number;
+  };
+  generatedAt: string;
+};
+
 export type EarningsData = {
   monthly?: { month: string; revenue: number; orders: number }[];
   summary?: {

@@ -25,6 +25,8 @@ import { adminRepurchaseRemindersRouter } from './routes/admin/adminRepurchaseRe
 import { adminAnalyticsRouter } from './routes/admin/adminAnalytics';
 import { adminCatalogRouter } from './routes/admin/adminCatalog';
 import { adminCouponsRouter } from './routes/admin/adminCoupons';
+import { adminReportsRouter } from './routes/admin/adminReports';
+import { wishlistRouter } from './routes/wishlist';
 import { accountRouter } from './routes/account';
 import { mcpAuth } from './mcp/auth';
 import { handleMcpRequest } from './mcp/server';
@@ -93,6 +95,7 @@ app.route('/reviews', reviewsRouter);
 app.route('/notifications', notificationsRouter);
 app.route('/newsletter', newsletterRouter);
 app.route('/cart', cartRouter);
+app.route('/wishlist', wishlistRouter);
 app.route('/checkout', checkoutRouter);
 app.route('/promotions', promotionsRouter);
 app.route('/webhooks', webhooksRouter);
@@ -112,6 +115,7 @@ app.route('/admin/repurchase-reminders', adminRepurchaseRemindersRouter);
 app.route('/admin/analytics', adminAnalyticsRouter);
 app.route('/admin/catalog', adminCatalogRouter);
 app.route('/admin/coupons', adminCouponsRouter);
+app.route('/admin/reports', adminReportsRouter);
 
 // Remote MCP server (Model Context Protocol) - exposes read/write tools for catalog, variantes,
 // stock, ordenes, usuarios y ventas, importable desde Claude Code / Codex / conectores de
