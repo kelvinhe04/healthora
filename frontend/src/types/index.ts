@@ -268,25 +268,6 @@ export interface ReviewBan {
   createdAt: string;
 }
 
-export interface ErrorReport {
-  _id: string;
-  source: 'backend' | 'frontend';
-  name?: string;
-  message: string;
-  stack?: string;
-  severity: 'error' | 'fatal';
-  route?: string;
-  method?: string;
-  statusCode?: number;
-  userId?: string;
-  userEmail?: string;
-  posthogDistinctId?: string;
-  posthogSessionId?: string;
-  userAgent?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 /** One entry of the append-only admin audit trail (HU-051) - "admin.access" fires on every admin
  * request (see backend/src/middleware/requireAdmin.ts), while resource-scoped actions like
  * "products.update" only fire on a successful mutation (see auditAdminAction.ts). */
