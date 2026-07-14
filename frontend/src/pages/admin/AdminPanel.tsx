@@ -9,14 +9,14 @@ import { AdminPanelProvider, useAdminPanelContext } from './AdminPanelContext';
 import { AuditLogsSection } from './sections/AuditLogsSection';
 import { DashboardSection } from './sections/DashboardSection';
 import { EarningsSection } from './sections/EarningsSection';
-import { ErrorsSection } from './sections/ErrorsSection';
 import { OrdersSection } from './sections/OrdersSection';
-import { PerformanceSection } from './sections/PerformanceSection';
+import { ProductAnalyticsSection } from './sections/ProductAnalyticsSection';
 import { ProductsSection } from './sections/ProductsSection';
 import { RepurchaseSection } from './sections/RepurchaseSection';
 import { ReturnsSection } from './sections/ReturnsSection';
 import { ReviewsSection } from './sections/ReviewsSection';
 import { CategoriesSection } from './sections/CategoriesSection';
+import { CouponsSection } from './sections/CouponsSection';
 import { SalesSection } from './sections/SalesSection';
 import { UsersSection } from './sections/UsersSection';
 
@@ -105,15 +105,15 @@ function AdminPanelLayout({
         {page === "orders" && <OrdersSection />}
         {page === "products" && <ProductsSection />}
         {page === "categories" && <CategoriesSection />}
+        {page === "coupons" && <CouponsSection />}
         {page === "users" && <UsersSection />}
         {page === "returns" && <ReturnsSection />}
         {page === "reviews" && <ReviewsSection />}
         {page === "sales" && <SalesSection />}
         {page === "earnings" && <EarningsSection />}
-        {page === "performance" && <PerformanceSection />}
-        {page === "errors" && <ErrorsSection />}
         {page === "audit" && <AuditLogsSection />}
         {page === "repurchase" && <RepurchaseSection />}
+        {page === "analytics" && <ProductAnalyticsSection />}
       </main>
 
       {/* Mounted at the layout level (not per-section) so it shows no matter which admin page

@@ -6,6 +6,7 @@ import { useCartStore } from '../store/cartStore';
 import { api } from '../lib/api';
 import { useEffect, useRef } from 'react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import { trackCheckoutCompleted } from '../lib/analyticsEvents';
 
 interface SuccessProps { onBack: () => void; sessionId: string; }
 
@@ -17,8 +18,15 @@ export function Success({ onBack, sessionId }: SuccessProps) {
   const clearCart = useCartStore((s) => s.clear);
   const replaceItems = useCartStore((s) => s.replaceItems);
   const didSyncRemoteClearRef = useRef(false);
+  const didTrackCompletedRef = useRef(false);
 
   useEffect(() => { clearCart(); }, [clearCart]);
+
+  useEffect(() => {
+    if (!order || didTrackCompletedRef.current) return;
+    didTrackCompletedRef.current = true;
+    trackCheckoutCompleted(order._id, order.total ?? 0);
+  }, [order]);
 
   useEffect(() => {
     if (!sessionId || !isSignedIn || didSyncRemoteClearRef.current) return;

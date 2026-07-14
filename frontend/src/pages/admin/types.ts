@@ -1,6 +1,5 @@
 import type {
   AdminAuditLogEntry,
-  ErrorReport,
   FulfillmentStatus,
   OrderAddress,
   OrderLineItem,
@@ -73,15 +72,15 @@ export type AdminPage =
   | "orders"
   | "products"
   | "categories"
+  | "coupons"
   | "users"
   | "sales"
   | "earnings"
-  | "performance"
-  | "errors"
   | "returns"
   | "reviews"
   | "audit"
-  | "repurchase";
+  | "repurchase"
+  | "analytics";
 export interface AdminAppProps {
   onGoToStore: () => void;
 }
@@ -169,56 +168,6 @@ export type EarningsData = {
   };
 };
 
-export type PerformanceData = {
-  summary: {
-    totalRequests: number;
-    throughputPerMinute: number;
-    avgLatencyMs: number;
-    p95LatencyMs: number;
-    errorRate: number;
-    slowRequests: number;
-  };
-  alerts: {
-    slowThresholdMs: number;
-    p95ThresholdMs: number;
-    errorRateThresholdPercent: number;
-    p95Breached: boolean;
-    errorRateBreached: boolean;
-  };
-  endpoints: {
-    endpoint: string;
-    requests: number;
-    throughputPerMinute: number;
-    avgLatencyMs: number;
-    p95LatencyMs: number;
-    maxLatencyMs: number;
-    errorRate: number;
-    slowRequests: number;
-  }[];
-  recent: {
-    _id: string;
-    method: string;
-    route: string;
-    statusCode: number;
-    latencyMs: number;
-    slow: boolean;
-    error: boolean;
-    createdAt: string;
-  }[];
-  window: {
-    from: string;
-    to: string;
-    minutes: number;
-  };
-};
-
-export type ErrorReportsData = {
-  items: ErrorReport[];
-  total: number;
-  page: number;
-  limit: number;
-};
-
 export type AuditLogsData = {
   items: AdminAuditLogEntry[];
   total: number;
@@ -231,6 +180,21 @@ export type RepurchaseRemindersData = {
   total: number;
   page: number;
   limit: number;
+};
+
+export type ProductAnalyticsData = {
+  configured: boolean;
+  periodDays: number;
+  funnel: { checkoutStarted: number; checkoutCompleted: number; conversionRate: number };
+  cartAbandonment: { addedToCart: number; completedCheckout: number; abandonmentRate: number };
+  recentEvents: { event: string; timestamp: string; distinctId: string }[];
+  error?: string;
+};
+
+export const productAnalyticsEventLabels: Record<string, string> = {
+  checkout_started: 'Checkout iniciado',
+  checkout_completed: 'Checkout completado',
+  add_to_cart: 'Agregado al carrito',
 };
 
 export const fulfillmentStatusOptions: (FulfillmentStatus | "")[] = [

@@ -1216,15 +1216,15 @@ type AdminPage =
   | "orders"
   | "products"
   | "categories"
+  | "coupons"
   | "users"
   | "sales"
   | "earnings"
-  | "performance"
-  | "errors"
   | "returns"
   | "reviews"
   | "audit"
-  | "repurchase";
+  | "repurchase"
+  | "analytics";
 interface SidebarProps {
   page: AdminPage;
   setPage: (p: AdminPage) => void;
@@ -1265,15 +1265,15 @@ export function Sidebar({
       icon: "layers",
       count: counts?.categories,
     },
+    { id: "coupons", label: "Cupones", icon: "percent" },
     { id: "users", label: "Clientes", icon: "user", count: counts?.users },
     { id: "returns", label: "Devoluciones", icon: "arrow-left", count: counts?.returns },
     { id: "reviews", label: "Reseñas", icon: "star", count: counts?.reviews },
     { id: "sales", label: "Ventas", icon: "truck" },
     { id: "earnings", label: "Ganancias", icon: "percent" },
-    { id: "performance", label: "Rendimiento", icon: "activity" },
-    { id: "errors", label: "Errores", icon: "alert-circle" },
     { id: "audit", label: "Auditoría", icon: "lock" },
     { id: "repurchase", label: "Recompra", icon: "bell" },
+    { id: "analytics", label: "Analítica", icon: "package" },
   ];
   return (
     <aside

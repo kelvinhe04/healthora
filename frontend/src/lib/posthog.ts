@@ -1,95 +1,15 @@
 import posthog from 'posthog-js';
 
+/** Minimal PostHog client init for the product-analytics event capture (HU-054) - just enough to
+ * send `add_to_cart`/`checkout_started`/`checkout_completed` (see analyticsEvents.ts). No error
+ * tracking here anymore (that was HU-067, removed - see ErrorBoundary.tsx for the plain fallback
+ * UI that's left in its place). */
+
 const token = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN as string | undefined;
 const host = (import.meta.env.VITE_POSTHOG_HOST as string | undefined) || 'https://us.i.posthog.com';
 
-export const posthogOptions = {
-  api_host: host,
-  defaults: '2026-05-30',
-  capture_exceptions: true,
-} as const;
-
 export const isPostHogConfigured = Boolean(token);
-export const posthogToken = token || '';
 
-type UserContext = {
-  id?: string;
-  email?: string;
-};
-
-let currentUser: UserContext = {};
-
-export function setErrorTrackingUser(user: UserContext) {
-  currentUser = user;
-  if (!isPostHogConfigured || !user.id) return;
-
-  posthog.identify(user.id, {
-    email: user.email,
-  });
-}
-
-export function clearErrorTrackingUser() {
-  currentUser = {};
-  if (isPostHogConfigured) posthog.reset();
-}
-
-function serializeError(error: unknown) {
-  if (error instanceof Error) {
-    return {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-    };
-  }
-
-  return {
-    name: 'Error',
-    message: typeof error === 'string' ? error : 'Unknown frontend error',
-    stack: undefined,
-  };
-}
-
-export function captureFrontendException(error: unknown, metadata?: Record<string, unknown>) {
-  const normalized = serializeError(error);
-
-  if (isPostHogConfigured) {
-    posthog.captureException(error, {
-      source: 'frontend',
-      route: window.location.pathname,
-      ...metadata,
-    });
-  }
-
-  void fetch('/api/error-reports/client', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      ...normalized,
-      route: window.location.pathname,
-      userId: currentUser.id,
-      userEmail: currentUser.email,
-      posthogDistinctId: posthog.get_distinct_id?.(),
-      posthogSessionId: posthog.get_session_id?.(),
-      metadata,
-    }),
-  }).catch(() => undefined);
-}
-
-export function installGlobalErrorTracking() {
-  if (typeof window === 'undefined') return;
-
-  window.addEventListener('error', (event) => {
-    captureFrontendException(event.error || event.message, {
-      handler: 'window.error',
-      filename: event.filename,
-      lineno: event.lineno,
-      colno: event.colno,
-    });
-  });
-
-  window.addEventListener('unhandledrejection', (event) => {
-    captureFrontendException(event.reason, {
-      handler: 'window.unhandledrejection',
-    });
-  });
+if (typeof window !== 'undefined' && isPostHogConfigured) {
+  posthog.init(token!, { api_host: host, defaults: '2026-05-30' });
 }
