@@ -29,3 +29,17 @@ export function useOrderBySession(sessionId: string) {
     retryDelay: 1500,
   });
 }
+
+export function useOrderByPaymentIntent(paymentIntentId: string) {
+  const { getToken } = useAuth();
+  return useQuery({
+    queryKey: ['order-payment-intent', paymentIntentId],
+    queryFn: async () => {
+      const token = await getToken();
+      return api.orders.byPaymentIntent(paymentIntentId, token!);
+    },
+    enabled: !!paymentIntentId,
+    retry: 5,
+    retryDelay: 1500,
+  });
+}

@@ -6,61 +6,25 @@ import { Order } from '../db/models/Order';
 import { Product } from '../db/models/Product';
 import { normalizeOrder } from '../lib/orderStatus';
 import { stripe } from '../lib/stripe';
-import { sendOrderConfirmationEmail } from '../lib/email';
+import { createPaidOrder, orderMetadataSchema } from '../lib/orderFulfillment';
 import {
-  cartItemSchema,
-  emailField,
-  moneyFromInput,
   objectIdSchema,
-  optionalTextField,
-  orderAddressSchema,
-  parseJson,
   parseParams,
   parseQuery,
-  requireFullAddress,
-  shippingMethodSchema,
   textField,
 } from '../lib/validation';
-import { buildPaidLineItem, resolveVariantImage } from '../lib/productVariants';
-import { decrementStock } from '../lib/inventory';
-import { notifyAdmins, notifyUser } from '../lib/realtime';
-import { scanAndNotifyLowStock } from '../lib/lowStock';
+import { resolveVariantImage } from '../lib/productVariants';
+import { notifyUser } from '../lib/realtime';
 import { recalculateAfterPayment } from '../lib/bestsellers';
 
 const ordersQuerySchema = z.object({
   stripeSessionId: textField(255).optional(),
+  stripePaymentIntentId: textField(255).optional(),
 });
 
 const orderIdParamsSchema = z.object({
   id: objectIdSchema,
 });
-
-const paidSessionCartItemSchema = cartItemSchema.extend({
-  isSample: z.coerce.boolean().optional(),
-});
-
-const paidSessionMetadataSchema = z.object({
-  customerId: textField(180),
-  customerName: optionalTextField(160),
-  customerEmail: emailField().optional(),
-  cartItems: textField(20000),
-  address: textField(5000),
-  discountCode: optionalTextField(80),
-  discountAmount: moneyFromInput().default(0),
-  tax: moneyFromInput().default(0),
-  shipping: moneyFromInput().default(0),
-  shippingMethod: shippingMethodSchema.optional(),
-  shippingLabel: optionalTextField(160),
-  shippingEta: optionalTextField(80),
-});
-
-function parseSessionJsonMetadata<T>(value: string, schema: z.ZodType<T>) {
-  try {
-    return schema.safeParse(JSON.parse(value));
-  } catch {
-    return schema.safeParse(null);
-  }
-}
 
 async function addItemImages(orders: Array<Record<string, unknown>>) {
   const ids = [...new Set(
@@ -84,160 +48,44 @@ async function addItemImages(orders: Array<Record<string, unknown>>) {
   }));
 }
 
-type CheckoutAddress = {
-  name: string;
-  phone: string;
-  address: string;
-  city: string;
-  postal: string;
-};
-
-type CheckoutCartItem = {
-  productId: string;
-  qty: number;
-  variantId?: string;
-  isSample?: boolean;
-};
-
 async function createOrderFromPaidSession(stripeSessionId: string, clerkId: string) {
   const session = await stripe.checkout.sessions.retrieve(stripeSessionId);
   if ((session.payment_status !== 'paid' && session.status !== 'complete') || session.metadata?.customerId !== clerkId) {
     return null;
   }
 
-  const parsedMetadata = paidSessionMetadataSchema.safeParse(session.metadata || {});
+  const parsedMetadata = orderMetadataSchema.safeParse(session.metadata || {});
   if (!parsedMetadata.success) return null;
-
-  const metadata = parsedMetadata.data;
-  const parsedCartItems = parseSessionJsonMetadata(metadata.cartItems, z.array(paidSessionCartItemSchema).min(1).max(100));
-  const parsedAddress = parseSessionJsonMetadata(metadata.address, orderAddressSchema);
-  if (!parsedCartItems.success || !parsedAddress.success) return null;
-
-  const cartItems = parsedCartItems.data as CheckoutCartItem[];
-  const parsedAddressData = parsedAddress.data as { name: string; phone: string; address?: string; city?: string; postal?: string };
-  const address: CheckoutAddress = {
-    name: parsedAddressData.name,
-    phone: parsedAddressData.phone,
-    address: parsedAddressData.address || '',
-    city: parsedAddressData.city || '',
-    postal: parsedAddressData.postal || '',
-  };
-  const productIds = [...new Set(cartItems.map((item) => item.productId))];
-  const products = await Product.find({ id: { $in: productIds }, active: true }).lean();
-  if (products.length !== productIds.length) return null;
-
-  const lineItems = cartItems.map((item) => {
-    const product = products.find((entry) => entry.id === item.productId);
-    if (!product) throw new Error(`Product not found for ${item.productId}`);
-    return buildPaidLineItem(product, item);
-  });
-
-  const subtotal = lineItems.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const discountCode = metadata.discountCode || undefined;
-  const discountAmount = metadata.discountAmount;
-  const tax = metadata.tax;
-  const shipping = metadata.shipping;
-  const total = Math.round((subtotal - discountAmount + tax + shipping) * 100) / 100;
 
   const existing = await Order.findOne({ stripeSessionId }).lean();
   if (existing) return normalizeOrder(existing);
 
-  const createdOrder = await Order.create({
-    customerId: metadata.customerId,
-    customerName: metadata.customerName,
-    customerEmail: metadata.customerEmail,
-    items: lineItems,
-    subtotal,
-    discountCode,
-    discountAmount,
-    tax,
-    shipping,
-    shippingMethod: metadata.shippingMethod,
-    shippingLabel: metadata.shippingLabel,
-    shippingEta: metadata.shippingEta,
-    total,
-    paymentStatus: 'paid',
-    fulfillmentStatus: 'unfulfilled',
-    status: 'paid',
+  const createdOrder = await createPaidOrder({
+    metadata: parsedMetadata.data,
     stripeSessionId,
     stripePaymentIntentId: typeof session.payment_intent === 'string' ? session.payment_intent : undefined,
-    address,
+    customerEmailFallback: typeof session.customer_email === 'string' ? session.customer_email : undefined,
   });
 
-  for (const item of lineItems) {
-    if (!item.isSample) {
-      const ok = await decrementStock(item.productId, item.qty, item.variantId);
-      if (!ok) {
-        console.error('[ORDERS] Stock decrement failed for', item.productId, item.variantId);
-      }
-    }
+  return normalizeOrder(createdOrder.toObject());
+}
+
+async function createOrderFromPaidIntent(paymentIntentId: string, clerkId: string) {
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+  if (paymentIntent.status !== 'succeeded' || paymentIntent.metadata?.customerId !== clerkId) {
+    return null;
   }
 
-  const customerEmail = metadata.customerEmail || session.customer_email;
-  if (customerEmail) {
-    try {
-      await sendOrderConfirmationEmail({
-        customerName: metadata.customerName || 'cliente',
-        customerEmail: customerEmail,
-        orderId: createdOrder._id.toString(),
-        items: lineItems,
-        subtotal,
-        discountCode,
-        discountAmount,
-        tax,
-        shipping,
-        shippingLabel: metadata.shippingLabel,
-        shippingEta: metadata.shippingEta,
-        shippingMethod: metadata.shippingMethod,
-        total,
-        address,
-        createdAt: createdOrder.createdAt,
-      });
-      console.log('[ORDERS] Confirmation email sent to:', customerEmail);
-    } catch (emailError) {
-      console.error('[ORDERS] Failed to send confirmation email:', emailError);
-    }
-  }
+  const parsedMetadata = orderMetadataSchema.safeParse(paymentIntent.metadata || {});
+  if (!parsedMetadata.success) return null;
 
-  // Real-time notifications (HU-061). This is the path that actually creates the order in local
-  // dev today (see webhooks.ts's constructEventAsync fix - the fallback here used to be the only
-  // one that ever ran), so it needs the same hooks the webhook has. Best-effort, independent
-  // try/catches so a notification failure never breaks order confirmation.
-  try {
-    await notifyUser(metadata.customerId, {
-      type: 'order_paid',
-      title: 'Pago confirmado',
-      body: `Recibimos tu pago de $${total.toFixed(2)}. Tu pedido está en preparación.`,
-      link: '/orders',
-      data: { orderId: createdOrder._id.toString(), total },
-    });
-  } catch (notifyError) {
-    console.error('[ORDERS] order_paid notification failed:', notifyError);
-  }
+  const existing = await Order.findOne({ stripePaymentIntentId: paymentIntentId }).lean();
+  if (existing) return normalizeOrder(existing);
 
-  try {
-    await notifyAdmins({
-      type: 'new_order',
-      title: 'Nuevo pedido',
-      body: `${metadata.customerName || 'Un cliente'} hizo un pedido de $${total.toFixed(2)} (#${createdOrder._id.toString().slice(-8).toUpperCase()}).`,
-      link: '/admin?section=orders',
-      data: { orderId: createdOrder._id.toString(), total },
-    });
-  } catch (notifyError) {
-    console.error('[ORDERS] new_order admin notification failed:', notifyError);
-  }
-
-  try {
-    const soldProductIds = [...new Set(lineItems.filter((i) => !i.isSample).map((i) => i.productId))];
-    const soldProducts = await Product.find({ id: { $in: soldProductIds } }).lean();
-    for (const product of soldProducts) {
-      await scanAndNotifyLowStock(product);
-    }
-  } catch (notifyError) {
-    console.error('[ORDERS] low_stock notification failed:', notifyError);
-  }
-
-  recalculateAfterPayment();
+  const createdOrder = await createPaidOrder({
+    metadata: parsedMetadata.data,
+    stripePaymentIntentId: paymentIntentId,
+  });
 
   return normalizeOrder(createdOrder.toObject());
 }
@@ -294,7 +142,7 @@ export const ordersRouter = new Hono<AppEnv>()
     const parsedQuery = parseQuery(c, ordersQuerySchema);
     if (!parsedQuery.success) return parsedQuery.response;
 
-    const stripeSessionId = parsedQuery.data.stripeSessionId;
+    const { stripeSessionId, stripePaymentIntentId } = parsedQuery.data;
     const clerkId = c.get('user').clerkId;
 
     if (stripeSessionId) {
@@ -312,6 +160,24 @@ export const ordersRouter = new Hono<AppEnv>()
         return c.json(enriched);
       } catch (error) {
         console.error('[ORDERS] Failed to create order from paid session:', error);
+        return c.json({ error: 'Not found' }, 404);
+      }
+    }
+
+    if (stripePaymentIntentId) {
+      const order = await Order.findOne({ stripePaymentIntentId, customerId: clerkId }).lean();
+      if (order) {
+        const [enriched] = await addItemImages([normalizeOrder(order) as unknown as Record<string, unknown>]);
+        return c.json(enriched);
+      }
+
+      try {
+        const createdOrder = await createOrderFromPaidIntent(stripePaymentIntentId, clerkId);
+        if (!createdOrder) return c.json({ error: 'Not found' }, 404);
+        const [enriched] = await addItemImages([createdOrder as unknown as Record<string, unknown>]);
+        return c.json(enriched);
+      } catch (error) {
+        console.error('[ORDERS] Failed to create order from paid intent:', error);
         return c.json({ error: 'Not found' }, 404);
       }
     }
