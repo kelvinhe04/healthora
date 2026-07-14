@@ -151,6 +151,12 @@ export const api = {
           { method: "DELETE" },
           token,
         ),
+      setDefault: (id: string, token: string) =>
+        request<{ ok: boolean }>(
+          `/account/payment-methods/${id}/default`,
+          { method: "PATCH" },
+          token,
+        ),
     },
   },
   cart: {

@@ -102,6 +102,17 @@ function PaymentMethodsSection() {
     },
   });
 
+  const setDefaultMut = useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getToken();
+      if (!token) throw new Error('No autenticado');
+      return api.account.paymentMethods.setDefault(id, token);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
+    },
+  });
+
   const methods = methodsQuery.data ?? [];
 
   return (
@@ -135,16 +146,34 @@ function PaymentMethodsSection() {
                 <span style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>
                   {String(m.expMonth).padStart(2, '0')}/{m.expYear}
                 </span>
+                {m.isDefault && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--green)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                    <Icon name="star" size={12} /> PRINCIPAL
+                  </span>
+                )}
               </div>
-              <button
-                type="button"
-                onClick={() => deleteMut.mutate(m.id)}
-                disabled={deleteMut.isPending}
-                aria-label={`Eliminar tarjeta terminada en ${m.last4}`}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ink-60)', display: 'flex' }}
-              >
-                <Icon name="trash" size={16} />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                {!m.isDefault && (
+                  <button
+                    type="button"
+                    onClick={() => setDefaultMut.mutate(m.id)}
+                    disabled={setDefaultMut.isPending}
+                    aria-label={`Marcar tarjeta terminada en ${m.last4} como principal`}
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ink-60)', display: 'flex', padding: 6 }}
+                  >
+                    <Icon name="star" size={16} />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => deleteMut.mutate(m.id)}
+                  disabled={deleteMut.isPending}
+                  aria-label={`Eliminar tarjeta terminada en ${m.last4}`}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ink-60)', display: 'flex', padding: 6 }}
+                >
+                  <Icon name="trash" size={16} />
+                </button>
+              </div>
             </div>
           ))}
         </div>

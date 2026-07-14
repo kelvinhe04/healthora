@@ -134,6 +134,7 @@ export interface SavedPaymentMethod {
   last4?: string;
   expMonth?: number;
   expYear?: number;
+  isDefault: boolean;
 }
 
 export interface OrderLineItem {

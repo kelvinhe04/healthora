@@ -92,7 +92,7 @@ describe('account payment methods', () => {
 
     const response = await app.request('/account/payment-methods', { headers: authHeaders });
     const body = await response.json();
-    expect(body).toEqual([{ id: 'pm_visa_test', brand: 'visa', last4: '4242', expMonth: 12, expYear: 2030 }]);
+    expect(body).toEqual([{ id: 'pm_visa_test', brand: 'visa', last4: '4242', expMonth: 12, expYear: 2030, isDefault: false }]);
   });
 
   test('DELETE /payment-methods/:id detaches a card owned by the requesting user', async () => {
@@ -138,6 +138,39 @@ describe('account payment methods', () => {
     expect(del.status).toBe(404);
 
     const list = await app.request('/account/payment-methods', { headers: authHeaders });
-    expect(await list.json()).toEqual([{ id: 'pm_visa_test', brand: 'visa', last4: '4242', expMonth: 12, expYear: 2030 }]);
+    expect(await list.json()).toEqual([{ id: 'pm_visa_test', brand: 'visa', last4: '4242', expMonth: 12, expYear: 2030, isDefault: false }]);
+  });
+
+  test('PATCH /payment-methods/:id/default marks a card as the default and reflects it in GET /payment-methods', async () => {
+    const app = createTestApp();
+    await app.request('/account/payment-methods/setup-intent', { method: 'POST', headers: authHeaders });
+    const user = await User.findOne({ clerkId: 'user_test_1' }).lean();
+    seedTestPaymentMethod(user!.stripeCustomerId as string, { id: 'pm_visa_test', brand: 'visa', last4: '4242', expMonth: 12, expYear: 2030 });
+    seedTestPaymentMethod(user!.stripeCustomerId as string, { id: 'pm_mastercard_test', brand: 'mastercard', last4: '4444', expMonth: 11, expYear: 2029 });
+
+    const patch = await app.request('/account/payment-methods/pm_mastercard_test/default', {
+      method: 'PATCH',
+      headers: authHeaders,
+    });
+    expect(patch.status).toBe(200);
+
+    const list = await app.request('/account/payment-methods', { headers: authHeaders });
+    const body = (await list.json()) as { id: string; isDefault: boolean }[];
+    expect(body.find((pm) => pm.id === 'pm_mastercard_test')?.isDefault).toBe(true);
+    expect(body.find((pm) => pm.id === 'pm_visa_test')?.isDefault).toBe(false);
+  });
+
+  test('PATCH /payment-methods/:id/default refuses to set a card that belongs to a different customer', async () => {
+    const app = createTestApp();
+    await app.request('/account/payment-methods/setup-intent', { method: 'POST', headers: authHeaders });
+    const owner = await User.findOne({ clerkId: 'user_test_1' }).lean();
+    seedTestPaymentMethod(owner!.stripeCustomerId as string, { id: 'pm_visa_test', brand: 'visa', last4: '4242', expMonth: 12, expYear: 2030 });
+
+    await app.request('/account/payment-methods/setup-intent', { method: 'POST', headers: otherAuthHeaders });
+    const patch = await app.request('/account/payment-methods/pm_visa_test/default', {
+      method: 'PATCH',
+      headers: otherAuthHeaders,
+    });
+    expect(patch.status).toBe(404);
   });
 });
