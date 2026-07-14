@@ -222,6 +222,23 @@ export interface User {
 
 export type ReviewStatus = 'pending' | 'published' | 'hidden';
 
+export type Coupon = {
+  _id?: string;
+  code: string;
+  label: string;
+  discountType: 'percent' | 'fixed';
+  percentOff?: number;
+  amountOff?: number;
+  eligibleCategories: string[];
+  expiresAt?: string | null;
+  active: boolean;
+  maxUses?: number | null;
+  usesCount?: number;
+  firstPurchaseOnly: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export interface Review {
   _id: string;
   productId: string;
