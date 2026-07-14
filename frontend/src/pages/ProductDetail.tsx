@@ -26,6 +26,8 @@ interface ProductDetailProps {
   onBuyNow: (p: Product, qty: number, variant?: ProductVariant) => void;
   onOpenProduct: (p: Product) => void;
   onBack: () => void;
+  subscribeModalOpen: boolean;
+  onSubscribeModalOpenChange: (open: boolean) => void;
 }
 
 const VARIANT_TYPE_LABEL: Record<string, string> = {
@@ -49,14 +51,20 @@ const qtyBtn = (compact: boolean): CSSProperties => ({
   justifyContent: 'center',
 });
 
-export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack }: ProductDetailProps) {
+export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack, subscribeModalOpen, onSubscribeModalOpenChange }: ProductDetailProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const isTablet = bp === 'tablet';
   const isSmall = isMobile || isTablet;
-  const { isSignedIn } = useUser();
-  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const { isSignedIn, isLoaded } = useUser();
   const [showSignInModal, setShowSignInModal] = useState(false);
+
+  useEffect(() => {
+    if (subscribeModalOpen && isLoaded && !isSignedIn) {
+      onSubscribeModalOpenChange(false);
+      setShowSignInModal(true);
+    }
+  }, [subscribeModalOpen, isLoaded, isSignedIn, onSubscribeModalOpenChange]);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState('benefits');
   const [added, setAdded] = useState(false);
@@ -497,12 +505,13 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
           <AnimatedButton aria-label="Comprar ahora con un clic" variant="outline" full onClick={() => onBuyNow(product, qty, cartVariant)} disabled={effectiveStock === 0} text="Comprar ahora con un clic" />
           <AnimatedButton
             aria-label="Suscribirme a reposición automática"
-            variant="ghost"
+            variant="outline"
+            size="sm"
             full
             icon={<Icon name="repeat" size={14} />}
-            onClick={() => (isSignedIn ? setShowSubscribeModal(true) : setShowSignInModal(true))}
+            onClick={() => (isSignedIn ? onSubscribeModalOpenChange(true) : setShowSignInModal(true))}
             disabled={effectiveStock === 0}
-            style={{ marginTop: 8 }}
+            style={{ marginTop: 8, border: '1px solid var(--ink-12)', color: 'var(--ink-80)' }}
             text="Suscribirme a reposición automática"
           />
 
@@ -587,8 +596,8 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack 
       <ReviewSection productId={product.id} />
 
       <SubscribeModal
-        open={showSubscribeModal}
-        onClose={() => setShowSubscribeModal(false)}
+        open={subscribeModalOpen}
+        onClose={() => onSubscribeModalOpenChange(false)}
         productId={product.id}
         variantId={cartVariant?.id}
         productLabel={`${product.name}${cartVariant ? ` · ${cartVariant.label}` : ''}`}

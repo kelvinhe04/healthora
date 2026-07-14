@@ -28,7 +28,7 @@ const INTERVAL_LABELS: Record<SubscriptionIntervalDays, string> = {
 function FormInput({ label, value, onChange, required }: { label: string; value: string; onChange: (v: string) => void; required?: boolean }) {
   const id = useId();
   return (
-    <label htmlFor={id} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+    <label htmlFor={id} style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
       <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>
         {label} {required && <span style={{ color: 'var(--coral)' }}>*</span>}
       </span>
@@ -37,7 +37,7 @@ function FormInput({ label, value, onChange, required }: { label: string; value:
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
-        style={{ padding: '11px 13px', border: '1px solid var(--ink-20)', borderRadius: 10, background: 'var(--cream)', fontSize: 14, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', outline: 'none' }}
+        style={{ width: '100%', boxSizing: 'border-box', minWidth: 0, padding: '11px 13px', border: '1px solid var(--ink-20)', borderRadius: 10, background: 'var(--cream)', fontSize: 14, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', outline: 'none' }}
       />
     </label>
   );
@@ -49,6 +49,8 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
   const [intervalDays, setIntervalDays] = useState<SubscriptionIntervalDays>(30);
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('delivery');
   const [address, setAddress] = useState<OrderAddress>({ name: '', phone: '', address: '', city: '', postal: '' });
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
   const [loadingAddress, setLoadingAddress] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -63,8 +65,12 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
         if (!token) return;
         const addresses = await api.account.addresses.list(token);
         if (cancelled) return;
-        const primary: SavedAddress | undefined = addresses.find((a) => a.isDefault) || addresses[0];
+        setSavedAddresses(addresses);
+        const primaryIndex = addresses.findIndex((a) => a.isDefault);
+        const index = primaryIndex >= 0 ? primaryIndex : addresses.length > 0 ? 0 : null;
+        const primary = index !== null ? addresses[index] : undefined;
         if (primary) {
+          setSelectedAddressIndex(index);
           setAddress({ name: primary.name, phone: primary.phone, address: primary.address, city: primary.city, postal: primary.postal });
         }
       } catch (err) {
@@ -77,6 +83,11 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
       cancelled = true;
     };
   }, [open, getToken]);
+
+  const selectSavedAddress = (savedAddress: SavedAddress, index: number) => {
+    setSelectedAddressIndex(index);
+    setAddress({ name: savedAddress.name, phone: savedAddress.phone, address: savedAddress.address, city: savedAddress.city, postal: savedAddress.postal });
+  };
 
   const isAddressValid = address.name.trim() && address.phone.trim()
     && (shippingMethod === 'pickup' || (address.address.trim() && address.city.trim() && address.postal.trim()));
@@ -104,8 +115,8 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
 
   return (
     <ModalOverlay open={open} onClose={onClose} ariaLabel="Suscribirse a reposición automática">
-      <div style={{ width: '100%', maxWidth: 460, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 24, padding: 28, maxHeight: '86vh', overflowY: 'auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+      <div style={{ width: '100%', maxWidth: 460, maxHeight: '86vh', background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 24, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '28px 28px 0', flexShrink: 0 }}>
           <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, letterSpacing: '-0.02em', margin: 0, color: 'var(--ink)', fontWeight: 400 }}>
             Reposición <em style={{ color: 'var(--green)' }}>automática</em>
           </h2>
@@ -113,6 +124,8 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
             <Icon name="x" size={18} />
           </button>
         </div>
+
+        <div style={{ overflowY: 'auto', overflowX: 'hidden', padding: '4px 28px 0', flex: '1 1 auto', minHeight: 0 }}>
         <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginBottom: 20 }}>
           {productLabel} — te cobramos y enviamos un pedido nuevo cada cierto tiempo, sin que tengas que volver a comprarlo. Puedes pausar o cancelar cuando quieras desde tu perfil.
         </p>
@@ -188,36 +201,68 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
             </div>
           </div>
 
+          {!loadingAddress && shippingMethod === 'delivery' && savedAddresses.length > 1 && (
+            <div>
+              <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)', display: 'block', marginBottom: 8 }}>
+                Dirección guardada
+              </span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {savedAddresses.map((savedAddress, index) => (
+                  <button
+                    key={`${savedAddress.label}-${savedAddress.address}-${index}`}
+                    type="button"
+                    onClick={() => selectSavedAddress(savedAddress, index)}
+                    style={{
+                      border: selectedAddressIndex === index ? '1px solid var(--ink)' : '1px solid var(--ink-20)',
+                      background: selectedAddressIndex === index ? 'var(--ink)' : 'transparent',
+                      color: selectedAddressIndex === index ? 'var(--cream)' : 'var(--ink)',
+                      borderRadius: 999,
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      fontSize: 12,
+                      fontFamily: '"Geist", sans-serif',
+                    }}
+                  >
+                    {savedAddress.label || `Dirección ${index + 1}`}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {loadingAddress ? (
             <p style={{ fontSize: 12, color: 'var(--ink-60)' }}>Cargando dirección…</p>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div style={{ gridColumn: '1 / -1' }}>
-                <FormInput label="Nombre" value={address.name} onChange={(v) => setAddress((a) => ({ ...a, name: v }))} required />
+                <FormInput label="Nombre" value={address.name} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, name: v })); }} required />
               </div>
-              <FormInput label="Teléfono" value={address.phone} onChange={(v) => setAddress((a) => ({ ...a, phone: v }))} required />
+              <FormInput label="Teléfono" value={address.phone} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, phone: v })); }} required />
               {shippingMethod === 'delivery' && (
                 <>
-                  <FormInput label="Ciudad" value={address.city} onChange={(v) => setAddress((a) => ({ ...a, city: v }))} required />
+                  <FormInput label="Ciudad" value={address.city} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, city: v })); }} required />
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <FormInput label="Dirección" value={address.address} onChange={(v) => setAddress((a) => ({ ...a, address: v }))} required />
+                    <FormInput label="Dirección" value={address.address} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, address: v })); }} required />
                   </div>
-                  <FormInput label="Código postal" value={address.postal} onChange={(v) => setAddress((a) => ({ ...a, postal: v }))} required />
+                  <FormInput label="Código postal" value={address.postal} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, postal: v })); }} required />
                 </>
               )}
             </div>
           )}
         </div>
+        </div>
 
-        {error && <p style={{ color: 'oklch(0.5 0.15 30)', fontSize: 12, marginBottom: 12, fontFamily: '"Geist", sans-serif' }}>{error}</p>}
+        <div style={{ padding: '16px 28px 28px', flexShrink: 0 }}>
+          {error && <p style={{ color: 'oklch(0.5 0.15 30)', fontSize: 12, marginBottom: 12, fontFamily: '"Geist", sans-serif' }}>{error}</p>}
 
-        <AnimatedButton
-          variant="primary"
-          full
-          onClick={handleSubmit}
-          disabled={submitting || loadingAddress}
-          text={submitting ? 'Redirigiendo a pago…' : `Suscribirme · ~$${(unitPrice * qty).toFixed(2)} / envío`}
-        />
+          <AnimatedButton
+            variant="primary"
+            full
+            onClick={handleSubmit}
+            disabled={submitting || loadingAddress}
+            text={submitting ? 'Redirigiendo a pago…' : `Suscribirme · ~$${(unitPrice * qty).toFixed(2)} / envío`}
+          />
+        </div>
       </div>
     </ModalOverlay>
   );
