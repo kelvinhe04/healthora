@@ -8,6 +8,7 @@ import { sendOrderStatusUpdateEmail } from '../../lib/email';
 import { combineOrderStatus, normalizeOrder, type FulfillmentStatus } from '../../lib/orderStatus';
 import { notifyUser } from '../../lib/realtime';
 import { generateTrackingNumber } from '../../lib/tracking';
+import { buildOrdersCsv } from '../../lib/ordersCsv';
 import { objectIdSchema, optionalTextField, parseJson, parseParams, parseQuery } from '../../lib/validation';
 
 const paymentStatusSchema = z.enum(['pending_payment', 'paid', 'cancelled', 'refunded']);
@@ -98,6 +99,24 @@ export const adminOrdersRouter = new Hono<AppEnv>()
 
     const orders = await Order.find(filter).sort({ createdAt: -1 }).lean();
     return c.json(orders.map((order) => normalizeOrder(order)));
+  })
+  .get('/export.csv', async (c) => {
+    const parsedQuery = parseQuery(c, adminOrdersQuerySchema);
+    if (!parsedQuery.success) return parsedQuery.response;
+
+    const limitRaw = c.req.query('limit');
+    const limit = limitRaw ? Number(limitRaw) : undefined;
+    const csv = await buildOrdersCsv({
+      paymentStatus: parsedQuery.data.paymentStatus,
+      fulfillmentStatus: parsedQuery.data.fulfillmentStatus,
+      limit: Number.isFinite(limit) ? limit : undefined,
+    });
+    return new Response(csv, {
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': 'attachment; filename="orders-export.csv"',
+      },
+    });
   })
   .patch('/:id/statuses', async (c) => {
     const parsedParams = parseParams(c, orderIdParamsSchema);

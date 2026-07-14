@@ -3,7 +3,7 @@ import { Product } from '../db/models/Product';
 import { Return } from '../db/models/Return';
 import { decrementStock } from './inventory';
 import { scanAndNotifyLowStock } from './lowStock';
-import { sendReturnStatusEmail, getReturnStatusCopy } from './email';
+import { sendReturnStatusEmail, getReturnStatusCopy, capitalizeSentence } from './email';
 import { notifyAdmins, notifyUser } from './realtime';
 import { stripe } from './stripe';
 
@@ -211,4 +211,94 @@ export async function resolvePendingRefunds(): Promise<void> {
       }
     }),
   );
+}
+
+/** Statuses the admin (or MCP) may set directly. `refund_pending` is server-internal only. */
+export type AdminSettableReturnStatus =
+  | 'requested'
+  | 'approved'
+  | 'in_transit'
+  | 'in_review'
+  | 'refunded'
+  | 'replaced'
+  | 'rejected';
+
+export type UpdateReturnStatusResult =
+  | { ok: true; return: Record<string, unknown> }
+  | { ok: false; error: string; status: 400 | 404 | 502 };
+
+/** Shared by admin PATCH /admin/returns/:id/status and MCP `returns.approveReturn`. */
+export async function updateReturnStatus(
+  returnId: string,
+  nextStatus: AdminSettableReturnStatus,
+): Promise<UpdateReturnStatusResult> {
+  const returnDoc = await Return.findById(returnId);
+  if (!returnDoc) return { ok: false, error: 'Devolución no encontrada', status: 404 };
+
+  const rejectedAfterReview = nextStatus === 'rejected' && returnDoc.status === 'in_review';
+
+  if (nextStatus === 'refunded' && !['refund_pending', 'refunded'].includes(returnDoc.status)) {
+    const order = await Order.findById(returnDoc.orderId).lean();
+    if (!order?.stripePaymentIntentId) {
+      return { ok: false, error: 'La orden no tiene un pago de Stripe asociado', status: 400 };
+    }
+
+    try {
+      const refund = await stripe.refunds.create({
+        payment_intent: order.stripePaymentIntentId,
+        amount: Math.round(returnDoc.refundAmount * 100),
+      });
+      returnDoc.stripeRefundId = refund.id;
+    } catch (error) {
+      console.error('[RETURNS] Stripe refund failed:', error);
+      return { ok: false, error: 'No se pudo procesar el reembolso en Stripe', status: 502 };
+    }
+
+    returnDoc.status = 'refund_pending';
+    await returnDoc.save();
+    return { ok: true, return: returnDoc.toObject() };
+  }
+
+  if (nextStatus === 'replaced' && returnDoc.status !== 'replaced') {
+    const order = await Order.findById(returnDoc.orderId).lean();
+    if (!order) return { ok: false, error: 'La orden original no existe', status: 400 };
+
+    const replacementOrder = await createReplacementOrder(order, returnDoc.items);
+    returnDoc.replacementOrderId = replacementOrder._id;
+  }
+
+  returnDoc.status = nextStatus;
+  if (rejectedAfterReview) returnDoc.rejectedAfterReview = true;
+  await returnDoc.save();
+
+  sendReturnStatusEmail({
+    customerName: returnDoc.customerName || 'cliente',
+    customerEmail: returnDoc.customerEmail || '',
+    orderId: String(returnDoc.orderId),
+    status: nextStatus,
+    refundAmount: returnDoc.refundAmount,
+    returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
+    rejectedAfterReview,
+  }).catch((err) => console.error('[RETURNS] Failed to send status email:', err));
+
+  if (returnDoc.customerId) {
+    try {
+      const copy = getReturnStatusCopy(nextStatus, returnDoc.returnMethod, rejectedAfterReview);
+      await notifyUser(returnDoc.customerId, {
+        type: 'return_status',
+        title: copy.label,
+        body: capitalizeSentence(copy.message),
+        link: '/orders',
+        data: {
+          returnId: returnDoc._id.toString(),
+          orderId: String(returnDoc.orderId),
+          status: nextStatus,
+        },
+      });
+    } catch (notifyError) {
+      console.error('[RETURNS] Failed to push return_status notification:', notifyError);
+    }
+  }
+
+  return { ok: true, return: returnDoc.toObject() };
 }
