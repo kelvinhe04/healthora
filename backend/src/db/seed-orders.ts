@@ -94,9 +94,8 @@ const FULFILLMENT_STATUSES = ['unfulfilled', 'processing', 'shipped', 'delivered
 // Retiro en tienda nunca pasa por "shipped", y su ultimo paso real es "picked_up" (el cliente ya
 // se lo llevo) - "delivered" ahi solo significa "listo para retirar" (ver pickupFulfillmentStatusSequence).
 const PICKUP_FULFILLMENT_STATUSES = ['unfulfilled', 'processing', 'delivered', 'picked_up'];
-const STATUS_VALUES = ['pending_payment', 'paid', 'processing', 'shipped', 'delivered'];
 
-function randomInt(min, max) {
+function randomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -110,20 +109,21 @@ function randomPanamaPhone(): string {
   return `6${randomInt(100, 999)}-${String(randomInt(0, 9999)).padStart(4, '0')}`;
 }
 
-function generateOrderData(index: number, products: SeedProduct[], today: Date) {
-  const orderDate = new Date(today);
-  // Starts at 1, not 0 - seed data should never date an order "today", so today stays empty for
-  // whatever the person testing does live instead of blending in with generated history.
-  const daysAgo = randomInt(1, 180);
-  orderDate.setDate(orderDate.getDate() - daysAgo);
-  orderDate.setHours(randomInt(8, 20), randomInt(0, 59), randomInt(0, 59));
-
+/** Builds one order document for a specific customer/date (line items, pricing, shipping,
+ * fulfillment) - the part of order generation that doesn't care about cohorts/retention. */
+function buildOrder(
+  customerId: string,
+  name: string,
+  email: string,
+  orderDate: Date,
+  products: SeedProduct[],
+) {
   const numItems = randomInt(1, 4);
   const items: { productId: string; productName: string; qty: number; price: number; imageUrl?: string; category?: string; variantId?: string; variantLabel?: string }[] = [];
   const usedProducts = new Set<string>();
 
   for (let i = 0; i < numItems; i++) {
-    const availableProducts = products.filter(p => !usedProducts.has(p.id));
+    const availableProducts = products.filter((p) => !usedProducts.has(p.id));
     if (availableProducts.length === 0) break;
     const product = randomChoice(availableProducts);
     usedProducts.add(product.id);
@@ -156,15 +156,11 @@ function generateOrderData(index: number, products: SeedProduct[], today: Date) 
   const shippingEta = shippingMethod === 'pickup' ? 'Listo en 24h' : '24h - 48h';
   const total = parseFloat((subtotal + tax + shipping).toFixed(2));
 
-  const name = randomChoice(NAMES);
   const cityInfo = randomChoice(CITIES);
   const phone = randomPanamaPhone();
 
   const fulfillmentStatus = randomChoice(shippingMethod === 'pickup' ? PICKUP_FULFILLMENT_STATUSES : FULFILLMENT_STATUSES);
   const status = fulfillmentStatus === 'delivered' || fulfillmentStatus === 'picked_up' ? 'delivered' : fulfillmentStatus === 'processing' ? 'processing' : fulfillmentStatus === 'shipped' ? 'shipped' : 'paid';
-
-  const customerId = `user_${String(index + 1).padStart(4, '0')}`;
-  const email = `${name.toLowerCase().replace(/ /g, '.').normalize("NFD").replace(/[\u0300-\u036f]/g, "")}@email.com`;
 
   return {
     customerId,
@@ -196,13 +192,94 @@ function generateOrderData(index: number, products: SeedProduct[], today: Date) 
   };
 }
 
+/** First day of the calendar month `monthsAgo` months before `today`, at day 1 - used as the
+ * anchor for both a cohort's start month and for stepping forward month by month, so adding N
+ * behaves like real calendar months instead of "+30 days" drifting across month boundaries. */
+function monthAnchor(today: Date, monthsAgo: number): Date {
+  const d = new Date(today);
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() - monthsAgo);
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
+
+/** Random timestamp inside the calendar month anchored at `monthStart`, clamped so a cohort's
+ * "month 0" (the current month) never lands on/after `today` - seed data should never date an
+ * order "today" (see buildOrder's caller), and obviously never in the future. */
+function randomDateInMonth(monthStart: Date, today: Date): Date {
+  const daysInMonth = new Date(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0).getUTCDate();
+  const isCurrentMonth = monthStart.getUTCFullYear() === today.getUTCFullYear() && monthStart.getUTCMonth() === today.getUTCMonth();
+  const maxDay = isCurrentMonth ? Math.max(1, today.getUTCDate() - 1) : daysInMonth;
+
+  const d = new Date(monthStart);
+  d.setUTCDate(randomInt(1, maxDay));
+  d.setUTCHours(randomInt(8, 20), randomInt(0, 59), randomInt(0, 59));
+  return d;
+}
+
+// Cuantos meses atras arranca cada cohorte - 0 es el mes actual, 6 el mas viejo. Mismo rango que
+// MAX_OFFSET permite ver en el heatmap (backend/src/lib/cohortAnalytics.ts).
+const COHORT_MONTHS_BACK = 6;
+const CUSTOMERS_PER_COHORT_RANGE: [number, number] = [10, 20];
+// Probabilidad de que un cliente vuelva a comprar al mes siguiente de su ultima compra (HU-052:
+// retencion/LTV) - decae cada mes que sigue activo, simulando el patron real de un negocio
+// (la mayoria se va rapido, un nucleo pequeno se queda comprando mes tras mes).
+const RETURN_PROBABILITY_MONTH_1 = 0.5;
+const RETURN_PROBABILITY_DECAY = 0.75;
+
+type PlannedCustomer = {
+  customerId: string;
+  name: string;
+  email: string;
+  orderDates: Date[];
+};
+
+function planCustomers(today: Date): PlannedCustomer[] {
+  const customers: PlannedCustomer[] = [];
+  let customerIndex = 0;
+
+  for (let cohortOffset = COHORT_MONTHS_BACK; cohortOffset >= 0; cohortOffset -= 1) {
+    const cohortCustomerCount = randomInt(...CUSTOMERS_PER_COHORT_RANGE);
+    const cohortStartMonth = monthAnchor(today, cohortOffset);
+
+    for (let c = 0; c < cohortCustomerCount; c += 1) {
+      customerIndex += 1;
+      const name = randomChoice(NAMES);
+      const email = `${name.toLowerCase().replace(/ /g, '.').normalize('NFD').replace(/[\u0300-\u036f]/g, '')}.${customerIndex}@email.com`;
+      const customerId = `user_${String(customerIndex).padStart(4, '0')}`;
+
+      const orderDates = [randomDateInMonth(cohortStartMonth, today)];
+
+      // Simula retencion: cada mes transcurrido desde la primera compra, tira una moneda con
+      // probabilidad decreciente para decidir si ese cliente vuelve a comprar ese mes. Una vez que
+      // "se va" (no compra un mes), se asume que no vuelve - evita ruido de reactivaciones que no
+      // aportan a probar el heatmap.
+      let stillActive = true;
+      let returnProbability = RETURN_PROBABILITY_MONTH_1;
+      for (let monthOffset = 1; monthOffset <= cohortOffset && stillActive; monthOffset += 1) {
+        if (Math.random() < returnProbability) {
+          const monthStart = monthAnchor(today, cohortOffset - monthOffset);
+          orderDates.push(randomDateInMonth(monthStart, today));
+          returnProbability *= RETURN_PROBABILITY_DECAY;
+        } else {
+          stillActive = false;
+        }
+      }
+
+      customers.push({ customerId, name, email, orderDates });
+    }
+  }
+
+  return customers;
+}
+
 async function seedOrders() {
   await connectDB();
 
   const products = (await Product.find({ price: { $gt: 0 } })
     .select('id name brand category price stock imageUrl images variants')
     .lean()) as unknown as SeedProduct[];
-  
+
   if (products.length === 0) {
     console.error('No products found in database. Run seed first.');
     process.exit(1);
@@ -215,16 +292,22 @@ async function seedOrders() {
   // returns (they'd reference orders that no longer exist), so they have to go together.
   await Return.deleteMany({});
 
-  const orders = [];
-  const ORDER_COUNT = 180;
   const today = new Date();
+  const customers = planCustomers(today);
 
-  for (let i = 0; i < ORDER_COUNT; i++) {
-    orders.push(generateOrderData(i, products, today));
+  const orders = [];
+  for (const customer of customers) {
+    for (const orderDate of customer.orderDates) {
+      orders.push(buildOrder(customer.customerId, customer.name, customer.email, orderDate, products));
+    }
   }
 
   await Order.insertMany(orders);
-  console.log(`Seeded ${ORDER_COUNT} historical orders (last 6 months with real products)`);
+  const returning = customers.filter((c) => c.orderDates.length > 1).length;
+  console.log(
+    `Seeded ${orders.length} historical orders across ${customers.length} customers ` +
+      `(${returning} con al menos una compra recurrente, ${COHORT_MONTHS_BACK + 1} cohortes mensuales)`,
+  );
 
   // Stamp NEW_TOP_N random products with recent createdAt so recalculateNew() picks them up
   // Use the native collection to bypass Mongoose's createdAt immutability
