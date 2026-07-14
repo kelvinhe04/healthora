@@ -12,6 +12,7 @@ import { registerNotificationTools } from './tools/notifications';
 import { registerCategoryTools } from './tools/categories';
 import { registerPromotionTools } from './tools/promotions';
 import { registerAuditTools } from './tools/audit';
+import { registerSearchTools } from './tools/search';
 
 function createMcpServer(): McpServer {
   const server = new McpServer({ name: 'healthora', version: '1.0.0' });
@@ -27,6 +28,7 @@ function createMcpServer(): McpServer {
   registerCategoryTools(server);
   registerPromotionTools(server);
   registerAuditTools(server);
+  registerSearchTools(server);
   return server;
 }
 

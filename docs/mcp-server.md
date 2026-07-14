@@ -19,7 +19,7 @@ Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`He
 - `wishlist.getUserWishlist` (HU-044): la wishlist es 100% client-side (`frontend/src/store/wishlistStore.ts`, Zustand + localStorage) — no existe ningún dato de servidor que un MCP tool pueda consultar. Requeriría migrar la wishlist a persistencia en base de datos primero.
 - Las tools restantes del doc (creación de cupones, devoluciones, exportación CSV, audit trail, analítica de cohortes/producto, descuentos masivos) — sus HU siguen pendientes o parciales.
 
-## Tools implementadas (17)
+## Tools implementadas (19)
 
 | Tool | HU | Qué hace | Auth |
 |---|---|---|---|
@@ -39,6 +39,7 @@ Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`He
 | `recommendations.getRelatedProducts` | HU-045 | Productos relacionados (misma categoría/necesidad/marca/tag) | Servicio |
 | `notifications.broadcast` | HU-061 | Difunde una notificación en tiempo real (WebSockets) a todos, admins o un cliente; queda persistida en el centro de notificaciones | Servicio |
 | `promotions.validateCoupon` | HU-040 | Valida un cupón contra ítems del carrito (subtotal elegible, expiración, primera compra) | Servicio |
+| `search.reindexCatalog` | — | Invalida la caché del catálogo | Servicio |
 
 Código en `backend/src/mcp/` — un archivo por módulo bajo `tools/`, más `server.ts` (arma el `McpServer` y el transporte) y `auth.ts` (middleware de autenticación).
 
@@ -98,4 +99,4 @@ Configuración → Connectors → Agregar conector personalizado:
 
 ## Tests
 
-`backend/src/mcp/mcp.integration.test.ts` (mongodb-memory-server): `initialize`, `tools/list` (verifica las 17 tools registradas), y `tools/call` contra un producto matrix real (sabor×tamaño con `stockBySize`) y reseñas (aprobar/ocultar/eliminar), incluyendo casos de error (tool inexistente, reviewId inexistente).
+`backend/src/mcp/mcp.integration.test.ts` (mongodb-memory-server): `initialize`, `tools/list` (verifica las 19 tools registradas), y `tools/call` contra un producto matrix real (sabor×tamaño con `stockBySize`) y reseñas (aprobar/ocultar/eliminar), incluyendo casos de error (tool inexistente, reviewId inexistente).

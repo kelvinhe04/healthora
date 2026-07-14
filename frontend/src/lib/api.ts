@@ -376,6 +376,14 @@ export const api = {
           token,
         ),
     },
+    catalog: {
+      reindex: (token: string) =>
+        request<{ ok: boolean; message: string }>(
+          "/admin/catalog/reindex",
+          { method: "POST" },
+          token,
+        ),
+    },
     reviews: {
       list: (
         token: string,
