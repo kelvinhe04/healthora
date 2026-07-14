@@ -5,6 +5,7 @@ import type {
   OrderAddress,
   ProductFilters,
   SavedAddress,
+  SavedPaymentMethod,
   Review,
   OrderReturn,
   ReturnStatus,
@@ -133,6 +134,28 @@ export const api = {
         request<SavedAddress[]>(
           "/account/addresses",
           { method: "PUT", body: JSON.stringify({ addresses }) },
+          token,
+        ),
+    },
+    paymentMethods: {
+      list: (token: string) =>
+        request<SavedPaymentMethod[]>("/account/payment-methods", undefined, token),
+      createSetupIntent: (token: string) =>
+        request<{ clientSecret: string }>(
+          "/account/payment-methods/setup-intent",
+          { method: "POST" },
+          token,
+        ),
+      remove: (id: string, token: string) =>
+        request<{ ok: boolean }>(
+          `/account/payment-methods/${id}`,
+          { method: "DELETE" },
+          token,
+        ),
+      setDefault: (id: string, token: string) =>
+        request<{ ok: boolean }>(
+          `/account/payment-methods/${id}/default`,
+          { method: "PATCH" },
           token,
         ),
     },
