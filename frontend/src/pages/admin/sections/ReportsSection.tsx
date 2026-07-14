@@ -8,7 +8,9 @@ import {
   th,
   trStyle,
 } from '../../../components/admin';
+import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { useAdminPanelContext } from '../AdminPanelContext';
+import { formatPanamaDateTime } from '../../../lib/dates';
 
 const inputStyle = {
   border: '1px solid var(--ink-10)',
@@ -25,8 +27,17 @@ function retentionColor(percent: number): string {
 }
 
 export function ReportsSection() {
-  const { cohortReport, showReportsSkeleton, reportsRange, setReportsRange, isSmall } =
-    useAdminPanelContext();
+  const {
+    cohortReport,
+    showReportsSkeleton,
+    reportsRange,
+    setReportsRange,
+    isSmall,
+    selectedCohortMonth,
+    setSelectedCohortMonth,
+    cohortCustomers,
+    loadingCohortCustomers,
+  } = useAdminPanelContext();
 
   const cohorts = cohortReport?.cohorts ?? [];
   const maxOffset = cohorts.reduce((max, cohort) => Math.max(max, cohort.retention.length - 1), 0);
@@ -35,6 +46,9 @@ export function ReportsSection() {
   // cualquier cohorte, así que no aporta señal en el heatmap - se omite de esa tabla nada más
   // (el LTV acumulado del mes 0 sí varía por cohorte, esa tabla sigue mostrándolo).
   const retentionOffsets = offsets.slice(1);
+
+  const selectedCohort = cohorts.find((c) => c.cohortMonth === selectedCohortMonth);
+  const selectedCohortOffsets = selectedCohort ? selectedCohort.retention.map((r) => r.offset).slice(1) : [];
 
   return (
     <>
@@ -124,7 +138,25 @@ export function ReportsSection() {
                 <tbody>
                   {cohorts.map((cohort) => (
                     <tr key={cohort.cohortMonth} style={trStyle}>
-                      <td style={{ ...td, fontWeight: 600, whiteSpace: 'nowrap' }}>{cohort.cohortMonth}</td>
+                      <td style={{ ...td, whiteSpace: 'nowrap' }}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCohortMonth(cohort.cohortMonth)}
+                          style={{
+                            font: 'inherit',
+                            fontWeight: 600,
+                            color: 'var(--green)',
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            cursor: 'pointer',
+                            textDecoration: 'underline',
+                            textUnderlineOffset: 3,
+                          }}
+                        >
+                          {cohort.cohortMonth}
+                        </button>
+                      </td>
                       <td style={td}>{cohort.customers}</td>
                       {retentionOffsets.map((offset) => {
                         const cell = cohort.retention[offset];
@@ -199,6 +231,65 @@ export function ReportsSection() {
           )}
         </Card>
       </div>
+
+      <ModalOverlay open={!!selectedCohortMonth} onClose={() => setSelectedCohortMonth(null)} zIndex={120}>
+        <div style={{ width: '100%', maxWidth: 720, background: 'var(--cream)', borderRadius: 20, padding: 24 }}>
+          <h3 style={{ margin: '0 0 4px', fontFamily: '"Instrument Serif", serif', fontSize: 26 }}>
+            Cohorte {selectedCohortMonth}
+          </h3>
+          <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--ink-60)' }}>
+            Clientes cuya primera compra fue este mes, y en cuáles meses después volvieron a comprar.
+          </p>
+
+          {loadingCohortCustomers ? (
+            <Skeleton height={200} borderRadius={8} />
+          ) : (
+            <div style={{ overflowX: 'auto', maxHeight: 420, overflowY: 'auto' }}>
+              <table style={{ ...tableStyle, minWidth: 420 + selectedCohortOffsets.length * 70 }}>
+                <thead>
+                  <tr>
+                    <th style={th}>Cliente</th>
+                    <th style={th}>Primera compra</th>
+                    {selectedCohortOffsets.map((offset) => (
+                      <th key={offset} style={{ ...th, textAlign: 'center' }}>
+                        Mes {offset}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(cohortCustomers?.customers ?? []).map((customer) => {
+                    const active = new Set(customer.activeOffsets);
+                    return (
+                      <tr key={customer.customerId} style={trStyle}>
+                        <td style={td}>
+                          <div style={{ fontWeight: 600 }}>{customer.customerName || customer.customerId}</div>
+                          <div style={{ fontSize: 12, color: 'var(--ink-60)' }}>{customer.customerEmail || '—'}</div>
+                        </td>
+                        <td style={{ ...td, whiteSpace: 'nowrap', fontSize: 12 }}>
+                          {formatPanamaDateTime(customer.firstPurchaseDate)}
+                        </td>
+                        {selectedCohortOffsets.map((offset) => (
+                          <td key={offset} style={{ ...td, textAlign: 'center', color: active.has(offset) ? 'var(--green)' : 'var(--ink-30)' }}>
+                            {active.has(offset) ? '✓' : '—'}
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  })}
+                  {!loadingCohortCustomers && !cohortCustomers?.customers.length && (
+                    <tr>
+                      <td style={{ ...td, textAlign: 'center', color: 'var(--ink-60)' }} colSpan={2 + selectedCohortOffsets.length}>
+                        Sin clientes para esta cohorte.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </ModalOverlay>
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { buildCohortReport } from './cohortAnalytics';
+import { buildCohortReport, buildCohortCustomerList } from './cohortAnalytics';
 
 const NOW = new Date('2026-03-15T00:00:00.000Z');
 
@@ -116,5 +116,58 @@ describe('buildCohortReport', () => {
     const report = buildCohortReport([{ customerId: 'a', orders: [] }], { now: NOW });
     expect(report.cohorts).toHaveLength(0);
     expect(report.overall.totalCustomers).toBe(0);
+  });
+});
+
+describe('buildCohortCustomerList', () => {
+  test('only includes customers whose cohort matches the requested month', () => {
+    const customers = buildCohortCustomerList(
+      [
+        { customerId: 'a', customerName: 'Ana', customerEmail: 'ana@test.com', orders: [{ date: new Date('2026-01-05'), total: 100 }] },
+        { customerId: 'b', customerName: 'Beto', customerEmail: 'beto@test.com', orders: [{ date: new Date('2026-02-10'), total: 30 }] },
+      ],
+      '2026-01',
+      NOW,
+    );
+
+    expect(customers).toHaveLength(1);
+    expect(customers[0]).toMatchObject({ customerId: 'a', customerName: 'Ana', customerEmail: 'ana@test.com' });
+  });
+
+  test('lists exactly which month offsets each customer came back in', () => {
+    const customers = buildCohortCustomerList(
+      [
+        {
+          customerId: 'a',
+          orders: [
+            { date: new Date('2026-01-05'), total: 100 },
+            { date: new Date('2026-02-05'), total: 40 },
+            { date: new Date('2026-03-05'), total: 40 },
+          ],
+        },
+        { customerId: 'b', orders: [{ date: new Date('2026-01-20'), total: 50 }] },
+      ],
+      '2026-01',
+      NOW,
+    );
+
+    const a = customers.find((c) => c.customerId === 'a');
+    const b = customers.find((c) => c.customerId === 'b');
+    expect(a?.activeOffsets).toEqual([0, 1, 2]);
+    // "b" only ever ordered once - active only at offset 0 (their first purchase itself).
+    expect(b?.activeOffsets).toEqual([0]);
+  });
+
+  test('sorts by first purchase date', () => {
+    const customers = buildCohortCustomerList(
+      [
+        { customerId: 'a', orders: [{ date: new Date('2026-01-20'), total: 10 }] },
+        { customerId: 'b', orders: [{ date: new Date('2026-01-05'), total: 10 }] },
+      ],
+      '2026-01',
+      NOW,
+    );
+
+    expect(customers.map((c) => c.customerId)).toEqual(['b', 'a']);
   });
 });
