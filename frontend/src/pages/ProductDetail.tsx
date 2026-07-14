@@ -506,7 +506,6 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
           <AnimatedButton
             aria-label="Suscribirme a reposición automática"
             variant="outline"
-            size="sm"
             full
             icon={<Icon name="repeat" size={14} />}
             onClick={() => (isSignedIn ? onSubscribeModalOpenChange(true) : setShowSignInModal(true))}
@@ -602,6 +601,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
         variantId={cartVariant?.id}
         productLabel={`${product.name}${cartVariant ? ` · ${cartVariant.label}` : ''}`}
         unitPrice={effectivePrice}
+        taxExempt={product.taxExempt}
         defaultQty={qty}
       />
       <SignInModal open={showSignInModal} onClose={() => setShowSignInModal(false)} />

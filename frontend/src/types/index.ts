@@ -129,7 +129,9 @@ export interface SavedAddress extends OrderAddress {
 }
 
 export const SUBSCRIPTION_INTERVAL_DAYS = [7, 15, 30, 60] as const;
-export type SubscriptionIntervalDays = (typeof SUBSCRIPTION_INTERVAL_DAYS)[number];
+export const MIN_SUBSCRIPTION_INTERVAL_DAYS = 1;
+export const MAX_SUBSCRIPTION_INTERVAL_DAYS = 365;
+export type SubscriptionIntervalDays = number;
 export type SubscriptionStatus = 'active' | 'paused' | 'canceled';
 
 export interface ProductSubscription {

@@ -229,9 +229,15 @@ export const api = {
       },
       token: string,
     ) =>
-      request<{ url: string }>(
+      request<{ clientSecret: string; subscriptionId: string }>(
         "/subscriptions",
         { method: "POST", body: JSON.stringify(body) },
+        token,
+      ),
+    confirm: (subscriptionId: string, token: string) =>
+      request<ProductSubscription>(
+        "/subscriptions/confirm",
+        { method: "POST", body: JSON.stringify({ subscriptionId }) },
         token,
       ),
     pause: (id: string, token: string) =>

@@ -18,7 +18,7 @@ import {
   shippingMethodSchema,
   textField,
 } from './validation';
-import { SUBSCRIPTION_INTERVAL_DAYS } from '../db/models/ProductSubscription';
+import { MIN_SUBSCRIPTION_INTERVAL_DAYS, MAX_SUBSCRIPTION_INTERVAL_DAYS } from '../db/models/ProductSubscription';
 
 export const subscriptionCheckoutMetadataSchema = z.object({
   customerId: textField(180),
@@ -37,7 +37,7 @@ export const subscriptionCheckoutMetadataSchema = z.object({
   tax: moneyFromInput(),
   shipping: moneyFromInput(),
   total: moneyFromInput(),
-  intervalDays: z.coerce.number().int().refine((value) => (SUBSCRIPTION_INTERVAL_DAYS as readonly number[]).includes(value)),
+  intervalDays: intFromInput(MIN_SUBSCRIPTION_INTERVAL_DAYS, MAX_SUBSCRIPTION_INTERVAL_DAYS),
   shippingMethod: shippingMethodSchema,
   shippingLabel: optionalTextField(160),
   shippingEta: optionalTextField(80),
@@ -92,25 +92,29 @@ export async function createSubscriptionOrder(sub: SubscriptionDoc) {
   }
 
   if (sub.customerEmail) {
-    try {
-      await sendOrderConfirmationEmail({
-        customerName: sub.customerName || 'cliente',
-        customerEmail: sub.customerEmail,
-        orderId: order._id.toString(),
-        items: [lineItem],
-        subtotal: sub.subtotal,
-        tax: sub.tax,
-        shipping: sub.shipping,
-        shippingLabel: sub.shippingLabel,
-        shippingEta: sub.shippingEta,
-        shippingMethod: sub.shippingMethod,
-        total: sub.total,
-        address: sub.address,
-        createdAt: order.createdAt,
-      });
-    } catch (emailError) {
+    // Not awaited: SMTP can take several seconds to respond (and, e.g., Gmail's daily send-limit
+    // rejection is itself a slow round-trip) - callers (webhook handler, POST /confirm) shouldn't
+    // block their response on it. Errors are still caught and logged, just asynchronously.
+    sendOrderConfirmationEmail({
+      customerName: sub.customerName || 'cliente',
+      customerEmail: sub.customerEmail,
+      orderId: order._id.toString(),
+      items: [lineItem],
+      subtotal: sub.subtotal,
+      tax: sub.tax,
+      shipping: sub.shipping,
+      shippingLabel: sub.shippingLabel,
+      shippingEta: sub.shippingEta,
+      shippingMethod: sub.shippingMethod,
+      total: sub.total,
+      address: sub.address,
+      createdAt: order.createdAt,
+      isSubscription: true,
+      subscriptionIntervalDays: sub.intervalDays,
+      nextBillingDate: sub.nextBillingDate,
+    }).catch((emailError) => {
       console.error('[SUBSCRIPTIONS] Confirmation email failed:', emailError);
-    }
+    });
   }
 
   try {
@@ -149,29 +153,28 @@ export async function createSubscriptionOrder(sub: SubscriptionDoc) {
   return order;
 }
 
-/** `checkout.session.completed` (mode=subscription) - creates the subscription record itself
- * plus its first shipment order. Idempotent on `stripeSubscriptionId` so a webhook retry doesn't
- * create a duplicate subscription/order. */
-export async function handleSubscriptionCheckoutCompleted(session: {
-  subscription?: string;
-  customer?: string;
+/** Creates the subscription record itself plus its first shipment order, from the Stripe
+ * Subscription object (its `metadata` was set at `stripe.subscriptions.create()` time by
+ * POST /subscriptions - see routes/subscriptions.ts). Idempotent on `stripeSubscriptionId` so a
+ * webhook retry - or the POST /subscriptions/confirm fallback below - doesn't create a duplicate
+ * subscription/order. Returns the (existing or newly created) local subscription doc, or `null`
+ * if the metadata/address on the Stripe object was invalid. */
+export async function activateSubscription(stripeSubscription: {
+  id: string;
+  customer: string;
   metadata?: Record<string, string>;
+  current_period_end?: number;
 }) {
-  if (!session.subscription || !session.customer) {
-    console.error('[SUBSCRIPTIONS] checkout.session.completed missing subscription/customer id');
-    return;
-  }
-
-  const existing = await ProductSubscription.findOne({ stripeSubscriptionId: session.subscription }).lean();
+  const existing = await ProductSubscription.findOne({ stripeSubscriptionId: stripeSubscription.id });
   if (existing) {
-    console.log('[SUBSCRIPTIONS] Subscription already exists for', session.subscription);
-    return;
+    console.log('[SUBSCRIPTIONS] Subscription already exists for', stripeSubscription.id);
+    return existing;
   }
 
-  const parsed = subscriptionCheckoutMetadataSchema.safeParse(session.metadata || {});
+  const parsed = subscriptionCheckoutMetadataSchema.safeParse(stripeSubscription.metadata || {});
   if (!parsed.success) {
-    console.error('[SUBSCRIPTIONS] Invalid checkout metadata:', parsed.error.issues);
-    return;
+    console.error('[SUBSCRIPTIONS] Invalid subscription metadata:', parsed.error.issues);
+    return null;
   }
   const metadata = parsed.data;
 
@@ -180,41 +183,57 @@ export async function handleSubscriptionCheckoutCompleted(session: {
     address = orderAddressSchema.parse(JSON.parse(metadata.address));
   } catch (error) {
     console.error('[SUBSCRIPTIONS] Invalid address metadata:', error);
-    return;
+    return null;
   }
 
-  const stripeSubscription = await stripe.subscriptions.retrieve(session.subscription);
   const nextBillingDate = stripeSubscription.current_period_end
     ? new Date(stripeSubscription.current_period_end * 1000)
     : undefined;
 
-  const sub = await ProductSubscription.create({
-    customerId: metadata.customerId,
-    customerName: metadata.customerName,
-    customerEmail: metadata.customerEmail,
-    productId: metadata.productId,
-    productName: metadata.productName,
-    variantId: metadata.variantId || undefined,
-    variantLabel: metadata.variantLabel || undefined,
-    imageUrl: metadata.imageUrl,
-    category: metadata.category,
-    taxExempt: metadata.taxExempt === 'true',
-    qty: metadata.qty,
-    unitPrice: metadata.unitPrice,
-    subtotal: metadata.subtotal,
-    tax: metadata.tax,
-    shipping: metadata.shipping,
-    total: metadata.total,
-    intervalDays: metadata.intervalDays,
-    status: 'active',
-    nextBillingDate,
-    stripeSubscriptionId: session.subscription,
-    stripeCustomerId: session.customer,
-    shippingMethod: metadata.shippingMethod,
-    shippingLabel: metadata.shippingLabel,
-    shippingEta: metadata.shippingEta,
-    address,
-  });
+  let sub;
+  try {
+    sub = await ProductSubscription.create({
+      customerId: metadata.customerId,
+      customerName: metadata.customerName,
+      customerEmail: metadata.customerEmail,
+      productId: metadata.productId,
+      productName: metadata.productName,
+      variantId: metadata.variantId || undefined,
+      variantLabel: metadata.variantLabel || undefined,
+      imageUrl: metadata.imageUrl,
+      category: metadata.category,
+      taxExempt: metadata.taxExempt === 'true',
+      qty: metadata.qty,
+      unitPrice: metadata.unitPrice,
+      subtotal: metadata.subtotal,
+      tax: metadata.tax,
+      shipping: metadata.shipping,
+      total: metadata.total,
+      intervalDays: metadata.intervalDays,
+      status: 'active',
+      nextBillingDate,
+      stripeSubscriptionId: stripeSubscription.id,
+      stripeCustomerId: stripeSubscription.customer,
+      shippingMethod: metadata.shippingMethod,
+      shippingLabel: metadata.shippingLabel,
+      shippingEta: metadata.shippingEta,
+      address,
+    });
+  } catch (error) {
+    // The real Stripe webhook and the POST /subscriptions/confirm client-side fallback
+    // (SubscribeModal.tsx) can both race to activate the same subscription now that both are
+    // live - the `existing` check above doesn't close that window. `stripeSubscriptionId` is
+    // unique, so the loser of the race hits E11000 here instead of silently duplicating; treat
+    // that as "the other path already created it" and use that doc instead of failing the
+    // request (and, critically, instead of never sending the confirmation email at all).
+    const isDuplicateKeyError = typeof error === 'object' && error !== null && 'code' in error && (error as { code?: number }).code === 11000;
+    if (!isDuplicateKeyError) throw error;
+
+    const winner = await ProductSubscription.findOne({ stripeSubscriptionId: stripeSubscription.id });
+    if (!winner) throw error;
+    console.log('[SUBSCRIPTIONS] Lost the activation race for', stripeSubscription.id, '- reusing the other path\'s subscription');
+    return winner;
+  }
 
   await createSubscriptionOrder(sub);
 
@@ -229,18 +248,29 @@ export async function handleSubscriptionCheckoutCompleted(session: {
   } catch (notifyError) {
     console.error('[SUBSCRIPTIONS] subscription activated notification failed:', notifyError);
   }
+
+  return sub;
 }
 
-/** `invoice.payment_succeeded` - only reacts to renewal cycles (`billing_reason ===
- * 'subscription_cycle'`); the very first invoice (`subscription_create`) is already handled by
- * `handleSubscriptionCheckoutCompleted` above, which has the full metadata on hand instead of
- * having to look it up from a bare invoice payload. */
+/** `invoice.payment_succeeded` - the embedded checkout confirms the subscription's first
+ * PaymentIntent client-side (see SubscribeModal.tsx), so `subscription_create` is what actually
+ * activates the subscription here (fetching the Stripe Subscription for its metadata, since the
+ * invoice payload alone doesn't carry it). Later renewals (`subscription_cycle`) reuse the
+ * locked-in snapshot already on the local subscription document instead. */
 export async function handleSubscriptionInvoicePaid(invoice: {
   subscription?: string | null;
   billing_reason?: string | null;
   period_end?: number;
 }) {
-  if (invoice.billing_reason !== 'subscription_cycle' || !invoice.subscription) return;
+  if (!invoice.subscription) return;
+
+  if (invoice.billing_reason === 'subscription_create') {
+    const stripeSubscription = await stripe.subscriptions.retrieve(invoice.subscription);
+    await activateSubscription(stripeSubscription);
+    return;
+  }
+
+  if (invoice.billing_reason !== 'subscription_cycle') return;
 
   const sub = await ProductSubscription.findOne({ stripeSubscriptionId: invoice.subscription });
   if (!sub) {
@@ -252,13 +282,15 @@ export async function handleSubscriptionInvoicePaid(invoice: {
     return;
   }
 
-  await createSubscriptionOrder(sub);
-
+  // Updated before createSubscriptionOrder (not after) so the confirmation email's "próximo
+  // cobro" reflects the upcoming cycle's date, not the one that just renewed.
   if (invoice.period_end) {
     sub.nextBillingDate = new Date(invoice.period_end * 1000);
   }
   sub.status = 'active';
   await sub.save();
+
+  await createSubscriptionOrder(sub);
 }
 
 /** `customer.subscription.deleted` - covers cancellation from the Stripe dashboard too, not just

@@ -1,9 +1,12 @@
 import { Schema, model } from 'mongoose';
 
-/** 7/15/30/60 días, el único menú que pide la HU-101 - Stripe soporta un `interval: 'day'` con
- * cualquier `interval_count` (hasta 365), así que no hace falta mapear a 'week'/'month'. */
+/** 7/15/30/60 días son solo los atajos rápidos del modal - el cliente puede elegir cualquier
+ * frecuencia personalizada entre 1 y 365 días (MAX_SUBSCRIPTION_INTERVAL_DAYS), ya que Stripe
+ * soporta un `interval: 'day'` con cualquier `interval_count` en ese rango. */
 export const SUBSCRIPTION_INTERVAL_DAYS = [7, 15, 30, 60] as const;
-export type SubscriptionIntervalDays = (typeof SUBSCRIPTION_INTERVAL_DAYS)[number];
+export const MIN_SUBSCRIPTION_INTERVAL_DAYS = 1;
+export const MAX_SUBSCRIPTION_INTERVAL_DAYS = 365;
+export type SubscriptionIntervalDays = number;
 
 const ProductSubscriptionSchema = new Schema(
   {
@@ -28,7 +31,7 @@ const ProductSubscriptionSchema = new Schema(
     shipping: { type: Number, required: true, default: 0 },
     total: { type: Number, required: true },
 
-    intervalDays: { type: Number, enum: SUBSCRIPTION_INTERVAL_DAYS, required: true },
+    intervalDays: { type: Number, min: MIN_SUBSCRIPTION_INTERVAL_DAYS, max: MAX_SUBSCRIPTION_INTERVAL_DAYS, required: true },
     status: { type: String, enum: ['active', 'paused', 'canceled'], default: 'active' },
     nextBillingDate: Date,
 

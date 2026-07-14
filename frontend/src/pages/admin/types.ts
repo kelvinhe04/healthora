@@ -122,6 +122,7 @@ export type AdminOrder = {
   address?: OrderAddress;
   createdAt?: string;
   replacesOrderId?: string;
+  subscriptionId?: string;
 };
 export type AdminUser = {
   _id: string;

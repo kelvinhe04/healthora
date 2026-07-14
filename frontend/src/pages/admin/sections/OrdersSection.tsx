@@ -652,6 +652,26 @@ export function OrdersSection() {
                               REEMPLAZO · #{order.replacesOrderId.slice(-8).toUpperCase()}
                             </span>
                           )}
+                          {order.subscriptionId && (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 3,
+                                padding: "2px 8px",
+                                borderRadius: 999,
+                                background: "color-mix(in oklab, var(--ink) 8%, white)",
+                                border: "1px solid var(--ink-20)",
+                                fontSize: 9,
+                                letterSpacing: "0.04em",
+                                color: "var(--ink-80)",
+                                whiteSpace: "nowrap",
+                              }}
+                              title="Este pedido se generó automáticamente desde una reposición automática (suscripción)"
+                            >
+                              <Icon name="repeat" size={9} /> REPOSICIÓN AUTOMÁTICA
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td style={td}>
@@ -992,6 +1012,7 @@ export function OrdersSection() {
                     );
                   }}
                   disabled={orderStatusesMutation.isPending}
+                  loading={orderStatusesMutation.isPending}
                   text={orderStatusesMutation.isPending ? "Guardando..." : "Guardar cambio"}
                 />
               </div>

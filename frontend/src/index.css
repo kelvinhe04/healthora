@@ -11,6 +11,10 @@
   0%, 100% { opacity: 0.45; }
   50%       { opacity: 0.8; }
 }
+@keyframes button-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 
 /* ─── Light theme (default) ─────────────────────────────────────────────────── */
 /* Variables are defined in routes/__root.tsx :root block to avoid FOUC.        */

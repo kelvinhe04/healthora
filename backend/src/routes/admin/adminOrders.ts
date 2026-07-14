@@ -160,22 +160,23 @@ export const adminOrdersRouter = new Hono<AppEnv>()
 
     if (normalizedCurrent.fulfillmentStatus !== fulfillmentStatus) {
       if (order.customerEmail) {
-        try {
-          await sendOrderStatusUpdateEmail({
-            customerName: order.customerName || 'cliente',
-            customerEmail: order.customerEmail,
-            orderId: order._id.toString(),
-            fulfillmentStatus,
-            items: order.items || [],
-            total: order.total || 0,
-            address: order.address,
-            shippingMethod: order.shippingMethod,
-            carrier: order.carrier,
-            trackingNumber: order.trackingNumber,
-          });
-        } catch (emailError) {
+        // Not awaited: SMTP can take several seconds to respond (and, e.g., Gmail's daily
+        // send-limit rejection is itself a slow round-trip) - the admin shouldn't have to wait on
+        // it to see "Guardado". Errors are still caught and logged, just asynchronously.
+        sendOrderStatusUpdateEmail({
+          customerName: order.customerName || 'cliente',
+          customerEmail: order.customerEmail,
+          orderId: order._id.toString(),
+          fulfillmentStatus,
+          items: order.items || [],
+          total: order.total || 0,
+          address: order.address,
+          shippingMethod: order.shippingMethod,
+          carrier: order.carrier,
+          trackingNumber: order.trackingNumber,
+        }).catch((emailError) => {
           console.error('[ADMIN_ORDERS] Failed to send status update email:', emailError);
-        }
+        });
       }
 
       // Real-time push to the customer (HU-061), mirroring the status email.

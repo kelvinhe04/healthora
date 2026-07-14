@@ -340,11 +340,12 @@ function PaymentMethodsSection() {
 export function Profile({ onBack }: ProfileProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
+  const isSmall = isMobile || bp === 'tablet';
   const { user } = useUser();
   const { openUserProfile } = useClerk();
 
   return (
-    <div style={{ padding: isMobile ? '20px 16px 60px' : '24px 40px 80px', maxWidth: 640, margin: '0 auto' }}>
+    <div style={{ padding: isMobile ? '20px 16px 60px' : '24px 40px 80px', maxWidth: 960, margin: '0 auto' }}>
       <button type="button" onClick={onBack} aria-label="Volver a la tienda" style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--ink-60)', fontSize: 13, marginBottom: 24, fontFamily: '"Geist", sans-serif' }}>
         <Icon name="arrow-left" size={14} /> Volver a la tienda
       </button>
@@ -356,9 +357,8 @@ export function Profile({ onBack }: ProfileProps) {
         </h1>
       </div>
 
-      <section style={sectionCard}>
-        <h2 style={sectionTitle}>Identidad</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
+      <section style={{ ...sectionCard, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           {user?.imageUrl ? (
             <img src={user.imageUrl} alt={user.fullName || 'Perfil'} style={{ width: 48, height: 48, borderRadius: 999, objectFit: 'cover' }} />
           ) : (
@@ -371,14 +371,13 @@ export function Profile({ onBack }: ProfileProps) {
             <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>{user?.primaryEmailAddress?.emailAddress}</div>
           </div>
         </div>
-        <AnimatedButton variant="primary" onClick={() => openUserProfile()} icon={<Icon name="pencil" size={14} />} text="Editar nombre y foto" />
-        <p style={{ marginTop: 14, fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', lineHeight: 1.5 }}>
-          Tu nombre, foto y seguridad de la cuenta se gestionan de forma segura a través de tu proveedor de acceso (Clerk).
-        </p>
+        <AnimatedButton variant="primary" size="sm" onClick={() => openUserProfile()} icon={<Icon name="pencil" size={14} />} text="Editar nombre y foto" />
       </section>
 
-      <PaymentMethodsSection />
-      <SubscriptionsSection />
+      <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1fr 1fr', gap: 16, alignItems: 'start' }}>
+        <PaymentMethodsSection />
+        <SubscriptionsSection />
+      </div>
     </div>
   );
 }

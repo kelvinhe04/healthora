@@ -8,7 +8,6 @@ import { notifyUser } from '../lib/realtime';
 import { confirmReturnRefund } from '../lib/returns';
 import {
   handleSubscriptionCanceled,
-  handleSubscriptionCheckoutCompleted,
   handleSubscriptionInvoicePaid,
 } from '../lib/subscriptions';
 
@@ -33,15 +32,7 @@ export const webhooksRouter = new Hono().post('/stripe', async (c) => {
     return c.json({ error: 'Invalid signature' }, 400);
   }
 
-  if (event.type === 'checkout.session.completed' && event.data.object.mode === 'subscription') {
-    const session = event.data.object;
-    console.log('[WEBHOOK] checkout.session.completed (subscription) received:', session.subscription);
-    try {
-      await handleSubscriptionCheckoutCompleted(session);
-    } catch (error) {
-      console.error('[WEBHOOK] Failed to activate subscription:', error);
-    }
-  } else if (event.type === 'checkout.session.completed') {
+  if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     console.log('[WEBHOOK] checkout.session.completed received for session:', session.id);
     const existingOrder = await Order.findOne({ stripeSessionId: session.id }).lean();
