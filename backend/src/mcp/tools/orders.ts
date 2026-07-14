@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Order } from '../../db/models/Order';
+import { buildOrdersCsv } from '../../lib/ordersCsv';
 import { combineOrderStatus, normalizeOrder } from '../../lib/orderStatus';
 import { sendOrderStatusUpdateEmail } from '../../lib/email';
 import { emailField, objectIdSchema, textField } from '../../lib/validation';
@@ -98,6 +99,24 @@ export function registerOrderTools(server: McpServer) {
       const order = await Order.findById(orderId).lean();
       if (!order) return errorResult(`Orden "${orderId}" no encontrada.`);
       return jsonResult({ orderId, customerName: order.customerName, items: order.items });
+    },
+  );
+
+  server.registerTool(
+    'orders.exportOrdersCsv',
+    {
+      title: 'Exportar pedidos a CSV',
+      description:
+        'Exporta pedidos a formato CSV con filtros opcionales de pago y cumplimiento. Equivalente al botón "Exportar CSV" en Pedidos del admin.',
+      inputSchema: {
+        paymentStatus: paymentStatusEnum.optional(),
+        fulfillmentStatus: fulfillmentStatusEnum.optional(),
+        limit: z.number().int().min(1).max(2000).optional().default(500),
+      },
+    },
+    async ({ paymentStatus, fulfillmentStatus, limit }) => {
+      const csv = await buildOrdersCsv({ paymentStatus, fulfillmentStatus, limit });
+      return jsonResult({ format: 'csv', rowCount: Math.max(0, csv.split('\n').length - 1), csv });
     },
   );
 }

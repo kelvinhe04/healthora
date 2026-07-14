@@ -7,6 +7,7 @@ import { Footer } from "../components/chrome/Footer";
 import { CartDrawer } from "../pages/CartDrawer";
 import { SkipToContent } from "../components/shared/SkipToContent";
 import { useCartStore } from "../store/cartStore";
+import { useWishlistStore } from "../store/wishlistStore";
 import { useUiStore } from "../store/uiStore";
 import { useThemeStore, applyTheme } from "../store/themeStore";
 import { api } from "../lib/api";
@@ -29,8 +30,11 @@ function StorefrontLayout() {
   const user = e2eUser ?? clerkUser;
   const getEffectiveToken = useCallback(async () => getE2EAuthToken() ?? getToken(), [getToken]);
   const { bindOwner, items, replaceItems } = useCartStore();
+  const wishlistProductIds = useWishlistStore((s) => s.productIds);
+  const replaceWishlistProductIds = useWishlistStore((s) => s.replaceProductIds);
   const lastLoadedOwnerRef = useRef<string | null>(null);
   const skipNextCartSaveRef = useRef(false);
+  const skipNextWishlistSaveRef = useRef(false);
 
   const theme = useThemeStore((s) => s.theme);
   useEffect(() => {
@@ -72,10 +76,52 @@ function StorefrontLayout() {
 
     void loadRemoteCart();
 
+    const loadRemoteWishlist = async () => {
+      try {
+        const token = await getEffectiveToken();
+        if (!token) return;
+        const remote = await api.wishlist.get(token);
+        if (cancelled) return;
+        const localIds = useWishlistStore.getState().productIds;
+        const merged = [...new Set([...localIds, ...remote.productIds])];
+        skipNextWishlistSaveRef.current = true;
+        replaceWishlistProductIds(merged);
+        if (merged.length !== remote.productIds.length || merged.some((id, i) => remote.productIds[i] !== id)) {
+          await api.wishlist.save(merged, token);
+        }
+      } catch (error) {
+        console.error("Failed to load remote wishlist", error);
+      }
+    };
+
+    void loadRemoteWishlist();
+
     return () => {
       cancelled = true;
     };
-  }, [getEffectiveToken, replaceItems, user?.id]);
+  }, [getEffectiveToken, replaceItems, replaceWishlistProductIds, user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || lastLoadedOwnerRef.current !== user.id) return;
+    if (skipNextWishlistSaveRef.current) {
+      skipNextWishlistSaveRef.current = false;
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const token = await getEffectiveToken();
+          if (!token) return;
+          await api.wishlist.save(wishlistProductIds, token);
+        } catch (error) {
+          console.error("Failed to save remote wishlist", error);
+        }
+      })();
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [getEffectiveToken, user?.id, wishlistProductIds]);
 
   useEffect(() => {
     if (!user?.id || lastLoadedOwnerRef.current !== user.id) return;
