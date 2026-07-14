@@ -72,7 +72,7 @@ export type RawCustomerOrders = {
  * Groups paying customers by the calendar month of their first paid order (the cohort), then
  * tracks, for each month offset since that cohort started, what fraction of the cohort placed
  * another paid order (retention) and the cumulative revenue per starting customer (LTV curve).
- * Computed in JS from a per-customer order list rather than a single Mongo aggregation ΓÇö the
+ * Computed in JS from a per-customer order list rather than a single Mongo aggregation — the
  * order volume here is small enough (a demo/prototype store) that a date-diff bucket pipeline
  * would add real complexity for no practical performance gain. Pure/sync so it's unit-testable
  * without a database (see cohortAnalytics.test.ts); `getCohortReport` is the thin Mongo-backed
