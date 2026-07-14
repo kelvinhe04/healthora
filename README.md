@@ -158,6 +158,10 @@ SMTP_FROM=Healthora <noreply@healthora.com>
 ```
 
 > `ADMIN_EMAILS` puede tener varios emails separados por coma. Al iniciar sesión con uno de esos emails, el middleware le asigna automáticamente `role: 'admin'` en MongoDB.
+>
+> Esto es **por entorno**: `ADMIN_EMAILS`, `MONGODB_URI` y las claves de Clerk de producción
+> (Koyeb) son independientes de tu `.env` local. Ver [`docs/produccion-acceso-admin.md`](docs/produccion-acceso-admin.md)
+> antes de asumir que un email admin/owner local también lo es en producción.
 
 ### Frontend — `frontend/.env`
 
