@@ -40,13 +40,21 @@ export function ProductAnalyticsSection() {
             Analítica de <em style={{ color: 'var(--green)' }}>producto</em>
           </>
         }
-        sub="Embudo de checkout, abandono de carrito y errores recientes, sobre el comportamiento real de los usuarios."
+        sub="Embudo de checkout y abandono de carrito, sobre el comportamiento real de los usuarios."
         actions={
           <select
             value={analyticsPeriodDays}
             onChange={(event) => setAnalyticsPeriodDays(Number(event.target.value))}
             aria-label="Periodo de analítica"
-            style={inputStyle}
+            style={{
+              ...inputStyle,
+              appearance: 'none',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              paddingRight: 32,
+              cursor: 'pointer',
+            }}
           >
             <option value={7}>Últimos 7 días</option>
             <option value={30}>Últimos 30 días</option>
@@ -106,7 +114,7 @@ export function ProductAnalyticsSection() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(2, 1fr)',
           gap: 16,
           marginBottom: 24,
         }}
@@ -122,13 +130,6 @@ export function ProductAnalyticsSection() {
           value={productAnalytics ? `${productAnalytics.cartAbandonment.abandonmentRate}%` : '—'}
           loading={showAnalyticsSkeleton}
           animKey="analytics_abandonment"
-        />
-        <KpiCard
-          label="Errores recientes"
-          value={productAnalytics?.errors.total ?? '—'}
-          sub={productAnalytics ? `${productAnalytics.errors.backend} backend · ${productAnalytics.errors.frontend} frontend` : undefined}
-          loading={showAnalyticsSkeleton}
-          animKey="analytics_errors"
         />
       </div>
 

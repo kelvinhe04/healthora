@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Order } from '../../db/models/Order';
-import { ErrorReport } from '../../db/models/ErrorReport';
 import { getProductAnalytics } from '../../lib/posthogAnalytics';
 import { jsonResult } from '../toolHelpers';
 
@@ -60,24 +59,14 @@ export function registerAnalyticsTools(server: McpServer) {
     {
       title: 'Analítica de producto (PostHog)',
       description:
-        'Embudo de checkout (checkout_started -> checkout_completed) y tasa de conversión, abandono de carrito (add_to_cart sin checkout_completed) y errores recientes capturados, sobre los últimos N días (default 30). Requiere rol Admin. Equivalente al panel de Analítica del admin (HU-054). Si PostHog no está configurado (POSTHOG_PERSONAL_API_KEY/POSTHOG_PROJECT_ID), devuelve el embudo en cero con `configured: false`.',
+        'Embudo de checkout (checkout_started -> checkout_completed) y tasa de conversión, y abandono de carrito (add_to_cart sin checkout_completed), sobre los últimos N días (default 30). Requiere rol Admin. Equivalente al panel de Analítica del admin (HU-054). Si PostHog no está configurado (POSTHOG_PERSONAL_API_KEY/POSTHOG_PROJECT_ID), devuelve el embudo en cero con `configured: false`.',
       inputSchema: {
         days: z.number().int().min(1).max(365).optional().default(30),
       },
     },
     async ({ days }) => {
-      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-      const [analytics, totalErrors, backendErrors, frontendErrors] = await Promise.all([
-        getProductAnalytics(days),
-        ErrorReport.countDocuments({ createdAt: { $gte: since } }),
-        ErrorReport.countDocuments({ createdAt: { $gte: since }, source: 'backend' }),
-        ErrorReport.countDocuments({ createdAt: { $gte: since }, source: 'frontend' }),
-      ]);
-
-      return jsonResult({
-        ...analytics,
-        errors: { total: totalErrors, backend: backendErrors, frontend: frontendErrors },
-      });
+      const analytics = await getProductAnalytics(days);
+      return jsonResult(analytics);
     },
   );
 }

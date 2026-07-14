@@ -232,7 +232,6 @@ export type ProductAnalyticsData = {
   cartAbandonment: { addedToCart: number; completedCheckout: number; abandonmentRate: number };
   recentEvents: { event: string; timestamp: string; distinctId: string }[];
   error?: string;
-  errors: { total: number; backend: number; frontend: number };
 };
 
 export const productAnalyticsEventLabels: Record<string, string> = {
