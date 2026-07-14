@@ -42,7 +42,7 @@ export function ReportsSection() {
             Cohortes y <em style={{ color: 'var(--green)' }}>LTV</em>
           </>
         }
-        sub="Retenci├│n de clientes por mes de primera compra y valor de vida (LTV) acumulado por cohorte."
+        sub="Retención de clientes por mes de primera compra y valor de vida (LTV) acumulado por cohorte."
         actions={
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <input
@@ -73,29 +73,29 @@ export function ReportsSection() {
       >
         <KpiCard
           label="Clientes con compra"
-          value={cohortReport?.overall.totalCustomers.toLocaleString() ?? 'ΓÇö'}
+          value={cohortReport?.overall.totalCustomers.toLocaleString() ?? '—'}
           sub="pagaron al menos una vez"
           loading={showReportsSkeleton}
           animKey="reports_customers"
         />
         <KpiCard
-          label="├ôrdenes / cliente"
-          value={cohortReport ? cohortReport.overall.averageOrdersPerCustomer.toFixed(2) : 'ΓÇö'}
-          sub="promedio hist├│rico"
+          label="Órdenes / cliente"
+          value={cohortReport ? cohortReport.overall.averageOrdersPerCustomer.toFixed(2) : '—'}
+          sub="promedio histórico"
           loading={showReportsSkeleton}
           animKey="reports_orders_per_customer"
         />
         <KpiCard
           mode="dark"
           label="LTV promedio"
-          value={cohortReport ? `$${cohortReport.overall.averageRevenuePerCustomer.toFixed(2)}` : 'ΓÇö'}
+          value={cohortReport ? `$${cohortReport.overall.averageRevenuePerCustomer.toFixed(2)}` : '—'}
           sub="revenue por cliente"
           loading={showReportsSkeleton}
           animKey="reports_ltv"
         />
         <KpiCard
           label="Ticket promedio"
-          value={cohortReport ? `$${cohortReport.overall.averageOrderValue.toFixed(2)}` : 'ΓÇö'}
+          value={cohortReport ? `$${cohortReport.overall.averageOrderValue.toFixed(2)}` : '—'}
           sub="por orden pagada"
           loading={showReportsSkeleton}
           animKey="reports_aov"
@@ -104,8 +104,8 @@ export function ReportsSection() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 24 }}>
         <Card
-          title="Retenci├│n por cohorte"
-          sub="% de la cohorte que volvi├│ a comprar, por mes transcurrido desde su primera compra"
+          title="Retención por cohorte"
+          sub="% de la cohorte que volvió a comprar, por mes transcurrido desde su primera compra"
           pad={0}
           loading={showReportsSkeleton}
           skeletonContent={<Skeleton height={240} borderRadius={8} />}
@@ -140,7 +140,7 @@ export function ReportsSection() {
                               background: cell ? retentionColor(cell.percent) : undefined,
                             }}
                           >
-                            {cell ? `${cell.percent}%` : 'ΓÇö'}
+                            {cell ? `${cell.percent}%` : '—'}
                           </td>
                         );
                       })}
@@ -151,7 +151,7 @@ export function ReportsSection() {
             </div>
           ) : (
             <div style={{ padding: 24, fontSize: 13, color: 'var(--ink-60)' }}>
-              Todav├¡a no hay suficientes ├│rdenes pagadas para armar cohortes en este rango.
+              Todavía no hay suficientes órdenes pagadas para armar cohortes en este rango.
             </div>
           )}
         </Card>
@@ -186,7 +186,7 @@ export function ReportsSection() {
                         const cell = cohort.cumulativeLtv[offset];
                         return (
                           <td key={offset} style={{ ...td, textAlign: 'center' }}>
-                            {cell ? `$${cell.value.toFixed(2)}` : 'ΓÇö'}
+                            {cell ? `$${cell.value.toFixed(2)}` : '—'}
                           </td>
                         );
                       })}
@@ -197,7 +197,7 @@ export function ReportsSection() {
             </div>
           ) : (
             <div style={{ padding: 24, fontSize: 13, color: 'var(--ink-60)' }}>
-              Todav├¡a no hay suficientes ├│rdenes pagadas para calcular LTV en este rango.
+              Todavía no hay suficientes órdenes pagadas para calcular LTV en este rango.
             </div>
           )}
         </Card>
