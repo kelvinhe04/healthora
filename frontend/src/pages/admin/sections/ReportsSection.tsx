@@ -62,21 +62,25 @@ export function ReportsSection() {
         }
         sub="Retención de clientes por mes de primera compra y valor de vida (LTV) acumulado por cohorte."
         actions={
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <input
-              type="date"
-              value={reportsRange.from}
-              onChange={(e) => setReportsRange((r) => ({ ...r, from: e.target.value }))}
-              aria-label="Cohortes desde"
-              style={inputStyle}
-            />
-            <input
-              type="date"
-              value={reportsRange.to}
-              onChange={(e) => setReportsRange((r) => ({ ...r, to: e.target.value }))}
-              aria-label="Cohortes hasta"
-              style={inputStyle}
-            />
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'nowrap', alignItems: 'center' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--ink-60)', whiteSpace: 'nowrap' }}>
+              Desde
+              <input
+                type="date"
+                value={reportsRange.from}
+                onChange={(e) => setReportsRange((r) => ({ ...r, from: e.target.value }))}
+                style={inputStyle}
+              />
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--ink-60)', whiteSpace: 'nowrap' }}>
+              Hasta
+              <input
+                type="date"
+                value={reportsRange.to}
+                onChange={(e) => setReportsRange((r) => ({ ...r, to: e.target.value }))}
+                style={inputStyle}
+              />
+            </label>
           </div>
         }
       />
