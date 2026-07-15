@@ -18,6 +18,14 @@ export function getNotificationsWsUrl(token: string): string {
   } else if (backendHttp) {
     base = `${backendHttp.replace(/^http/, 'ws').replace(/\/$/, '')}/notifications/ws`;
   } else {
+    if (import.meta.env.PROD) {
+      // Falls back to a same-origin socket that a platform rewrite (Vercel) can't upgrade - see
+      // #254. Not thrown as an error since the rest of the app should keep working without
+      // realtime notifications, but this is almost certainly a missing env var, not intentional.
+      console.warn(
+        '[notifications] VITE_BACKEND_WS_URL/VITE_BACKEND_URL no configuradas - el socket va a intentar mismo-origen y probablemente falle detras de un rewrite (ver frontend/.env.example).',
+      );
+    }
     const proto = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss' : 'ws';
     const host = typeof window !== 'undefined' ? window.location.host : 'localhost';
     base = `${proto}://${host}/api/notifications/ws`;
