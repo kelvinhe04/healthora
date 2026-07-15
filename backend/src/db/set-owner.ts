@@ -15,11 +15,17 @@ async function main() {
     process.exit(1);
   }
 
+  // Clerk tiene instancias separadas para dev (sk_test_/pk_test_) y produccion (sk_live_/pk_live_):
+  // el mismo email crea usuarios (y clerkId) distintos en cada una. Este script escribe en la base
+  // que apunte MONGODB_URI del entorno donde corre - correrlo con el .env local (dev/staging) NO
+  // otorga owner en produccion. Verifica que MONGODB_URI/CLERK_SECRET_KEY sean los de produccion
+  // antes de confirmar.
   await connectDB();
+  console.log(`[set-owner] CLERK_SECRET_KEY: ${process.env.CLERK_SECRET_KEY?.startsWith('sk_live_') ? 'produccion (sk_live_)' : 'test/dev (sk_test_) - probablemente NO es produccion'}`);
 
   const user = await User.findOne({ email: new RegExp(`^${email}$`, 'i') });
   if (!user) {
-    console.error(`No se encontró ningún usuario con email "${email}". Debe iniciar sesión al menos una vez antes de correr este script.`);
+    console.error(`No se encontró ningún usuario con email "${email}". Debe iniciar sesión al menos una vez en ESTE entorno (mismo Clerk/DB que el conectado arriba) antes de correr este script.`);
     process.exit(1);
   }
 

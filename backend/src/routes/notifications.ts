@@ -16,12 +16,9 @@ import {
   type SocketIdentity,
 } from '../lib/realtime';
 import { logger } from '../lib/logger';
+import { getAuthorizedParties } from '../lib/appEnv';
 
 const { upgradeWebSocket, websocket } = createBunWebSocket();
-
-// Mirrors AUTHORIZED_PARTIES in middleware/clerkAuth.ts - the dev frontend origins Clerk tokens
-// are minted for. Kept as a local copy so the WS handshake validates against the same set.
-const AUTHORIZED_PARTIES = ['http://localhost:5173', 'http://localhost:5175', 'http://localhost:3001'];
 
 const listQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional().default(30),
@@ -62,7 +59,7 @@ async function resolveSocketIdentity(token: string | undefined): Promise<SocketI
   try {
     const payload = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY,
-      authorizedParties: AUTHORIZED_PARTIES,
+      authorizedParties: getAuthorizedParties(),
     });
     if (!payload?.sub) return null;
     const user = await User.findOne({ clerkId: payload.sub }).lean();

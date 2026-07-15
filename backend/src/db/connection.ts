@@ -9,5 +9,9 @@ export async function connectDB() {
   if (!uri) throw new Error('MONGODB_URI is not set');
   await mongoose.connect(uri, dbName ? { dbName } : undefined);
   connected = true;
-  console.log(`MongoDB connected${dbName ? ` (${dbName})` : ''}`);
+  // Host queda visible (sin credenciales) para que scripts manuales como set-owner dejen claro
+  // contra que cluster se esta escribiendo - un .env local apuntando al cluster equivocado es
+  // indistinguible del correcto si solo se loguea el dbName (ver issue admin/owner en prod).
+  const host = uri.replace(/\/\/[^@]*@/, '//***@');
+  console.log(`MongoDB connected${dbName ? ` (${dbName})` : ''} -> ${host}`);
 }
