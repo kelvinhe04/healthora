@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import type { Product } from '../types';
-import { useProducts } from '../hooks/useProducts';
+import { useQuery } from '@tanstack/react-query';
+import type { SampleOption } from '../types';
+import { api } from '../lib/api';
 import { useCartStore } from '../store/cartStore';
 import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
@@ -15,6 +16,25 @@ interface SamplePickerProps {
 
 const PAGE_SIZE = 12;
 
+// Deterministic per-cell hash (xmur3-style, same construction as Catalog.tsx's stableShuffleKey)
+// combined with a seed rolled once per mount (see shuffleSeed below). That gives a genuinely
+// different order each time a shopper opens the picker (the "estilo Temu" ask in #151), while
+// staying stable across re-renders and pagination within that same visit - reshuffling on every
+// render was the exact bug Catalog.tsx's comment describes fixing for its own shuffled view.
+function seededShuffleKey(id: string, seed: string): number {
+  const input = `${seed}:${id}`;
+  let h = 1779033703 ^ input.length;
+  for (let i = 0; i < input.length; i++) {
+    h = Math.imul(h ^ input.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  h = Math.imul(h ^ (h >>> 16), 2246822507);
+  h = Math.imul(h ^ (h >>> 13), 3266489909);
+  return (h ^ (h >>> 16)) >>> 0;
+}
+
+const optionKey = (option: Pick<SampleOption, 'productId' | 'variantId'>) => `${option.productId}:${option.variantId ?? ''}`;
+
 export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
@@ -22,16 +42,23 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
   const cols = isMobile ? 2 : isTablet ? 3 : 4;
 
   const { freeSample, setFreeSample } = useCartStore();
-  const { data: allProducts, isLoading } = useProducts({ inStock: true });
+  const { data: allOptions, isLoading } = useQuery({
+    queryKey: ['products', 'sample-options'],
+    queryFn: () => api.products.sampleOptions(),
+  });
   const [page, setPage] = useState(1);
+  const [shuffleSeed] = useState(() => Math.random().toString(36));
 
-  const products = useMemo(() => {
-    if (!allProducts) return [];
-    return allProducts.filter((p) => p.stock > 0 && p.price < 25);
-  }, [allProducts]);
+  const options = useMemo(() => {
+    if (!allOptions) return [];
+    return allOptions
+      .map((o) => ({ o, k: seededShuffleKey(optionKey(o), shuffleSeed) }))
+      .sort((a, b) => a.k - b.k)
+      .map((x) => x.o);
+  }, [allOptions, shuffleSeed]);
 
-  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
-  const paginated = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(options.length / PAGE_SIZE));
+  const paginated = options.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const goToPage = (n: number) => {
     setPage(n);
@@ -56,9 +83,9 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
         </h1>
         <p style={{ fontSize: 15, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', margin: 0 }}>
           Selecciona 1 producto. Se incluirá en tu orden sin costo adicional.
-          {!isLoading && products.length > 0 && (
+          {!isLoading && options.length > 0 && (
             <span style={{ marginLeft: 8, color: 'var(--ink-40)', fontSize: 13 }}>
-              {products.length} productos disponibles
+              {options.length} opciones disponibles
             </span>
           )}
         </p>
@@ -67,12 +94,12 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: isMobile ? 12 : 20 }}>
         {isLoading
           ? Array.from({ length: PAGE_SIZE }).map((_, i) => <ProductCardSkeleton key={i} />)
-          : paginated.map((p) => (
+          : paginated.map((option) => (
               <SampleCard
-                key={p.id}
-                product={p}
-                selected={freeSample?.id === p.id}
-                onSelect={() => setFreeSample(freeSample?.id === p.id ? null : p)}
+                key={optionKey(option)}
+                option={option}
+                selected={!!freeSample && optionKey(freeSample) === optionKey(option)}
+                onSelect={() => setFreeSample(freeSample && optionKey(freeSample) === optionKey(option) ? null : option)}
               />
             ))}
       </div>
@@ -141,7 +168,7 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--green)', letterSpacing: '0.08em', marginBottom: 2 }}>MUESTRA SELECCIONADA</div>
           <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 500, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {freeSample?.name}
+            {freeSample?.product.name}{freeSample?.label ? ` · ${freeSample.label}` : ''}
           </div>
         </div>
         <AnimatedButton
@@ -156,15 +183,13 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
 }
 
 interface SampleCardProps {
-  product: Product;
+  option: SampleOption;
   selected: boolean;
   onSelect: () => void;
 }
 
-function SampleCard({ product, selected, onSelect }: SampleCardProps) {
+function SampleCard({ option, selected, onSelect }: SampleCardProps) {
   const [hover, setHover] = useState(false);
-  const primaryImage = product.imageUrl || product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url;
-  const secondaryImage = product.images?.find((img) => img.url && img.url !== primaryImage)?.url;
 
   return (
     <div
@@ -209,26 +234,18 @@ function SampleCard({ product, selected, onSelect }: SampleCardProps) {
 
       <div style={{ position: 'relative', overflow: 'hidden' }}>
         <div style={{ transform: hover ? 'scale(1.06)' : 'scale(1)', transition: 'transform 380ms cubic-bezier(.2,.8,.2,1)' }}>
-          {secondaryImage ? (
-            <div style={{ position: 'relative' }}>
-              <div style={{ opacity: hover ? 0 : 1, transform: hover ? 'scale(0.985)' : 'scale(1)', transition: 'opacity 280ms ease, transform 380ms cubic-bezier(.2,.8,.2,1)' }}>
-                <ProductImage product={product} size="tile" flat imageUrl={primaryImage} />
-              </div>
-              <div style={{ position: 'absolute', inset: 0, opacity: hover ? 1 : 0, transform: hover ? 'scale(1)' : 'scale(1.015)', transition: 'opacity 320ms ease, transform 420ms cubic-bezier(.2,.8,.2,1)' }}>
-                <ProductImage product={product} size="tile" flat imageUrl={secondaryImage} />
-              </div>
-            </div>
-          ) : (
-            <ProductImage product={product} size="tile" flat imageUrl={primaryImage} />
-          )}
+          <ProductImage product={option.product} size="tile" flat imageUrl={option.imageUrl} />
         </div>
       </div>
 
       <div style={{ padding: '14px 14px 16px' }}>
-        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>{product.brand}</div>
-        <div style={{ fontFamily: '"Geist", sans-serif', fontSize: 14, fontWeight: 500, color: 'var(--ink)', lineHeight: 1.25, marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: 34 }}>{product.name}</div>
+        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>{option.product.brand}</div>
+        <div style={{ fontFamily: '"Geist", sans-serif', fontSize: 14, fontWeight: 500, color: 'var(--ink)', lineHeight: 1.25, marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: 34 }}>
+          {option.product.name}
+          {option.label && <span style={{ color: 'var(--ink-60)', fontWeight: 400 }}> · {option.label}</span>}
+        </div>
         <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20, color: selected ? 'var(--green)' : 'var(--ink)' }}>
-          ${product.price.toFixed(2)}
+          ${option.price.toFixed(2)}
         </div>
       </div>
     </div>

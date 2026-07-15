@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Card,
   PageHeader,
@@ -50,6 +50,65 @@ function ButtonSpinner() {
       />
       <style>{'@keyframes admin-btn-spin { to { transform: rotate(360deg); } }'}</style>
     </>
+  );
+}
+
+function SampleSettingsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+  const [maxPrice, setMaxPrice] = useState('');
+  const [message, setMessage] = useState('');
+
+  const settingsQuery = useQuery({
+    queryKey: ['admin-settings'],
+    queryFn: async () => api.admin.settings.get((await getToken())!),
+    enabled: open,
+  });
+
+  useEffect(() => {
+    if (settingsQuery.data) setMaxPrice(String(settingsQuery.data.sampleMaxPrice));
+  }, [settingsQuery.data]);
+
+  const saveMut = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      return api.admin.settings.update({ sampleMaxPrice: parseFloat(maxPrice) || 0 }, token!);
+    },
+    onSuccess: (data) => {
+      setMessage(`Tope actualizado a $${data.sampleMaxPrice.toFixed(2)}.`);
+      void queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
+    },
+  });
+
+  return (
+    <ModalOverlay open={open} onClose={onClose}>
+      <div style={{ width: '100%', maxWidth: 380, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: 24 }}>
+        <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 8px' }}>Muestra gratis (Club Healthora)</h3>
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '0 0 16px', lineHeight: 1.5 }}>
+          Un producto (o una de sus variantes/combinaciones) califica automáticamente para la muestra gratis si su precio es menor o igual a este tope. Un producto con "Incluir siempre"/"Excluir siempre" en su propio editor ignora este tope.
+        </p>
+        <label style={modalFieldLabel}>Precio máximo (USD)</label>
+        <input
+          type="number"
+          min={0}
+          step="0.01"
+          value={maxPrice}
+          onChange={(e) => setMaxPrice(e.target.value)}
+          style={modalInput}
+        />
+        {message && <p style={{ fontSize: 13, color: 'var(--green)', marginTop: 12 }}>{message}</p>}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
+          <button type="button" onClick={onClose} style={{ padding: '10px 16px', borderRadius: 999, background: 'transparent', border: '1px solid var(--ink-12)', color: 'var(--ink)', cursor: 'pointer', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>
+            Cerrar
+          </button>
+          <AnimatedButton
+            variant="primary"
+            onClick={() => saveMut.mutate()}
+            text={saveMut.isPending ? 'Guardando…' : 'Guardar'}
+          />
+        </div>
+      </div>
+    </ModalOverlay>
   );
 }
 
@@ -281,6 +340,7 @@ export function ProductsSection() {
   } = useAdminPanelContext();
 
   const [discountModalOpen, setDiscountModalOpen] = useState(false);
+  const [sampleSettingsModalOpen, setSampleSettingsModalOpen] = useState(false);
   const { getToken } = useAuth();
   const reindexMutation = useMutation({
     mutationFn: async () => {
@@ -327,12 +387,20 @@ export function ProductsSection() {
                     >
                       Descuento por categoría
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setSampleSettingsModalOpen(true)}
+                      style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif', whiteSpace: "nowrap" }}
+                    >
+                      Muestra gratis
+                    </button>
                     <AnimatedButton variant="primary" onClick={() => setProductModal({ mode: "add" })} text="+ Agregar producto" />
                   </>
                 )
               }
             />
             <CategoryDiscountModal open={discountModalOpen} onClose={() => setDiscountModalOpen(false)} categories={categories} products={products} />
+            <SampleSettingsModal open={sampleSettingsModalOpen} onClose={() => setSampleSettingsModalOpen(false)} />
 
             {/* Filter bar */}
             {showProductsSkeleton ? (

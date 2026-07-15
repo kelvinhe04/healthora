@@ -319,12 +319,14 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <div style={{ width: 48, height: 54, background: 'white', borderRadius: 8, flexShrink: 0, overflow: 'hidden', border: '1px solid var(--ink-06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <div style={{ transform: 'scale(1.1)' }}>
-                            <ProductImage product={freeSample} size="xs" />
+                            <ProductImage product={freeSample.product} imageUrl={freeSample.imageUrl} size="xs" />
                           </div>
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{freeSample.brand}</div>
-                          <div style={{ fontSize: 13, fontFamily: '"Geist", sans-serif', fontWeight: 500, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{freeSample.name}</div>
+                          <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{freeSample.product.brand}</div>
+                          <div style={{ fontSize: 13, fontFamily: '"Geist", sans-serif', fontWeight: 500, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {freeSample.product.name}{freeSample.label ? ` · ${freeSample.label}` : ''}
+                          </div>
                         </div>
                         <button
                           onClick={() => { onClose(); onOpenSamplePicker(); }}

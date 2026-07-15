@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CartItem, Product, ProductVariant } from '../types';
+import type { CartItem, Product, ProductVariant, SampleOption } from '../types';
 import { trackAddToCart } from '../lib/analyticsEvents';
 
 const GUEST_OWNER = '__guest__';
@@ -18,7 +18,7 @@ interface CartState {
   ownerId: string;
   items: CartItem[];
   cartsByOwner: Record<string, CartItem[]>;
-  freeSample: Product | null;
+  freeSample: SampleOption | null;
   bindOwner: (ownerId: string | null | undefined) => void;
   replaceItems: (items: CartItem[]) => void;
   add: (product: Product, qty?: number, variant?: ProductVariant) => void;
@@ -28,7 +28,7 @@ interface CartState {
   clear: () => void;
   count: () => number;
   subtotal: () => number;
-  setFreeSample: (p: Product | null) => void;
+  setFreeSample: (p: SampleOption | null) => void;
 }
 
 export const useCartStore = create<CartState>()(

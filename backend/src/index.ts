@@ -26,6 +26,7 @@ import { adminAnalyticsRouter } from './routes/admin/adminAnalytics';
 import { adminCatalogRouter } from './routes/admin/adminCatalog';
 import { adminCouponsRouter } from './routes/admin/adminCoupons';
 import { adminReportsRouter } from './routes/admin/adminReports';
+import { adminSettingsRouter } from './routes/admin/adminSettings';
 import { wishlistRouter } from './routes/wishlist';
 import { accountRouter } from './routes/account';
 import { subscriptionsRouter } from './routes/subscriptions';
@@ -118,6 +119,7 @@ app.route('/admin/analytics', adminAnalyticsRouter);
 app.route('/admin/catalog', adminCatalogRouter);
 app.route('/admin/coupons', adminCouponsRouter);
 app.route('/admin/reports', adminReportsRouter);
+app.route('/admin/settings', adminSettingsRouter);
 
 // Remote MCP server (Model Context Protocol) - exposes read/write tools for catalog, variantes,
 // stock, ordenes, usuarios y ventas, importable desde Claude Code / Codex / conectores de

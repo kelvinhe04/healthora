@@ -12,6 +12,7 @@ type CheckoutBody = {
   address: { name: string; phone: string; address?: string; city?: string; postal?: string };
   promoCode?: string;
   freeSampleId?: string;
+  freeSampleVariantId?: string;
   shippingMethod: 'delivery' | 'pickup';
 };
 
@@ -20,6 +21,7 @@ const checkoutSchema = z.object({
   address: orderAddressSchema,
   promoCode: optionalTextField(40).transform((code) => code?.toUpperCase()),
   freeSampleId: productIdSchema.optional(),
+  freeSampleVariantId: optionalTextField(180),
   shippingMethod: shippingMethodSchema,
 }).superRefine((body, ctx) => {
   if (body.shippingMethod !== 'pickup') requireFullAddress(ctx, body.address);
@@ -92,7 +94,7 @@ export const checkoutRouter = new Hono<AppEnv>()
           customerEmail: user.email || '',
           cartItems: JSON.stringify([
             ...items,
-            ...(freeSampleProduct ? [{ productId: freeSampleProduct.id, qty: 1, isSample: true }] : []),
+            ...(freeSampleProduct ? [{ productId: freeSampleProduct.id, qty: 1, isSample: true, variantId: freeSampleProduct.variantId }] : []),
           ]),
           address: JSON.stringify(address),
           discountCode: promoCodeApplied,
@@ -141,7 +143,7 @@ export const checkoutRouter = new Hono<AppEnv>()
           customerEmail: user.email || '',
           cartItems: JSON.stringify([
             ...items,
-            ...(freeSampleProduct ? [{ productId: freeSampleProduct.id, qty: 1, isSample: true }] : []),
+            ...(freeSampleProduct ? [{ productId: freeSampleProduct.id, qty: 1, isSample: true, variantId: freeSampleProduct.variantId }] : []),
           ]),
           address: JSON.stringify(address),
           discountCode: promoCodeApplied,

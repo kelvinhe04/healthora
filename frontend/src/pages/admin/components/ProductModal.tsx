@@ -70,7 +70,7 @@ export function ProductModal({
     (key: keyof ProductForm) =>
     (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
-  const _setSelect =
+  const setSelect =
     (key: keyof ProductForm) => (e: ChangeEvent<HTMLSelectElement>) =>
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const setVal = (key: keyof ProductForm) => (v: string) =>
@@ -456,6 +456,14 @@ export function ProductModal({
               min={0}
               placeholder={`Global (${DEFAULT_LOW_STOCK_THRESHOLD})`}
             />
+          </div>
+          <div style={{ ...fieldS, maxWidth: 280, marginTop: 16 }}>
+            <label style={labelS}>Muestra gratis (Club Healthora)</label>
+            <select style={inputS} value={form.sampleEligible} onChange={setSelect("sampleEligible")}>
+              <option value="auto">Automático (según tope de precio)</option>
+              <option value="include">Incluir siempre</option>
+              <option value="exclude">Excluir siempre</option>
+            </select>
           </div>
           <div style={dividerS} />
 

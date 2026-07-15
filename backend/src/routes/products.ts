@@ -5,6 +5,9 @@ import { escapeRegex, parseParams, parseQuery, productIdSchema, textField } from
 import { cacheGet, cacheSet } from '../lib/cache';
 import { cacheableJson } from '../lib/httpCache';
 import { withEffectiveDiscount, type DiscountableProduct } from '../lib/discounts';
+import { getSettings } from '../db/models/Settings';
+import { getEligibleSampleCells } from '../lib/sampleEligibility';
+import { resolveVariantImage } from '../lib/productVariants';
 
 const productQuerySchema = z.object({
   category: textField(120).optional(),
@@ -65,6 +68,28 @@ export const productsRouter = new Hono()
     const payload = { count };
     await cacheSet(cacheKey, payload);
     return cacheableJson(c, payload, 'catalogList');
+  })
+  // Club Healthora "muestra gratis" (issue #151) - every currently free-sample-eligible cell
+  // (product, simple variant, or sabor×tamaño combo) across the whole catalog, with stock. Placed
+  // before '/:id' so it isn't swallowed by that catch-all param route.
+  .get('/sample-options', async (c) => {
+    const settings = await getSettings();
+    const products = await Product.find({ active: true }).lean();
+
+    const options = products.flatMap((product) =>
+      getEligibleSampleCells(product, settings.sampleMaxPrice)
+        .filter((cell) => cell.stock > 0)
+        .map((cell) => ({
+          productId: cell.productId,
+          variantId: cell.variantId,
+          label: cell.label,
+          price: cell.price,
+          imageUrl: resolveVariantImage(product, cell.variantId ?? undefined),
+          product: withEffectiveDiscount(product),
+        })),
+    );
+
+    return c.json(options);
   })
   .get('/:id', async (c) => {
     const parsed = parseParams(c, productParamsSchema);

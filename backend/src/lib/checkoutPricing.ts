@@ -1,18 +1,21 @@
 import type { Context } from 'hono';
 import { Product } from '../db/models/Product';
 import { validatePromotionForCart } from './promotions';
-import { buildPaidLineItem } from './productVariants';
+import { buildPaidLineItem, resolveVariantPricing } from './productVariants';
 
 type PaidLineItem = ReturnType<typeof buildPaidLineItem>;
 import { validateCartStock } from './inventory';
 import { resolveShipping, type ResolvedShipping, type ShippingMethod } from './shipping';
 import { computeItbms } from './tax';
+import { getSettings } from '../db/models/Settings';
+import { isSampleCellEligible } from './sampleEligibility';
 
 type CheckoutBody = {
   items: { productId: string; qty: number; variantId?: string }[];
   address: { name: string; phone: string; address?: string; city?: string; postal?: string };
   promoCode?: string;
   freeSampleId?: string;
+  freeSampleVariantId?: string;
   shippingMethod: ShippingMethod;
 };
 
@@ -21,7 +24,7 @@ type PricingUser = { clerkId: string };
 export type CheckoutPricing = {
   address: { name: string; phone: string; address: string; city: string; postal: string };
   lineItems: PaidLineItem[];
-  freeSampleProduct: { id: string } | null;
+  freeSampleProduct: { id: string; variantId?: string; label?: string } | null;
   subtotal: number;
   discountAmount: number;
   promoCodeApplied: string;
@@ -46,7 +49,7 @@ export async function computeCheckoutPricing(
   body: CheckoutBody,
   user: PricingUser,
 ): Promise<{ success: true; data: CheckoutPricing } | { success: false; response: Response }> {
-  const { items, promoCode, freeSampleId, shippingMethod } = body;
+  const { items, promoCode, freeSampleId, freeSampleVariantId, shippingMethod } = body;
   const address = {
     name: body.address.name,
     phone: body.address.phone,
@@ -61,9 +64,25 @@ export async function computeCheckoutPricing(
     return { success: false, response: c.json({ error: 'One or more products not found' }, 400) };
   }
 
-  let freeSampleProduct: { id: string } | null = null;
+  // Eligibility (price cap + manual override) and stock are re-checked here, not just filtered
+  // client-side in SamplePicker.tsx (issue #151) - otherwise a crafted freeSampleId/
+  // freeSampleVariantId could get any product/variant for free regardless of price or what the
+  // admin excluded.
+  let freeSampleProduct: { id: string; variantId?: string; label?: string } | null = null;
   if (freeSampleId) {
-    freeSampleProduct = await Product.findOne({ id: freeSampleId, active: true }).select('id').lean();
+    const sampleProduct = await Product.findOne({ id: freeSampleId, active: true }).lean();
+    if (sampleProduct) {
+      try {
+        const settings = await getSettings();
+        const resolved = resolveVariantPricing(sampleProduct, freeSampleVariantId);
+        if (resolved.stock > 0 && isSampleCellEligible(sampleProduct, freeSampleVariantId, settings.sampleMaxPrice)) {
+          freeSampleProduct = { id: sampleProduct.id, variantId: freeSampleVariantId, label: resolved.label };
+        }
+      } catch {
+        // Invalid/manipulated freeSampleVariantId - fall back to no free sample instead of 500ing
+        // the whole checkout over it.
+      }
+    }
   }
 
   let lineItems: PaidLineItem[];

@@ -64,6 +64,12 @@ export function getTestSubscription(id: string) {
   return testSubscriptions.get(id);
 }
 
+/** Test-only seam so integration tests can inspect a created PaymentIntent's real metadata (e.g.
+ * `cartItems`) without hand-reconstructing it - see checkout.integration.test.ts. */
+export function getTestPaymentIntent(id: string) {
+  return testPaymentIntentsById.get(id);
+}
+
 // @ts-expect-error newer API version
 export const stripe = process.env.NODE_ENV === 'test'
   ? {
