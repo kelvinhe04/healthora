@@ -147,12 +147,33 @@ html.theme-transition,
 html.theme-transition *,
 html.theme-transition *:before,
 html.theme-transition *:after {
-  transition: background-color 400ms cubic-bezier(0.4, 0, 0.2, 1), 
-              border-color 400ms cubic-bezier(0.4, 0, 0.2, 1), 
-              color 400ms cubic-bezier(0.4, 0, 0.2, 1), 
-              fill 400ms cubic-bezier(0.4, 0, 0.2, 1), 
-              stroke 400ms cubic-bezier(0.4, 0, 0.2, 1), 
+  transition: background-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+              color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+              fill 400ms cubic-bezier(0.4, 0, 0.2, 1),
+              stroke 400ms cubic-bezier(0.4, 0, 0.2, 1),
               box-shadow 400ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ─── Theme toggle: circle-blur view transition (#211) ──────────────────────────
+   JS (Header.tsx) drives the actual clip-path/blur keyframes via WAAPI, targeted at
+   the pseudo-elements below, so it can originate the circle at the toggle button's
+   position. This block only disables the browser's default cross-fade and fixes the
+   old/new stacking order so the incoming theme's circle reveals over the outgoing one
+   instead of getting cross-faded underneath it. */
+::view-transition-group(root) {
+  animation-duration: 0s;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
 }
 
 /* ─── Root layout ────────────────────────────────────────────────────────────── */
