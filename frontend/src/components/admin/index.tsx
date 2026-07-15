@@ -1266,7 +1266,7 @@ export function Sidebar({
       icon: "layers",
       count: counts?.categories,
     },
-    { id: "coupons", label: "Cupones", icon: "percent" },
+    { id: "coupons", label: "Cupones", icon: "percent", count: counts?.coupons },
     { id: "users", label: "Clientes", icon: "user", count: counts?.users },
     { id: "returns", label: "Devoluciones", icon: "arrow-left", count: counts?.returns },
     { id: "reviews", label: "Reseñas", icon: "star", count: counts?.reviews },
