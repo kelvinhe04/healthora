@@ -79,7 +79,7 @@ describe('MCP server', () => {
     expect(json.result.serverInfo.name).toBe('healthora');
   });
 
-  test('tools/list exposes all 26 registered tools', async () => {
+  test('tools/list exposes all 27 registered tools', async () => {
     const { json } = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const names = json.result.tools.map((t: { name: string }) => t.name).sort();
     expect(names).toEqual(
@@ -92,6 +92,7 @@ describe('MCP server', () => {
         'catalog.upsertProduct',
         'categories.upsertCategory',
         'coupons.createCoupon',
+        'coupons.listCoupons',
         'inventory.adjustStock',
         'notifications.broadcast',
         'orders.exportOrdersCsv',
@@ -395,5 +396,17 @@ describe('MCP server', () => {
     expect(payload.maxOffset).toBe(11);
     expect(Array.isArray(payload.cohorts)).toBe(true);
     expect(payload.overall).toBeDefined();
+  });
+
+  test('coupons.listCoupons returns seeded coupons', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 17,
+      method: 'tools/call',
+      params: { name: 'coupons.listCoupons', arguments: {} },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.count).toBeGreaterThanOrEqual(1);
+    expect(payload.coupons[0].code).toBeDefined();
   });
 });
