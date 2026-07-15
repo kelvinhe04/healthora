@@ -14,9 +14,9 @@ No es un servicio aparte: corre dentro del mismo proceso Bun/Hono que ya está d
 
 ## Regla de alcance: MCP ⊆ UI
 
-Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`Healthora-Historias-de-Usuario.docx`, sección 6). Las **24 tools del `.docx`** están cubiertas; además hay **3 extras** — **27 en total**.
+Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`Healthora-Historias-de-Usuario.docx`, sección 6). Las **24 tools del `.docx`** están cubiertas; además hay **4 extras** — **28 en total**.
 
-## Tools implementadas (27)
+## Tools implementadas (28)
 
 | Tool | HU | Qué hace | Auth |
 |---|---|---|---|
@@ -44,6 +44,7 @@ Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`He
 | `coupons.createCoupon` | HU-049 | Crea un cupón promocional | Servicio |
 | `coupons.listCoupons` | HU-049 | Lista cupones promocionales del admin | Servicio |
 | `returns.approveReturn` | HU-041 | Avanza el estado de una devolución/reembolso | Servicio |
+| `returns.listReturns` | HU-041 | Lista solicitudes de devolución con filtro opcional por estado | Servicio |
 | `search.reindexCatalog` | — | Invalida la caché del catálogo | Servicio |
 | `audit.getAdminActions` | HU-051 | Consulta el registro de auditoría administrativa | Servicio |
 | `wishlist.getUserWishlist` | HU-044 | Lista la wishlist persistida de un usuario (email o customerId) | Servicio |
@@ -106,4 +107,4 @@ Configuración → Connectors → Agregar conector personalizado:
 
 ## Tests
 
-`backend/src/mcp/mcp.integration.test.ts` (mongodb-memory-server): `initialize`, `tools/list` (verifica las 27 tools registradas), y `tools/call` contra un producto matrix real (sabor×tamaño con `stockBySize`) y reseñas (aprobar/ocultar/eliminar), incluyendo casos de error (tool inexistente, reviewId inexistente).
+`backend/src/mcp/mcp.integration.test.ts` (mongodb-memory-server): `initialize`, `tools/list` (verifica las 28 tools registradas), y `tools/call` contra un producto matrix real (sabor×tamaño con `stockBySize`) y reseñas (aprobar/ocultar/eliminar), incluyendo casos de error (tool inexistente, reviewId inexistente).
