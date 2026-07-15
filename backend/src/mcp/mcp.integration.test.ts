@@ -79,7 +79,7 @@ describe('MCP server', () => {
     expect(json.result.serverInfo.name).toBe('healthora');
   });
 
-  test('tools/list exposes all 27 registered tools', async () => {
+  test('tools/list exposes all 28 registered tools', async () => {
     const { json } = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const names = json.result.tools.map((t: { name: string }) => t.name).sort();
     expect(names).toEqual(
@@ -103,6 +103,7 @@ describe('MCP server', () => {
         'promotions.validateCoupon',
         'recommendations.getRelatedProducts',
         'returns.approveReturn',
+        'returns.listReturns',
         'reviews.listReviews',
         'reviews.moderateReview',
         'search.reindexCatalog',
@@ -408,5 +409,42 @@ describe('MCP server', () => {
     const payload = JSON.parse(json.result.content[0].text);
     expect(payload.count).toBeGreaterThanOrEqual(1);
     expect(payload.coupons[0].code).toBeDefined();
+  });
+
+  test('returns.listReturns returns requested returns', async () => {
+    const order = await Order.create({
+      customerId: 'user-1',
+      customerEmail: 'buyer@test.com',
+      items: [{ productId: 'combo-product', productName: 'Combo Product', qty: 1, price: 10 }],
+      subtotal: 10,
+      tax: 0.7,
+      shipping: 0,
+      total: 10.7,
+      paymentStatus: 'paid',
+      fulfillmentStatus: 'delivered',
+      status: 'paid',
+    });
+    await Return.create({
+      orderId: order._id,
+      customerId: 'user-1',
+      customerEmail: 'buyer@test.com',
+      reason: 'No me sirve',
+      reasonCategory: 'changed_mind',
+      photos: ['https://example.com/photo.jpg'],
+      items: [{ productId: 'combo-product', productName: 'Combo Product', qty: 1 }],
+      refundAmount: 10.7,
+      status: 'requested',
+      returnMethod: 'store_dropoff',
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 18,
+      method: 'tools/call',
+      params: { name: 'returns.listReturns', arguments: { status: 'requested' } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.count).toBe(1);
+    expect(payload.returns[0].status).toBe('requested');
   });
 });
