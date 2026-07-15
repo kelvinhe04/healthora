@@ -81,7 +81,7 @@ describe('MCP server', () => {
     expect(json.result.serverInfo.name).toBe('healthora');
   });
 
-  test('tools/list exposes all 29 registered tools', async () => {
+  test('tools/list exposes all 30 registered tools', async () => {
     const { json } = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const names = json.result.tools.map((t: { name: string }) => t.name).sort();
     expect(names).toEqual(
@@ -95,6 +95,7 @@ describe('MCP server', () => {
         'categories.upsertCategory',
         'coupons.createCoupon',
         'coupons.listCoupons',
+        'dashboard.getSummary',
         'inventory.adjustStock',
         'notifications.broadcast',
         'orders.exportOrdersCsv',
@@ -474,5 +475,18 @@ describe('MCP server', () => {
     expect(deleted).toBeNull();
     const ban = await ReviewBan.findOne({ productId: 'combo-product', userId: 'user-ban-1' }).lean();
     expect(ban?.userName).toBe('Spammer');
+  });
+
+  test('dashboard.getSummary returns kpis', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 20,
+      method: 'tools/call',
+      params: { name: 'dashboard.getSummary', arguments: {} },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.kpis).toBeDefined();
+    expect(Array.isArray(payload.dailySales)).toBe(true);
+    expect(payload.dailySales).toHaveLength(30);
   });
 });
