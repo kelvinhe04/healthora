@@ -388,13 +388,14 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   const { data: banners } = useBanners();
   const primaryBanner = banners?.promo ?? null;
   const secondaryBanner = banners?.club ?? null;
-  // {categoria}/{fecha} en el texto del banner (issue #265 feedback) se resuelven acá contra la
-  // categoría/fecha reales, así nunca quedan desactualizados como el texto hardcodeado original.
+  // {categoria}/{fechaDesde}/{fechaHasta} en el texto del banner (issue #265 feedback) se resuelven
+  // acá contra la categoría/fechas reales, así nunca quedan desactualizados como el texto
+  // hardcodeado original.
   const primaryCategoryLabel = categories.find((c) => c.id === primaryBanner?.categoryId)?.label;
   const resolvePrimaryText = (text: string) =>
-    resolveBannerText(text, { categoryLabel: primaryCategoryLabel, endDate: primaryBanner?.endDate });
+    resolveBannerText(text, { categoryLabel: primaryCategoryLabel, startDate: primaryBanner?.startDate, endDate: primaryBanner?.endDate });
   const resolveSecondaryText = (text: string) =>
-    resolveBannerText(text, { endDate: secondaryBanner?.endDate });
+    resolveBannerText(text, { startDate: secondaryBanner?.startDate, endDate: secondaryBanner?.endDate });
   const primaryTextColors = getBannerTextColors(primaryBanner?.backgroundColor);
   const secondaryTextColors = getBannerTextColors(secondaryBanner?.backgroundColor);
   const routerNavigate = useNavigate();

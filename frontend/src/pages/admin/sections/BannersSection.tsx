@@ -26,7 +26,7 @@ type BannerForm = {
  * simplemente cambiar de categoría - ahí solo hace falta que el token se resuelva de nuevo). */
 const PROMO_TEMPLATE = {
   title: '25% OFF en productos de {categoria}',
-  description: 'Aplica en productos de {categoria}. Válido hasta el {fecha} con el código PIEL25.',
+  description: 'Aplica en productos de {categoria}. Válido hasta el {fechaHasta} con el código PIEL25.',
   ctaText: 'Comprar {categoria}',
 };
 
@@ -207,13 +207,13 @@ export function BannersSection() {
       ...f,
       categoryId,
       title: f.title.includes('{categoria}') ? f.title : PROMO_TEMPLATE.title,
-      description: f.description.includes('{categoria}') || f.description.includes('{fecha}') ? f.description : PROMO_TEMPLATE.description,
+      description: f.description.includes('{categoria}') || f.description.includes('{fechaDesde}') || f.description.includes('{fechaHasta}') ? f.description : PROMO_TEMPLATE.description,
       ctaText: f.ctaText.includes('{categoria}') ? f.ctaText : PROMO_TEMPLATE.ctaText,
     }));
   };
 
   const previewCategoryLabel = categories.find((c) => c.id === form.categoryId)?.label;
-  const previewParams = { categoryLabel: previewCategoryLabel, endDate: form.endDate || null };
+  const previewParams = { categoryLabel: previewCategoryLabel, startDate: form.startDate || null, endDate: form.endDate || null };
   const resolvedPreview = {
     title: resolveBannerText(form.title, previewParams) || '—',
     description: resolveBannerText(form.description, previewParams) || '—',
@@ -260,7 +260,7 @@ export function BannersSection() {
               <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} style={inputStyle} />
               {editingSlot === 'promo' && (
                 <span style={{ display: 'block', marginTop: 6, fontSize: 11, color: 'var(--ink-40)' }}>
-                  Usa <code>{'{categoria}'}</code> y <code>{'{fecha}'}</code> donde quieras que se actualicen solas al cambiar la categoría o la fecha de vigencia.
+                  Usa <code>{'{categoria}'}</code>, <code>{'{fechaDesde}'}</code> y <code>{'{fechaHasta}'}</code> donde quieras que se actualicen solas al cambiar la categoría o las fechas de vigencia.
                 </span>
               )}
             </label>

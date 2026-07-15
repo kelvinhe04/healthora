@@ -35,7 +35,7 @@ export async function updateBannerSlot(slot: BannerSlot, input: UpdateBannerInpu
     if (!category) throw new Error(`No existe la categoría "${categoryId}".`);
     resolvedCategoryId = categoryId;
 
-    // El texto del banner de promo usa {fecha} (ver bannerText.ts en el frontend) para no repetir
+    // El texto del banner de promo usa {fechaDesde}/{fechaHasta} (ver bannerText.ts en el frontend) para no repetir
     // a mano una fecha de vigencia que puede quedar desactualizada - por eso hace falta que exista.
     if (!rest.startDate || !rest.endDate) {
       throw new Error('Las fechas de vigencia (desde/hasta) son obligatorias para el banner de promoción.');
