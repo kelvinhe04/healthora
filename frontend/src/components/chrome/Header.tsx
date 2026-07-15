@@ -3,7 +3,7 @@ import { useSearchParamsCompat as useSearchParams } from "../../hooks/useSearchP
 import { useCartStore } from "../../store/cartStore";
 import { useCompareStore } from "../../store/compareStore";
 import { useWishlistStore } from "../../store/wishlistStore";
-import { useThemeStore } from "../../store/themeStore";
+import { useThemeStore, toggleThemeWithTransition } from "../../store/themeStore";
 import { Icon } from "../shared/Icon";
 import { NotificationCenter } from "../shared/NotificationCenter";
 import { AnimatedButton } from "../shared/AnimatedButton";
@@ -580,7 +580,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   const cartCount = useCartStore((s) => s.count());
   const compareCount = useCompareStore((s) => s.productIds.length);
   const wishlistCount = useWishlistStore((s) => s.productIds.length);
-  const { theme, toggle: toggleTheme } = useThemeStore();
+  const { theme } = useThemeStore();
   const { isSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const { getToken } = useAuth();
@@ -1217,7 +1217,10 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
         </div>
 
         <button
-          onClick={toggleTheme}
+          onClick={(e) => {
+            const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+            toggleThemeWithTransition(left + width / 2, top + height / 2);
+          }}
           style={{
             ...headerIconBtn,
             width: isMobile ? 44 : 34,
