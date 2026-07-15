@@ -110,10 +110,12 @@ const ProductSchema = new Schema(
     // ITBMS (Panama VAT) exemption - certain medications/health items don't pay the 7% tax at
     // checkout. Derived automatically from `category` (see hooks below), not admin-editable.
     taxExempt: { type: Boolean, default: false },
-    // Club Healthora "muestra gratis" (issue #151): admin-editable per product, replaces the old
-    // hardcoded `price < 25` cutoff in SamplePicker.tsx. Defaults to false so newly added products
-    // don't silently become sample-eligible - an admin has to opt each one in explicitly.
-    sampleEligible: { type: Boolean, default: false },
+    // Club Healthora "muestra gratis" (issue #151): tri-state manual override on top of the
+    // automatic price-based rule (Settings.sampleMaxPrice, see lib/sampleEligibility.ts).
+    // undefined/unset (no default here on purpose) = automatic, decided per variant/combo by
+    // price. true = force every cell of this product eligible regardless of price. false = force
+    // every cell ineligible regardless of price.
+    sampleEligible: { type: Boolean },
   },
   { timestamps: true }
 );

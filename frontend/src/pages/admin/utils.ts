@@ -56,7 +56,7 @@ export function productToForm(p: Product): ProductForm {
     stock: String(p.stock),
     active: p.active,
     lowStockThreshold: p.lowStockThreshold != null ? String(p.lowStockThreshold) : '',
-    sampleEligible: p.sampleEligible ?? false,
+    sampleEligible: p.sampleEligible === true ? 'include' : p.sampleEligible === false ? 'exclude' : 'auto',
     benefits: (p.benefits || []).join('\n'),
     usage: p.usage || '',
     ingredients: p.ingredients || '',
@@ -206,7 +206,7 @@ export function formToPayload(f: ProductForm): Partial<Product> {
     stock,
     active: f.active,
     lowStockThreshold: f.lowStockThreshold.trim() ? parseInt(f.lowStockThreshold, 10) : null,
-    sampleEligible: f.sampleEligible,
+    sampleEligible: f.sampleEligible === 'include' ? true : f.sampleEligible === 'exclude' ? false : null,
     benefits: f.benefits
       .split('\n')
       .map((b) => b.trim())

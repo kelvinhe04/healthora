@@ -198,4 +198,96 @@ describe('checkout (embedded Stripe Elements)', () => {
     const cartItems = JSON.parse(paymentIntent?.metadata?.cartItems ?? '[]');
     expect(cartItems).not.toContainEqual(expect.objectContaining({ productId: 'prod-not-eligible', isSample: true }));
   });
+
+  // Automatic price-cap path (issue #151) - no sampleEligible override at all, decided purely by
+  // Settings.sampleMaxPrice (default 25).
+  test('freeSampleId with no manual override is included automatically when its price is under the cap', async () => {
+    await seedProduct();
+    await Product.create({
+      id: 'prod-auto-cheap',
+      name: 'Auto Cheap Product',
+      brand: 'Test Brand',
+      category: 'Vitaminas',
+      price: 12,
+      stock: 10,
+      active: true,
+    });
+    const app = createTestApp();
+    const response = await app.request('/checkout/payment-intent', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ ...checkoutBody, freeSampleId: 'prod-auto-cheap' }),
+    });
+    expect(response.status).toBe(200);
+    const { paymentIntentId } = (await response.json()) as { paymentIntentId: string };
+
+    const paymentIntent = getTestPaymentIntent(paymentIntentId);
+    const cartItems = JSON.parse(paymentIntent?.metadata?.cartItems ?? '[]');
+    expect(cartItems).toContainEqual({ productId: 'prod-auto-cheap', qty: 1, isSample: true });
+  });
+
+  test('freeSampleId with no manual override is excluded automatically when its price is over the cap', async () => {
+    await seedProduct();
+    await Product.create({
+      id: 'prod-auto-expensive',
+      name: 'Auto Expensive Product',
+      brand: 'Test Brand',
+      category: 'Vitaminas',
+      price: 40,
+      stock: 10,
+      active: true,
+    });
+    const app = createTestApp();
+    const response = await app.request('/checkout/payment-intent', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ ...checkoutBody, freeSampleId: 'prod-auto-expensive' }),
+    });
+    expect(response.status).toBe(200);
+    const { paymentIntentId } = (await response.json()) as { paymentIntentId: string };
+
+    const paymentIntent = getTestPaymentIntent(paymentIntentId);
+    const cartItems = JSON.parse(paymentIntent?.metadata?.cartItems ?? '[]');
+    expect(cartItems).not.toContainEqual(expect.objectContaining({ productId: 'prod-auto-expensive', isSample: true }));
+  });
+
+  // Per-variant eligibility (issue #151) - a product's variants can straddle the price cap, so the
+  // same product can be eligible via one variant and not another.
+  test('freeSampleVariantId is checked per-variant: cheap size qualifies, expensive size does not', async () => {
+    await seedProduct();
+    await Product.create({
+      id: 'prod-variant-straddle',
+      name: 'Straddling Product',
+      brand: 'Test Brand',
+      category: 'Vitaminas',
+      price: 10,
+      stock: 0,
+      active: true,
+      variants: [
+        { id: 'small', label: 'Pequeño', type: 'size', price: 15, stock: 5 },
+        { id: 'large', label: 'Grande', type: 'size', price: 40, stock: 5 },
+      ],
+    });
+    const app = createTestApp();
+
+    const cheapResponse = await app.request('/checkout/payment-intent', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ ...checkoutBody, freeSampleId: 'prod-variant-straddle', freeSampleVariantId: 'small' }),
+    });
+    expect(cheapResponse.status).toBe(200);
+    const { paymentIntentId: cheapId } = (await cheapResponse.json()) as { paymentIntentId: string };
+    const cheapCartItems = JSON.parse(getTestPaymentIntent(cheapId)?.metadata?.cartItems ?? '[]');
+    expect(cheapCartItems).toContainEqual({ productId: 'prod-variant-straddle', qty: 1, isSample: true, variantId: 'small' });
+
+    const expensiveResponse = await app.request('/checkout/payment-intent', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ ...checkoutBody, freeSampleId: 'prod-variant-straddle', freeSampleVariantId: 'large' }),
+    });
+    expect(expensiveResponse.status).toBe(200);
+    const { paymentIntentId: expensiveId } = (await expensiveResponse.json()) as { paymentIntentId: string };
+    const expensiveCartItems = JSON.parse(getTestPaymentIntent(expensiveId)?.metadata?.cartItems ?? '[]');
+    expect(expensiveCartItems).not.toContainEqual(expect.objectContaining({ productId: 'prod-variant-straddle', isSample: true }));
+  });
 });

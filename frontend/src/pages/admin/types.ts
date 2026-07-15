@@ -328,8 +328,10 @@ export type ProductForm = {
   active: boolean;
   /** Vacio = usa el default global del backend. */
   lowStockThreshold: string;
-  /** Club Healthora muestra gratis (issue #151). */
-  sampleEligible: boolean;
+  /** Club Healthora muestra gratis (issue #151) - tri-estado: 'auto' delega en el tope de precio
+   * global (Settings.sampleMaxPrice) evaluado por variante/combo, 'include'/'exclude' fuerzan todo
+   * el producto sin importar precio. */
+  sampleEligible: 'auto' | 'include' | 'exclude';
   benefits: string;
   usage: string;
   ingredients: string;
@@ -360,7 +362,7 @@ export const emptyForm: ProductForm = {
   stock: "0",
   active: true,
   lowStockThreshold: "",
-  sampleEligible: false,
+  sampleEligible: "auto",
   benefits: "",
   usage: "",
   ingredients: "",

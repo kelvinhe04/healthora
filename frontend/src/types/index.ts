@@ -95,11 +95,24 @@ export interface Product {
    * global del backend. */
   lowStockThreshold?: number | null;
   taxExempt?: boolean;
-  /** Club Healthora "muestra gratis" (issue #151): admin-editable, controla si este producto puede
-   * salir sorteado en el selector de muestra gratis (SamplePicker.tsx). */
-  sampleEligible?: boolean;
+  /** Club Healthora "muestra gratis" (issue #151): tri-estado. true/false fuerzan incluir/excluir
+   * el producto entero sin importar precio; null/ausente delega en el tope de precio global
+   * (Settings.sampleMaxPrice), evaluado por variante/combo en SamplePicker.tsx. */
+  sampleEligible?: boolean | null;
   createdAt?: string;
   updatedAt?: string;
+}
+
+/** One currently free-sample-eligible cell (issue #151) - a product with no variants, a simple
+ * variant, or a sabor×tamaño combo - as returned by GET /products/sample-options. Also what
+ * cartStore.freeSample holds once the shopper picks one. */
+export interface SampleOption {
+  productId: string;
+  variantId: string | null;
+  label: string | null;
+  price: number;
+  imageUrl: string;
+  product: Product;
 }
 
 export interface Category {

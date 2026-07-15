@@ -133,14 +133,17 @@ export function buildPaidLineItem(
     '';
 
   if (item.isSample) {
+    const sampleLabel = item.variantId ? resolveVariantPricing(product, item.variantId).label : undefined;
     return {
       productId: product.id,
-      productName: product.name,
+      productName: sampleLabel ? `${product.name} · ${sampleLabel}` : product.name,
       qty: item.qty,
       price: 0,
-      imageUrl: primaryImage,
+      imageUrl: item.variantId ? resolveVariantImage(product, item.variantId) : primaryImage,
       category: product.category,
       isSample: true,
+      variantId: item.variantId,
+      variantLabel: sampleLabel,
       taxExempt: Boolean(product.taxExempt),
     };
   }

@@ -3,6 +3,7 @@ import { Product } from './models/Product';
 import { Category } from './models/Category';
 import { isTaxExemptCategory } from '../lib/tax';
 import { seedCoupons } from './seed-coupons';
+import { getSettings } from './models/Settings';
 
 const CATEGORY_FOLDER_BY_ID: Record<string, string> = {
   Vitaminas: 'vitaminas',
@@ -11607,13 +11608,13 @@ async function seed() {
       sortOrder: i,
       // ITBMS: exencion automatica por categoria (issue #43/HU-039), no editable a mano.
       taxExempt: isTaxExemptCategory(p.category),
-      // Club Healthora muestra gratis (issue #151): semilla inicial igual al viejo corte
-      // hardcodeado (`price < 25`) que reemplaza; el admin puede reajustar cada producto despues.
-      sampleEligible: p.price < 25,
+      // Club Healthora muestra gratis (issue #151): sin override manual - queda decidido
+      // automaticamente por Settings.sampleMaxPrice (ver getSettings/seedSettings mas abajo).
     })),
   );
   await Category.insertMany(CATEGORIES);
   await seedCoupons();
+  await getSettings(); // crea el singleton de Settings con sus defaults si aun no existe
   console.log(`Seeded ${PRODUCTS.length} products and ${CATEGORIES.length} categories`);
   process.exit(0);
 }

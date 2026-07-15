@@ -21,6 +21,7 @@ import type {
   AppNotification,
   NotificationInbox,
   Coupon,
+  SampleOption,
 } from "../types";
 import type { CartItem } from "../types";
 
@@ -75,6 +76,7 @@ export const api = {
       request<Product[]>(`/products${filtersToQuery(filters)}`),
     get: (id: string) => request<Product>(`/products/${id}`),
     count: () => request<{ count: number }>("/products/count"),
+    sampleOptions: () => request<SampleOption[]>("/products/sample-options"),
   },
   categories: {
     list: () => request<Category[]>("/categories"),
@@ -190,6 +192,7 @@ export const api = {
         address: object;
         promoCode?: string;
         freeSampleId?: string;
+        freeSampleVariantId?: string;
         shippingMethod: "delivery" | "pickup";
       },
       token: string,
@@ -205,6 +208,7 @@ export const api = {
         address: object;
         promoCode?: string;
         freeSampleId?: string;
+        freeSampleVariantId?: string;
         shippingMethod: "delivery" | "pickup";
       },
       token: string,
@@ -486,6 +490,16 @@ export const api = {
         request<{ ok: boolean; message: string }>(
           "/admin/catalog/reindex",
           { method: "POST" },
+          token,
+        ),
+    },
+    settings: {
+      get: (token: string) =>
+        request<{ sampleMaxPrice: number }>("/admin/settings", undefined, token),
+      update: (body: { sampleMaxPrice: number }, token: string) =>
+        request<{ sampleMaxPrice: number }>(
+          "/admin/settings",
+          { method: "PUT", body: JSON.stringify(body) },
           token,
         ),
     },

@@ -31,6 +31,7 @@ type CheckoutRequestBody = {
   address: OrderAddress;
   promoCode?: string;
   freeSampleId?: string;
+  freeSampleVariantId?: string;
   shippingMethod: ShippingMethod;
 };
 
@@ -427,7 +428,8 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     })),
     address,
     promoCode: appliedPromo?.code,
-    freeSampleId: freeSample?.id,
+    freeSampleId: freeSample?.productId,
+    ...(freeSample?.variantId ? { freeSampleVariantId: freeSample.variantId } : {}),
     shippingMethod,
   });
 
@@ -637,12 +639,12 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             ))}
             {freeSample && (
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', paddingTop: 20, borderTop: '1px solid var(--ink-06)' }}>
-                <div style={{ width: 50, height: 56, background: freeSample.color || 'white', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', border: '1.5px solid color-mix(in srgb, var(--green) 35%, transparent)' }}>
-                  <ProductImage product={freeSample} size="xs" />
+                <div style={{ width: 50, height: 56, background: freeSample.product.color || 'white', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', border: '1.5px solid color-mix(in srgb, var(--green) 35%, transparent)' }}>
+                  <ProductImage product={freeSample.product} imageUrl={freeSample.imageUrl} size="xs" />
                   <span style={{ position: 'absolute', top: -5, right: -4, width: 15, height: 15, borderRadius: 999, background: 'var(--green)', color: '#fff', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"JetBrains Mono", monospace', fontWeight: 700 }}>1</span>
                 </div>
                 <div style={{ flex: 1, fontSize: 13, fontFamily: '"Geist", sans-serif' }}>
-                  <div style={{ fontWeight: 500, lineHeight: 1.3 }}>{freeSample.name}</div>
+                  <div style={{ fontWeight: 500, lineHeight: 1.3 }}>{freeSample.product.name}{freeSample.label ? ` · ${freeSample.label}` : ''}</div>
                   <div style={{ fontSize: 10, color: 'var(--green)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', marginTop: 2 }}>MUESTRA GRATIS · CLUB HEALTHORA</div>
                 </div>
                 <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 16, color: 'var(--green)' }}>$0.00</div>
