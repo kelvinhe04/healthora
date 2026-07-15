@@ -21,6 +21,15 @@ type BannerForm = {
   endDate: string;
 };
 
+/** Plantilla que se aplica al título/descripción/CTA cuando se elige una categoría, siempre y
+ * cuando el campo no tenga ya un token propio (para no pisar una redacción ya dinámica al
+ * simplemente cambiar de categoría - ahí solo hace falta que el token se resuelva de nuevo). */
+const PROMO_TEMPLATE = {
+  title: '25% OFF en productos de {categoria}',
+  description: 'Aplica en productos de {categoria}. Válido hasta el {fecha} con el código PIEL25.',
+  ctaText: 'Comprar {categoria}',
+};
+
 const COLOR_PRESETS = [
   { label: 'Lima', value: 'var(--lime)' },
   { label: 'Verde', value: 'var(--green)' },
@@ -193,6 +202,16 @@ export function BannersSection() {
     setError('');
   };
 
+  const handleCategoryChange = (categoryId: string) => {
+    setForm((f) => ({
+      ...f,
+      categoryId,
+      title: f.title.includes('{categoria}') ? f.title : PROMO_TEMPLATE.title,
+      description: f.description.includes('{categoria}') || f.description.includes('{fecha}') ? f.description : PROMO_TEMPLATE.description,
+      ctaText: f.ctaText.includes('{categoria}') ? f.ctaText : PROMO_TEMPLATE.ctaText,
+    }));
+  };
+
   const previewCategoryLabel = categories.find((c) => c.id === form.categoryId)?.label;
   const previewParams = { categoryLabel: previewCategoryLabel, endDate: form.endDate || null };
   const resolvedPreview = {
@@ -254,7 +273,7 @@ export function BannersSection() {
             {editingSlot === 'promo' && (
               <label style={{ display: 'block', gridColumn: '1 / -1' }}>
                 <span style={labelStyle}>Categoría (define las 2 fotos del banner y a dónde lleva el botón)</span>
-                <select value={form.categoryId} onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))} style={inputStyle}>
+                <select value={form.categoryId} onChange={(e) => handleCategoryChange(e.target.value)} style={inputStyle}>
                   <option value="">Seleccionar categoría…</option>
                   {categoryOptions.map((cat) => (
                     <option key={cat.id} value={cat.id}>{cat.label}</option>

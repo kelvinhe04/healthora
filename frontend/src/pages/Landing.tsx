@@ -18,6 +18,7 @@ import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
 import { useBanners } from '../hooks/useBanners';
 import { resolveBannerText } from '../lib/bannerText';
+import { getBannerTextColors } from '../lib/bannerColor';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { api } from '../lib/api';
 import { NEEDS } from '../lib/needs';
@@ -394,6 +395,8 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     resolveBannerText(text, { categoryLabel: primaryCategoryLabel, endDate: primaryBanner?.endDate });
   const resolveSecondaryText = (text: string) =>
     resolveBannerText(text, { endDate: secondaryBanner?.endDate });
+  const primaryTextColors = getBannerTextColors(primaryBanner?.backgroundColor);
+  const secondaryTextColors = getBannerTextColors(secondaryBanner?.backgroundColor);
   const routerNavigate = useNavigate();
   // ctaHref comes from the admin-authored Banner document (issue #265), not the app's closed
   // View union, so it isn't known at compile time - external links open in a new tab, internal
@@ -918,12 +921,12 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             {primaryBanner && (
               <div className="promo-banner" style={{ background: primaryBanner.backgroundColor || 'var(--lime)', borderRadius: isSmall ? 20 : 28, padding: isMobile ? 28 : isTablet ? 36 : 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: isMobile ? 280 : 360, position: 'relative', overflow: 'hidden' }}>
                 <div style={{ maxWidth: 420 }}>
-                  {primaryBanner.kicker && <div style={{ ...headKicker, color: 'var(--ink-60)' }}>{primaryBanner.kicker}</div>}
-                  <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 36 : isTablet ? 44 : 56, letterSpacing: '-0.03em', lineHeight: 0.98, margin: '12px 0 16px', color: 'var(--ink)' }}>
+                  {primaryBanner.kicker && <div style={{ ...headKicker, color: primaryTextColors.body }}>{primaryBanner.kicker}</div>}
+                  <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 36 : isTablet ? 44 : 56, letterSpacing: '-0.03em', lineHeight: 0.98, margin: '12px 0 16px', color: primaryTextColors.title }}>
                     <BannerTitle title={resolvePrimaryText(primaryBanner.title)} highlightWord={primaryBanner.highlightWord} />
                   </h3>
                   {primaryBanner.description && (
-                    <p style={{ fontSize: isMobile ? 13 : 15, lineHeight: 1.5, color: 'var(--ink-60)', marginBottom: 24, maxWidth: 380 }}>{resolvePrimaryText(primaryBanner.description)}</p>
+                    <p style={{ fontSize: isMobile ? 13 : 15, lineHeight: 1.5, color: primaryTextColors.body, marginBottom: 24, maxWidth: 380 }}>{resolvePrimaryText(primaryBanner.description)}</p>
                   )}
                   <AnimatedButton variant="primary" onClick={() => handleBannerCta(primaryBanner.ctaHref)} icon={<Icon name="arrow-right" size={14} />} text={resolvePrimaryText(primaryBanner.ctaText)} />
                 </div>
@@ -990,12 +993,12 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             {secondaryBanner && (
               <div style={{ background: secondaryBanner.backgroundColor || 'var(--cream-2)', borderRadius: isSmall ? 20 : 28, padding: isMobile ? 24 : 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: isMobile ? 220 : 360 }}>
                 <div>
-                  {secondaryBanner.kicker && <div style={headKicker}>{secondaryBanner.kicker}</div>}
-                  <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 26 : 36, letterSpacing: '-0.02em', lineHeight: 1, margin: '12px 0 16px' }}>
+                  {secondaryBanner.kicker && <div style={{ ...headKicker, color: secondaryTextColors.body }}>{secondaryBanner.kicker}</div>}
+                  <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 26 : 36, letterSpacing: '-0.02em', lineHeight: 1, margin: '12px 0 16px', color: secondaryTextColors.title }}>
                     <BannerTitle title={resolveSecondaryText(secondaryBanner.title)} highlightWord={secondaryBanner.highlightWord} />
                   </h3>
                   {secondaryBanner.description && (
-                    <p style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--ink-60)', marginBottom: 20 }}>{resolveSecondaryText(secondaryBanner.description)}</p>
+                    <p style={{ fontSize: 14, lineHeight: 1.5, color: secondaryTextColors.body, marginBottom: 20 }}>{resolveSecondaryText(secondaryBanner.description)}</p>
                   )}
                 </div>
                 <AnimatedButton variant="primary" full onClick={() => handleBannerCta(secondaryBanner.ctaHref)} text={resolveSecondaryText(secondaryBanner.ctaText)} />

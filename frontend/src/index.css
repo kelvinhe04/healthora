@@ -94,12 +94,10 @@ html.dark .hero-cta {
 }
 
 /* ─── Dark mode: Promo banner ───────────────────────────────────────────────── */
-html.dark .promo-banner {
-  background: oklch(0.22 0.045 155) !important;
-  border: 1px solid oklch(0.28 0.05 155);
-}
-html.dark .promo-banner h3 { color: var(--ink) !important; }
-html.dark .promo-banner p  { color: var(--ink-60) !important; }
+/* Ni el fondo ni el color del texto se fuerzan acá (issue #265): backgroundColor es
+ * admin-configurable (BannersSection.tsx) y Landing.tsx ya calcula el color de texto con
+ * contraste correcto para ese fondo (getBannerTextColors, lib/bannerColor.ts) - forzarlo acá
+ * pisaría ese cálculo con !important cuando el admin elige un color personalizado. */
 
 /* ─── Dark mode: Category cards ─────────────────────────────────────────────── */
 /* Pastel backgrounds are LIGHT colors — white text has no contrast.             */
