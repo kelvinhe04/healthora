@@ -2,7 +2,28 @@
 
 Ver issue: "Sin acceso admin/owner en la página de producción" (healthora-shop.vercel.app).
 
-## Causa raíz
+## Causa raíz real de #251: tokens rechazados por `authorizedParties`
+
+`backend/src/middleware/clerkAuth.ts` (y el WS handshake en `routes/notifications.ts`) validan
+cada token de Clerk contra una whitelist de orígenes (`authorizedParties`, sobre el claim `azp`
+del JWT). Esa lista estaba hardcodeada a los puertos de dev local (`localhost:5173/5175/3001`) y
+nunca incluía `https://healthora-shop.vercel.app`. Resultado: Clerk rechazaba **cualquier** token
+emitido desde producción y el backend devolvía `401 Invalid token` en **todos** los endpoints
+autenticados, no solo en el panel admin — el frontend traga ese error en un `catch` silencioso
+(`Header.tsx`, `loadAdminState`), así que nunca se veía un error explícito, solo faltaba la opción
+de admin en el menú.
+
+Esto explicaba el síntoma incluso con `role: owner` ya asignado correctamente en Mongo.
+
+Fix: `getAuthorizedParties()` en `backend/src/lib/appEnv.ts` combina los orígenes de
+`CORS_ORIGINS`/`FRONTEND_URL` (los mismos que ya se usaban para CORS) con los puertos de dev, y
+`clerkAuth.ts`/`notifications.ts` lo usan en vez de la constante hardcodeada.
+
+**Acción pendiente en Koyeb:** agregar `CORS_ORIGINS=https://healthora-shop.vercel.app` (sumar
+previews de Vercel separados por coma si hace falta probarlos) — hoy `FRONTEND_URL` está seteado a
+`http://localhost:5173`, que ya no alcanza como único origen autorizado para producción.
+
+## Causa raíz (mismatch de entorno dev/prod, real pero secundaria a lo anterior)
 
 El rol de un usuario se resuelve así (`backend/src/middleware/clerkAuth.ts`):
 

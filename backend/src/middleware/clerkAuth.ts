@@ -5,8 +5,8 @@ import { User } from '../db/models/User';
 import type { AppEnv } from '../types/hono';
 import { userRateLimit } from './rateLimit';
 import { recordSecurityEvent } from '../lib/securityAudit';
+import { getAuthorizedParties } from '../lib/appEnv';
 
-const AUTHORIZED_PARTIES = ['http://localhost:5173', 'http://localhost:5175', 'http://localhost:3001'];
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || process.env.CLERK_ADMIN_EMAILS || '')
   .split(',')
   .map((email) => email.trim().toLowerCase())
@@ -45,7 +45,7 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
   try {
     const payload = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY,
-      authorizedParties: AUTHORIZED_PARTIES,
+      authorizedParties: getAuthorizedParties(),
     });
 
     if (!payload || payload.errors) {
