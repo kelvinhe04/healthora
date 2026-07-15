@@ -4,6 +4,7 @@ import { Card, PageHeader, StatusPill } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { api } from '../../../lib/api';
+import { resolveBannerText } from '../../../lib/bannerText';
 import type { Banner, BannerSlot } from '../../../types';
 import { useAdminToken } from '../hooks/useAdminToken';
 
@@ -192,10 +193,12 @@ export function BannersSection() {
     setError('');
   };
 
-  const suggestDescription = () => {
-    const category = categories.find((c) => c.id === form.categoryId);
-    if (!category) return;
-    setForm((f) => ({ ...f, description: `Aplica en productos de ${category.label}.` }));
+  const previewCategoryLabel = categories.find((c) => c.id === form.categoryId)?.label;
+  const previewParams = { categoryLabel: previewCategoryLabel, endDate: form.endDate || null };
+  const resolvedPreview = {
+    title: resolveBannerText(form.title, previewParams) || '—',
+    description: resolveBannerText(form.description, previewParams) || '—',
+    ctaText: resolveBannerText(form.ctaText, previewParams) || '—',
   };
 
   const categoryOptions = useMemo(
@@ -236,6 +239,11 @@ export function BannersSection() {
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
               <span style={labelStyle}>Título</span>
               <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} style={inputStyle} />
+              {editingSlot === 'promo' && (
+                <span style={{ display: 'block', marginTop: 6, fontSize: 11, color: 'var(--ink-40)' }}>
+                  Usa <code>{'{categoria}'}</code> y <code>{'{fecha}'}</code> donde quieras que se actualicen solas al cambiar la categoría o la fecha de vigencia.
+                </span>
+              )}
             </label>
 
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
@@ -258,16 +266,6 @@ export function BannersSection() {
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
               <span style={labelStyle}>Descripción</span>
               <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} />
-              {editingSlot === 'promo' && (
-                <button
-                  type="button"
-                  onClick={suggestDescription}
-                  disabled={!form.categoryId}
-                  style={{ marginTop: 6, fontSize: 12, background: 'transparent', border: 'none', color: form.categoryId ? 'var(--green)' : 'var(--ink-40)', cursor: form.categoryId ? 'pointer' : 'default', padding: 0 }}
-                >
-                  Sugerir texto desde la categoría
-                </button>
-              )}
             </label>
 
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
@@ -275,17 +273,28 @@ export function BannersSection() {
               <input value={form.ctaText} onChange={(e) => setForm((f) => ({ ...f, ctaText: e.target.value }))} style={inputStyle} />
             </label>
 
+            {editingSlot === 'promo' && (
+              <div style={{ gridColumn: '1 / -1', background: 'var(--cream-2)', borderRadius: 12, padding: 14 }}>
+                <div style={{ fontSize: 11, color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+                  Vista previa (con la categoría y fecha elegidas)
+                </div>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>{resolvedPreview.title}</div>
+                <div style={{ fontSize: 13, color: 'var(--ink-60)', marginBottom: 8 }}>{resolvedPreview.description}</div>
+                <div style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace' }}>[{resolvedPreview.ctaText}]</div>
+              </div>
+            )}
+
             <div style={{ gridColumn: '1 / -1' }}>
               <ColorPicker value={form.backgroundColor} onChange={(v) => setForm((f) => ({ ...f, backgroundColor: v }))} />
             </div>
 
             <label style={{ display: 'block' }}>
-              <span style={labelStyle}>Vigente desde (opcional)</span>
+              <span style={labelStyle}>Vigente desde{editingSlot === 'promo' ? '' : ' (opcional)'}</span>
               <input type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} style={inputStyle} />
             </label>
 
             <label style={{ display: 'block' }}>
-              <span style={labelStyle}>Vigente hasta (opcional)</span>
+              <span style={labelStyle}>Vigente hasta{editingSlot === 'promo' ? '' : ' (opcional)'}</span>
               <input type="date" value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} style={inputStyle} />
             </label>
 
@@ -305,7 +314,7 @@ export function BannersSection() {
                 saveMutation.isPending ||
                 !form.title.trim() ||
                 !form.ctaText.trim() ||
-                (editingSlot === 'promo' && !form.categoryId)
+                (editingSlot === 'promo' && (!form.categoryId || !form.startDate || !form.endDate))
               }
               onClick={() => saveMutation.mutate()}
               text={saveMutation.isPending ? 'Guardando…' : 'Guardar'}
