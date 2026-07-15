@@ -14,9 +14,9 @@ No es un servicio aparte: corre dentro del mismo proceso Bun/Hono que ya está d
 
 ## Regla de alcance: MCP ⊆ UI
 
-Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`Healthora-Historias-de-Usuario.docx`, sección 6). Las **24 tools del `.docx`** están cubiertas; además hay **4 extras** — **28 en total**.
+Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`Healthora-Historias-de-Usuario.docx`, sección 6). Las **24 tools del `.docx`** están cubiertas; además hay **5 extras** — **29 en total**.
 
-## Tools implementadas (28)
+## Tools implementadas (29)
 
 | Tool | HU | Qué hace | Auth |
 |---|---|---|---|
@@ -37,6 +37,7 @@ Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`He
 | `analytics.getCohortReport` | HU-052 | Cohortes por mes de primera compra, retención y LTV | Servicio |
 | `reviews.listReviews` | HU-010 | Reseñas de un producto | Servicio |
 | `reviews.moderateReview` | HU-056 | Aprueba, oculta o elimina una reseña; recalcula el rating del producto | Servicio |
+| `reviews.banAuthor` | HU-194 | Banea al autor de una reseña para ese producto y elimina la reseña | Servicio |
 | `recommendations.getRelatedProducts` | HU-045 | Productos relacionados (misma categoría/necesidad/marca/tag) | Servicio |
 | `notifications.broadcast` | HU-061 | Difunde una notificación en tiempo real (WebSockets) a todos, admins o un cliente; queda persistida en el centro de notificaciones | Servicio |
 | `promotions.validateCoupon` | HU-040 | Valida un cupón contra ítems del carrito (subtotal elegible, expiración, primera compra) | Servicio |
@@ -107,4 +108,4 @@ Configuración → Connectors → Agregar conector personalizado:
 
 ## Tests
 
-`backend/src/mcp/mcp.integration.test.ts` (mongodb-memory-server): `initialize`, `tools/list` (verifica las 28 tools registradas), y `tools/call` contra un producto matrix real (sabor×tamaño con `stockBySize`) y reseñas (aprobar/ocultar/eliminar), incluyendo casos de error (tool inexistente, reviewId inexistente).
+`backend/src/mcp/mcp.integration.test.ts` (mongodb-memory-server): `initialize`, `tools/list` (verifica las 29 tools registradas), y `tools/call` contra un producto matrix real (sabor×tamaño con `stockBySize`) y reseñas (aprobar/ocultar/eliminar), incluyendo casos de error (tool inexistente, reviewId inexistente).

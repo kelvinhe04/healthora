@@ -7,6 +7,7 @@ import { requireAdmin } from '../../middleware/requireAdmin';
 import { auditAdminMutations } from '../../middleware/auditAdminAction';
 import type { AppEnv } from '../../types/hono';
 import { escapeRegex, intFromInput, objectIdSchema, parseJson, parseParams, parseQuery, textField } from '../../lib/validation';
+import { banReviewAuthor } from '../../lib/reviewModeration';
 import { recomputeProductRating } from '../../lib/productRatings';
 
 const reviewStatusSchema = z.enum(['pending', 'published', 'hidden']);
@@ -100,17 +101,9 @@ export const adminReviewsRouter = new Hono<AppEnv>()
     const parsed = parseParams(c, idParamsSchema);
     if (!parsed.success) return parsed.response;
 
-    const review = await Review.findById(parsed.data.id).lean();
-    if (!review) return c.json({ error: 'Reseña no encontrada' }, 404);
-
     const admin = c.get('user');
-    await ReviewBan.findOneAndUpdate(
-      { productId: review.productId, userId: review.userId },
-      { userName: review.userName, bannedBy: admin.clerkId },
-      { upsert: true }
-    );
-    await Review.findByIdAndDelete(review._id);
-    await recomputeProductRating(review.productId);
+    const result = await banReviewAuthor(parsed.data.id, admin.clerkId);
+    if (!result.ok) return c.json({ error: result.error }, 404);
 
     return c.json({ success: true });
   })

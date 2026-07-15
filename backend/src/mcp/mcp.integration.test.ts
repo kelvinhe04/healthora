@@ -4,6 +4,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Product } from '../db/models/Product';
 import { Order } from '../db/models/Order';
 import { Review } from '../db/models/Review';
+import { ReviewBan } from '../db/models/ReviewBan';
 import { SecurityAuditLog } from '../db/models/SecurityAuditLog';
 import { Return } from '../db/models/Return';
 import { Coupon } from '../db/models/Coupon';
@@ -58,6 +59,7 @@ describe('MCP server', () => {
     await Product.deleteMany({});
     await Order.deleteMany({});
     await Review.deleteMany({});
+    await ReviewBan.deleteMany({});
     // SecurityAuditLog blocks deleteMany at the schema level (append-only, HU-051) - go through
     // the native collection to clean up between tests instead.
     await SecurityAuditLog.collection.deleteMany({});
@@ -79,7 +81,7 @@ describe('MCP server', () => {
     expect(json.result.serverInfo.name).toBe('healthora');
   });
 
-  test('tools/list exposes all 28 registered tools', async () => {
+  test('tools/list exposes all 29 registered tools', async () => {
     const { json } = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const names = json.result.tools.map((t: { name: string }) => t.name).sort();
     expect(names).toEqual(
@@ -104,6 +106,7 @@ describe('MCP server', () => {
         'recommendations.getRelatedProducts',
         'returns.approveReturn',
         'returns.listReturns',
+        'reviews.banAuthor',
         'reviews.listReviews',
         'reviews.moderateReview',
         'search.reindexCatalog',
@@ -446,5 +449,30 @@ describe('MCP server', () => {
     const payload = JSON.parse(json.result.content[0].text);
     expect(payload.count).toBe(1);
     expect(payload.returns[0].status).toBe('requested');
+  });
+
+  test('reviews.banAuthor bans the review author for the product', async () => {
+    const review = await Review.create({
+      productId: 'combo-product',
+      userId: 'user-ban-1',
+      userName: 'Spammer',
+      rating: 1,
+      body: 'Spam',
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 19,
+      method: 'tools/call',
+      params: { name: 'reviews.banAuthor', arguments: { reviewId: String(review._id) } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.productId).toBe('combo-product');
+    expect(payload.userName).toBe('Spammer');
+
+    const deleted = await Review.findById(review._id).lean();
+    expect(deleted).toBeNull();
+    const ban = await ReviewBan.findOne({ productId: 'combo-product', userId: 'user-ban-1' }).lean();
+    expect(ban?.userName).toBe('Spammer');
   });
 });
