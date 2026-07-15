@@ -15,6 +15,23 @@ interface SamplePickerProps {
 
 const PAGE_SIZE = 12;
 
+// Deterministic per-id hash (xmur3-style, same construction as Catalog.tsx's stableShuffleKey)
+// combined with a seed rolled once per mount (see shuffleSeed below). That gives a genuinely
+// different order each time a shopper opens the picker (the "estilo Temu" ask in #151), while
+// staying stable across re-renders and pagination within that same visit - reshuffling on every
+// render was the exact bug Catalog.tsx's comment describes fixing for its own shuffled view.
+function seededShuffleKey(id: string, seed: string): number {
+  const input = `${seed}:${id}`;
+  let h = 1779033703 ^ input.length;
+  for (let i = 0; i < input.length; i++) {
+    h = Math.imul(h ^ input.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  h = Math.imul(h ^ (h >>> 16), 2246822507);
+  h = Math.imul(h ^ (h >>> 13), 3266489909);
+  return (h ^ (h >>> 16)) >>> 0;
+}
+
 export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
@@ -24,11 +41,16 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
   const { freeSample, setFreeSample } = useCartStore();
   const { data: allProducts, isLoading } = useProducts({ inStock: true });
   const [page, setPage] = useState(1);
+  const [shuffleSeed] = useState(() => Math.random().toString(36));
 
   const products = useMemo(() => {
     if (!allProducts) return [];
-    return allProducts.filter((p) => p.stock > 0 && p.price < 25);
-  }, [allProducts]);
+    return allProducts
+      .filter((p) => p.stock > 0 && p.sampleEligible)
+      .map((p) => ({ p, k: seededShuffleKey(p.id, shuffleSeed) }))
+      .sort((a, b) => a.k - b.k)
+      .map((x) => x.p);
+  }, [allProducts, shuffleSeed]);
 
   const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
   const paginated = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

@@ -6,7 +6,7 @@ import { checkoutRouter } from './checkout';
 import { webhooksRouter } from './webhooks';
 import { Order } from '../db/models/Order';
 import { Product } from '../db/models/Product';
-import { resetTestStripeState } from '../lib/stripe';
+import { getTestPaymentIntent, resetTestStripeState } from '../lib/stripe';
 
 process.env.NODE_ENV = 'test';
 
@@ -142,5 +142,60 @@ describe('checkout (embedded Stripe Elements)', () => {
 
     const orders = await Order.find({ stripePaymentIntentId: 'pi_from_hosted_checkout_session' }).lean();
     expect(orders).toHaveLength(0);
+  });
+
+  test('freeSampleId for a sampleEligible product is included in the PaymentIntent as a free line item', async () => {
+    await seedProduct();
+    await Product.create({
+      id: 'prod-sample',
+      name: 'Sample Product',
+      brand: 'Test Brand',
+      category: 'Vitaminas',
+      price: 15,
+      stock: 10,
+      active: true,
+      sampleEligible: true,
+    });
+    const app = createTestApp();
+    const response = await app.request('/checkout/payment-intent', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ ...checkoutBody, freeSampleId: 'prod-sample' }),
+    });
+    expect(response.status).toBe(200);
+    const { paymentIntentId } = (await response.json()) as { paymentIntentId: string };
+
+    const paymentIntent = getTestPaymentIntent(paymentIntentId);
+    const cartItems = JSON.parse(paymentIntent?.metadata?.cartItems ?? '[]');
+    expect(cartItems).toContainEqual({ productId: 'prod-sample', qty: 1, isSample: true });
+  });
+
+  // Server-side enforcement (issue #151) - a crafted freeSampleId must not get a non-eligible product
+  // for free just because it's active, even though the picker UI itself only ever offers eligible
+  // products.
+  test('freeSampleId for a product with sampleEligible=false is silently ignored, not added for free', async () => {
+    await seedProduct();
+    await Product.create({
+      id: 'prod-not-eligible',
+      name: 'Not Eligible Product',
+      brand: 'Test Brand',
+      category: 'Vitaminas',
+      price: 15,
+      stock: 10,
+      active: true,
+      sampleEligible: false,
+    });
+    const app = createTestApp();
+    const response = await app.request('/checkout/payment-intent', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ ...checkoutBody, freeSampleId: 'prod-not-eligible' }),
+    });
+    expect(response.status).toBe(200);
+    const { paymentIntentId } = (await response.json()) as { paymentIntentId: string };
+
+    const paymentIntent = getTestPaymentIntent(paymentIntentId);
+    const cartItems = JSON.parse(paymentIntent?.metadata?.cartItems ?? '[]');
+    expect(cartItems).not.toContainEqual(expect.objectContaining({ productId: 'prod-not-eligible', isSample: true }));
   });
 });

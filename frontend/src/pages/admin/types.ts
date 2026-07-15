@@ -328,6 +328,8 @@ export type ProductForm = {
   active: boolean;
   /** Vacio = usa el default global del backend. */
   lowStockThreshold: string;
+  /** Club Healthora muestra gratis (issue #151). */
+  sampleEligible: boolean;
   benefits: string;
   usage: string;
   ingredients: string;
@@ -358,6 +360,7 @@ export const emptyForm: ProductForm = {
   stock: "0",
   active: true,
   lowStockThreshold: "",
+  sampleEligible: false,
   benefits: "",
   usage: "",
   ingredients: "",

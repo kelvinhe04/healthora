@@ -122,6 +122,7 @@ const productPayloadSchema = z.object({
   active: z.coerce.boolean().default(true),
   sortOrder: sortOrderSchema.default(0),
   lowStockThreshold: z.coerce.number().int().min(0).max(999999).nullable().optional(),
+  sampleEligible: z.coerce.boolean().default(false),
 });
 
 const productCreateSchema = productPayloadSchema.refine(

@@ -11607,6 +11607,9 @@ async function seed() {
       sortOrder: i,
       // ITBMS: exencion automatica por categoria (issue #43/HU-039), no editable a mano.
       taxExempt: isTaxExemptCategory(p.category),
+      // Club Healthora muestra gratis (issue #151): semilla inicial igual al viejo corte
+      // hardcodeado (`price < 25`) que reemplaza; el admin puede reajustar cada producto despues.
+      sampleEligible: p.price < 25,
     })),
   );
   await Category.insertMany(CATEGORIES);

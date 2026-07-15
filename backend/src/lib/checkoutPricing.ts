@@ -61,9 +61,12 @@ export async function computeCheckoutPricing(
     return { success: false, response: c.json({ error: 'One or more products not found' }, 400) };
   }
 
+  // sampleEligible is enforced here, not just filtered client-side in SamplePicker.tsx (issue #151) -
+  // otherwise a crafted freeSampleId could get any active product for free regardless of what the
+  // admin marked as sample-eligible.
   let freeSampleProduct: { id: string } | null = null;
   if (freeSampleId) {
-    freeSampleProduct = await Product.findOne({ id: freeSampleId, active: true }).select('id').lean();
+    freeSampleProduct = await Product.findOne({ id: freeSampleId, active: true, sampleEligible: true }).select('id').lean();
   }
 
   let lineItems: PaidLineItem[];

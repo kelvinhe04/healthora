@@ -9,7 +9,8 @@
     "seed:orders": "bun src/db/seed-orders.ts",
     "seed:reviews": "bun src/db/seed-reviews.ts",
     "recompute-ratings": "bun src/db/recompute-ratings.ts",
-    "set-owner": "bun src/db/set-owner.ts"
+    "set-owner": "bun src/db/set-owner.ts",
+    "backfill-sample-eligibility": "bun src/db/backfill-sample-eligibility.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.3.0",

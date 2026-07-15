@@ -95,6 +95,9 @@ export interface Product {
    * global del backend. */
   lowStockThreshold?: number | null;
   taxExempt?: boolean;
+  /** Club Healthora "muestra gratis" (issue #151): admin-editable, controla si este producto puede
+   * salir sorteado en el selector de muestra gratis (SamplePicker.tsx). */
+  sampleEligible?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -457,6 +457,16 @@ export function ProductModal({
               placeholder={`Global (${DEFAULT_LOW_STOCK_THRESHOLD})`}
             />
           </div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, marginTop: 16 }}>
+            <input
+              type="checkbox"
+              checked={form.sampleEligible}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, sampleEligible: e.target.checked }))
+              }
+            />
+            Elegible para muestra gratis (Club Healthora)
+          </label>
           <div style={dividerS} />
 
           {/* Tipo de producto / variantes — decide esto primero, define lo que sigue */}
