@@ -14,9 +14,9 @@ No es un servicio aparte: corre dentro del mismo proceso Bun/Hono que ya está d
 
 ## Regla de alcance: MCP ⊆ UI
 
-Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`Healthora-Historias-de-Usuario.docx`, sección 6). Las **24 tools del `.docx`** están cubiertas; además hay **5 extras** — **29 en total**.
+Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`Healthora-Historias-de-Usuario.docx`, sección 6). Las **24 tools del `.docx`** están cubiertas; además hay **6 extras** — **30 en total**.
 
-## Tools implementadas (29)
+## Tools implementadas (30)
 
 | Tool | HU | Qué hace | Auth |
 |---|---|---|---|
@@ -32,6 +32,7 @@ Solo se expone como tool MCP una capacidad que **ya existe en la interfaz** (`He
 | `orders.getOrderItems` | HU-036 | Ítems de una orden con su variante/combo comprado | Servicio |
 | `orders.exportOrdersCsv` | HU-050 | Exporta pedidos a CSV con filtros opcionales | Servicio |
 | `users.updateUserRole` | HU-017 | Promueve/degrada un usuario (sincroniza con Clerk) | Servicio |
+| `dashboard.getSummary` | HU-015 | KPIs del dashboard, ventas 30 días, pedidos recientes y stock bajo | Servicio |
 | `analytics.getSalesReport` | HU-019 | Revenue, ticket promedio, unidades y top 5 productos en N días | Servicio |
 | `analytics.getProductAnalytics` | HU-054 | Embudo de checkout, abandono de carrito (PostHog) y errores recientes en N días | Servicio |
 | `analytics.getCohortReport` | HU-052 | Cohortes por mes de primera compra, retención y LTV | Servicio |
@@ -108,4 +109,4 @@ Configuración → Connectors → Agregar conector personalizado:
 
 ## Tests
 
-`backend/src/mcp/mcp.integration.test.ts` (mongodb-memory-server): `initialize`, `tools/list` (verifica las 29 tools registradas), y `tools/call` contra un producto matrix real (sabor×tamaño con `stockBySize`) y reseñas (aprobar/ocultar/eliminar), incluyendo casos de error (tool inexistente, reviewId inexistente).
+`backend/src/mcp/mcp.integration.test.ts` (mongodb-memory-server): `initialize`, `tools/list` (verifica las 30 tools registradas), y `tools/call` contra un producto matrix real (sabor×tamaño con `stockBySize`) y reseñas (aprobar/ocultar/eliminar), incluyendo casos de error (tool inexistente, reviewId inexistente).
