@@ -15,7 +15,7 @@ const DEFAULT_BANNERS = [
     title: '25% OFF en productos de {categoria}',
     kicker: 'Promoción destacada',
     highlightWord: '',
-    description: 'Aplica en productos de {categoria}. Válido hasta el {fechaHasta} con el código PIEL25.',
+    description: 'Aplica en productos de {categoria}. Vigente del {fechaDesde} al {fechaHasta} con el código PIEL25.',
     ctaText: 'Comprar {categoria}',
     ctaHref: '/catalog?category=Salud+de+la+piel',
     categoryId: 'Salud de la piel',

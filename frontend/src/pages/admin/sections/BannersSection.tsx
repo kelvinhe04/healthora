@@ -26,7 +26,7 @@ type BannerForm = {
  * simplemente cambiar de categoría - ahí solo hace falta que el token se resuelva de nuevo). */
 const PROMO_TEMPLATE = {
   title: '25% OFF en productos de {categoria}',
-  description: 'Aplica en productos de {categoria}. Válido hasta el {fechaHasta} con el código PIEL25.',
+  description: 'Aplica en productos de {categoria}. Vigente del {fechaDesde} al {fechaHasta} con el código PIEL25.',
   ctaText: 'Comprar {categoria}',
 };
 
@@ -257,7 +257,7 @@ export function BannersSection() {
 
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
               <span style={labelStyle}>Título</span>
-              <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} style={inputStyle} />
+              <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} spellCheck={false} style={inputStyle} />
               {editingSlot === 'promo' && (
                 <span style={{ display: 'block', marginTop: 6, fontSize: 11, color: 'var(--ink-40)' }}>
                   Usa <code>{'{categoria}'}</code>, <code>{'{fechaDesde}'}</code> y <code>{'{fechaHasta}'}</code> donde quieras que se actualicen solas al cambiar la categoría o las fechas de vigencia.
@@ -284,12 +284,12 @@ export function BannersSection() {
 
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
               <span style={labelStyle}>Descripción</span>
-              <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} />
+              <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} spellCheck={false} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} />
             </label>
 
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
               <span style={labelStyle}>Texto del botón (CTA)</span>
-              <input value={form.ctaText} onChange={(e) => setForm((f) => ({ ...f, ctaText: e.target.value }))} style={inputStyle} />
+              <input value={form.ctaText} onChange={(e) => setForm((f) => ({ ...f, ctaText: e.target.value }))} spellCheck={false} style={inputStyle} />
             </label>
 
             {editingSlot === 'promo' && (
