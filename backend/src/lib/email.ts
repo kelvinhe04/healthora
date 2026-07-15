@@ -191,19 +191,68 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, '&#39;');
 }
 
-function getProductImageUrl(item: OrderItem, cidMap?: Map<string, string>): string {
-  if (item.imageUrl) {
-    if (/^data:/i.test(item.imageUrl)) {
-      const cid = cidMap?.get(item.productId);
-      return cid ? `cid:${cid}` : '';
-    }
-    return toAbsoluteAssetUrl(item.imageUrl);
-  }
+function getRemoteProductImageUrl(item: OrderItem): string {
+  if (item.imageUrl) return toAbsoluteAssetUrl(item.imageUrl);
   if (item.category) {
     const folder = CATEGORY_FOLDER_BY_ID[item.category] || item.category;
     return toAbsoluteAssetUrl(`/products/${folder}/${item.productId}-1.jpg`);
   }
   return toAbsoluteAssetUrl(`/products/${item.productId}-1.jpg`);
+}
+
+/** Prefers the inline CID attachment (always renders, regardless of remote-image blocking) and
+ * only falls back to hotlinking the remote URL if embedding it failed (see buildImageCidMap) - a
+ * broken hotlink is a better failure mode than an empty `src`. */
+function getProductImageUrl(item: OrderItem, cidMap?: Map<string, string>): string {
+  const cid = cidMap?.get(item.productId);
+  if (cid) return `cid:${cid}`;
+  if (item.imageUrl && /^data:/i.test(item.imageUrl)) return '';
+  return getRemoteProductImageUrl(item);
+}
+
+type ImageAttachment = { cid: string; filename: string; content: Buffer; contentType: string };
+
+/** Mail clients (Gmail included) block remote/hotlinked images by default on messages they treat
+ * cautiously - which includes anything landing in spam - so a product image referenced by a plain
+ * `https://` URL renders as a broken icon there (see issue #252). Embedding every product image as
+ * an inline CID attachment sidesteps that entirely: the image ships as part of the message itself,
+ * so it always renders. Fetches run in parallel; a failed fetch just falls back to hotlinking
+ * (getProductImageUrl) instead of failing the whole email send. */
+async function buildImageCidMap(items: OrderItem[]): Promise<{ cidMap: Map<string, string>; attachments: ImageAttachment[] }> {
+  const cidMap = new Map<string, string>();
+  const attachments: ImageAttachment[] = [];
+
+  await Promise.all(
+    items.map(async (item) => {
+      const cid = `product-img-${item.productId}`;
+
+      if (item.imageUrl && /^data:/i.test(item.imageUrl)) {
+        const match = item.imageUrl.match(/^data:([^;]+);base64,(.+)$/);
+        if (!match) return;
+        const [, contentType, b64] = match;
+        const ext = contentType.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg';
+        cidMap.set(item.productId, cid);
+        attachments.push({ cid, filename: `${item.productId}.${ext}`, content: Buffer.from(b64, 'base64'), contentType });
+        return;
+      }
+
+      const url = getRemoteProductImageUrl(item);
+      try {
+        const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) return;
+        const contentType = res.headers.get('content-type') || 'image/jpeg';
+        if (!/^image\//i.test(contentType)) return;
+        const content = Buffer.from(await res.arrayBuffer());
+        const ext = contentType.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg';
+        cidMap.set(item.productId, cid);
+        attachments.push({ cid, filename: `${item.productId}.${ext}`, content, contentType });
+      } catch (err) {
+        console.error('[EMAIL] Failed to fetch product image for inline embedding:', url, err);
+      }
+    }),
+  );
+
+  return { cidMap, attachments };
 }
 
 function formatPrice(amount: number): string {
@@ -352,21 +401,10 @@ export async function sendOrderConfirmationEmail(data: EmailData): Promise<void>
     return;
   }
 
-  // Build CID map for base64 product images so they embed correctly in all email clients
-  const cidMap = new Map<string, string>();
-  const attachments: Array<{ cid: string; filename: string; content: Buffer; contentType: string }> = [];
-  for (const item of items) {
-    if (item.imageUrl && /^data:/i.test(item.imageUrl)) {
-      const match = item.imageUrl.match(/^data:([^;]+);base64,(.+)$/);
-      if (match) {
-        const [, contentType, b64] = match;
-        const ext = contentType.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg';
-        const cid = `product-img-${item.productId}`;
-        cidMap.set(item.productId, cid);
-        attachments.push({ cid, filename: `${item.productId}.${ext}`, content: Buffer.from(b64, 'base64'), contentType });
-      }
-    }
-  }
+  // Every product image embeds inline via CID so it renders even when the message lands in spam
+  // and the client blocks remote images (see issue #252) - built once so both buildProductRows and
+  // the transporter's `attachments` share the same cid/attachment pairs.
+  const { cidMap, attachments } = await buildImageCidMap(items);
 
   const safeCustomerName = escapeHtml(customerName);
   const safeOrderNumber = escapeHtml(orderId.slice(-8).toUpperCase());
