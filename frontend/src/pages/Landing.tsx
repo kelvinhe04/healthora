@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, useMemo, createContext, useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { Parallax } from 'react-scroll-parallax';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -15,6 +16,7 @@ import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 import { useProducts } from '../hooks/useProducts';
 import { useCategories } from '../hooks/useCategories';
+import { useBanners } from '../hooks/useBanners';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { api } from '../lib/api';
 import { NEEDS } from '../lib/needs';
@@ -111,6 +113,20 @@ function BrandLogo({ brand, onBrandClick }: { brand: BrandItem; onBrandClick: (n
     >
       {brand.name}
     </div>
+  );
+}
+
+/** Renders a banner title, italicizing `highlightWord` in the accent color when it's a literal
+ * substring of `title` (admin-authored banners, issue #265) - falls back to plain text otherwise. */
+function BannerTitle({ title, highlightWord }: { title: string; highlightWord?: string }) {
+  const idx = highlightWord ? title.indexOf(highlightWord) : -1;
+  if (idx === -1) return <>{title}</>;
+  return (
+    <>
+      {title.slice(0, idx)}
+      <em style={{ color: 'var(--green)' }}>{highlightWord}</em>
+      {title.slice(idx + (highlightWord as string).length)}
+    </>
   );
 }
 
@@ -367,6 +383,19 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
 
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+  const { data: banners = [] } = useBanners();
+  const [primaryBanner, secondaryBanner] = banners;
+  const routerNavigate = useNavigate();
+  // ctaHref comes from the admin-authored Banner document (issue #265), not the app's closed
+  // View union, so it isn't known at compile time - external links open in a new tab, internal
+  // ones go through the router.
+  const handleBannerCta = (href: string) => {
+    if (/^https?:\/\//.test(href)) {
+      window.open(href, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    routerNavigate({ to: href });
+  };
 
   const [isMounting, setIsMounting] = useState(!landingInitialLoadDone);
   useEffect(() => {
@@ -868,85 +897,104 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
         <RecentlyViewedSection onOpenProduct={onOpenProduct} onAdd={onAdd} />
       </RevealSection>
 
-      {/* PROMO BAND */}
-      <RevealSection id="ofertas" style={{ padding: secPad }} delay={80}>
-        <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '2fr 1fr', gap: 16 }}>
-          <div className="promo-banner" style={{ background: 'var(--lime)', borderRadius: isSmall ? 20 : 28, padding: isMobile ? 28 : isTablet ? 36 : 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: isMobile ? 280 : 360, position: 'relative', overflow: 'hidden' }}>
-            <div style={{ maxWidth: 420 }}>
-              <div style={{ ...headKicker, color: 'var(--ink-60)' }}>Promoción destacada</div>
-              <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 36 : isTablet ? 44 : 56, letterSpacing: '-0.03em', lineHeight: 0.98, margin: '12px 0 16px', color: 'var(--ink)' }}>25% OFF en tu<br />rutina de skincare</h3>
-              <p style={{ fontSize: isMobile ? 13 : 15, lineHeight: 1.5, color: 'var(--ink-60)', marginBottom: 24, maxWidth: 380 }}>Aplica en productos de <strong>Salud de la piel</strong> e <strong>Hidratantes</strong>. Válido hasta el 30 de mayo con el código <strong>PIEL25</strong>.</p>
-              <AnimatedButton variant="primary" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Comprar rutina" />
-            </div>
-            {!isMobile && (
-              <div style={{ position: 'absolute', right: -15, bottom: 60, display: 'flex', gap: 16, zIndex: 10, alignItems: 'flex-end', transform: isTablet ? 'scale(0.8)' : 'none', transformOrigin: 'bottom right' }}>
-                {promoSkinProduct && (
-                <Parallax speed={4} style={{ pointerEvents: 'auto' }}>
-                  <div 
-                    className="promo-card" 
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'rotate(-6deg) scale(1.08) translateY(-8px)';
-                      e.currentTarget.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.25))';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'rotate(-6deg) scale(1) translateY(0)';
-                      e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
-                    }}
-                    onClick={() => onOpenProduct(promoSkinProduct)}
-                    style={{ 
-                      transform: 'rotate(-6deg)', 
-                      cursor: 'pointer', 
-                      transition: 'transform 0.25s ease, filter 0.25s ease', 
-                      filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))',
-                      pointerEvents: 'auto',
-                      minWidth: 120,
-                      minHeight: 140,
-                    }}
-                  >
-                    <ProductImage product={promoSkinProduct} size="md" priority />
+      {/* PROMO BAND — banners editables desde el admin (issue #265) */}
+      {(primaryBanner || secondaryBanner) && (
+        <RevealSection id="ofertas" style={{ padding: secPad }} delay={80}>
+          <div style={{ display: 'grid', gridTemplateColumns: isSmall || !secondaryBanner ? '1fr' : '2fr 1fr', gap: 16 }}>
+            {primaryBanner && (
+              <div className="promo-banner" style={{ background: primaryBanner.backgroundColor || 'var(--lime)', borderRadius: isSmall ? 20 : 28, padding: isMobile ? 28 : isTablet ? 36 : 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: isMobile ? 280 : 360, position: 'relative', overflow: 'hidden' }}>
+                <div style={{ maxWidth: 420 }}>
+                  {primaryBanner.kicker && <div style={{ ...headKicker, color: 'var(--ink-60)' }}>{primaryBanner.kicker}</div>}
+                  <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 36 : isTablet ? 44 : 56, letterSpacing: '-0.03em', lineHeight: 0.98, margin: '12px 0 16px', color: 'var(--ink)' }}>
+                    <BannerTitle title={primaryBanner.title} highlightWord={primaryBanner.highlightWord} />
+                  </h3>
+                  {primaryBanner.description && (
+                    <p style={{ fontSize: isMobile ? 13 : 15, lineHeight: 1.5, color: 'var(--ink-60)', marginBottom: 24, maxWidth: 380 }}>{primaryBanner.description}</p>
+                  )}
+                  <AnimatedButton variant="primary" onClick={() => handleBannerCta(primaryBanner.ctaHref)} icon={<Icon name="arrow-right" size={14} />} text={primaryBanner.ctaText} />
+                </div>
+                {!isMobile && !primaryBanner.imageUrl && (
+                  <div style={{ position: 'absolute', right: -15, bottom: 60, display: 'flex', gap: 16, zIndex: 10, alignItems: 'flex-end', transform: isTablet ? 'scale(0.8)' : 'none', transformOrigin: 'bottom right' }}>
+                    {promoSkinProduct && (
+                    <Parallax speed={4} style={{ pointerEvents: 'auto' }}>
+                      <div
+                        className="promo-card"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'rotate(-6deg) scale(1.08) translateY(-8px)';
+                          e.currentTarget.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.25))';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'rotate(-6deg) scale(1) translateY(0)';
+                          e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
+                        }}
+                        onClick={() => onOpenProduct(promoSkinProduct)}
+                        style={{
+                          transform: 'rotate(-6deg)',
+                          cursor: 'pointer',
+                          transition: 'transform 0.25s ease, filter 0.25s ease',
+                          filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))',
+                          pointerEvents: 'auto',
+                          minWidth: 120,
+                          minHeight: 140,
+                        }}
+                      >
+                        <ProductImage product={promoSkinProduct} size="md" priority />
+                      </div>
+                    </Parallax>
+                  )}
+                  {promoHydrationProduct && (
+                    <Parallax speed={6} style={{ pointerEvents: 'auto' }}>
+                      <div
+                        className="promo-card"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'rotate(14deg) translateY(12px) scale(1.08) translateY(-8px)';
+                          e.currentTarget.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.25))';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'rotate(14deg) translateY(20px) scale(1) translateY(0)';
+                          e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
+                        }}
+                        onClick={() => onOpenProduct(promoHydrationProduct)}
+                        style={{
+                          transform: 'rotate(14deg) translateY(20px)',
+                          cursor: 'pointer',
+                          transition: 'transform 0.25s ease, filter 0.25s ease',
+                          filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))',
+                          pointerEvents: 'auto',
+                          minWidth: 120,
+                          minHeight: 140,
+                        }}
+                      >
+                        <ProductImage product={promoHydrationProduct} size="md" priority />
+                      </div>
+                    </Parallax>
+                  )}
                   </div>
-                </Parallax>
-              )}
-              {promoHydrationProduct && (
-                <Parallax speed={6} style={{ pointerEvents: 'auto' }}>
-                  <div 
-                    className="promo-card" 
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'rotate(14deg) translateY(12px) scale(1.08) translateY(-8px)';
-                      e.currentTarget.style.filter = 'drop-shadow(0 20px 30px rgba(0,0,0,0.25))';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'rotate(14deg) translateY(20px) scale(1) translateY(0)';
-                      e.currentTarget.style.filter = 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))';
-                    }}
-                    onClick={() => onOpenProduct(promoHydrationProduct)}
-                    style={{ 
-                      transform: 'rotate(14deg) translateY(20px)',
-                      cursor: 'pointer', 
-                      transition: 'transform 0.25s ease, filter 0.25s ease', 
-                      filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.15))',
-                      pointerEvents: 'auto',
-                      minWidth: 120,
-                      minHeight: 140,
-                    }}
-                  >
-                    <ProductImage product={promoHydrationProduct} size="md" priority />
+                )}
+                {!isMobile && primaryBanner.imageUrl && (
+                  <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '42%' }}>
+                    <img src={primaryBanner.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
-                </Parallax>
-              )}
+                )}
+              </div>
+            )}
+            {secondaryBanner && (
+              <div style={{ background: secondaryBanner.backgroundColor || 'var(--cream-2)', borderRadius: isSmall ? 20 : 28, padding: isMobile ? 24 : 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: isMobile ? 220 : 360 }}>
+                <div>
+                  {secondaryBanner.kicker && <div style={headKicker}>{secondaryBanner.kicker}</div>}
+                  <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 26 : 36, letterSpacing: '-0.02em', lineHeight: 1, margin: '12px 0 16px' }}>
+                    <BannerTitle title={secondaryBanner.title} highlightWord={secondaryBanner.highlightWord} />
+                  </h3>
+                  {secondaryBanner.description && (
+                    <p style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--ink-60)', marginBottom: 20 }}>{secondaryBanner.description}</p>
+                  )}
+                </div>
+                <AnimatedButton variant="primary" full onClick={() => handleBannerCta(secondaryBanner.ctaHref)} text={secondaryBanner.ctaText} />
               </div>
             )}
           </div>
-          <div style={{ background: 'var(--cream-2)', borderRadius: isSmall ? 20 : 28, padding: isMobile ? 24 : 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: isMobile ? 220 : 360 }}>
-            <div>
-              <div style={headKicker}>Club Healthora</div>
-              <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 26 : 36, letterSpacing: '-0.02em', lineHeight: 1, margin: '12px 0 16px' }}>Una muestra <em style={{ color: 'var(--green)' }}>gratis</em> en órdenes premium</h3>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--ink-60)', marginBottom: 20 }}>Regístrate y recibe 1 muestra seleccionada en compras mayores a $200.</p>
-            </div>
-            <AnimatedButton variant="primary" full onClick={() => onNav('club')} text="Unirme al club" />
-          </div>
-        </div>
-      </RevealSection>
+        </RevealSection>
+      )}
 
       {/* PARALLAX BANNER (CINEMATIC WITH GSAP) — simplified on mobile */}
       <RevealSection style={{ padding: isMobile ? '48px 0 0' : '80px 0 0' }} delay={90}>

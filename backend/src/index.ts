@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import { connectDB } from './db/connection';
 import { productsRouter } from './routes/products';
 import { categoriesRouter } from './routes/categories';
+import { bannersRouter } from './routes/banners';
 import { ordersRouter } from './routes/orders';
 import { checkoutRouter } from './routes/checkout';
 import { promotionsRouter } from './routes/promotions';
@@ -27,6 +28,7 @@ import { adminCatalogRouter } from './routes/admin/adminCatalog';
 import { adminCouponsRouter } from './routes/admin/adminCoupons';
 import { adminReportsRouter } from './routes/admin/adminReports';
 import { adminSettingsRouter } from './routes/admin/adminSettings';
+import { adminBannersRouter } from './routes/admin/adminBanners';
 import { wishlistRouter } from './routes/wishlist';
 import { accountRouter } from './routes/account';
 import { subscriptionsRouter } from './routes/subscriptions';
@@ -90,6 +92,7 @@ app.use(
 
 app.route('/products', productsRouter);
 app.route('/categories', categoriesRouter);
+app.route('/banners', bannersRouter);
 app.route('/orders', ordersRouter);
 app.route('/returns', returnsRouter);
 app.route('/account', accountRouter);
@@ -120,6 +123,7 @@ app.route('/admin/catalog', adminCatalogRouter);
 app.route('/admin/coupons', adminCouponsRouter);
 app.route('/admin/reports', adminReportsRouter);
 app.route('/admin/settings', adminSettingsRouter);
+app.route('/admin/banners', adminBannersRouter);
 
 // Remote MCP server (Model Context Protocol) - exposes read/write tools for catalog, variantes,
 // stock, ordenes, usuarios y ventas, importable desde Claude Code / Codex / conectores de

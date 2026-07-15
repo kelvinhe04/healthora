@@ -291,6 +291,24 @@ export type Coupon = {
   updatedAt?: string;
 };
 
+export type Banner = {
+  _id: string;
+  kicker?: string;
+  title: string;
+  highlightWord?: string;
+  description?: string;
+  ctaText: string;
+  ctaHref: string;
+  backgroundColor?: string;
+  imageUrl?: string;
+  active: boolean;
+  order: number;
+  startDate?: string | null;
+  endDate?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export interface Review {
   _id: string;
   productId: string;

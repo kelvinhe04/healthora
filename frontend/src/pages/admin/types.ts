@@ -73,6 +73,7 @@ export type AdminPage =
   | "products"
   | "categories"
   | "coupons"
+  | "banners"
   | "users"
   | "sales"
   | "earnings"

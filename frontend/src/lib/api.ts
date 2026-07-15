@@ -22,6 +22,7 @@ import type {
   NotificationInbox,
   Coupon,
   SampleOption,
+  Banner,
 } from "../types";
 import type { CartItem } from "../types";
 
@@ -57,6 +58,21 @@ async function request<T>(
   return res.json();
 }
 
+type BannerPayload = {
+  kicker?: string;
+  title: string;
+  highlightWord?: string;
+  description?: string;
+  ctaText: string;
+  ctaHref: string;
+  backgroundColor?: string;
+  imageUrl?: string;
+  active?: boolean;
+  order?: number;
+  startDate?: string | null;
+  endDate?: string | null;
+};
+
 function filtersToQuery(f: ProductFilters): string {
   const p = new URLSearchParams();
   if (f.category) p.set("category", f.category);
@@ -80,6 +96,9 @@ export const api = {
   },
   categories: {
     list: () => request<Category[]>("/categories"),
+  },
+  banners: {
+    list: () => request<Banner[]>("/banners"),
   },
   orders: {
     list: (token: string) => request<Order[]>("/orders", undefined, token),
@@ -500,6 +519,23 @@ export const api = {
         request<{ sampleMaxPrice: number }>(
           "/admin/settings",
           { method: "PUT", body: JSON.stringify(body) },
+          token,
+        ),
+    },
+    banners: {
+      list: (token: string) => request<Banner[]>("/admin/banners", undefined, token),
+      create: (data: BannerPayload, token: string) =>
+        request<Banner>("/admin/banners", { method: "POST", body: JSON.stringify(data) }, token),
+      update: (id: string, data: BannerPayload, token: string) =>
+        request<Banner>(
+          `/admin/banners/${encodeURIComponent(id)}`,
+          { method: "PUT", body: JSON.stringify(data) },
+          token,
+        ),
+      remove: (id: string, token: string) =>
+        request<{ ok: boolean; id: string }>(
+          `/admin/banners/${encodeURIComponent(id)}`,
+          { method: "DELETE" },
           token,
         ),
     },
