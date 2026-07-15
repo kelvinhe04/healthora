@@ -604,16 +604,24 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     queryFn: async () => api.admin.categories.list(await getAdminToken()),
   });
 
+  // Shares the ['admin-coupons'] cache entry with CouponsSection - only one fetch happens even
+  // though both read it, since it's the same query key on the same QueryClient.
+  const { data: adminCoupons = [] } = useQuery({
+    queryKey: ['admin-coupons'],
+    queryFn: async () => api.admin.coupons.list(await getAdminToken()),
+  });
+
   const sidebarCounts = useMemo(
     () => ({
       orders: dashboardData?.kpis.totalOrders ?? orders.length,
       products: productsCountQuery.data?.count ?? 0,
       categories: adminCategories.length,
+      coupons: adminCoupons.length,
       users: customers.length,
       returns: returnsCountQuery.data?.count ?? 0,
       reviews: reviewsCountQuery.data?.count ?? 0,
     }),
-    [dashboardData, orders.length, productsCountQuery.data, adminCategories.length, customers.length, returnsCountQuery.data, reviewsCountQuery.data],
+    [dashboardData, orders.length, productsCountQuery.data, adminCategories.length, adminCoupons.length, customers.length, returnsCountQuery.data, reviewsCountQuery.data],
   );
 
   const categories = useMemo(() => {
