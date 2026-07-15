@@ -1,52 +1,40 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Banner } from '../../db/models/Banner';
-import { intFromInput, objectIdSchema, optionalTextField, textField } from '../../lib/validation';
+import { updateBannerSlot } from '../../lib/bannerAdmin';
+import { optionalTextField, textField } from '../../lib/validation';
 import { errorResult, jsonResult } from '../toolHelpers';
 
-const bannerFieldsSchema = {
-  kicker: optionalTextField(120),
-  title: textField(160),
-  highlightWord: optionalTextField(60),
-  description: optionalTextField(400),
-  ctaText: textField(60),
-  ctaHref: textField(300),
-  backgroundColor: optionalTextField(40),
-  imageUrl: optionalTextField(500),
-  active: z.coerce.boolean().optional(),
-  order: intFromInput(0, 999).optional(),
-  startDate: z.string().nullable().optional(),
-  endDate: z.string().nullable().optional(),
-};
+const bannerSlotSchema = z.enum(['promo', 'club']);
 
 export function registerBannerTools(server: McpServer) {
   server.registerTool(
-    'banners.upsertBanner',
+    'banners.updateBanner',
     {
-      title: 'Crear o actualizar banner promocional',
+      title: 'Editar uno de los 2 banners del landing',
       description:
-        'Crea un banner nuevo o, si se pasa id, actualiza uno existente (titulo, CTA, color/imagen de fondo, vigencia, activo/orden). Equivalente a la sección Banners del admin (issue #265).',
+        'Edita el banner "promo" (25% OFF, requiere categoryId - de ahí sale el link y las 2 fotos de producto) o "club" (Club Healthora) del landing. No crea banners nuevos: son exactamente esos 2 slots fijos. Equivalente a la sección Banners del admin (issue #265).',
       inputSchema: {
-        id: objectIdSchema.optional(),
-        ...bannerFieldsSchema,
+        slot: bannerSlotSchema,
+        kicker: optionalTextField(120),
+        title: textField(160),
+        highlightWord: optionalTextField(60),
+        description: optionalTextField(400),
+        ctaText: textField(60),
+        backgroundColor: optionalTextField(40),
+        active: z.coerce.boolean().optional(),
+        startDate: z.string().nullable().optional(),
+        endDate: z.string().nullable().optional(),
+        categoryId: optionalTextField(120).describe('Obligatorio para slot "promo" (id de Category existente); ignorado para "club".'),
       },
     },
-    async ({ id, ...input }) => {
+    async ({ slot, startDate, endDate, ...input }) => {
       try {
-        const parsed = z.object(bannerFieldsSchema).parse(input);
-        const data = {
-          ...parsed,
-          startDate: parsed.startDate ? new Date(parsed.startDate) : parsed.startDate,
-          endDate: parsed.endDate ? new Date(parsed.endDate) : parsed.endDate,
-        };
-
-        if (id) {
-          const banner = await Banner.findByIdAndUpdate(id, { $set: data }, { returnDocument: 'after' }).lean();
-          if (!banner) return errorResult(`No se encontró ningún banner con id "${id}".`);
-          return jsonResult(banner);
-        }
-
-        const banner = await Banner.create(data);
+        const banner = await updateBannerSlot(slot, {
+          ...input,
+          startDate: startDate ? new Date(startDate) : startDate,
+          endDate: endDate ? new Date(endDate) : endDate,
+        });
         return jsonResult(banner);
       } catch (error) {
         return errorResult(error instanceof Error ? error.message : 'No se pudo guardar el banner.');
@@ -57,12 +45,12 @@ export function registerBannerTools(server: McpServer) {
   server.registerTool(
     'banners.listBanners',
     {
-      title: 'Listar banners promocionales',
-      description: 'Lista todos los banners del admin (activos e inactivos), en el orden de despliegue.',
+      title: 'Listar los banners del landing',
+      description: 'Lista los 2 banners fijos del landing (promo y club), activos e inactivos.',
       inputSchema: {},
     },
     async () => {
-      const banners = await Banner.find().sort({ order: 1, createdAt: 1 }).lean();
+      const banners = await Banner.find().sort({ slot: 1 }).lean();
       return jsonResult({ count: banners.length, banners });
     },
   );

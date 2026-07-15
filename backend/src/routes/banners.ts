@@ -9,9 +9,9 @@ export const bannersRouter = new Hono().get('/', async (c) => {
       { $or: [{ startDate: null }, { startDate: { $lte: now } }] },
       { $or: [{ endDate: null }, { endDate: { $gte: now } }] },
     ],
-  })
-    .sort({ order: 1, createdAt: 1 })
-    .lean();
+  }).lean();
 
-  return c.json(banners);
+  const promo = banners.find((b) => b.slot === 'promo') ?? null;
+  const club = banners.find((b) => b.slot === 'club') ?? null;
+  return c.json({ promo, club });
 });

@@ -23,6 +23,7 @@ import type {
   Coupon,
   SampleOption,
   Banner,
+  BannerSlot,
 } from "../types";
 import type { CartItem } from "../types";
 
@@ -64,13 +65,12 @@ type BannerPayload = {
   highlightWord?: string;
   description?: string;
   ctaText: string;
-  ctaHref: string;
   backgroundColor?: string;
-  imageUrl?: string;
   active?: boolean;
-  order?: number;
   startDate?: string | null;
   endDate?: string | null;
+  /** Obligatorio al guardar el slot 'promo'; se ignora para 'club'. */
+  categoryId?: string;
 };
 
 function filtersToQuery(f: ProductFilters): string {
@@ -98,7 +98,7 @@ export const api = {
     list: () => request<Category[]>("/categories"),
   },
   banners: {
-    list: () => request<Banner[]>("/banners"),
+    list: () => request<{ promo: Banner | null; club: Banner | null }>("/banners"),
   },
   orders: {
     list: (token: string) => request<Order[]>("/orders", undefined, token),
@@ -524,18 +524,10 @@ export const api = {
     },
     banners: {
       list: (token: string) => request<Banner[]>("/admin/banners", undefined, token),
-      create: (data: BannerPayload, token: string) =>
-        request<Banner>("/admin/banners", { method: "POST", body: JSON.stringify(data) }, token),
-      update: (id: string, data: BannerPayload, token: string) =>
+      update: (slot: BannerSlot, data: BannerPayload, token: string) =>
         request<Banner>(
-          `/admin/banners/${encodeURIComponent(id)}`,
+          `/admin/banners/${slot}`,
           { method: "PUT", body: JSON.stringify(data) },
-          token,
-        ),
-      remove: (id: string, token: string) =>
-        request<{ ok: boolean; id: string }>(
-          `/admin/banners/${encodeURIComponent(id)}`,
-          { method: "DELETE" },
           token,
         ),
     },

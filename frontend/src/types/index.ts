@@ -291,18 +291,23 @@ export type Coupon = {
   updatedAt?: string;
 };
 
+export type BannerSlot = 'promo' | 'club';
+
 export type Banner = {
   _id: string;
+  slot: BannerSlot;
   kicker?: string;
   title: string;
   highlightWord?: string;
   description?: string;
   ctaText: string;
+  /** Calculado por el backend (no editable) - ver buildCtaHref en bannerAdmin.ts. */
   ctaHref: string;
+  /** Solo aplica al slot 'promo': categoria cuyos primeros 2 productos con foto se muestran
+   * flotando sobre el banner, y de donde sale ctaHref. */
+  categoryId?: string | null;
   backgroundColor?: string;
-  imageUrl?: string;
   active: boolean;
-  order: number;
   startDate?: string | null;
   endDate?: string | null;
   createdAt?: string;

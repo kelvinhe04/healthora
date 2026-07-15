@@ -1,11 +1,13 @@
 import { Schema, model } from 'mongoose';
 
-/** Banners promocionales del landing (seccion "Ofertas", issue #265) - antes hardcodeados en
- * Landing.tsx, ahora editables desde el admin sin necesitar deploy. `order` decide que banner
- * ocupa el slot grande (izquierda) vs el chico (derecha) cuando hay 2+ activos; `startDate`/
- * `endDate` son opcionales para promos con vigencia (ej. "valido hasta el 30 de mayo"). */
+/** Los 2 banners fijos del landing (seccion "Ofertas", issue #265) - antes hardcodeados en
+ * Landing.tsx, ahora editables desde el admin sin necesitar deploy. No es una coleccion de
+ * banners arbitrarios: `slot` identifica cual de los 2 es (unico, sin crear/eliminar desde el
+ * admin - ver adminBanners.ts). `ctaHref` no se edita a mano: se calcula solo en el backend
+ * (slot 'promo' -> catalogo filtrado por `categoryId`; slot 'club' -> siempre "/club"). */
 const BannerSchema = new Schema(
   {
+    slot: { type: String, enum: ['promo', 'club'], required: true, unique: true },
     kicker: { type: String, default: '' },
     title: { type: String, required: true },
     /** Palabra/frase dentro de `title` a resaltar en cursiva/color acento (ej. "gratis" en "Una
@@ -13,12 +15,12 @@ const BannerSchema = new Schema(
     highlightWord: { type: String, default: '' },
     description: { type: String, default: '' },
     ctaText: { type: String, required: true },
-    /** Ruta interna (ej. "/catalog", "/club") o URL externa completa. */
     ctaHref: { type: String, required: true },
+    /** Solo aplica al slot 'promo': categoria (Category.id) cuyos primeros 2 productos con foto
+     * se muestran flotando sobre el banner (ver Landing.tsx) y que arma `ctaHref` solo. */
+    categoryId: { type: String, default: null },
     backgroundColor: { type: String, default: '#e4f248' },
-    imageUrl: { type: String, default: '' },
     active: { type: Boolean, default: true },
-    order: { type: Number, default: 0 },
     startDate: { type: Date, default: null },
     endDate: { type: Date, default: null },
   },

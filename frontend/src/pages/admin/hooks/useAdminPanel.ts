@@ -611,24 +611,17 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
     queryFn: async () => api.admin.coupons.list(await getAdminToken()),
   });
 
-  // Shares the ['admin-banners'] cache entry with BannersSection.
-  const { data: adminBanners = [] } = useQuery({
-    queryKey: ['admin-banners'],
-    queryFn: async () => api.admin.banners.list(await getAdminToken()),
-  });
-
   const sidebarCounts = useMemo(
     () => ({
       orders: dashboardData?.kpis.totalOrders ?? orders.length,
       products: productsCountQuery.data?.count ?? 0,
       categories: adminCategories.length,
       coupons: adminCoupons.length,
-      banners: adminBanners.length,
       users: customers.length,
       returns: returnsCountQuery.data?.count ?? 0,
       reviews: reviewsCountQuery.data?.count ?? 0,
     }),
-    [dashboardData, orders.length, productsCountQuery.data, adminCategories.length, adminCoupons.length, adminBanners.length, customers.length, returnsCountQuery.data, reviewsCountQuery.data],
+    [dashboardData, orders.length, productsCountQuery.data, adminCategories.length, adminCoupons.length, customers.length, returnsCountQuery.data, reviewsCountQuery.data],
   );
 
   const categories = useMemo(() => {

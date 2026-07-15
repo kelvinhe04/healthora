@@ -91,7 +91,7 @@ describe('MCP server', () => {
         'analytics.getSalesReport',
         'audit.getAdminActions',
         'banners.listBanners',
-        'banners.upsertBanner',
+        'banners.updateBanner',
         'catalog.listProducts',
         'catalog.upsertProduct',
         'categories.upsertCategory',

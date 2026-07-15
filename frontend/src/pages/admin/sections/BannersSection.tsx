@@ -1,18 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  Card,
-  PageHeader,
-  StatusPill,
-  tableStyle,
-  td,
-  th,
-  trStyle,
-} from '../../../components/admin';
+import { Card, PageHeader, StatusPill } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { api } from '../../../lib/api';
-import type { Banner } from '../../../types';
+import type { Banner, BannerSlot } from '../../../types';
 import { useAdminToken } from '../hooks/useAdminToken';
 
 type BannerForm = {
@@ -21,14 +13,19 @@ type BannerForm = {
   highlightWord: string;
   description: string;
   ctaText: string;
-  ctaHref: string;
   backgroundColor: string;
-  imageUrl: string;
+  categoryId: string;
   active: boolean;
-  order: string;
   startDate: string;
   endDate: string;
 };
+
+const COLOR_PRESETS = [
+  { label: 'Lima', value: 'var(--lime)' },
+  { label: 'Verde', value: 'var(--green)' },
+  { label: 'Coral', value: 'var(--coral)' },
+  { label: 'Crema', value: 'var(--cream-2)' },
+];
 
 const emptyForm = (): BannerForm => ({
   kicker: '',
@@ -36,11 +33,9 @@ const emptyForm = (): BannerForm => ({
   highlightWord: '',
   description: '',
   ctaText: '',
-  ctaHref: '/catalog',
-  backgroundColor: 'var(--lime)',
-  imageUrl: '',
+  backgroundColor: COLOR_PRESETS[0].value,
+  categoryId: '',
   active: true,
-  order: '0',
   startDate: '',
   endDate: '',
 });
@@ -48,11 +43,91 @@ const emptyForm = (): BannerForm => ({
 const inputStyle = { width: '100%', marginTop: 6, padding: '10px 12px', borderRadius: 12, border: '1px solid var(--ink-06)', boxSizing: 'border-box' as const };
 const labelStyle = { fontSize: 12, color: 'var(--ink-60)' };
 
+function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const isCustom = !COLOR_PRESETS.some((p) => p.value === value);
+  const hexValue = /^#[0-9a-f]{6}$/i.test(value) ? value : '#e4f248';
+
+  return (
+    <div>
+      <span style={labelStyle}>Color de fondo</span>
+      <div style={{ display: 'flex', gap: 8, marginTop: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+        {COLOR_PRESETS.map((preset) => (
+          <button
+            key={preset.value}
+            type="button"
+            title={preset.label}
+            onClick={() => onChange(preset.value)}
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 999,
+              background: preset.value,
+              border: value === preset.value ? '2px solid var(--ink)' : '1px solid var(--ink-12)',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          />
+        ))}
+        <button
+          type="button"
+          title="Personalizado"
+          onClick={() => onChange(hexValue)}
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: 999,
+            background: 'conic-gradient(red, yellow, lime, cyan, blue, magenta, red)',
+            border: isCustom ? '2px solid var(--ink)' : '1px solid var(--ink-12)',
+            cursor: 'pointer',
+            padding: 0,
+          }}
+        />
+        {isCustom && (
+          <input
+            type="color"
+            value={hexValue}
+            onChange={(e) => onChange(e.target.value)}
+            style={{ width: 40, height: 30, padding: 0, border: '1px solid var(--ink-12)', borderRadius: 8, cursor: 'pointer' }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BannerPreviewCard({ banner, label, onEdit }: { banner?: Banner; label: string; onEdit: () => void }) {
+  return (
+    <Card>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            background: banner?.backgroundColor || 'var(--ink-06)',
+            border: '1px solid var(--ink-06)',
+            flexShrink: 0,
+          }}
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 11, color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+          <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{banner?.title || 'Sin configurar'}</div>
+        </div>
+        {banner && (
+          <StatusPill tone={banner.active ? 'success' : 'neutral'}>{banner.active ? 'Activo' : 'Inactivo'}</StatusPill>
+        )}
+      </div>
+      <div style={{ marginTop: 16 }}>
+        <AnimatedButton variant="secondary" onClick={onEdit} text="Editar" />
+      </div>
+    </Card>
+  );
+}
+
 export function BannersSection() {
   const getAdminToken = useAdminToken();
   const queryClient = useQueryClient();
-  const [modal, setModal] = useState<'create' | 'edit' | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingSlot, setEditingSlot] = useState<BannerSlot | null>(null);
   const [form, setForm] = useState<BannerForm>(emptyForm);
   const [error, setError] = useState('');
 
@@ -61,222 +136,106 @@ export function BannersSection() {
     queryFn: async () => api.admin.banners.list(await getAdminToken()),
   });
 
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => api.categories.list(),
+  });
+
+  const promoBanner = banners.find((b) => b.slot === 'promo');
+  const clubBanner = banners.find((b) => b.slot === 'club');
+
   const invalidate = () => void queryClient.invalidateQueries({ queryKey: ['admin-banners'] });
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      if (!editingSlot) throw new Error('Banner no seleccionado');
       const token = await getAdminToken();
-      const body = {
-        kicker: form.kicker.trim() || undefined,
-        title: form.title.trim(),
-        highlightWord: form.highlightWord.trim() || undefined,
-        description: form.description.trim() || undefined,
-        ctaText: form.ctaText.trim(),
-        ctaHref: form.ctaHref.trim(),
-        backgroundColor: form.backgroundColor.trim() || undefined,
-        imageUrl: form.imageUrl.trim() || undefined,
-        active: form.active,
-        order: form.order ? Number(form.order) : 0,
-        startDate: form.startDate ? new Date(form.startDate).toISOString() : null,
-        endDate: form.endDate ? new Date(form.endDate).toISOString() : null,
-      };
-      if (modal === 'create') return api.admin.banners.create(body, token);
-      if (!editingId) throw new Error('Banner no seleccionado');
-      return api.admin.banners.update(editingId, body, token);
+      return api.admin.banners.update(
+        editingSlot,
+        {
+          kicker: form.kicker.trim() || undefined,
+          title: form.title.trim(),
+          highlightWord: form.highlightWord.trim() || undefined,
+          description: form.description.trim() || undefined,
+          ctaText: form.ctaText.trim(),
+          backgroundColor: form.backgroundColor,
+          categoryId: editingSlot === 'promo' ? form.categoryId : undefined,
+          active: form.active,
+          startDate: form.startDate ? new Date(form.startDate).toISOString() : null,
+          endDate: form.endDate ? new Date(form.endDate).toISOString() : null,
+        },
+        token,
+      );
     },
     onSuccess: () => {
       invalidate();
-      setModal(null);
-      setEditingId(null);
-      setForm(emptyForm());
+      setEditingSlot(null);
       setError('');
     },
     onError: (e: Error) => setError(e.message),
   });
 
-  const toggleMutation = useMutation({
-    mutationFn: async (banner: Banner) => {
-      const token = await getAdminToken();
-      return api.admin.banners.update(
-        banner._id,
-        {
-          kicker: banner.kicker,
-          title: banner.title,
-          highlightWord: banner.highlightWord,
-          description: banner.description,
-          ctaText: banner.ctaText,
-          ctaHref: banner.ctaHref,
-          backgroundColor: banner.backgroundColor,
-          imageUrl: banner.imageUrl,
-          active: !banner.active,
-          order: banner.order,
-          startDate: banner.startDate,
-          endDate: banner.endDate,
-        },
-        token,
-      );
-    },
-    onSuccess: invalidate,
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => api.admin.banners.remove(id, await getAdminToken()),
-    onSuccess: invalidate,
-  });
-
-  const openCreate = () => {
-    setForm(emptyForm());
-    setError('');
-    setModal('create');
-  };
-
-  const openEdit = (banner: Banner) => {
-    setEditingId(banner._id);
+  const openEdit = (slot: BannerSlot, banner?: Banner) => {
+    setEditingSlot(slot);
     setForm({
-      kicker: banner.kicker || '',
-      title: banner.title,
-      highlightWord: banner.highlightWord || '',
-      description: banner.description || '',
-      ctaText: banner.ctaText,
-      ctaHref: banner.ctaHref,
-      backgroundColor: banner.backgroundColor || '',
-      imageUrl: banner.imageUrl || '',
-      active: banner.active,
-      order: String(banner.order ?? 0),
-      startDate: banner.startDate ? banner.startDate.slice(0, 10) : '',
-      endDate: banner.endDate ? banner.endDate.slice(0, 10) : '',
+      kicker: banner?.kicker || '',
+      title: banner?.title || '',
+      highlightWord: banner?.highlightWord || '',
+      description: banner?.description || '',
+      ctaText: banner?.ctaText || '',
+      backgroundColor: banner?.backgroundColor || COLOR_PRESETS[0].value,
+      categoryId: banner?.categoryId || '',
+      active: banner?.active ?? true,
+      startDate: banner?.startDate ? banner.startDate.slice(0, 10) : '',
+      endDate: banner?.endDate ? banner.endDate.slice(0, 10) : '',
     });
     setError('');
-    setModal('edit');
   };
+
+  const suggestDescription = () => {
+    const category = categories.find((c) => c.id === form.categoryId);
+    if (!category) return;
+    setForm((f) => ({ ...f, description: `Aplica en productos de ${category.label}.` }));
+  };
+
+  const categoryOptions = useMemo(
+    () => [...categories].sort((a, b) => a.label.localeCompare(b.label, 'es')),
+    [categories],
+  );
 
   return (
     <>
       <PageHeader
         loading={isLoading}
-        kicker={isLoading ? undefined : `Landing · ${banners.length} banners`}
+        kicker="Landing"
         title={
           <>
             Gestión de <em style={{ color: 'var(--green)' }}>banners</em>
           </>
         }
-        sub="Edita los banners promocionales de la sección Ofertas del landing sin necesitar deploy."
-        actions={<AnimatedButton variant="primary" onClick={openCreate} text="Nuevo banner" />}
+        sub="Edita los 2 banners de la sección Ofertas del landing sin necesitar deploy."
       />
 
-      <Card>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={th}>Orden</th>
-                <th style={th}>Banner</th>
-                <th style={th}>CTA</th>
-                <th style={th}>Vigencia</th>
-                <th style={th}>Estado</th>
-                <th style={th}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {banners.map((banner) => (
-                <tr key={banner._id} style={trStyle}>
-                  <td style={td}>{banner.order}</td>
-                  <td style={td}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span
-                        style={{
-                          width: 14,
-                          height: 14,
-                          borderRadius: 999,
-                          background: banner.backgroundColor || 'var(--green)',
-                          border: '1px solid var(--ink-06)',
-                          flexShrink: 0,
-                        }}
-                      />
-                      <div>
-                        {banner.kicker ? (
-                          <div style={{ fontSize: 11, color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{banner.kicker}</div>
-                        ) : null}
-                        <div style={{ fontWeight: 600 }}>{banner.title}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style={td}>
-                    {banner.ctaText}
-                    <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>{banner.ctaHref}</div>
-                  </td>
-                  <td style={td}>
-                    {banner.startDate || banner.endDate ? (
-                      <span style={{ fontSize: 12 }}>
-                        {banner.startDate ? new Date(banner.startDate).toLocaleDateString('es-PA') : '—'}
-                        {' → '}
-                        {banner.endDate ? new Date(banner.endDate).toLocaleDateString('es-PA') : '—'}
-                      </span>
-                    ) : (
-                      <span style={{ fontSize: 12, color: 'var(--ink-60)' }}>Sin límite</span>
-                    )}
-                  </td>
-                  <td style={td}>
-                    <StatusPill tone={banner.active ? 'success' : 'neutral'}>
-                      {banner.active ? 'Activo' : 'Inactivo'}
-                    </StatusPill>
-                  </td>
-                  <td style={td}>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button
-                        type="button"
-                        onClick={() => openEdit(banner)}
-                        style={{ border: '1px solid var(--ink-06)', background: 'var(--cream)', borderRadius: 999, padding: '6px 12px', cursor: 'pointer', fontSize: 12 }}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleMutation.mutate(banner)}
-                        style={{ border: '1px solid var(--ink-12)', background: 'transparent', borderRadius: 999, padding: '6px 12px', cursor: 'pointer', fontSize: 12 }}
-                      >
-                        {banner.active ? 'Desactivar' : 'Activar'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (confirm(`¿Eliminar el banner "${banner.title}"?`)) deleteMutation.mutate(banner._id);
-                        }}
-                        style={{ border: '1px solid var(--ink-12)', background: 'transparent', color: 'var(--red, crimson)', borderRadius: 999, padding: '6px 12px', cursor: 'pointer', fontSize: 12 }}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!isLoading && banners.length === 0 && (
-                <tr>
-                  <td style={{ ...td, padding: 24, textAlign: 'center', color: 'var(--ink-60)' }} colSpan={6}>
-                    No hay banners creados todavía.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+        <BannerPreviewCard banner={promoBanner} label="Promoción destacada" onEdit={() => openEdit('promo', promoBanner)} />
+        <BannerPreviewCard banner={clubBanner} label="Club Healthora" onEdit={() => openEdit('club', clubBanner)} />
+      </div>
 
-      <ModalOverlay open={modal !== null} onClose={() => setModal(null)} zIndex={120}>
+      <ModalOverlay open={editingSlot !== null} onClose={() => setEditingSlot(null)} zIndex={120}>
         <div style={{ width: '100%', maxWidth: 560, maxHeight: '86vh', overflowY: 'auto', background: 'var(--cream)', borderRadius: 24, border: '1px solid var(--ink-06)', padding: 24 }}>
           <h2 style={{ margin: '0 0 16px', fontFamily: '"Instrument Serif", serif', fontSize: 28 }}>
-            {modal === 'create' ? 'Nuevo banner' : 'Editar banner'}
+            Editar banner {editingSlot === 'promo' ? '· Promoción destacada' : '· Club Healthora'}
           </h2>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
               <span style={labelStyle}>Kicker (etiqueta pequeña)</span>
-              <input value={form.kicker} onChange={(e) => setForm((f) => ({ ...f, kicker: e.target.value }))} placeholder="Ej. Promoción destacada" style={inputStyle} />
+              <input value={form.kicker} onChange={(e) => setForm((f) => ({ ...f, kicker: e.target.value }))} style={inputStyle} />
             </label>
 
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
               <span style={labelStyle}>Título</span>
-              <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Ej. 25% OFF en tu rutina de skincare" style={inputStyle} />
+              <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} style={inputStyle} />
             </label>
 
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
@@ -284,35 +243,41 @@ export function BannersSection() {
               <input value={form.highlightWord} onChange={(e) => setForm((f) => ({ ...f, highlightWord: e.target.value }))} placeholder="Ej. gratis" style={inputStyle} />
             </label>
 
+            {editingSlot === 'promo' && (
+              <label style={{ display: 'block', gridColumn: '1 / -1' }}>
+                <span style={labelStyle}>Categoría (define las 2 fotos del banner y a dónde lleva el botón)</span>
+                <select value={form.categoryId} onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))} style={inputStyle}>
+                  <option value="">Seleccionar categoría…</option>
+                  {categoryOptions.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.label}</option>
+                  ))}
+                </select>
+              </label>
+            )}
+
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
               <span style={labelStyle}>Descripción</span>
               <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} />
-            </label>
-
-            <label style={{ display: 'block' }}>
-              <span style={labelStyle}>Texto del botón (CTA)</span>
-              <input value={form.ctaText} onChange={(e) => setForm((f) => ({ ...f, ctaText: e.target.value }))} placeholder="Ej. Comprar rutina" style={inputStyle} />
-            </label>
-
-            <label style={{ display: 'block' }}>
-              <span style={labelStyle}>Link del botón</span>
-              <input value={form.ctaHref} onChange={(e) => setForm((f) => ({ ...f, ctaHref: e.target.value }))} placeholder="/catalog o https://…" style={inputStyle} />
-            </label>
-
-            <label style={{ display: 'block' }}>
-              <span style={labelStyle}>Color de fondo (CSS)</span>
-              <input value={form.backgroundColor} onChange={(e) => setForm((f) => ({ ...f, backgroundColor: e.target.value }))} placeholder="var(--lime) o #e4f248" style={inputStyle} />
-            </label>
-
-            <label style={{ display: 'block' }}>
-              <span style={labelStyle}>Orden (menor va primero)</span>
-              <input type="number" min={0} value={form.order} onChange={(e) => setForm((f) => ({ ...f, order: e.target.value }))} style={inputStyle} />
+              {editingSlot === 'promo' && (
+                <button
+                  type="button"
+                  onClick={suggestDescription}
+                  disabled={!form.categoryId}
+                  style={{ marginTop: 6, fontSize: 12, background: 'transparent', border: 'none', color: form.categoryId ? 'var(--green)' : 'var(--ink-40)', cursor: form.categoryId ? 'pointer' : 'default', padding: 0 }}
+                >
+                  Sugerir texto desde la categoría
+                </button>
+              )}
             </label>
 
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
-              <span style={labelStyle}>Imagen (URL, opcional)</span>
-              <input value={form.imageUrl} onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))} placeholder="https://…" style={inputStyle} />
+              <span style={labelStyle}>Texto del botón (CTA)</span>
+              <input value={form.ctaText} onChange={(e) => setForm((f) => ({ ...f, ctaText: e.target.value }))} style={inputStyle} />
             </label>
+
+            <div style={{ gridColumn: '1 / -1' }}>
+              <ColorPicker value={form.backgroundColor} onChange={(v) => setForm((f) => ({ ...f, backgroundColor: v }))} />
+            </div>
 
             <label style={{ display: 'block' }}>
               <span style={labelStyle}>Vigente desde (opcional)</span>
@@ -333,10 +298,15 @@ export function BannersSection() {
           {error ? <p style={{ color: 'crimson', fontSize: 13, marginTop: 12 }}>{error}</p> : null}
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 20 }}>
-            <AnimatedButton variant="secondary" onClick={() => setModal(null)} text="Cancelar" />
+            <AnimatedButton variant="secondary" onClick={() => setEditingSlot(null)} text="Cancelar" />
             <AnimatedButton
               variant="primary"
-              disabled={saveMutation.isPending || !form.title.trim() || !form.ctaText.trim() || !form.ctaHref.trim()}
+              disabled={
+                saveMutation.isPending ||
+                !form.title.trim() ||
+                !form.ctaText.trim() ||
+                (editingSlot === 'promo' && !form.categoryId)
+              }
               onClick={() => saveMutation.mutate()}
               text={saveMutation.isPending ? 'Guardando…' : 'Guardar'}
             />

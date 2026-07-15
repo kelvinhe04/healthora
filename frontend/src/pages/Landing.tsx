@@ -383,8 +383,9 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
 
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
-  const { data: banners = [] } = useBanners();
-  const [primaryBanner, secondaryBanner] = banners;
+  const { data: banners } = useBanners();
+  const primaryBanner = banners?.promo ?? null;
+  const secondaryBanner = banners?.club ?? null;
   const routerNavigate = useNavigate();
   // ctaHref comes from the admin-authored Banner document (issue #265), not the app's closed
   // View union, so it isn't known at compile time - external links open in a new tab, internal
@@ -684,8 +685,13 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
     return products.filter(withImage).slice(0, 4);
   }, [products, activeHero.id]);
 
-  const promoSkinProduct = products.find(p => p.name.includes('Superfood Cleanser')) || products.find(p => p.category === 'Salud de la piel' && (p.imageUrl || p.images?.length)) || products[2];
-  const promoHydrationProduct = products.find(p => p.name.includes('Toleriane Double Repair Face Moisturizer')) || products.find(p => p.category === 'Hidratantes' && (p.imageUrl || p.images?.length)) || products[6];
+  // Fotos flotantes del banner de promoción (issue #265 feedback): salen de la categoría elegida
+  // por el admin (primaryBanner.categoryId), no de nombres de producto hardcodeados.
+  const promoCategoryId = primaryBanner?.categoryId;
+  const [promoSkinProduct, promoHydrationProduct] = useMemo(() => {
+    if (!promoCategoryId) return [];
+    return products.filter((p) => p.category === promoCategoryId && (p.imageUrl || p.images?.length)).slice(0, 2);
+  }, [products, promoCategoryId]);
 
   return (
     <RestoringContext.Provider value={isRestoring}>
@@ -913,7 +919,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                   )}
                   <AnimatedButton variant="primary" onClick={() => handleBannerCta(primaryBanner.ctaHref)} icon={<Icon name="arrow-right" size={14} />} text={primaryBanner.ctaText} />
                 </div>
-                {!isMobile && !primaryBanner.imageUrl && (
+                {!isMobile && (
                   <div style={{ position: 'absolute', right: -15, bottom: 60, display: 'flex', gap: 16, zIndex: 10, alignItems: 'flex-end', transform: isTablet ? 'scale(0.8)' : 'none', transformOrigin: 'bottom right' }}>
                     {promoSkinProduct && (
                     <Parallax speed={4} style={{ pointerEvents: 'auto' }}>
@@ -969,11 +975,6 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                       </div>
                     </Parallax>
                   )}
-                  </div>
-                )}
-                {!isMobile && primaryBanner.imageUrl && (
-                  <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '42%' }}>
-                    <img src={primaryBanner.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                 )}
               </div>
