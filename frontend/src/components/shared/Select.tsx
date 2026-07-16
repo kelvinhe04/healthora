@@ -9,6 +9,8 @@ type SelectChangeEvent = { target: { value: string } };
 type SelectProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'multiple' | 'size'> & {
   onChange?: (event: SelectChangeEvent) => void;
   wrapperStyle?: CSSProperties;
+  /** Alinea el texto de las opciones del popup (por defecto heredan text-align: left de .hlt-select-option). */
+  optionsAlign?: CSSProperties['textAlign'];
 };
 
 function parseOptions(children: ReactNode) {
@@ -35,6 +37,7 @@ export function Select({
   className,
   style,
   wrapperStyle,
+  optionsAlign,
   disabled,
   id,
   'aria-label': ariaLabel,
@@ -172,7 +175,14 @@ export function Select({
         }}
       />
       {open && (
-        <ul ref={listRef} id={listboxId} role="listbox" aria-labelledby={baseId} className="hlt-select-popup">
+        <ul
+          ref={listRef}
+          id={listboxId}
+          role="listbox"
+          aria-labelledby={baseId}
+          className="hlt-select-popup"
+          style={optionsAlign ? { textAlign: optionsAlign } : undefined}
+        >
           {options.map((opt, index) => (
             <li
               key={`${opt.value}-${index}`}

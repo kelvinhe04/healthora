@@ -821,6 +821,7 @@ export function OrdersSection() {
                                   fontSize: 12,
                                   textAlign: "center",
                                 }}
+                                optionsAlign="center"
                               >
                                 {(() => {
                                   const current = order.fulfillmentStatus || "unfulfilled";
