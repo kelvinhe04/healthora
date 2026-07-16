@@ -174,3 +174,56 @@ describe('account payment methods', () => {
     expect(patch.status).toBe(404);
   });
 });
+
+describe('account notification preferences', () => {
+  beforeAll(async () => {
+    mongo = await MongoMemoryServer.create();
+    await mongoose.connect(mongo.getUri(), { dbName: 'healthora_account_notif_prefs_test' });
+  });
+
+  beforeEach(async () => {
+    await mongoose.connection.db?.dropDatabase();
+  });
+
+  afterAll(async () => {
+    await mongoose.disconnect();
+    await mongo.stop();
+  });
+
+  test('GET devuelve los defaults para un usuario recien creado (sin preferencias guardadas)', async () => {
+    await User.create({ clerkId: 'user_test_1', email: 'buyer@example.com' });
+    const app = createTestApp();
+    const response = await app.request('/account/notification-preferences', { headers: authHeaders });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ orderUpdates: true, promotions: true, unsubscribedAll: false });
+  });
+
+  test('PUT guarda el cambio y GET lo refleja despues (round-trip real via HTTP)', async () => {
+    await User.create({ clerkId: 'user_test_1', email: 'buyer@example.com' });
+    const app = createTestApp();
+
+    const putResponse = await app.request('/account/notification-preferences', {
+      method: 'PUT',
+      headers: authHeaders,
+      body: JSON.stringify({ orderUpdates: false, promotions: true, unsubscribedAll: false }),
+    });
+    expect(putResponse.status).toBe(200);
+    expect(await putResponse.json()).toEqual({ orderUpdates: false, promotions: true, unsubscribedAll: false });
+
+    const getResponse = await app.request('/account/notification-preferences', { headers: authHeaders });
+    expect(await getResponse.json()).toEqual({ orderUpdates: false, promotions: true, unsubscribedAll: false });
+
+    const userInDb = await User.findOne({ clerkId: 'user_test_1' }).lean();
+    expect(userInDb?.notificationPreferences).toEqual({ orderUpdates: false, promotions: true, unsubscribedAll: false });
+  });
+
+  test('PUT con un usuario que todavia no existe en Mongo (User.create solo pasa al primer login) devuelve 404, no un 200 fantasma', async () => {
+    const app = createTestApp();
+    const response = await app.request('/account/notification-preferences', {
+      method: 'PUT',
+      headers: authHeaders,
+      body: JSON.stringify({ orderUpdates: false, promotions: true, unsubscribedAll: false }),
+    });
+    expect(response.status).toBe(404);
+  });
+});

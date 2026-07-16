@@ -348,11 +348,14 @@ function NotificationPreferencesSection() {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
+  const [error, setError] = useState('');
+  const queryKey = ['notification-preferences'];
+
   const prefsQuery = useQuery({
-    queryKey: ['notification-preferences'],
+    queryKey,
     queryFn: async () => {
       const token = await getToken();
-      if (!token) return NOTIFICATION_PREFERENCES_DEFAULTS;
+      if (!token) throw new Error('No autenticado');
       return api.account.notificationPreferences.get(token);
     },
   });
@@ -363,7 +366,21 @@ function NotificationPreferencesSection() {
       if (!token) throw new Error('No autenticado');
       return api.account.notificationPreferences.update(next, token);
     },
-    onSuccess: (data) => queryClient.setQueryData(['notification-preferences'], data),
+    // Optimista: el checkbox tiene que reflejar el click al instante, no recien cuando vuelve la
+    // respuesta del PUT - si algo falla (red, sesion vencida) se revierte al valor previo y se
+    // muestra el error, en vez de dejar el checkbox "sin hacer nada" en silencio.
+    onMutate: async (next) => {
+      setError('');
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<NotificationPreferences>(queryKey);
+      queryClient.setQueryData(queryKey, next);
+      return { previous };
+    },
+    onError: (err, _next, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+      setError(err instanceof Error ? err.message : 'No se pudo guardar el cambio.');
+    },
+    onSuccess: (data) => queryClient.setQueryData(queryKey, data),
   });
 
   const prefs = prefsQuery.data ?? NOTIFICATION_PREFERENCES_DEFAULTS;
@@ -375,6 +392,8 @@ function NotificationPreferencesSection() {
       <h2 style={sectionTitle}>Preferencias de notificación</h2>
       {prefsQuery.isLoading ? (
         <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Cargando…</p>
+      ) : prefsQuery.isError ? (
+        <p style={{ fontSize: 13, color: 'var(--coral)', fontFamily: '"Geist", sans-serif' }}>No se pudieron cargar tus preferencias. Recarga la página.</p>
       ) : (
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
@@ -417,6 +436,7 @@ function NotificationPreferencesSection() {
               </span>
             </label>
           </div>
+          {error && <p role="alert" style={{ fontSize: 12, color: 'var(--coral)', marginTop: 14, fontFamily: '"Geist", sans-serif' }}>{error}</p>}
         </div>
       )}
     </section>
