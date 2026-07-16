@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Card,
@@ -21,6 +22,7 @@ import { formatPanamaDateTime } from '../../../lib/dates';
 import { PaginationControls } from '../components/PaginationControls';
 
 function BansModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
@@ -48,16 +50,16 @@ function BansModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <ModalOverlay open={open} onClose={onClose}>
       <div style={{ width: '100%', maxWidth: 520, maxHeight: '80vh', overflowY: 'auto', background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: 24 }}>
-        <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 6px' }}>Usuarios baneados</h3>
+        <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 6px' }}>{t('admin.reviews.bannedUsersButton')}</h3>
         <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '0 0 16px' }}>
-          No pueden dejar nuevas reseñas en el producto indicado. El baneo es por producto, no afecta al resto del catálogo.
+          {t('admin.reviews.bansModal.description')}
         </p>
         {bansQuery.isLoading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[0, 1, 2].map((i) => <Skeleton key={i} height={44} borderRadius={10} />)}
           </div>
         ) : bans.length === 0 ? (
-          <div style={{ fontSize: 13, color: 'var(--ink-60)', padding: '12px 0' }}>Ningún usuario baneado por ahora.</div>
+          <div style={{ fontSize: 13, color: 'var(--ink-60)', padding: '12px 0' }}>{t('admin.reviews.bansModal.empty')}</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {bans.map((ban) => (
@@ -72,7 +74,7 @@ function BansModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                   disabled={unbanMut.isPending}
                   style={{ flexShrink: 0, padding: '7px 12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--ink-12)', color: 'var(--ink)', cursor: 'pointer', fontSize: 12, fontFamily: '"Geist", sans-serif' }}
                 >
-                  Quitar baneo
+                  {t('admin.reviews.bansModal.removeBan')}
                 </button>
               </div>
             ))}
@@ -85,7 +87,17 @@ function BansModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 
 // 'pending' existe en el schema pero ningún flujo lo asigna hoy (las reseñas nacen 'published' -
 // post-moderación, no pre-aprobación) - se omite del filtro para no mostrar una opción sin datos.
-const STATUS_LABELS: Record<'' | ReviewStatus, string> = {
+// Key suffix under `admin.reviews.status.*` (HU-084) - a module-level const can't call t().
+const STATUS_LABEL_KEYS: Record<'' | ReviewStatus, string> = {
+  '': 'all',
+  pending: 'pending',
+  published: 'published',
+  hidden: 'hidden',
+};
+
+// Raw (untranslated) label STATUS_COLORS is keyed by, for StatusPill's color-matching `status`
+// prop - kept separate from the translated display `label` (HU-084).
+const STATUS_COLOR_KEY: Record<'' | ReviewStatus, string> = {
   '': 'Todos',
   pending: 'Pendiente',
   published: 'Publicada',
@@ -112,6 +124,7 @@ function pillButtonStyle(active: boolean) {
 }
 
 export function ReviewsSection() {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<'' | ReviewStatus>('');
@@ -185,13 +198,13 @@ export function ReviewsSection() {
     <>
       <PageHeader
         loading={isLoading}
-        kicker="Moderación"
+        kicker={t('admin.reviews.kicker')}
         title={
           <>
-            Reseñas de <em style={{ color: 'var(--green)' }}>clientes</em>
+            {t('admin.reviews.titlePrefix')} <em style={{ color: 'var(--green)' }}>{t('admin.reviews.titleEmphasis')}</em>
           </>
         }
-        sub="Aprueba, oculta o elimina reseñas para mantener contenido apropiado y confiable en las fichas de producto."
+        sub={t('admin.reviews.sub')}
         actions={
           isLoading ? (
             <Skeleton height={40} width={168} borderRadius={999} />
@@ -202,7 +215,7 @@ export function ReviewsSection() {
               style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 999, background: 'transparent', border: '1px solid var(--ink-12)', color: 'var(--ink)', cursor: 'pointer', fontSize: 13, fontFamily: '"Geist", sans-serif' }}
             >
               <Icon name="ban" size={14} />
-              Usuarios baneados
+              {t('admin.reviews.bannedUsersButton')}
             </button>
           )
         }
@@ -236,8 +249,8 @@ export function ReviewsSection() {
             <input
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Producto, texto o autor..."
-              aria-label="Buscar reseñas por producto, texto o autor"
+              placeholder={t('admin.reviews.searchPlaceholder')}
+              aria-label={t('admin.reviews.searchAria')}
               style={{
                 border: 'none',
                 outline: 'none',
@@ -251,7 +264,7 @@ export function ReviewsSection() {
             {searchInput && (
               <button
                 onClick={() => setSearchInput('')}
-                aria-label="Limpiar búsqueda"
+                aria-label={t('header.search.ariaClear')}
                 style={{
                   border: 'none',
                   background: 'transparent',
@@ -269,7 +282,7 @@ export function ReviewsSection() {
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Filtrar por estrellas">
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label={t('admin.reviews.filters.starsAria')}>
             {RATING_OPTIONS.map((value) => (
               <button
                 key={value}
@@ -280,12 +293,12 @@ export function ReviewsSection() {
                 }}
                 style={pillButtonStyle(ratingFilter === value)}
               >
-                {value === 0 ? 'Todas' : `${value}★`}
+                {value === 0 ? t('admin.reviews.allRatings') : `${value}★`}
               </button>
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Filtrar por estado">
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label={t('admin.reviews.filters.statusAria')}>
             {FILTERABLE_STATUSES.map((value) => (
               <button
                 key={value}
@@ -296,7 +309,7 @@ export function ReviewsSection() {
                 }}
                 style={pillButtonStyle(statusFilter === value)}
               >
-                {STATUS_LABELS[value]}
+                {t(`admin.reviews.status.${STATUS_LABEL_KEYS[value]}`)}
               </button>
             ))}
           </div>
@@ -336,19 +349,19 @@ export function ReviewsSection() {
         <div style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--ink-06)' }}>
           <div style={{ fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}>
             {search || ratingFilter || statusFilter
-              ? `${total} resultado${total !== 1 ? 's' : ''}`
-              : `${total} reseña${total !== 1 ? 's' : ''}`}
+              ? t('admin.reviews.resultsCount', { count: total })
+              : t('admin.reviews.reviewsCount', { count: total })}
           </div>
         </div>
         <div style={{ overflowX: 'auto', width: '100%' }}>
           <table style={{ ...tableStyle, minWidth: 960 }}>
             <thead>
               <tr>
-                <th scope="col" style={th}>Reseña</th>
-                <th scope="col" style={th}>Producto</th>
-                <th scope="col" style={th}>Estado</th>
-                <th scope="col" style={th}>Fecha</th>
-                <th scope="col" style={th}>Acciones</th>
+                <th scope="col" style={th}>{t('admin.reviews.table.columns.review')}</th>
+                <th scope="col" style={th}>{t('admin.reviews.table.columns.product')}</th>
+                <th scope="col" style={th}>{t('admin.reviews.table.columns.status')}</th>
+                <th scope="col" style={th}>{t('admin.reviews.table.columns.date')}</th>
+                <th scope="col" style={th}>{t('admin.reviews.table.columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -364,7 +377,10 @@ export function ReviewsSection() {
                   </td>
                   <td style={td}>{review.productName}</td>
                   <td style={td}>
-                    <StatusPill status={STATUS_LABELS[review.status || 'published']} />
+                    <StatusPill
+                      status={STATUS_COLOR_KEY[review.status || 'published']}
+                      label={t(`admin.reviews.status.${STATUS_LABEL_KEYS[review.status || 'published']}`)}
+                    />
                   </td>
                   <td style={{ ...td, fontFamily: '"JetBrains Mono", monospace', fontSize: 12 }}>
                     {formatPanamaDateTime(review.createdAt)}
@@ -374,7 +390,7 @@ export function ReviewsSection() {
                       {(review.status || 'published') !== 'published' && (
                         <button
                           type="button"
-                          title="Aprobar / publicar"
+                          title={t('admin.reviews.actions.approveTitle')}
                           onClick={() => updateStatusMut.mutate({ id: review._id, status: 'published' })}
                           disabled={updateStatusMut.isPending}
                           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--green)' }}
@@ -385,7 +401,7 @@ export function ReviewsSection() {
                       {(review.status || 'published') !== 'hidden' && (
                         <button
                           type="button"
-                          title="Ocultar"
+                          title={t('admin.reviews.actions.hideTitle')}
                           onClick={() => updateStatusMut.mutate({ id: review._id, status: 'hidden' })}
                           disabled={updateStatusMut.isPending}
                           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--ink-60)' }}
@@ -401,20 +417,20 @@ export function ReviewsSection() {
                             disabled={deleteMut.isPending}
                             style={{ background: 'var(--coral)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'white', fontSize: 12 }}
                           >
-                            Confirmar
+                            {t('admin.reviews.actions.confirm')}
                           </button>
                           <button
                             type="button"
                             onClick={() => setConfirmDeleteId(null)}
                             style={{ background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--ink-60)', fontSize: 12 }}
                           >
-                            Cancelar
+                            {t('admin.reviews.actions.cancel')}
                           </button>
                         </>
                       ) : (
                         <button
                           type="button"
-                          title="Eliminar"
+                          title={t('admin.reviews.actions.deleteTitle')}
                           onClick={() => setConfirmDeleteId(review._id)}
                           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--coral)' }}
                         >
@@ -429,20 +445,20 @@ export function ReviewsSection() {
                             disabled={banMut.isPending}
                             style={{ background: 'var(--coral)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'white', fontSize: 12 }}
                           >
-                            Banear
+                            {t('admin.reviews.actions.ban')}
                           </button>
                           <button
                             type="button"
                             onClick={() => setConfirmBanId(null)}
                             style={{ background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--ink-60)', fontSize: 12 }}
                           >
-                            Cancelar
+                            {t('admin.reviews.actions.cancel')}
                           </button>
                         </>
                       ) : (
                         <button
                           type="button"
-                          title="Banear autor de este producto (elimina la reseña y evita que vuelva a comentar aquí)"
+                          title={t('admin.reviews.actions.banTitle')}
                           onClick={() => setConfirmBanId(review._id)}
                           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--coral)' }}
                         >
@@ -456,7 +472,7 @@ export function ReviewsSection() {
               {!items.length && (
                 <tr>
                   <td style={{ ...td, textAlign: 'center', color: 'var(--ink-60)' }} colSpan={5}>
-                    Sin reseñas para este filtro.
+                    {t('admin.reviews.table.empty')}
                   </td>
                 </tr>
               )}

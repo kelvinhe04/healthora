@@ -1564,6 +1564,54 @@
         "color": "e.g. Red",
         "weight": "e.g. 500 g"
       }
+    },
+    "reviews": {
+      "kicker": "Moderation",
+      "titlePrefix": "Customer",
+      "titleEmphasis": "reviews",
+      "sub": "Approve, hide, or delete reviews to keep product pages' content appropriate and trustworthy.",
+      "bannedUsersButton": "Banned users",
+      "bansModal": {
+        "description": "They can't leave new reviews on the given product. The ban is per product, it doesn't affect the rest of the catalog.",
+        "empty": "No banned users right now.",
+        "removeBan": "Remove ban"
+      },
+      "status": {
+        "all": "All",
+        "pending": "Pending",
+        "published": "Published",
+        "hidden": "Hidden"
+      },
+      "allRatings": "All",
+      "filters": {
+        "starsAria": "Filter by stars",
+        "statusAria": "Filter by status"
+      },
+      "searchPlaceholder": "Product, text, or author...",
+      "searchAria": "Search reviews by product, text, or author",
+      "resultsCount_one": "{{count}} result",
+      "resultsCount_other": "{{count}} results",
+      "reviewsCount_one": "{{count}} review",
+      "reviewsCount_other": "{{count}} reviews",
+      "table": {
+        "columns": {
+          "review": "Review",
+          "product": "Product",
+          "status": "Status",
+          "date": "Date",
+          "actions": "Actions"
+        },
+        "empty": "No reviews for this filter."
+      },
+      "actions": {
+        "approveTitle": "Approve / publish",
+        "hideTitle": "Hide",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "ban": "Ban",
+        "deleteTitle": "Delete",
+        "banTitle": "Ban this product's author (deletes the review and prevents them from commenting here again)"
+      }
     }
   }
 }

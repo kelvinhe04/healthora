@@ -1564,6 +1564,54 @@
         "color": "ej. Rojo",
         "weight": "ej. 500 g"
       }
+    },
+    "reviews": {
+      "kicker": "Moderación",
+      "titlePrefix": "Reseñas de",
+      "titleEmphasis": "clientes",
+      "sub": "Aprueba, oculta o elimina reseñas para mantener contenido apropiado y confiable en las fichas de producto.",
+      "bannedUsersButton": "Usuarios baneados",
+      "bansModal": {
+        "description": "No pueden dejar nuevas reseñas en el producto indicado. El baneo es por producto, no afecta al resto del catálogo.",
+        "empty": "Ningún usuario baneado por ahora.",
+        "removeBan": "Quitar baneo"
+      },
+      "status": {
+        "all": "Todos",
+        "pending": "Pendiente",
+        "published": "Publicada",
+        "hidden": "Oculta"
+      },
+      "allRatings": "Todas",
+      "filters": {
+        "starsAria": "Filtrar por estrellas",
+        "statusAria": "Filtrar por estado"
+      },
+      "searchPlaceholder": "Producto, texto o autor...",
+      "searchAria": "Buscar reseñas por producto, texto o autor",
+      "resultsCount_one": "{{count}} resultado",
+      "resultsCount_other": "{{count}} resultados",
+      "reviewsCount_one": "{{count}} reseña",
+      "reviewsCount_other": "{{count}} reseñas",
+      "table": {
+        "columns": {
+          "review": "Reseña",
+          "product": "Producto",
+          "status": "Estado",
+          "date": "Fecha",
+          "actions": "Acciones"
+        },
+        "empty": "Sin reseñas para este filtro."
+      },
+      "actions": {
+        "approveTitle": "Aprobar / publicar",
+        "hideTitle": "Ocultar",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar",
+        "ban": "Banear",
+        "deleteTitle": "Eliminar",
+        "banTitle": "Banear autor de este producto (elimina la reseña y evita que vuelva a comentar aquí)"
+      }
     }
   }
 }
