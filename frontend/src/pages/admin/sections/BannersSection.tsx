@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, PageHeader } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
+import { Select } from '../../../components/shared/Select';
 import { api } from '../../../lib/api';
 import { resolveBannerText } from '../../../lib/bannerText';
 import type { Banner, BannerSlot } from '../../../types';
@@ -261,12 +262,12 @@ export function BannersSection() {
             {editingSlot === 'promo' && (
               <label style={{ display: 'block', gridColumn: '1 / -1' }}>
                 <span style={labelStyle}>Categoría (define las 2 fotos del banner y a dónde lleva el botón)</span>
-                <select value={form.categoryId} onChange={(e) => handleCategoryChange(e.target.value)} style={inputStyle}>
+                <Select value={form.categoryId} onChange={(e) => handleCategoryChange(e.target.value)} wrapperStyle={{ marginTop: 6 }}>
                   <option value="">Seleccionar categoría…</option>
                   {categoryOptions.map((cat) => (
                     <option key={cat.id} value={cat.id}>{cat.label}</option>
                   ))}
-                </select>
+                </Select>
               </label>
             )}
 

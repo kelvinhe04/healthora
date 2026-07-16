@@ -7,6 +7,7 @@ import { ProductImage } from '../components/shared/ProductImage';
 import { Stars } from '../components/shared/Stars';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
+import { Select } from '../components/shared/Select';
 import { SubscribeModal } from '../components/shared/SubscribeModal';
 import { SignInModal } from '../components/chrome/SignInModal';
 import { useProducts } from '../hooks/useProducts';
@@ -388,39 +389,27 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
             // opciones se compacta en un <select> nativo.
             const DROPDOWN_THRESHOLD = 7;
             const dropdown = (options: ProductVariant[], selected: ProductVariant | null, onChange: (v: ProductVariant) => void, label: string) => (
-              <div style={{ position: 'relative', maxWidth: 320 }}>
-                <select
-                  aria-label={label}
-                  value={selected?.id ?? ''}
-                  onChange={(e) => {
-                    const v = options.find((o) => o.id === e.target.value);
-                    if (v) onChange(v);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: isMobile ? '14px 36px 14px 14px' : '10px 36px 10px 14px',
-                    minHeight: isMobile ? 48 : undefined,
-                    borderRadius: 10,
-                    border: '1px solid var(--ink-20)',
-                    background: 'var(--cream)',
-                    color: 'var(--ink)',
-                    fontSize: 14,
-                    fontFamily: '"Geist", sans-serif',
-                    cursor: 'pointer',
-                    appearance: 'none',
-                    WebkitAppearance: 'none',
-                  }}
-                >
-                  {options.map((v) => (
-                    <option key={v.id} value={v.id} disabled={v.stock === 0}>
-                      {v.label}{v.stock === 0 ? ' · Sin stock' : ''}
-                    </option>
-                  ))}
-                </select>
-                <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--ink-60)' }}>
-                  <Icon name="chevron-down" size={14} />
-                </span>
-              </div>
+              <Select
+                aria-label={label}
+                value={selected?.id ?? ''}
+                onChange={(e) => {
+                  const v = options.find((o) => o.id === e.target.value);
+                  if (v) onChange(v);
+                }}
+                wrapperStyle={{ maxWidth: 320 }}
+                style={{
+                  padding: isMobile ? '14px 36px 14px 14px' : '10px 36px 10px 14px',
+                  minHeight: isMobile ? 48 : undefined,
+                  borderRadius: 10,
+                  fontSize: 14,
+                }}
+              >
+                {options.map((v) => (
+                  <option key={v.id} value={v.id} disabled={v.stock === 0}>
+                    {v.label}{v.stock === 0 ? ' · Sin stock' : ''}
+                  </option>
+                ))}
+              </Select>
             );
 
             if (hasTwoDimensions) {

@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react';
 import { DateInputDDMMYYYY, iconBtnAd } from '../../../components/admin';
 import { Icon } from '../../../components/shared/Icon';
+import { Checkbox } from '../../../components/shared/Checkbox';
+import { Select } from '../../../components/shared/Select';
 import { emptyVariantRow, type VariantFormRow } from '../types';
 import {
   cellKey,
@@ -192,8 +194,8 @@ export function ProductVariantsMatrixEditor({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <label style={labelS}>Tipo de variante</label>
-            <select
-              style={{ ...inputS, width: 160, cursor: 'pointer' }}
+            <Select
+              wrapperStyle={{ width: 160 }}
               value={matrix.primaryType}
               onChange={(e) => onMatrixChange({ ...matrix, primaryType: e.target.value as PrimaryVariantType })}
             >
@@ -202,7 +204,7 @@ export function ProductVariantsMatrixEditor({
               <option value="color">Color</option>
               <option value="weight">Peso</option>
               <option value="count">Conteo</option>
-            </select>
+            </Select>
           </div>
 
           <div>
@@ -417,11 +419,10 @@ export function ProductVariantsMatrixEditor({
                               style={{ padding: 8, verticalAlign: 'top', border: '1px solid var(--ink-06)' }}
                             >
                               <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginBottom: active ? 8 : 0 }}>
-                                <input
-                                  type="checkbox"
+                                <Checkbox
                                   checked={active}
                                   onChange={() => toggleCell(p.key, s.key)}
-                                  style={{ width: 15, height: 15, accentColor: 'var(--green)', cursor: 'pointer' }}
+                                  style={{ width: 15, height: 15, minWidth: 15 }}
                                 />
                                 <span style={{ fontSize: 11, color: 'var(--ink-60)' }}>Activo</span>
                               </label>

@@ -10,6 +10,8 @@ import {
 } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
+import { Checkbox } from '../../../components/shared/Checkbox';
+import { Select } from '../../../components/shared/Select';
 import { api } from '../../../lib/api';
 import type { Category } from '../../../types';
 import { useAdminToken } from '../hooks/useAdminToken';
@@ -284,8 +286,7 @@ export function CategoriesSection() {
               </label>
 
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={form.active}
                   onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
                 />
@@ -297,10 +298,10 @@ export function CategoriesSection() {
                   Reasignar todos los productos a otra categoría
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <select
+                  <Select
                     value={form.reassignTo}
                     onChange={(e) => setForm((f) => ({ ...f, reassignTo: e.target.value }))}
-                    style={{ flex: 1, padding: '10px 12px', borderRadius: 12, border: '1px solid var(--ink-06)' }}
+                    wrapperStyle={{ flex: 1 }}
                   >
                     <option value="">Seleccionar destino…</option>
                     {sorted
@@ -310,7 +311,7 @@ export function CategoriesSection() {
                           {c.label}
                         </option>
                       ))}
-                  </select>
+                  </Select>
                   <AnimatedButton
                     variant="secondary"
                     disabled={!form.reassignTo || !editingId || reassignMutation.isPending}

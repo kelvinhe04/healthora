@@ -11,6 +11,7 @@ import {
   trStyle,
 } from '../../../components/admin';
 import { api } from '../../../lib/api';
+import { Select } from '../../../components/shared/Select';
 import { useAdminToken } from '../hooks/useAdminToken';
 import { formatPanamaDateTime } from '../../../lib/dates';
 import { PaginationControls } from '../components/PaginationControls';
@@ -114,17 +115,17 @@ export function AuditLogsSection() {
               aria-label="Filtrar por email del actor"
               style={{ ...inputStyle, width: 220 }}
             />
-            <select
+            <Select
               value={action}
               onChange={(e) => { setAction(e.target.value); setPage(1); }}
               aria-label="Filtrar por acción"
-              style={{ ...inputStyle, width: 200 }}
+              wrapperStyle={{ width: 200 }}
             >
               <option value="">Todas las acciones</option>
               {Object.entries(ACTION_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
-            </select>
+            </Select>
             <input
               type="date"
               value={from}

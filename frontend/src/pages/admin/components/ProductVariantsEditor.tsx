@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { DateInputDDMMYYYY, iconBtnAd } from '../../../components/admin';
 import { Icon } from '../../../components/shared/Icon';
+import { Select } from '../../../components/shared/Select';
 import { emptyVariantRow, VARIANT_TYPE_OPTIONS, type VariantFormRow } from '../types';
 import { MiniImagePicker } from './MiniImagePicker';
 
@@ -69,8 +70,8 @@ export function ProductVariantsEditor({
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <label style={labelS}>Tipo de variante</label>
-        <select
-          style={{ ...inputS, width: 160, cursor: 'pointer' }}
+        <Select
+          wrapperStyle={{ width: 160 }}
           value={type}
           onChange={(e) => setType(e.target.value as VariantFormRow['type'])}
         >
@@ -79,7 +80,7 @@ export function ProductVariantsEditor({
               {opt.label}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <div
         style={{
