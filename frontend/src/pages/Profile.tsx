@@ -7,6 +7,7 @@ import { useBreakpoint } from '../hooks/useBreakpoint';
 import { Icon } from '../components/shared/Icon';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { StripeCardInput } from '../components/shared/StripeCardInput';
+import { Checkbox } from '../components/shared/Checkbox';
 import { api } from '../lib/api';
 import { formatPanamaMedium } from '../lib/dates';
 import type { NotificationPreferences, ProductSubscription, SubscriptionStatus } from '../types';
@@ -378,8 +379,7 @@ function NotificationPreferencesSection() {
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: prefs.unsubscribedAll ? 'not-allowed' : 'pointer', opacity: prefs.unsubscribedAll ? 0.5 : 1 }}>
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={prefs.orderUpdates}
                 disabled={prefs.unsubscribedAll || busy}
                 onChange={(e) => setPref('orderUpdates', e.target.checked)}
@@ -391,8 +391,7 @@ function NotificationPreferencesSection() {
               </span>
             </label>
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: prefs.unsubscribedAll ? 'not-allowed' : 'pointer', opacity: prefs.unsubscribedAll ? 0.5 : 1 }}>
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={prefs.promotions}
                 disabled={prefs.unsubscribedAll || busy}
                 onChange={(e) => setPref('promotions', e.target.checked)}
@@ -406,8 +405,7 @@ function NotificationPreferencesSection() {
           </div>
           <div style={{ borderTop: '1px solid var(--ink-06)', marginTop: 20, paddingTop: 16 }}>
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={prefs.unsubscribedAll}
                 disabled={busy}
                 onChange={(e) => setPref('unsubscribedAll', e.target.checked)}
