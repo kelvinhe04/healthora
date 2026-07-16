@@ -1258,6 +1258,312 @@
         "saving": "Guardando…",
         "save": "Guardar"
       }
+    },
+    "variantTypes": {
+      "flavor": "Sabor",
+      "scent": "Aroma",
+      "size": "Tamaño",
+      "color": "Color",
+      "weight": "Peso",
+      "count": "Conteo"
+    },
+    "variantTypesPlural": {
+      "flavor": "Sabores",
+      "scent": "Aromas",
+      "color": "Colores",
+      "weight": "Pesos",
+      "count": "Conteos"
+    },
+    "products": {
+      "variantSummary": {
+        "combinations_one": "{{count}} combinación",
+        "combinations_other": "{{count}} combinaciones",
+        "variants_one": "{{count}} variante",
+        "variants_other": "{{count}} variantes"
+      },
+      "defaultProductName": "El producto",
+      "sessionExpiredError": "Sesión expirada",
+      "titlePrefix": "Gestión de",
+      "titleEmphasis": "productos",
+      "kicker_one": "Catálogo · {{count}} producto",
+      "kicker_other": "Catálogo · {{count}} productos",
+      "sub": "Agrega, edita, elimina y filtra el catálogo completo.",
+      "refreshing": "Refrescando…",
+      "refreshCatalog": "Refrescar catálogo",
+      "categoryDiscountButton": "Descuento por categoría",
+      "clubHealthoraButton": "Club Healthora",
+      "addProductButton": "+ Agregar producto",
+      "searchPlaceholder": "Buscar por nombre o marca…",
+      "filters": {
+        "statusActive": "Activo",
+        "statusInactive": "Inactivo"
+      },
+      "selectedInView_one": "{{count}} seleccionado en esta vista",
+      "selectedInView_other": "{{count}} seleccionados en esta vista",
+      "selectHint": "Selecciona varios productos para borrado masivo.",
+      "clearSelection": "Limpiar selección",
+      "deleteSelected": "Eliminar seleccionados",
+      "deleteSelectedDescription_one": "Se eliminará {{count}} producto seleccionado de esta vista.",
+      "deleteSelectedDescription_other": "Se eliminarán {{count}} productos seleccionados de esta vista.",
+      "deleteAllButton": "Eliminar todo",
+      "table": {
+        "columns": {
+          "product": "Producto",
+          "category": "Categoría",
+          "price": "Precio",
+          "stock": "Stock",
+          "rating": "Reseña",
+          "status": "Estado"
+        },
+        "selectVisibleAria": "Seleccionar productos visibles",
+        "selectProductAria": "Seleccionar {{name}}",
+        "noReviews": "SIN RESEÑAS",
+        "lowStockBadge": "Bajo",
+        "lowStockTitle": "Stock bajo (umbral: {{threshold}})",
+        "editTitle": "Editar producto",
+        "deleteTitle": "Eliminar producto",
+        "empty": "No hay productos para los filtros seleccionados."
+      },
+      "cancel": "Cancelar",
+      "deleting": "Eliminando…",
+      "confirmDelete": "Sí, eliminar",
+      "confirmKicker": "Confirmación",
+      "deleteModal": {
+        "titlePrefix": "Eliminar",
+        "titleEmphasis": "producto",
+        "body": "Esta acción eliminará el producto del catálogo. No se puede deshacer."
+      },
+      "deleteAllModal": {
+        "dangerKicker": "Peligro",
+        "title": "Eliminar todo el catálogo",
+        "bodyPrefix": "¿Estás seguro de que deseas eliminar",
+        "bodyStrong": "todos los productos",
+        "bodySuffix": "del catálogo? Esta acción no se puede deshacer.",
+        "confirmAll": "Sí, eliminar todo"
+      },
+      "deleteUserModal": {
+        "titlePrefix": "Eliminar",
+        "titleEmphasis": "usuario",
+        "body": "¿Eliminar a {{name}}? Esto eliminará su cuenta local. El usuario seguirá existiendo en Clerk."
+      },
+      "sampleSettingsModal": {
+        "freeSampleTitle": "Muestra gratis",
+        "freeSampleBody": "Un producto (o una de sus variantes/combinaciones) califica automáticamente para la muestra gratis si su precio es menor o igual a este tope. Un producto con \"Incluir siempre\"/\"Excluir siempre\" en su propio editor ignora este tope.",
+        "maxPriceLabel": "Precio máximo (USD)",
+        "loyaltyTitle": "Puntos de lealtad (HU-060)",
+        "loyaltyBody": "El cliente gana puntos por cada $1 pagado en una orden, y puede canjearlos por un descuento en el checkout.",
+        "pointsPerDollarLabel": "Puntos por cada $1",
+        "pointValueLabel": "Valor de 1 punto (¢)",
+        "updated": "Ajustes actualizados.",
+        "close": "Cerrar",
+        "saving": "Guardando…",
+        "save": "Guardar"
+      },
+      "categoryDiscountModal": {
+        "title": "Descuento por categoría",
+        "activeDiscountLabel": "Con descuento activo",
+        "categoryLabel": "Categoría",
+        "categoryPlaceholder": "Seleccionar categoría…",
+        "typeLabel": "Tipo",
+        "typePercent": "Porcentaje (%)",
+        "typeFixed": "Monto fijo ($)",
+        "valueLabel": "Valor",
+        "invalidRange": "\"Vigente hasta\" no puede ser anterior a \"Vigente desde\".",
+        "genericError": "No se pudo completar la acción.",
+        "applySuccess_one": "{{updated}} de {{total}} producto actualizado.",
+        "applySuccess_other": "{{updated}} de {{total}} productos actualizados.",
+        "removeSuccess_one": "Descuento quitado de {{count}} producto.",
+        "removeSuccess_other": "Descuento quitado de {{count}} productos.",
+        "removing": "Quitando…",
+        "removeButton": "Quitar descuento",
+        "applying": "Aplicando…",
+        "applyButton": "Aplicar descuento"
+      },
+      "successModal": {
+        "updated": {
+          "kicker": "Producto actualizado",
+          "title": "Cambios",
+          "emphasis": "guardados",
+          "message": "{{name}} se actualizó correctamente."
+        },
+        "created": {
+          "kicker": "Producto creado",
+          "title": "Agregado al",
+          "emphasis": "catálogo",
+          "message": "{{name}} ya está disponible en la tienda."
+        },
+        "deleted": {
+          "kicker": "Producto eliminado",
+          "title": "Producto",
+          "emphasis": "eliminado",
+          "message": "El producto se eliminó del catálogo correctamente."
+        },
+        "bulkDeleted": {
+          "kicker": "Productos eliminados",
+          "title_one": "{{count}} producto",
+          "title_other": "{{count}} productos",
+          "emphasis_one": "eliminado",
+          "emphasis_other": "eliminados",
+          "message": "Los productos se eliminaron del catálogo correctamente."
+        },
+        "allDeleted": {
+          "kicker": "Catálogo eliminado",
+          "title": "{{count}} productos",
+          "emphasis": "eliminados",
+          "message": "Todo el catálogo de productos se ha eliminado correctamente."
+        }
+      }
+    },
+    "orders": {
+      "titlePrefix": "Gestión de",
+      "titleEmphasis": "pedidos",
+      "sub": "Cambia estados y monitorea el ciclo completo de la orden.",
+      "exportCsv": "Exportar CSV",
+      "searchPlaceholder": "Buscar por ID, cliente, email o producto…",
+      "filters": {
+        "statusLabel": "Estado",
+        "shippingLabel": "Envío",
+        "paymentLabel": "Pago"
+      },
+      "resultsCount_one": "{{count}} resultado de {{total}}",
+      "resultsCount_other": "{{count}} resultados de {{total}}",
+      "ordersCount_one": "{{count}} pedido",
+      "ordersCount_other": "{{count}} pedidos",
+      "table": {
+        "columns": {
+          "order": "Orden",
+          "customerAddress": "Cliente / Dirección",
+          "shipping": "Envío",
+          "products": "Productos",
+          "total": "Total",
+          "payment": "Pago",
+          "status": "Estado",
+          "dateTime": "Fecha y hora"
+        }
+      },
+      "sortLabels": {
+        "total": "Total",
+        "date": "Fecha"
+      },
+      "replacementBadge": "REEMPLAZO · #{{id}}",
+      "replacementBadgeTitle": "Reemplazo sin costo por una devolución del pedido #{{id}}",
+      "subscriptionBadge": "REPOSICIÓN AUTOMÁTICA",
+      "subscriptionBadgeTitle": "Este pedido se generó automáticamente desde una reposición automática (suscripción)",
+      "carrier": {
+        "healthoraCourier": "Mensajería Healthora"
+      },
+      "noCourier": "Sin courier",
+      "itemsCount_one": "{{count}} producto",
+      "itemsCount_other": "{{count}} productos",
+      "saveButton": "Guardar",
+      "confirmModal": {
+        "kicker": "Confirmar estado",
+        "titlePrefix": "Actualizar",
+        "titleEmphasis": "pedido",
+        "bodyPrefix": "Vas a cambiar el pedido #{{orderNumber}} de",
+        "bodyMiddle": "a",
+        "bodySuffix": ". El cliente {{customerName}} recibirá un email de actualización.",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "saveChange": "Guardar cambio"
+      }
+    },
+    "variantsMatrixEditor": {
+      "tabs": {
+        "none": "Sin variante",
+        "simple": "Variante simple",
+        "matrix": "Variante × Tamaño"
+      },
+      "tabHints": {
+        "none": "El producto usa un solo precio y stock (los campos de arriba). No hay opciones para elegir.",
+        "simple": "Una lista de opciones de un solo tipo (ej. solo tamaño, o solo color) — cada una con su propio precio y stock.",
+        "matrix": "Dos dimensiones combinadas (ej. sabor + tamaño): cada combinación puede tener su propio precio, stock, imágenes y \"precio antes\" (descuento). El descuento por categoría también aplica aquí, por combinación."
+      },
+      "nameColumn": "Nombre",
+      "validFromOptional": "Vigente desde (opcional)",
+      "validUntilOptional": "Vigente hasta (opcional)",
+      "primarySection": {
+        "hint": "Solo el nombre — el precio, stock e imágenes de cada combinación se ajustan más abajo, en \"Combinaciones\".",
+        "removeTitle": "Eliminar {{type}}",
+        "addButton": "+ Agregar {{type}}"
+      },
+      "sizesSection": {
+        "title": "Tamaños",
+        "basePriceColumn": "Precio base",
+        "namePlaceholder": "ej. 5 lb",
+        "pricePlaceholder": "Precio",
+        "stockPlaceholder": "Stock",
+        "removeTitle": "Eliminar tamaño",
+        "addButton": "+ Agregar tamaño"
+      },
+      "combinationsSection": {
+        "title": "Combinaciones",
+        "headerSeparator": "{{primary}} \\ Tamaño",
+        "unnamed": "(sin nombre)",
+        "activeLabel": "Activo",
+        "pricePlaceholder": "Precio (default: {{amount}})",
+        "priceTitle": "Solo si esta combinación necesita un precio distinto al default",
+        "priceBeforePlaceholder": "Precio antes (sin descuento)",
+        "priceBeforeTitle": "Precio tachado para esta combinación - deja vacío para no mostrar descuento",
+        "stockPlaceholder": "Stock (default: {{amount}})",
+        "imagesLabel": "Imágenes",
+        "imagesInheritedHint": "Parten de \"{{label}}\" — agrega o quita libremente, solo afecta esta combinación.",
+        "defaultComboTitle": "Combo predeterminado",
+        "defaultLabel": "Default"
+      }
+    },
+    "shippingMethod": {
+      "all": "Todos",
+      "delivery": "Envío a domicilio",
+      "pickup": "Retiro en tienda"
+    },
+    "paymentBucket": {
+      "all": "Todos",
+      "paid": "Pagado",
+      "pending": "Pendiente",
+      "cancelled": "Cancelado",
+      "refunded": "Reembolsado",
+      "returnPending": "Devolución en curso",
+      "replaced": "Reemplazo",
+      "noCharge": "Sin costo"
+    },
+    "fulfillmentStatus": {
+      "all": "Todos",
+      "pending": "Pendiente",
+      "processing": "Preparando",
+      "shipped": "Enviada",
+      "delivered": "Entregada",
+      "pickedUp": "Retirado",
+      "cancelled": "Cancelada",
+      "readyForPickup": "Listo para retirar"
+    },
+    "productVariantsEditor": {
+      "typeLabel": "Tipo de variante",
+      "productVariantsLabel": "Variantes del producto",
+      "noVariants": "Sin variantes — el producto usa precio y stock global.",
+      "rowLabelField": "Etiqueta",
+      "priceLabel": "Precio ($)",
+      "stockLabel": "Stock",
+      "colorHexLabel": "Color (hex)",
+      "removeVariantTitle": "Eliminar variante",
+      "priceBeforeLabel": "Precio antes ($)",
+      "priceBeforePlaceholder": "Sin descuento",
+      "validFromLabel": "Vigente desde",
+      "validUntilLabel": "Vigente hasta",
+      "imagesLabel": "Imágenes (mínimo 1, máximo 4)",
+      "hoverHintMultiple": "La 2ª imagen se usa para el efecto hover de la card en el catálogo.",
+      "hoverHintSingle": "Si agregas una 2ª imagen aquí, se usará para el efecto hover de la card en el catálogo.",
+      "defaultRadioTitle": "Usa la imagen de esta variante como portada del producto en el catálogo",
+      "defaultRadioLabel": "Default (imagen de portada)",
+      "addVariantButton": "+ Agregar variante",
+      "labelPlaceholders": {
+        "flavor": "ej. Chocolate",
+        "scent": "ej. Lavanda",
+        "size": "ej. 500 ml",
+        "count": "ej. Pack de 2",
+        "color": "ej. Rojo",
+        "weight": "ej. 500 g"
+      }
     }
   }
 }

@@ -567,7 +567,7 @@ function OrderDetail({
             <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 12, background: 'var(--cream-2)', display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontFamily: '"Geist", sans-serif' }}>
               <Icon name="truck" size={16} />
               <span>
-                {carrierLabel(order.carrier) || t('orders.detail.tracking.defaultCarrier')} · {t('orders.detail.tracking.label')}{' '}
+                {carrierLabel(t, order.carrier) || t('orders.detail.tracking.defaultCarrier')} · {t('orders.detail.tracking.label')}{' '}
                 {(() => {
                   const url = getTrackingUrl(order.carrier, order.trackingNumber);
                   return url ? (

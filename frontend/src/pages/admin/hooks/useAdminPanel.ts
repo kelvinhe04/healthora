@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParamsCompat as useSearchParams } from '../../../hooks/useSearchParamsCompat';
 import { useUser } from '@clerk/clerk-react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { initAdminSession, useOnceLoading } from '../../../components/admin';
 import { api } from '../../../lib/api';
 import type { FulfillmentStatus, PaymentStatus, Product } from '../../../types';
 import { useBreakpoint } from '../../../hooks/useBreakpoint';
 import {
-  fulfillmentStatusLabels,
+  fulfillmentStatusLabelKeys,
   fulfillmentStatusOptions,
   getOrderPaymentBucket,
   orderPaymentStatusOptions,
@@ -70,6 +71,7 @@ export function useAdminPanel({
   access: AdminAccess;
   onGoToStore: () => void;
 }) {
+  const { t } = useTranslation();
   const { user } = useUser();
   const getAdminToken = useAdminToken();
   const queryClient = useQueryClient();
@@ -441,10 +443,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       invalidateProducts();
       setProductModal(null);
       setProductSuccess({
-        kicker: "Producto actualizado",
-        title: "Cambios",
-        emphasis: "guardados",
-        message: `${variables.data.name || "El producto"} se actualizó correctamente.`,
+        kicker: t('admin.products.successModal.updated.kicker'),
+        title: t('admin.products.successModal.updated.title'),
+        emphasis: t('admin.products.successModal.updated.emphasis'),
+        message: t('admin.products.successModal.updated.message', { name: variables.data.name || t('admin.products.defaultProductName') }),
       });
     },
   });
@@ -456,10 +458,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       invalidateProducts();
       setProductModal(null);
       setProductSuccess({
-        kicker: "Producto creado",
-        title: "Agregado al",
-        emphasis: "catálogo",
-        message: `${data.name || "El producto"} ya está disponible en la tienda.`,
+        kicker: t('admin.products.successModal.created.kicker'),
+        title: t('admin.products.successModal.created.title'),
+        emphasis: t('admin.products.successModal.created.emphasis'),
+        message: t('admin.products.successModal.created.message', { name: data.name || t('admin.products.defaultProductName') }),
       });
     },
   });
@@ -474,10 +476,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       setConfirmDeleteId(null);
       setDeleteError(null);
       setProductSuccess({
-        kicker: "Producto eliminado",
-        title: "Producto",
-        emphasis: "eliminado",
-        message: "El producto se eliminó del catálogo correctamente.",
+        kicker: t('admin.products.successModal.deleted.kicker'),
+        title: t('admin.products.successModal.deleted.title'),
+        emphasis: t('admin.products.successModal.deleted.emphasis'),
+        message: t('admin.products.successModal.deleted.message'),
       });
     },
     onError: (e: Error) => setDeleteError(e.message),
@@ -496,10 +498,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       setConfirmBulkDelete(null);
       setDeleteError(null);
       setProductSuccess({
-        kicker: "Productos eliminados",
-        title: `${ids.length} producto${ids.length > 1 ? "s" : ""}`,
-        emphasis: "eliminado" + (ids.length > 1 ? "s" : ""),
-        message: "Los productos se eliminaron del catálogo correctamente.",
+        kicker: t('admin.products.successModal.bulkDeleted.kicker'),
+        title: t('admin.products.successModal.bulkDeleted.title', { count: ids.length }),
+        emphasis: t('admin.products.successModal.bulkDeleted.emphasis', { count: ids.length }),
+        message: t('admin.products.successModal.bulkDeleted.message'),
       });
     },
     onError: (e: Error) => setDeleteError(e.message),
@@ -516,10 +518,10 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
       setSelectedProductIds([]);
       setConfirmDeleteAll(false);
       setProductSuccess({
-        kicker: "Catálogo eliminado",
-        title: `${data.deletedCount} productos`,
-        emphasis: "eliminados",
-        message: "Todo el catálogo de productos se ha eliminado correctamente.",
+        kicker: t('admin.products.successModal.allDeleted.kicker'),
+        title: t('admin.products.successModal.allDeleted.title', { count: data.deletedCount }),
+        emphasis: t('admin.products.successModal.allDeleted.emphasis'),
+        message: t('admin.products.successModal.allDeleted.message'),
       });
     },
     onError: (e: Error) => setDeleteError(e.message),
@@ -861,6 +863,14 @@ const [orderFulfillmentFilter, setOrderFulfillmentFilter] = useState("");
   const allDisplayedSelected =
     displayedProductIds.length > 0 &&
     selectedDisplayedIds.length === displayedProductIds.length;
+
+  const fulfillmentStatusLabels = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(fulfillmentStatusLabelKeys).map(([status, key]) => [status, t(`admin.fulfillmentStatus.${key}`)]),
+      ) as Record<FulfillmentStatus | '', string>,
+    [t],
+  );
 
   const isSaving =
     productUpdateMutation.isPending || productCreateMutation.isPending;

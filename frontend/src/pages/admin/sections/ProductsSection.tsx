@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Card,
@@ -29,6 +30,7 @@ import { variantSummary } from '../utils';
 import type { ProductSortKey } from '../hooks/useAdminPanel';
 import { getTotalStock, getEffectivePrice, getEffectivePriceBefore } from '../../../lib/productVariants';
 import { api } from '../../../lib/api';
+import { formatCurrency } from '../../../lib/currency';
 import { effectiveLowStockThreshold } from '../types';
 import type { Product } from '../../../types';
 
@@ -56,6 +58,7 @@ function ButtonSpinner() {
 }
 
 function SampleSettingsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [maxPrice, setMaxPrice] = useState('');
@@ -89,7 +92,7 @@ function SampleSettingsModal({ open, onClose }: { open: boolean; onClose: () => 
       );
     },
     onSuccess: () => {
-      setMessage('Ajustes actualizados.');
+      setMessage(t('admin.products.sampleSettingsModal.updated'));
       void queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
     },
   });
@@ -99,11 +102,11 @@ function SampleSettingsModal({ open, onClose }: { open: boolean; onClose: () => 
       <div style={{ width: '100%', maxWidth: 420, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: 24 }}>
         <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 8px' }}>Club Healthora</h3>
 
-        <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '16px 0 8px', lineHeight: 1.5, fontWeight: 600 }}>Muestra gratis</p>
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '16px 0 8px', lineHeight: 1.5, fontWeight: 600 }}>{t('admin.products.sampleSettingsModal.freeSampleTitle')}</p>
         <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '0 0 12px', lineHeight: 1.5 }}>
-          Un producto (o una de sus variantes/combinaciones) califica automáticamente para la muestra gratis si su precio es menor o igual a este tope. Un producto con "Incluir siempre"/"Excluir siempre" en su propio editor ignora este tope.
+          {t('admin.products.sampleSettingsModal.freeSampleBody')}
         </p>
-        <label style={modalFieldLabel}>Precio máximo (USD)</label>
+        <label style={modalFieldLabel}>{t('admin.products.sampleSettingsModal.maxPriceLabel')}</label>
         <input
           type="number"
           min={0}
@@ -113,13 +116,13 @@ function SampleSettingsModal({ open, onClose }: { open: boolean; onClose: () => 
           style={modalInput}
         />
 
-        <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '20px 0 8px', lineHeight: 1.5, fontWeight: 600 }}>Puntos de lealtad (HU-060)</p>
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '20px 0 8px', lineHeight: 1.5, fontWeight: 600 }}>{t('admin.products.sampleSettingsModal.loyaltyTitle')}</p>
         <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '0 0 12px', lineHeight: 1.5 }}>
-          El cliente gana puntos por cada $1 pagado en una orden, y puede canjearlos por un descuento en el checkout.
+          {t('admin.products.sampleSettingsModal.loyaltyBody')}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>
-            <label style={modalFieldLabel}>Puntos por cada $1</label>
+            <label style={modalFieldLabel}>{t('admin.products.sampleSettingsModal.pointsPerDollarLabel')}</label>
             <input
               type="number"
               min={0}
@@ -130,7 +133,7 @@ function SampleSettingsModal({ open, onClose }: { open: boolean; onClose: () => 
             />
           </div>
           <div>
-            <label style={modalFieldLabel}>Valor de 1 punto (¢)</label>
+            <label style={modalFieldLabel}>{t('admin.products.sampleSettingsModal.pointValueLabel')}</label>
             <input
               type="number"
               min={0}
@@ -145,12 +148,12 @@ function SampleSettingsModal({ open, onClose }: { open: boolean; onClose: () => 
         {message && <p style={{ fontSize: 13, color: 'var(--green)', marginTop: 12 }}>{message}</p>}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
           <button type="button" onClick={onClose} style={{ padding: '10px 16px', borderRadius: 999, background: 'transparent', border: '1px solid var(--ink-12)', color: 'var(--ink)', cursor: 'pointer', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>
-            Cerrar
+            {t('admin.products.sampleSettingsModal.close')}
           </button>
           <AnimatedButton
             variant="primary"
             onClick={() => saveMut.mutate()}
-            text={saveMut.isPending ? 'Guardando…' : 'Guardar'}
+            text={saveMut.isPending ? t('admin.products.sampleSettingsModal.saving') : t('admin.products.sampleSettingsModal.save')}
           />
         </div>
       </div>
@@ -159,6 +162,7 @@ function SampleSettingsModal({ open, onClose }: { open: boolean; onClose: () => 
 }
 
 function CategoryDiscountModal({ open, onClose, categories, products }: { open: boolean; onClose: () => void; categories: string[]; products: Product[] }) {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [category, setCategory] = useState('');
@@ -203,7 +207,7 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
       );
     },
     onSuccess: (data) => {
-      setMessage(`${data.updated} de ${data.total} producto${data.total !== 1 ? 's' : ''} actualizado${data.total !== 1 ? 's' : ''}.`);
+      setMessage(t('admin.products.categoryDiscountModal.applySuccess', { updated: data.updated, total: data.total, count: data.total }));
       invalidate();
     },
   });
@@ -214,7 +218,7 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
       return api.admin.products.removeCategoryDiscount(category, token!);
     },
     onSuccess: (data) => {
-      setMessage(`Descuento quitado de ${data.updated} producto${data.updated !== 1 ? 's' : ''}.`);
+      setMessage(t('admin.products.categoryDiscountModal.removeSuccess', { count: data.updated }));
       invalidate();
     },
   });
@@ -222,10 +226,10 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
   return (
     <ModalOverlay open={open} onClose={onClose}>
       <div style={{ width: '100%', maxWidth: 420, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: 24 }}>
-        <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 16px' }}>Descuento por categoría</h3>
+        <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 16px' }}>{t('admin.products.categoryDiscountModal.title')}</h3>
         {categoriesWithDiscount.length > 0 && (
           <div style={{ marginBottom: 16 }}>
-            <label style={modalFieldLabel}>Con descuento activo</label>
+            <label style={modalFieldLabel}>{t('admin.products.categoryDiscountModal.activeDiscountLabel')}</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {categoriesWithDiscount.map((c) => {
                 const selected = category === c;
@@ -258,38 +262,38 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
           </div>
         )}
         <div style={{ marginBottom: 14 }}>
-          <label style={modalFieldLabel}>Categoría</label>
+          <label style={modalFieldLabel}>{t('admin.products.categoryDiscountModal.categoryLabel')}</label>
           <Select value={category} onChange={(e) => { setCategory(e.target.value); setMessage(''); }}>
-            <option value="">Seleccionar categoría…</option>
+            <option value="">{t('admin.products.categoryDiscountModal.categoryPlaceholder')}</option>
             {categories.map((c) => <option key={c} value={c}>{c}</option>)}
           </Select>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
           <div>
-            <label style={modalFieldLabel}>Tipo</label>
+            <label style={modalFieldLabel}>{t('admin.products.categoryDiscountModal.typeLabel')}</label>
             <Select value={discountType} onChange={(e) => setDiscountType(e.target.value as 'percent' | 'fixed')}>
-              <option value="percent">Porcentaje (%)</option>
-              <option value="fixed">Monto fijo ($)</option>
+              <option value="percent">{t('admin.products.categoryDiscountModal.typePercent')}</option>
+              <option value="fixed">{t('admin.products.categoryDiscountModal.typeFixed')}</option>
             </Select>
           </div>
           <div>
-            <label style={modalFieldLabel}>Valor</label>
+            <label style={modalFieldLabel}>{t('admin.products.categoryDiscountModal.valueLabel')}</label>
             <input style={modalInput} type="number" min={0} step={0.01} value={value} onChange={(e) => setValue(e.target.value)} />
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
           <div>
-            <label style={modalFieldLabel}>Vigente desde (opcional)</label>
+            <label style={modalFieldLabel}>{t('admin.variantsMatrixEditor.validFromOptional')}</label>
             <DateInputDDMMYYYY style={modalInput} value={startsAt} onChange={setStartsAt} />
           </div>
           <div>
-            <label style={modalFieldLabel}>Vigente hasta (opcional)</label>
+            <label style={modalFieldLabel}>{t('admin.variantsMatrixEditor.validUntilOptional')}</label>
             <DateInputDDMMYYYY style={modalInput} value={endsAt} onChange={setEndsAt} />
           </div>
         </div>
-        {invalidRange && <div role="alert" style={{ marginBottom: 14, fontSize: 13, color: 'var(--coral)' }}>"Vigente hasta" no puede ser anterior a "Vigente desde".</div>}
+        {invalidRange && <div role="alert" style={{ marginBottom: 14, fontSize: 13, color: 'var(--coral)' }}>{t('admin.products.categoryDiscountModal.invalidRange')}</div>}
         {message && <div style={{ marginBottom: 14, fontSize: 13, color: 'var(--green)' }}>{message}</div>}
-        {(applyMut.isError || removeMut.isError) && <div role="alert" style={{ marginBottom: 14, fontSize: 13, color: 'var(--coral)' }}>No se pudo completar la acción.</div>}
+        {(applyMut.isError || removeMut.isError) && <div role="alert" style={{ marginBottom: 14, fontSize: 13, color: 'var(--coral)' }}>{t('admin.products.categoryDiscountModal.genericError')}</div>}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <AnimatedButton
             variant="outline"
@@ -297,14 +301,14 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
             style={{ color: 'var(--coral)', borderColor: 'oklch(0.85 0.08 30)' }}
             disabled={!category || removeMut.isPending}
             onClick={() => removeMut.mutate()}
-            text={removeMut.isPending ? 'Quitando…' : 'Quitar descuento'}
+            text={removeMut.isPending ? t('admin.products.categoryDiscountModal.removing') : t('admin.products.categoryDiscountModal.removeButton')}
             icon={removeMut.isPending ? <ButtonSpinner /> : undefined}
           />
           <AnimatedButton
             variant="primary"
             disabled={!category || (parseFloat(value) || 0) <= 0 || invalidRange || applyMut.isPending}
             onClick={() => applyMut.mutate()}
-            text={applyMut.isPending ? 'Aplicando…' : 'Aplicar descuento'}
+            text={applyMut.isPending ? t('admin.products.categoryDiscountModal.applying') : t('admin.products.categoryDiscountModal.applyButton')}
             icon={applyMut.isPending ? <ButtonSpinner /> : undefined}
           />
         </div>
@@ -313,18 +317,12 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
   );
 }
 
-const PRODUCT_SORT_LABEL: Record<ProductSortKey, string> = {
-  price: 'Precio',
-  stock: 'Stock',
-  rating: 'Reseña',
-  active: 'Estado',
-};
-
 function ProductRatingCell({ summary }: { summary?: { avgRating: number; count: number } }) {
+  const { t } = useTranslation();
   if (!summary || summary.count === 0) {
     return (
       <span style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-        SIN RESEÑAS
+        {t('admin.products.table.noReviews')}
       </span>
     );
   }
@@ -339,6 +337,13 @@ function ProductRatingCell({ summary }: { summary?: { avgRating: number; count: 
 }
 
 export function ProductsSection() {
+  const { t } = useTranslation();
+  const PRODUCT_SORT_LABEL: Record<ProductSortKey, string> = {
+    price: t('admin.products.table.columns.price'),
+    stock: t('admin.products.table.columns.stock'),
+    rating: t('admin.products.table.columns.rating'),
+    active: t('admin.products.table.columns.status'),
+  };
   const {
   showProductsSkeleton,
   products,
@@ -391,7 +396,7 @@ export function ProductsSection() {
   const reindexMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
-      if (!token) throw new Error('Sesión expirada');
+      if (!token) throw new Error(t('admin.products.sessionExpiredError'));
       return api.admin.catalog.reindex(token);
     },
   });
@@ -404,15 +409,15 @@ export function ProductsSection() {
               kicker={
                 showProductsSkeleton
                   ? undefined
-                  : `Catálogo · ${products.length} productos`
+                  : t('admin.products.kicker', { count: products.length })
               }
               title={
                 <>
-                  Gestión de{" "}
-                  <em style={{ color: "var(--green)" }}>productos</em>
+                  {t('admin.products.titlePrefix')}{" "}
+                  <em style={{ color: "var(--green)" }}>{t('admin.products.titleEmphasis')}</em>
                 </>
               }
-              sub="Agrega, edita, elimina y filtra el catálogo completo."
+              sub={t('admin.products.sub')}
               actions={
                 showProductsSkeleton ? (
                   <Skeleton height={40} width={152} borderRadius={999} />
@@ -424,23 +429,23 @@ export function ProductsSection() {
                       disabled={reindexMutation.isPending}
                       style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif', whiteSpace: "nowrap" }}
                     >
-                      {reindexMutation.isPending ? 'Refrescando…' : 'Refrescar catálogo'}
+                      {reindexMutation.isPending ? t('admin.products.refreshing') : t('admin.products.refreshCatalog')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setDiscountModalOpen(true)}
                       style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif', whiteSpace: "nowrap" }}
                     >
-                      Descuento por categoría
+                      {t('admin.products.categoryDiscountButton')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setSampleSettingsModalOpen(true)}
                       style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif', whiteSpace: "nowrap" }}
                     >
-                      Club Healthora
+                      {t('admin.products.clubHealthoraButton')}
                     </button>
-                    <AnimatedButton variant="primary" onClick={() => setProductModal({ mode: "add" })} text="+ Agregar producto" />
+                    <AnimatedButton variant="primary" onClick={() => setProductModal({ mode: "add" })} text={t('admin.products.addProductButton')} />
                   </>
                 )
               }
@@ -492,7 +497,7 @@ export function ProductsSection() {
                   <input
                     value={productSearch}
                     onChange={(e) => setProductSearch(e.target.value)}
-                    placeholder="Buscar por nombre o marca…"
+                    placeholder={t('admin.products.searchPlaceholder')}
                     style={{
                       border: "none",
                       outline: "none",
@@ -558,7 +563,7 @@ export function ProductsSection() {
                         transition: "all 120ms",
                       }}
                     >
-                      <span>{cat}</span>
+                      <span>{cat === 'Todos' ? t('catalog.filters.all') : cat}</span>
                       <span
                         style={{
                           fontSize: 10,
@@ -613,7 +618,13 @@ export function ProductsSection() {
                       transition: "all 120ms",
                     }}
                   >
-                    <span>{status}</span>
+                    <span>
+                      {status === 'Todos'
+                        ? t('catalog.filters.all')
+                        : status === 'Activo'
+                          ? t('admin.products.filters.statusActive')
+                          : t('admin.products.filters.statusInactive')}
+                    </span>
                     <span
                       style={{
                         fontSize: 10,
@@ -664,8 +675,8 @@ export function ProductsSection() {
                     }}
                   >
                     {selectedDisplayedIds.length > 0
-                      ? `${selectedDisplayedIds.length} seleccionados en esta vista`
-                      : "Selecciona varios productos para borrado masivo."}
+                      ? t('admin.products.selectedInView', { count: selectedDisplayedIds.length })
+                      : t('admin.products.selectHint')}
                   </div>
                   <SortClearChip sort={productSort} labels={PRODUCT_SORT_LABEL} onClear={clearProductSort} />
                 </div>
@@ -680,20 +691,20 @@ export function ProductsSection() {
                     variant="outline"
                     onClick={() => setSelectedProductIds((current) => current.filter((id) => !displayedProductIds.includes(id)))}
                     disabled={selectedDisplayedIds.length === 0}
-                    text="Limpiar selección"
+                    text={t('admin.products.clearSelection')}
                   />
                   <AnimatedButton
                     variant="outline"
-                    onClick={() => setConfirmBulkDelete({ ids: selectedDisplayedIds, title: "Eliminar seleccionados", description: `Se eliminarán ${selectedDisplayedIds.length} productos seleccionados de esta vista.` })}
+                    onClick={() => setConfirmBulkDelete({ ids: selectedDisplayedIds, title: t('admin.products.deleteSelected'), description: t('admin.products.deleteSelectedDescription', { count: selectedDisplayedIds.length }) })}
                     disabled={selectedDisplayedIds.length === 0}
                     style={{ color: "oklch(0.5 0.15 30)", borderColor: "oklch(0.85 0.08 30)" }}
-                    text="Eliminar seleccionados"
+                    text={t('admin.products.deleteSelected')}
                   />
                   <AnimatedButton
                     variant="outline"
                     onClick={() => setConfirmDeleteAll(true)}
                     style={{ color: "var(--coral)", borderColor: "oklch(0.85 0.08 30)" }}
-                    text="Eliminar todo"
+                    text={t('admin.products.deleteAllButton')}
                   />
                 </div>
               </div>
@@ -842,16 +853,16 @@ export function ProductsSection() {
                                 ),
                           )
                         }
-                        aria-label="Seleccionar productos visibles"
+                        aria-label={t('admin.products.table.selectVisibleAria')}
                         style={{ width: 16, height: 16, minWidth: 16 }}
                       />
                     </th>
-                    <th style={th}>Producto</th>
-                    <th style={th}>Categoría</th>
-                    <SortableTh label="Precio" sortKey="price" activeSort={productSort} onSort={toggleProductSort} />
-                    <SortableTh label="Stock" sortKey="stock" activeSort={productSort} onSort={toggleProductSort} />
-                    <SortableTh label="Reseña" sortKey="rating" activeSort={productSort} onSort={toggleProductSort} />
-                    <SortableTh label="Estado" sortKey="active" activeSort={productSort} onSort={toggleProductSort} />
+                    <th style={th}>{t('admin.products.table.columns.product')}</th>
+                    <th style={th}>{t('admin.products.table.columns.category')}</th>
+                    <SortableTh label={t('admin.products.table.columns.price')} sortKey="price" activeSort={productSort} onSort={toggleProductSort} />
+                    <SortableTh label={t('admin.products.table.columns.stock')} sortKey="stock" activeSort={productSort} onSort={toggleProductSort} />
+                    <SortableTh label={t('admin.products.table.columns.rating')} sortKey="rating" activeSort={productSort} onSort={toggleProductSort} />
+                    <SortableTh label={t('admin.products.table.columns.status')} sortKey="active" activeSort={productSort} onSort={toggleProductSort} />
                     <th style={th}></th>
                   </tr>
                 </thead>
@@ -873,7 +884,7 @@ export function ProductsSection() {
                                 : current.filter((id) => id !== nextId),
                             );
                           }}
-                          aria-label={`Seleccionar ${product.name}`}
+                          aria-label={t('admin.products.table.selectProductAria', { name: product.name })}
                           style={{ width: 16, height: 16, minWidth: 16 }}
                         />
                       </td>
@@ -924,7 +935,7 @@ export function ProductsSection() {
                                   marginTop: 2,
                                 }}
                               >
-                                {variantInfo.count} {variantInfo.label}
+                                {t(`admin.products.variantSummary.${variantInfo.kind}`, { count: variantInfo.count })}
                               </div>
                             )}
                           </div>
@@ -940,7 +951,7 @@ export function ProductsSection() {
                             fontSize: 18,
                           }}
                         >
-                          ${getEffectivePrice(product).toFixed(2)}
+                          {formatCurrency(getEffectivePrice(product))}
                         </div>
                         {getEffectivePriceBefore(product) && (
                           <div
@@ -951,7 +962,7 @@ export function ProductsSection() {
                               fontFamily: '"JetBrains Mono", monospace',
                             }}
                           >
-                            ${getEffectivePriceBefore(product)!.toFixed(2)}
+                            {formatCurrency(getEffectivePriceBefore(product)!)}
                           </div>
                         )}
                       </td>
@@ -967,7 +978,7 @@ export function ProductsSection() {
                         {getTotalStock(product)}
                         {product.active && getTotalStock(product) <= effectiveLowStockThreshold(product) && (
                           <span
-                            title={`Stock bajo (umbral: ${effectiveLowStockThreshold(product)})`}
+                            title={t('admin.products.table.lowStockTitle', { threshold: effectiveLowStockThreshold(product) })}
                             style={{
                               marginLeft: 6,
                               fontSize: 9,
@@ -980,7 +991,7 @@ export function ProductsSection() {
                               color: 'var(--coral)',
                             }}
                           >
-                            Bajo
+                            {t('admin.products.table.lowStockBadge')}
                           </span>
                         )}
                       </td>
@@ -990,6 +1001,7 @@ export function ProductsSection() {
                       <td style={td}>
                         <StatusPill
                           status={product.active ? "Activo" : "Inactivo"}
+                          label={product.active ? t('admin.products.filters.statusActive') : t('admin.products.filters.statusInactive')}
                         />
                       </td>
                       <td style={td}>
@@ -1001,7 +1013,7 @@ export function ProductsSection() {
                         >
                           <button
                             style={iconBtnAd}
-                            title="Editar producto"
+                            title={t('admin.products.table.editTitle')}
                             onClick={() =>
                               setProductModal({
                                 mode: "edit",
@@ -1016,7 +1028,7 @@ export function ProductsSection() {
                               ...iconBtnAd,
                               color: "oklch(0.55 0.15 30)",
                             }}
-                            title="Eliminar producto"
+                            title={t('admin.products.table.deleteTitle')}
                             onClick={() => {
                               setDeleteError(null);
                               setConfirmDeleteId(product._id || product.id);
@@ -1040,7 +1052,7 @@ export function ProductsSection() {
                           padding: "48px 24px",
                         }}
                       >
-                        No hay productos para los filtros seleccionados.
+                        {t('admin.products.table.empty')}
                       </td>
                     </tr>
                   )}
@@ -1109,7 +1121,7 @@ export function ProductsSection() {
                         marginBottom: 8,
                       }}
                     >
-                      Confirmación
+                      {t('admin.products.confirmKicker')}
                     </div>
                     <div
                       style={{
@@ -1120,13 +1132,13 @@ export function ProductsSection() {
                         color: "var(--ink)",
                       }}
                     >
-                      Eliminar{" "}
+                      {t('admin.products.deleteModal.titlePrefix')}{" "}
                       <em
                         style={{
                           color: "oklch(0.5 0.15 30)",
                         }}
                       >
-                        producto
+                        {t('admin.products.deleteModal.titleEmphasis')}
                       </em>
                     </div>
                     <p
@@ -1138,8 +1150,7 @@ export function ProductsSection() {
                         fontFamily: '"Geist", sans-serif',
                       }}
                     >
-                      Esta acción eliminará el producto del catálogo. No se
-                      puede deshacer.
+                      {t('admin.products.deleteModal.body')}
                     </p>
                     {deleteError && (
                       <div
@@ -1163,8 +1174,8 @@ export function ProductsSection() {
                       background: "var(--cream-2)",
                     }}
                   >
-                    <AnimatedButton variant="outline" onClick={() => { setConfirmDeleteId(null); setDeleteError(null); }} text="Cancelar" />
-                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); productDeleteMutation.mutate(confirmDeleteId!); }} disabled={productDeleteMutation.isPending} text={productDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
+                    <AnimatedButton variant="outline" onClick={() => { setConfirmDeleteId(null); setDeleteError(null); }} text={t('admin.products.cancel')} />
+                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); productDeleteMutation.mutate(confirmDeleteId!); }} disabled={productDeleteMutation.isPending} text={productDeleteMutation.isPending ? t('admin.products.deleting') : t('admin.products.confirmDelete')} />
                   </div>
                 </div>
             </ModalOverlay>
@@ -1197,7 +1208,7 @@ export function ProductsSection() {
                         marginBottom: 8,
                       }}
                     >
-                      Confirmación
+                      {t('admin.products.confirmKicker')}
                     </div>
                     <div
                       style={{
@@ -1243,8 +1254,8 @@ export function ProductsSection() {
                       background: "var(--cream-2)",
                     }}
                   >
-                    <AnimatedButton variant="outline" onClick={() => { setConfirmBulkDelete(null); setDeleteError(null); }} text="Cancelar" />
-                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); if (confirmBulkDelete) bulkDeleteMutation.mutate(confirmBulkDelete.ids); }} disabled={bulkDeleteMutation.isPending} text={bulkDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
+                    <AnimatedButton variant="outline" onClick={() => { setConfirmBulkDelete(null); setDeleteError(null); }} text={t('admin.products.cancel')} />
+                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); if (confirmBulkDelete) bulkDeleteMutation.mutate(confirmBulkDelete.ids); }} disabled={bulkDeleteMutation.isPending} text={bulkDeleteMutation.isPending ? t('admin.products.deleting') : t('admin.products.confirmDelete')} />
                   </div>
                 </div>
             </ModalOverlay>
@@ -1277,7 +1288,7 @@ export function ProductsSection() {
                         marginBottom: 8,
                       }}
                     >
-                      Peligro
+                      {t('admin.products.deleteAllModal.dangerKicker')}
                     </div>
                     <div
                       style={{
@@ -1288,7 +1299,7 @@ export function ProductsSection() {
                         color: "var(--ink)",
                       }}
                     >
-                      Eliminar todo el catálogo
+                      {t('admin.products.deleteAllModal.title')}
                     </div>
                   </div>
                   <div
@@ -1305,9 +1316,8 @@ export function ProductsSection() {
                         color: "var(--ink-60)",
                       }}
                     >
-                      ¿Estás seguro de que deseas eliminar{" "}
-                      <strong>todos los productos</strong> del catálogo? Esta
-                      acción no se puede deshacer.
+                      {t('admin.products.deleteAllModal.bodyPrefix')}{" "}
+                      <strong>{t('admin.products.deleteAllModal.bodyStrong')}</strong> {t('admin.products.deleteAllModal.bodySuffix')}
                     </p>
                   </div>
                   <div
@@ -1318,8 +1328,8 @@ export function ProductsSection() {
                       justifyContent: "flex-end",
                     }}
                   >
-                    <AnimatedButton variant="outline" onClick={() => { setConfirmDeleteAll(false); setDeleteError(null); }} text="Cancelar" />
-                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); deleteAllMutation.mutate(); }} disabled={deleteAllMutation.isPending} text={deleteAllMutation.isPending ? "Eliminando…" : "Sí, eliminar todo"} />
+                    <AnimatedButton variant="outline" onClick={() => { setConfirmDeleteAll(false); setDeleteError(null); }} text={t('admin.products.cancel')} />
+                    <AnimatedButton variant="primary" onClick={() => { setDeleteError(null); deleteAllMutation.mutate(); }} disabled={deleteAllMutation.isPending} text={deleteAllMutation.isPending ? t('admin.products.deleting') : t('admin.products.deleteAllModal.confirmAll')} />
                   </div>
                 </div>
             </ModalOverlay>
@@ -1353,7 +1363,7 @@ export function ProductsSection() {
                         marginBottom: 8,
                       }}
                     >
-                      Confirmación
+                      {t('admin.products.confirmKicker')}
                     </div>
                     <div
                       style={{
@@ -1364,13 +1374,13 @@ export function ProductsSection() {
                         color: "var(--ink)",
                       }}
                     >
-                      Eliminar{" "}
+                      {t('admin.products.deleteUserModal.titlePrefix')}{" "}
                       <em
                         style={{
                           color: "oklch(0.5 0.15 30)",
                         }}
                       >
-                        usuario
+                        {t('admin.products.deleteUserModal.titleEmphasis')}
                       </em>
                     </div>
                     <p
@@ -1382,8 +1392,7 @@ export function ProductsSection() {
                         fontFamily: '"Geist", sans-serif',
                       }}
                     >
-                      ¿Eliminar a {confirmUserDelete?.name}? Esto eliminará su
-                      cuenta local. El usuario seguirá existiendo en Clerk.
+                      {t('admin.products.deleteUserModal.body', { name: confirmUserDelete?.name })}
                     </p>
                   </div>
                   <div
@@ -1395,8 +1404,8 @@ export function ProductsSection() {
                       background: "var(--cream-2)",
                     }}
                   >
-                    <AnimatedButton variant="outline" onClick={() => setConfirmUserDelete(null)} text="Cancelar" />
-                    <AnimatedButton variant="primary" onClick={() => confirmUserDelete && userDeleteMutation.mutate(confirmUserDelete.id)} disabled={userDeleteMutation.isPending} style={{ background: "oklch(0.5 0.15 30)" }} text={userDeleteMutation.isPending ? "Eliminando…" : "Sí, eliminar"} />
+                    <AnimatedButton variant="outline" onClick={() => setConfirmUserDelete(null)} text={t('admin.products.cancel')} />
+                    <AnimatedButton variant="primary" onClick={() => confirmUserDelete && userDeleteMutation.mutate(confirmUserDelete.id)} disabled={userDeleteMutation.isPending} style={{ background: "oklch(0.5 0.15 30)" }} text={userDeleteMutation.isPending ? t('admin.products.deleting') : t('admin.products.confirmDelete')} />
                   </div>
                 </div>
             </ModalOverlay>

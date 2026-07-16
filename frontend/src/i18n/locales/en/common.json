@@ -1258,6 +1258,312 @@
         "saving": "Saving…",
         "save": "Save"
       }
+    },
+    "variantTypes": {
+      "flavor": "Flavor",
+      "scent": "Scent",
+      "size": "Size",
+      "color": "Color",
+      "weight": "Weight",
+      "count": "Count"
+    },
+    "variantTypesPlural": {
+      "flavor": "Flavors",
+      "scent": "Scents",
+      "color": "Colors",
+      "weight": "Weights",
+      "count": "Counts"
+    },
+    "products": {
+      "variantSummary": {
+        "combinations_one": "{{count}} combination",
+        "combinations_other": "{{count}} combinations",
+        "variants_one": "{{count}} variant",
+        "variants_other": "{{count}} variants"
+      },
+      "defaultProductName": "The product",
+      "sessionExpiredError": "Session expired",
+      "titlePrefix": "Product",
+      "titleEmphasis": "management",
+      "kicker_one": "Catalog · {{count}} product",
+      "kicker_other": "Catalog · {{count}} products",
+      "sub": "Add, edit, delete, and filter the full catalog.",
+      "refreshing": "Refreshing…",
+      "refreshCatalog": "Refresh catalog",
+      "categoryDiscountButton": "Category discount",
+      "clubHealthoraButton": "Club Healthora",
+      "addProductButton": "+ Add product",
+      "searchPlaceholder": "Search by name or brand…",
+      "filters": {
+        "statusActive": "Active",
+        "statusInactive": "Inactive"
+      },
+      "selectedInView_one": "{{count}} selected in this view",
+      "selectedInView_other": "{{count}} selected in this view",
+      "selectHint": "Select multiple products for bulk deletion.",
+      "clearSelection": "Clear selection",
+      "deleteSelected": "Delete selected",
+      "deleteSelectedDescription_one": "{{count}} selected product from this view will be deleted.",
+      "deleteSelectedDescription_other": "{{count}} selected products from this view will be deleted.",
+      "deleteAllButton": "Delete all",
+      "table": {
+        "columns": {
+          "product": "Product",
+          "category": "Category",
+          "price": "Price",
+          "stock": "Stock",
+          "rating": "Rating",
+          "status": "Status"
+        },
+        "selectVisibleAria": "Select visible products",
+        "selectProductAria": "Select {{name}}",
+        "noReviews": "NO REVIEWS",
+        "lowStockBadge": "Low",
+        "lowStockTitle": "Low stock (threshold: {{threshold}})",
+        "editTitle": "Edit product",
+        "deleteTitle": "Delete product",
+        "empty": "No products for the selected filters."
+      },
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "confirmDelete": "Yes, delete",
+      "confirmKicker": "Confirmation",
+      "deleteModal": {
+        "titlePrefix": "Delete",
+        "titleEmphasis": "product",
+        "body": "This action will delete the product from the catalog. It can't be undone."
+      },
+      "deleteAllModal": {
+        "dangerKicker": "Danger",
+        "title": "Delete the entire catalog",
+        "bodyPrefix": "Are you sure you want to delete",
+        "bodyStrong": "all products",
+        "bodySuffix": "from the catalog? This action can't be undone.",
+        "confirmAll": "Yes, delete everything"
+      },
+      "deleteUserModal": {
+        "titlePrefix": "Delete",
+        "titleEmphasis": "user",
+        "body": "Delete {{name}}? This will delete their local account. The user will still exist in Clerk."
+      },
+      "sampleSettingsModal": {
+        "freeSampleTitle": "Free sample",
+        "freeSampleBody": "A product (or one of its variants/combinations) automatically qualifies for the free sample if its price is at or below this cap. A product with \"Always include\"/\"Always exclude\" set in its own editor ignores this cap.",
+        "maxPriceLabel": "Max price (USD)",
+        "loyaltyTitle": "Loyalty points (HU-060)",
+        "loyaltyBody": "The customer earns points for every $1 paid on an order, and can redeem them for a discount at checkout.",
+        "pointsPerDollarLabel": "Points per $1",
+        "pointValueLabel": "Value of 1 point (¢)",
+        "updated": "Settings updated.",
+        "close": "Close",
+        "saving": "Saving…",
+        "save": "Save"
+      },
+      "categoryDiscountModal": {
+        "title": "Category discount",
+        "activeDiscountLabel": "With active discount",
+        "categoryLabel": "Category",
+        "categoryPlaceholder": "Select a category…",
+        "typeLabel": "Type",
+        "typePercent": "Percentage (%)",
+        "typeFixed": "Fixed amount ($)",
+        "valueLabel": "Value",
+        "invalidRange": "\"Valid until\" can't be earlier than \"Valid from\".",
+        "genericError": "Couldn't complete the action.",
+        "applySuccess_one": "{{updated}} of {{total}} product updated.",
+        "applySuccess_other": "{{updated}} of {{total}} products updated.",
+        "removeSuccess_one": "Discount removed from {{count}} product.",
+        "removeSuccess_other": "Discount removed from {{count}} products.",
+        "removing": "Removing…",
+        "removeButton": "Remove discount",
+        "applying": "Applying…",
+        "applyButton": "Apply discount"
+      },
+      "successModal": {
+        "updated": {
+          "kicker": "Product updated",
+          "title": "Changes",
+          "emphasis": "saved",
+          "message": "{{name}} was updated successfully."
+        },
+        "created": {
+          "kicker": "Product created",
+          "title": "Added to the",
+          "emphasis": "catalog",
+          "message": "{{name}} is now available in the store."
+        },
+        "deleted": {
+          "kicker": "Product deleted",
+          "title": "Product",
+          "emphasis": "deleted",
+          "message": "The product was deleted from the catalog successfully."
+        },
+        "bulkDeleted": {
+          "kicker": "Products deleted",
+          "title_one": "{{count}} product",
+          "title_other": "{{count}} products",
+          "emphasis_one": "deleted",
+          "emphasis_other": "deleted",
+          "message": "The products were deleted from the catalog successfully."
+        },
+        "allDeleted": {
+          "kicker": "Catalog deleted",
+          "title": "{{count}} products",
+          "emphasis": "deleted",
+          "message": "The entire product catalog has been deleted successfully."
+        }
+      }
+    },
+    "orders": {
+      "titlePrefix": "Order",
+      "titleEmphasis": "management",
+      "sub": "Change statuses and monitor the order's full cycle.",
+      "exportCsv": "Export CSV",
+      "searchPlaceholder": "Search by ID, customer, email, or product…",
+      "filters": {
+        "statusLabel": "Status",
+        "shippingLabel": "Shipping",
+        "paymentLabel": "Payment"
+      },
+      "resultsCount_one": "{{count}} result of {{total}}",
+      "resultsCount_other": "{{count}} results of {{total}}",
+      "ordersCount_one": "{{count}} order",
+      "ordersCount_other": "{{count}} orders",
+      "table": {
+        "columns": {
+          "order": "Order",
+          "customerAddress": "Customer / Address",
+          "shipping": "Shipping",
+          "products": "Products",
+          "total": "Total",
+          "payment": "Payment",
+          "status": "Status",
+          "dateTime": "Date & time"
+        }
+      },
+      "sortLabels": {
+        "total": "Total",
+        "date": "Date"
+      },
+      "replacementBadge": "REPLACEMENT · #{{id}}",
+      "replacementBadgeTitle": "Free replacement for a return on order #{{id}}",
+      "subscriptionBadge": "AUTO REPURCHASE",
+      "subscriptionBadgeTitle": "This order was automatically generated from an automatic repurchase (subscription)",
+      "carrier": {
+        "healthoraCourier": "Healthora Courier"
+      },
+      "noCourier": "No courier",
+      "itemsCount_one": "{{count}} product",
+      "itemsCount_other": "{{count}} products",
+      "saveButton": "Save",
+      "confirmModal": {
+        "kicker": "Confirm status",
+        "titlePrefix": "Update",
+        "titleEmphasis": "order",
+        "bodyPrefix": "You're about to change order #{{orderNumber}} from",
+        "bodyMiddle": "to",
+        "bodySuffix": ". The customer {{customerName}} will receive an update email.",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "saveChange": "Save change"
+      }
+    },
+    "variantsMatrixEditor": {
+      "tabs": {
+        "none": "No variant",
+        "simple": "Simple variant",
+        "matrix": "Variant × Size"
+      },
+      "tabHints": {
+        "none": "The product uses a single price and stock (the fields above). There are no options to pick from.",
+        "simple": "A list of options of a single type (e.g. only size, or only color) — each with its own price and stock.",
+        "matrix": "Two combined dimensions (e.g. flavor + size): each combination can have its own price, stock, images, and \"price before\" (discount). The category discount also applies here, per combination."
+      },
+      "nameColumn": "Name",
+      "validFromOptional": "Valid from (optional)",
+      "validUntilOptional": "Valid until (optional)",
+      "primarySection": {
+        "hint": "Just the name — each combination's price, stock, and images are set further down, in \"Combinations\".",
+        "removeTitle": "Remove {{type}}",
+        "addButton": "+ Add {{type}}"
+      },
+      "sizesSection": {
+        "title": "Sizes",
+        "basePriceColumn": "Base price",
+        "namePlaceholder": "e.g. 5 lb",
+        "pricePlaceholder": "Price",
+        "stockPlaceholder": "Stock",
+        "removeTitle": "Remove size",
+        "addButton": "+ Add size"
+      },
+      "combinationsSection": {
+        "title": "Combinations",
+        "headerSeparator": "{{primary}} \\ Size",
+        "unnamed": "(unnamed)",
+        "activeLabel": "Active",
+        "pricePlaceholder": "Price (default: {{amount}})",
+        "priceTitle": "Only if this combination needs a different price than the default",
+        "priceBeforePlaceholder": "Price before (no discount)",
+        "priceBeforeTitle": "Struck-through price for this combination - leave empty to show no discount",
+        "stockPlaceholder": "Stock (default: {{amount}})",
+        "imagesLabel": "Images",
+        "imagesInheritedHint": "Starting from \"{{label}}\" — add or remove freely, it only affects this combination.",
+        "defaultComboTitle": "Default combo",
+        "defaultLabel": "Default"
+      }
+    },
+    "shippingMethod": {
+      "all": "All",
+      "delivery": "Home delivery",
+      "pickup": "Store pickup"
+    },
+    "paymentBucket": {
+      "all": "All",
+      "paid": "Paid",
+      "pending": "Pending",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded",
+      "returnPending": "Return in progress",
+      "replaced": "Replacement",
+      "noCharge": "No charge"
+    },
+    "fulfillmentStatus": {
+      "all": "All",
+      "pending": "Pending",
+      "processing": "Preparing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "pickedUp": "Picked up",
+      "cancelled": "Cancelled",
+      "readyForPickup": "Ready for pickup"
+    },
+    "productVariantsEditor": {
+      "typeLabel": "Variant type",
+      "productVariantsLabel": "Product variants",
+      "noVariants": "No variants — the product uses the global price and stock.",
+      "rowLabelField": "Label",
+      "priceLabel": "Price ($)",
+      "stockLabel": "Stock",
+      "colorHexLabel": "Color (hex)",
+      "removeVariantTitle": "Remove variant",
+      "priceBeforeLabel": "Price before ($)",
+      "priceBeforePlaceholder": "No discount",
+      "validFromLabel": "Valid from",
+      "validUntilLabel": "Valid until",
+      "imagesLabel": "Images (1 minimum, 4 maximum)",
+      "hoverHintMultiple": "The 2nd image is used for the card's hover effect in the catalog.",
+      "hoverHintSingle": "If you add a 2nd image here, it'll be used for the card's hover effect in the catalog.",
+      "defaultRadioTitle": "Use this variant's image as the product's cover in the catalog",
+      "defaultRadioLabel": "Default (cover image)",
+      "addVariantButton": "+ Add variant",
+      "labelPlaceholders": {
+        "flavor": "e.g. Chocolate",
+        "scent": "e.g. Lavender",
+        "size": "e.g. 500 ml",
+        "count": "e.g. Pack of 2",
+        "color": "e.g. Red",
+        "weight": "e.g. 500 g"
+      }
     }
   }
 }

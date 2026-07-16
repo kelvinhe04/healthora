@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   PageHeader,
@@ -20,27 +21,27 @@ import { useAdminToken } from '../hooks/useAdminToken';
 import { useAdminPanelContext } from '../AdminPanelContext';
 import type { OrderSortKey } from '../hooks/useAdminPanel';
 import { formatPanamaShortDate, formatPanamaTime } from '../../../lib/dates';
-import { getFulfillmentStatusLabel, orderPaymentStatusLabels, orderPaymentStatusOptions, orderShippingMethodLabels } from '../types';
+import { getFulfillmentStatusLabel, orderPaymentStatusLabelKeys, orderPaymentStatusOptions } from '../types';
 import { carrierLabel, getTrackingUrl } from '../../../lib/tracking';
 import { api } from '../../../lib/api';
+import { formatCurrency } from '../../../lib/currency';
 import type { OrderReturn } from '../../../types';
 
-const ORDER_SORT_LABEL: Record<OrderSortKey, string> = {
-  total: 'Total',
-  date: 'Fecha',
-};
-
 // Mirrors the labels used in Devoluciones. A `rejected` return didn't move any money, so it falls
-// back to the order's real payment status (see paymentPillLabels below).
-function returnPaymentLabel(ret: OrderReturn): string | null {
+// back to the order's real payment status (see paymentPillInfo below). `colorKey` is the raw
+// (untranslated) Spanish label STATUS_COLORS is keyed by; `i18nKey` resolves the translated
+// display label at the call site (a plain function can't call t() itself, HU-084).
+function returnPaymentStatusInfo(ret: OrderReturn): { colorKey: string; i18nKey: string } | null {
   switch (ret.status) {
-    case 'requested': return 'Solicitada';
-    case 'approved': return 'Aprobada';
-    case 'in_transit': return 'En tránsito';
-    case 'in_review': return 'En revisión';
-    case 'refund_pending': return 'Reembolso en proceso';
-    case 'refunded': return 'Reembolsada';
-    case 'replaced': return ret.returnMethod === 'store_dropoff' ? 'Reemplazo en tienda' : 'Reemplazo en camino';
+    case 'requested': return { colorKey: 'Solicitada', i18nKey: 'orders.returns.status.requested' };
+    case 'approved': return { colorKey: 'Aprobada', i18nKey: 'orders.returns.status.approved' };
+    case 'in_transit': return { colorKey: 'En tránsito', i18nKey: 'orders.returns.status.inTransit' };
+    case 'in_review': return { colorKey: 'En revisión', i18nKey: 'orders.returns.status.inReview' };
+    case 'refund_pending': return { colorKey: 'Reembolso en proceso', i18nKey: 'orders.returns.status.refundPending' };
+    case 'refunded': return { colorKey: 'Reembolsada', i18nKey: 'orders.returns.status.refunded' };
+    case 'replaced': return ret.returnMethod === 'store_dropoff'
+      ? { colorKey: 'Reemplazo en tienda', i18nKey: 'orders.returns.replacedInStore' }
+      : { colorKey: 'Reemplazo en camino', i18nKey: 'orders.returns.status.replaced' };
     case 'rejected': return null;
   }
 }
@@ -50,24 +51,37 @@ function returnPaymentLabel(ret: OrderReturn): string | null {
  * Pago cell shows both: the real payment status (still "Pagado") *and* the replacement's own
  * progress, instead of the return label replacing it like it does for a refund-desired return
  * (where money genuinely is/was in motion, so the return label alone is the accurate story). */
-function paymentPillLabels(order: { paymentStatus?: string; replacesOrderId?: string }, ret?: OrderReturn): string[] {
-  const baseLabel = order.replacesOrderId
-    ? 'Sin costo'
+function paymentPillInfos(order: { paymentStatus?: string; replacesOrderId?: string }, ret?: OrderReturn): { colorKey: string; i18nKey: string }[] {
+  const base = order.replacesOrderId
+    ? { colorKey: 'Sin costo', i18nKey: 'admin.paymentBucket.noCharge' }
     : order.paymentStatus === 'paid'
-      ? 'Pagado'
+      ? { colorKey: 'Pagado', i18nKey: 'admin.paymentBucket.paid' }
       : order.paymentStatus === 'cancelled'
-        ? 'Cancelado'
+        ? { colorKey: 'Cancelado', i18nKey: 'admin.paymentBucket.cancelled' }
         : order.paymentStatus === 'refunded'
-          ? 'Reembolsado'
-          : 'Pendiente';
-  const returnLabel = ret ? returnPaymentLabel(ret) : null;
-  if (!returnLabel) return [baseLabel];
-  if (ret?.desiredResolution === 'replacement') return [baseLabel, returnLabel];
-  return [returnLabel];
+          ? { colorKey: 'Reembolsado', i18nKey: 'admin.paymentBucket.refunded' }
+          : { colorKey: 'Pendiente', i18nKey: 'admin.paymentBucket.pending' };
+  const returnInfo = ret ? returnPaymentStatusInfo(ret) : null;
+  if (!returnInfo) return [base];
+  if (ret?.desiredResolution === 'replacement') return [base, returnInfo];
+  return [returnInfo];
 }
 
 export function OrdersSection() {
+  const { t } = useTranslation();
   const getAdminToken = useAdminToken();
+  const orderShippingMethodLabels = {
+    '': t('admin.shippingMethod.all'),
+    delivery: t('admin.shippingMethod.delivery'),
+    pickup: t('admin.shippingMethod.pickup'),
+  } as Record<'' | 'delivery' | 'pickup', string>;
+  const orderPaymentStatusLabels = Object.fromEntries(
+    Object.entries(orderPaymentStatusLabelKeys).map(([bucket, key]) => [bucket, t(`admin.paymentBucket.${key}`)]),
+  ) as Record<string, string>;
+  const ORDER_SORT_LABEL: Record<OrderSortKey, string> = {
+    total: t('admin.orders.sortLabels.total'),
+    date: t('admin.orders.sortLabels.date'),
+  };
   const {
   orders,
   showOrdersSkeleton,
@@ -105,13 +119,13 @@ export function OrdersSection() {
           <>
             <PageHeader
               loading={showOrdersSkeleton}
-              kicker="Pedidos"
+              kicker={t('admin.sidebar.nav.orders')}
               title={
                 <>
-                  Gestión de <em style={{ color: "var(--green)" }}>pedidos</em>
+                  {t('admin.orders.titlePrefix')} <em style={{ color: "var(--green)" }}>{t('admin.orders.titleEmphasis')}</em>
                 </>
               }
-              sub="Cambia estados y monitorea el ciclo completo de la orden."
+              sub={t('admin.orders.sub')}
               actions={
                 showOrdersSkeleton ? undefined : (
                   <button
@@ -129,7 +143,7 @@ export function OrdersSection() {
                     }}
                     style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif', whiteSpace: "nowrap" }}
                   >
-                    Exportar CSV
+                    {t('admin.orders.exportCsv')}
                   </button>
                 )
               }
@@ -182,7 +196,7 @@ export function OrdersSection() {
                   <input
                     value={orderSearch}
                     onChange={(e) => setOrderSearch(e.target.value)}
-                    placeholder="Buscar por ID, cliente, email o producto…"
+                    placeholder={t('admin.orders.searchPlaceholder')}
                     style={{
                       border: "none",
                       outline: "none",
@@ -231,7 +245,7 @@ export function OrdersSection() {
                       width: 48,
                     }}
                   >
-                    Estado
+                    {t('admin.orders.filters.statusLabel')}
                   </span>
                   <div
                     style={{
@@ -301,7 +315,7 @@ export function OrdersSection() {
                       width: 48,
                     }}
                   >
-                    Envío
+                    {t('admin.orders.filters.shippingLabel')}
                   </span>
                   <div
                     style={{
@@ -371,7 +385,7 @@ export function OrdersSection() {
                       width: 48,
                     }}
                   >
-                    Pago
+                    {t('admin.orders.filters.paymentLabel')}
                   </span>
                   <div
                     style={{
@@ -603,8 +617,8 @@ export function OrdersSection() {
                     }}
                   >
                     {orderSearch
-                      ? `${displayedOrders.length} resultado${displayedOrders.length !== 1 ? "s" : ""} de ${orders?.length || 0}`
-                      : `${displayedOrders.length} pedido${displayedOrders.length !== 1 ? "s" : ""}`}
+                      ? t('admin.orders.resultsCount', { count: displayedOrders.length, total: orders?.length || 0 })
+                      : t('admin.orders.ordersCount', { count: displayedOrders.length })}
                   </div>
                   <SortClearChip sort={orderSort} labels={ORDER_SORT_LABEL} onClear={clearOrderSort} />
                 </div>
@@ -613,14 +627,14 @@ export function OrdersSection() {
               <table style={{ ...tableStyle, minWidth: 1120 }}>
                 <thead>
                   <tr>
-                    <th style={th}>Orden</th>
-                    <th style={th}>Cliente / Dirección</th>
-                    <th style={th}>Envío</th>
-                    <th style={{ ...th, minWidth: 280 }}>Productos</th>
-                    <SortableTh label="Total" sortKey="total" activeSort={orderSort} onSort={toggleOrderSort} />
-                    <th style={th}>Pago</th>
-                    <th style={th}>Estado</th>
-                    <SortableTh label="Fecha y hora" sortKey="date" activeSort={orderSort} onSort={toggleOrderSort} />
+                    <th style={th}>{t('admin.orders.table.columns.order')}</th>
+                    <th style={th}>{t('admin.orders.table.columns.customerAddress')}</th>
+                    <th style={th}>{t('admin.orders.table.columns.shipping')}</th>
+                    <th style={{ ...th, minWidth: 280 }}>{t('admin.orders.table.columns.products')}</th>
+                    <SortableTh label={t('admin.orders.table.columns.total')} sortKey="total" activeSort={orderSort} onSort={toggleOrderSort} />
+                    <th style={th}>{t('admin.orders.table.columns.payment')}</th>
+                    <th style={th}>{t('admin.orders.table.columns.status')}</th>
+                    <SortableTh label={t('admin.orders.table.columns.dateTime')} sortKey="date" activeSort={orderSort} onSort={toggleOrderSort} />
                   </tr>
                 </thead>
                 <tbody>
@@ -648,9 +662,9 @@ export function OrdersSection() {
                                 color: "var(--green)",
                                 whiteSpace: "nowrap",
                               }}
-                              title={`Reemplazo sin costo por una devolución del pedido #${order.replacesOrderId.slice(-8).toUpperCase()}`}
+                              title={t('admin.orders.replacementBadgeTitle', { id: order.replacesOrderId.slice(-8).toUpperCase() })}
                             >
-                              REEMPLAZO · #{order.replacesOrderId.slice(-8).toUpperCase()}
+                              {t('admin.orders.replacementBadge', { id: order.replacesOrderId.slice(-8).toUpperCase() })}
                             </span>
                           )}
                           {order.subscriptionId && (
@@ -668,9 +682,9 @@ export function OrdersSection() {
                                 color: "var(--ink-80)",
                                 whiteSpace: "nowrap",
                               }}
-                              title="Este pedido se generó automáticamente desde una reposición automática (suscripción)"
+                              title={t('admin.orders.subscriptionBadgeTitle')}
                             >
-                              <Icon name="repeat" size={9} /> REPOSICIÓN AUTOMÁTICA
+                              <Icon name="repeat" size={9} /> {t('admin.orders.subscriptionBadge')}
                             </span>
                           )}
                         </div>
@@ -710,14 +724,15 @@ export function OrdersSection() {
                       <td style={td}>
                         <StatusPill
                           status={
-                            orderShippingMethodLabels[order.shippingMethod || "delivery"]
+                            order.shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio'
                           }
+                          label={orderShippingMethodLabels[order.shippingMethod || "delivery"]}
                         />
                         {order.shippingMethod !== "pickup" && order.trackingNumber && (() => {
                           const trackingUrl = getTrackingUrl(order.carrier, order.trackingNumber);
                           return (
                             <div style={{ marginTop: 8, fontSize: 11, color: "var(--ink-60)" }}>
-                              {carrierLabel(order.carrier) || "Sin courier"} ·{" "}
+                              {carrierLabel(t, order.carrier) || t('admin.orders.noCourier')} ·{" "}
                               {trackingUrl ? (
                                 <a href={trackingUrl} target="_blank" rel="noreferrer" style={{ color: "var(--green)" }}>
                                   {order.trackingNumber}
@@ -738,7 +753,7 @@ export function OrdersSection() {
                             marginBottom: 6,
                           }}
                         >
-                          {order.items?.length ?? 0} producto{(order.items?.length ?? 0) !== 1 ? "s" : ""}
+                          {t('admin.orders.itemsCount', { count: order.items?.length ?? 0 })}
                         </div>
                         <div
                           style={{
@@ -767,12 +782,12 @@ export function OrdersSection() {
                           fontSize: 18,
                         }}
                       >
-                        ${(order.total || 0).toFixed(2)}
+                        {formatCurrency(order.total || 0)}
                       </td>
                       <td style={td}>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
-                          {paymentPillLabels(order, orderReturnByOrderId.get(order._id)).map((label) => (
-                            <StatusPill key={label} status={label} />
+                          {paymentPillInfos(order, orderReturnByOrderId.get(order._id)).map((info) => (
+                            <StatusPill key={info.colorKey} status={info.colorKey} label={t(info.i18nKey)} />
                           ))}
                         </div>
                       </td>
@@ -786,7 +801,11 @@ export function OrdersSection() {
                         >
                           <StatusPill
                             status={
+                              order.fulfillmentStatus || "unfulfilled"
+                            }
+                            label={
                               getFulfillmentStatusLabel(
+                                t,
                                 order.fulfillmentStatus || "unfulfilled",
                                 order.shippingMethod,
                               )
@@ -829,7 +848,7 @@ export function OrdersSection() {
                                   const opts: FulfillmentStatus[] = next ? [current as FulfillmentStatus, next] : [current as FulfillmentStatus];
                                   return opts.map((s) => (
                                     <option key={s} value={s}>
-                                      {getFulfillmentStatusLabel(s, order.shippingMethod)}
+                                      {getFulfillmentStatusLabel(t, s, order.shippingMethod)}
                                     </option>
                                   ));
                                 })()}
@@ -850,7 +869,7 @@ export function OrdersSection() {
                                           .slice(-8)
                                           .toUpperCase(),
                                         customerName:
-                                          order.customerName || "Cliente",
+                                          order.customerName || t('admin.dashboard.recentOrders.defaultCustomerName'),
                                         from: currentStatus,
                                         to: orderStatusDrafts[order._id],
                                         shippingMethod: order.shippingMethod,
@@ -867,7 +886,7 @@ export function OrdersSection() {
                                       cursor: "pointer",
                                     }}
                                   >
-                                    Guardar
+                                    {t('admin.orders.saveButton')}
                                   </button>
                                 )}
                             </>
@@ -943,7 +962,7 @@ export function OrdersSection() {
                     marginBottom: 8,
                   }}
                 >
-                  Confirmar estado
+                  {t('admin.orders.confirmModal.kicker')}
                 </div>
                 <div
                   style={{
@@ -954,13 +973,13 @@ export function OrdersSection() {
                     color: "var(--ink)",
                   }}
                 >
-                  Actualizar{" "}
+                  {t('admin.orders.confirmModal.titlePrefix')}{" "}
                   <em
                     style={{
                       color: "oklch(0.52 0.12 145)",
                     }}
                   >
-                    pedido
+                    {t('admin.orders.confirmModal.titleEmphasis')}
                   </em>
                 </div>
                 <p
@@ -972,16 +991,15 @@ export function OrdersSection() {
                     fontFamily: '"Geist", sans-serif',
                   }}
                 >
-                  Vas a cambiar el pedido #{confirmOrderStatus?.orderNumber} de{" "}
+                  {t('admin.orders.confirmModal.bodyPrefix', { orderNumber: confirmOrderStatus?.orderNumber })}{" "}
                   <strong>
-                    {getFulfillmentStatusLabel(confirmOrderStatus?.from ?? '', confirmOrderStatus?.shippingMethod)}
+                    {getFulfillmentStatusLabel(t, confirmOrderStatus?.from ?? '', confirmOrderStatus?.shippingMethod)}
                   </strong>{" "}
-                  a{" "}
+                  {t('admin.orders.confirmModal.bodyMiddle')}{" "}
                   <strong>
-                    {getFulfillmentStatusLabel(confirmOrderStatus?.to ?? '', confirmOrderStatus?.shippingMethod)}
+                    {getFulfillmentStatusLabel(t, confirmOrderStatus?.to ?? '', confirmOrderStatus?.shippingMethod)}
                   </strong>
-                  . El cliente {confirmOrderStatus?.customerName} recibirá un
-                  email de actualización.
+                  {t('admin.orders.confirmModal.bodySuffix', { customerName: confirmOrderStatus?.customerName })}
                 </p>
               </div>
               <div
@@ -993,7 +1011,7 @@ export function OrdersSection() {
                   background: "var(--cream-2)",
                 }}
               >
-                <AnimatedButton variant="outline" onClick={() => setConfirmOrderStatus(null)} disabled={orderStatusesMutation.isPending} text="Cancelar" />
+                <AnimatedButton variant="outline" onClick={() => setConfirmOrderStatus(null)} disabled={orderStatusesMutation.isPending} text={t('admin.orders.confirmModal.cancel')} />
                 <AnimatedButton
                   variant="primary"
                   onClick={() => {
@@ -1015,7 +1033,7 @@ export function OrdersSection() {
                   }}
                   disabled={orderStatusesMutation.isPending}
                   loading={orderStatusesMutation.isPending}
-                  text={orderStatusesMutation.isPending ? "Guardando..." : "Guardar cambio"}
+                  text={orderStatusesMutation.isPending ? t('admin.orders.confirmModal.saving') : t('admin.orders.confirmModal.saveChange')}
                 />
               </div>
             </div>
