@@ -725,6 +725,23 @@
       }
     }
   },
+  "notifications": {
+    "bellAria": "Notifications",
+    "bellAriaUnread": "Notifications ({{count}} unread)",
+    "panelAria": "Notification center",
+    "markAllRead": "Mark read",
+    "clearAll": "Clear all",
+    "empty": "You don't have any notifications yet.",
+    "autoDeleteNote": "Notifications are automatically deleted after 60 days",
+    "dismissAria": "Dismiss notification",
+    "toastDismissAria": "Dismiss",
+    "relativeTime": {
+      "now": "now",
+      "minutesAgo": "{{count}} min ago",
+      "hoursAgo": "{{count}} h ago",
+      "daysAgo": "{{count}} d ago"
+    }
+  },
   "landing": {
     "hero": {
       "skinHealth": {

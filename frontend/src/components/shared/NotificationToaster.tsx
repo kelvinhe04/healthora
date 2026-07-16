@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNotificationToastStore, type Toast } from '../../store/notificationToastStore';
 import { useNotificationLink } from '../../hooks/useNotificationLink';
 import { notificationPresentation } from '../../lib/notificationPresentation';
@@ -37,6 +38,7 @@ export function NotificationToaster() {
 }
 
 function ToastCard({ toast }: { toast: Toast }) {
+  const { t } = useTranslation();
   const dismiss = useNotificationToastStore((s) => s.dismiss);
   const go = useNotificationLink();
   const { icon, accent } = notificationPresentation(toast.notification.type, toast.notification.data);
@@ -93,7 +95,7 @@ function ToastCard({ toast }: { toast: Toast }) {
           e.stopPropagation();
           dismiss(toast.id);
         }}
-        aria-label="Descartar"
+        aria-label={t('notifications.toastDismissAria')}
         style={{
           flexShrink: 0,
           background: 'transparent',

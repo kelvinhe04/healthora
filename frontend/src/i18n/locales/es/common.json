@@ -725,6 +725,23 @@
       }
     }
   },
+  "notifications": {
+    "bellAria": "Notificaciones",
+    "bellAriaUnread": "Notificaciones ({{count}} sin leer)",
+    "panelAria": "Centro de notificaciones",
+    "markAllRead": "Marcar leídas",
+    "clearAll": "Borrar todas",
+    "empty": "No tienes notificaciones todavía.",
+    "autoDeleteNote": "Las notificaciones se eliminan automáticamente después de 60 días",
+    "dismissAria": "Borrar notificación",
+    "toastDismissAria": "Descartar",
+    "relativeTime": {
+      "now": "ahora",
+      "minutesAgo": "hace {{count}} min",
+      "hoursAgo": "hace {{count}} h",
+      "daysAgo": "hace {{count}} d"
+    }
+  },
   "landing": {
     "hero": {
       "skinHealth": {
