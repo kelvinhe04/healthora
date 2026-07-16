@@ -842,5 +842,58 @@
       "headingPrefix": "Las marcas en las que",
       "headingEmphasis": "confías"
     }
+  },
+  "admin": {
+    "mobileTopBar": {
+      "title": "Admin"
+    },
+    "sidebar": {
+      "panelLabel": "ADMIN PANEL",
+      "nav": {
+        "dashboard": "Dashboard",
+        "orders": "Pedidos",
+        "products": "Productos",
+        "categories": "Categorías",
+        "coupons": "Cupones",
+        "banners": "Banners",
+        "users": "Clientes",
+        "returns": "Devoluciones",
+        "reviews": "Reseñas",
+        "sales": "Ventas",
+        "earnings": "Ganancias",
+        "reports": "Cohortes",
+        "audit": "Auditoría",
+        "repurchase": "Recompra",
+        "analytics": "Analítica"
+      },
+      "toLightMode": "Cambiar a modo claro",
+      "toDarkMode": "Cambiar a modo oscuro",
+      "lightMode": "Modo claro",
+      "darkMode": "Modo oscuro",
+      "goToStore": "Ver tienda",
+      "defaultName": "Admin",
+      "defaultEmail": "ADMIN@HEALTHORA",
+      "openMenuAria": "Abrir menú de administración"
+    },
+    "charts": {
+      "noData": "Sin datos",
+      "dailyOrders": "Pedidos diarios",
+      "revenueByCategory": "Ingresos por categoría",
+      "date": "Fecha",
+      "category": "Categoría",
+      "orders": "Órdenes",
+      "revenue": "Ingresos"
+    },
+    "table": {
+      "sortByAria": "Ordenar por {{label}}",
+      "clearSortAria": "Quitar orden",
+      "sortLabel": "Orden: {{label}}"
+    },
+    "donut": {
+      "totalMonth": "TOTAL MES"
+    },
+    "productSuccessModal": {
+      "understood": "Entendido"
+    }
   }
 }

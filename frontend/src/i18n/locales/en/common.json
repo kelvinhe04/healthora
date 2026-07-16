@@ -842,5 +842,58 @@
       "headingPrefix": "Brands you",
       "headingEmphasis": "trust"
     }
+  },
+  "admin": {
+    "mobileTopBar": {
+      "title": "Admin"
+    },
+    "sidebar": {
+      "panelLabel": "ADMIN PANEL",
+      "nav": {
+        "dashboard": "Dashboard",
+        "orders": "Orders",
+        "products": "Products",
+        "categories": "Categories",
+        "coupons": "Coupons",
+        "banners": "Banners",
+        "users": "Customers",
+        "returns": "Returns",
+        "reviews": "Reviews",
+        "sales": "Sales",
+        "earnings": "Earnings",
+        "reports": "Cohorts",
+        "audit": "Audit log",
+        "repurchase": "Repurchase",
+        "analytics": "Analytics"
+      },
+      "toLightMode": "Switch to light mode",
+      "toDarkMode": "Switch to dark mode",
+      "lightMode": "Light mode",
+      "darkMode": "Dark mode",
+      "goToStore": "View store",
+      "defaultName": "Admin",
+      "defaultEmail": "ADMIN@HEALTHORA",
+      "openMenuAria": "Open admin menu"
+    },
+    "charts": {
+      "noData": "No data",
+      "dailyOrders": "Daily orders",
+      "revenueByCategory": "Revenue by category",
+      "date": "Date",
+      "category": "Category",
+      "orders": "Orders",
+      "revenue": "Revenue"
+    },
+    "table": {
+      "sortByAria": "Sort by {{label}}",
+      "clearSortAria": "Clear sort",
+      "sortLabel": "Sort: {{label}}"
+    },
+    "donut": {
+      "totalMonth": "TOTAL THIS MONTH"
+    },
+    "productSuccessModal": {
+      "understood": "Got it"
+    }
   }
 }

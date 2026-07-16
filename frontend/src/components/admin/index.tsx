@@ -11,10 +11,13 @@ import {
 } from "recharts";
 import { useMemo, useState, useEffect, useRef, memo } from "react";
 import type { CSSProperties, ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../store/themeStore";
 import { Icon } from "../shared/Icon";
 import { NotificationCenter } from "../shared/NotificationCenter";
+import { LanguageSwitcher } from "../shared/LanguageSwitcher";
 import { formatPanamaDayMonth } from "../../lib/dates";
+import { formatCurrency } from "../../lib/currency";
 
 let _adminSessionId = "";
 const _shownSkeletons = new Set<string>();
@@ -273,6 +276,7 @@ const LineChartInner = ({
   data?: { date?: string; revenue?: number; name?: string; value?: number }[];
   height?: number;
 }) => {
+  const { t } = useTranslation();
   const chartData = useMemo(() => {
     if (!data) return [];
     return data.map((d) => ({
@@ -293,7 +297,7 @@ const LineChartInner = ({
           fontSize: 13,
         }}
       >
-        Sin datos
+        {t('admin.charts.noData')}
       </div>
     );
 
@@ -348,10 +352,6 @@ function formatDayLabel(date: string) {
   return formatPanamaDayMonth(d);
 }
 
-function formatMoney(value: number) {
-  return `$${value.toLocaleString("en-US")}`;
-}
-
 function BarTooltip({
   active,
   payload,
@@ -359,6 +359,7 @@ function BarTooltip({
   active?: boolean;
   payload?: { payload?: BarChartRow }[];
 }) {
+  const { t } = useTranslation();
   if (!active || !payload?.length || !payload[0].payload) return null;
 
   const row = payload[0].payload;
@@ -387,14 +388,14 @@ function BarTooltip({
           fontFamily: '"JetBrains Mono", monospace',
         }}
       >
-        {isOrders ? "Pedidos diarios" : "Ingresos por categoría"}
+        {isOrders ? t('admin.charts.dailyOrders') : t('admin.charts.revenueByCategory')}
       </div>
       <div style={{ fontSize: 13, lineHeight: 1.35 }}>
         <div style={{ marginBottom: 2 }}>
-          {isOrders ? "Fecha" : "Categoría"}: {isOrders ? formatDayLabel(row.label) : row.label}
+          {isOrders ? t('admin.charts.date') : t('admin.charts.category')}: {isOrders ? formatDayLabel(row.label) : row.label}
         </div>
         <div>
-          {isOrders ? "Órdenes" : "Ingresos"}: {isOrders ? row.value : formatMoney(row.value)}
+          {isOrders ? t('admin.charts.orders') : t('admin.charts.revenue')}: {isOrders ? row.value : formatCurrency(row.value)}
         </div>
       </div>
     </div>
@@ -533,7 +534,13 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; darkBg: string; da
   Reembolsada: { bg: "oklch(0.92 0.08 300)", fg: "oklch(0.4 0.1 300)",  darkBg: "oklch(0.27 0.08 300)", darkFg: "oklch(0.82 0.11 300)" },
 };
 
-export function StatusPill({ status }: { status: string }) {
+// `status` is the raw (untranslated) status enum/label used only to look up the color in
+// STATUS_COLORS; `label` is what's actually rendered, and defaults to `status` for call sites
+// that haven't been migrated to pass a translated label yet. Splitting these two apart (HU-084)
+// matters because STATUS_COLORS is keyed by the original Spanish/enum values - if a caller passed
+// an already-translated (English) label as `status`, the color lookup would silently miss and
+// fall back to the default gray, the same string-matching trap fixed elsewhere in this migration.
+export function StatusPill({ status, label }: { status: string; label?: string }) {
   const { theme } = useThemeStore();
   const dark = theme === "dark";
   const entry = STATUS_COLORS[status];
@@ -558,7 +565,7 @@ export function StatusPill({ status }: { status: string }) {
       }}
     >
       <span style={{ width: 5, height: 5, borderRadius: 999, background: fg }} />
-      {status}
+      {label ?? status}
     </span>
   );
 }
@@ -604,7 +611,7 @@ function useCounter(target: number, duration = 1500, animKey?: string) {
 
 function formatValue(value: ReactNode, num: number): string {
   if (typeof value === "string" && value.startsWith("$")) {
-    return "$" + num.toLocaleString();
+    return formatCurrency(num);
   }
   if (typeof value === "string" && value.includes("%")) {
     return num + value.slice(value.indexOf("%"));
@@ -1087,6 +1094,7 @@ export function SortableTh<K extends string>({
   activeSort: ColumnSort<K>;
   onSort: (key: K) => void;
 }) {
+  const { t } = useTranslation();
   const active = activeSort.key === sortKey;
   return (
     <th style={{ ...th, whiteSpace: "nowrap" }}>
@@ -1106,7 +1114,7 @@ export function SortableTh<K extends string>({
           textTransform: "inherit",
           whiteSpace: "nowrap",
         }}
-        title={`Ordenar por ${label.toLowerCase()}`}
+        title={t('admin.table.sortByAria', { label: label.toLowerCase() })}
       >
         {label}
         <span style={{ fontSize: 9, opacity: active ? 1 : 0.35 }}>
@@ -1126,11 +1134,12 @@ export function SortClearChip<K extends string>({
   labels: Record<K, string>;
   onClear: () => void;
 }) {
+  const { t } = useTranslation();
   if (!sort.key) return null;
   return (
     <button
       onClick={onClear}
-      title="Quitar orden"
+      title={t('admin.table.clearSortAria')}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -1145,7 +1154,7 @@ export function SortClearChip<K extends string>({
         cursor: "pointer",
       }}
     >
-      Orden: {labels[sort.key]} {sort.dir === "asc" ? "▲" : "▼"}
+      {t('admin.table.sortLabel', { label: labels[sort.key] })} {sort.dir === "asc" ? "▲" : "▼"}
       <Icon name="x" size={11} />
     </button>
   );
@@ -1159,6 +1168,7 @@ export function Donut({
   data: { cat?: string; pct: number; color: string }[];
   size?: number;
 }) {
+  const { t } = useTranslation();
   const r = size / 2 - 20;
   const c = size / 2;
   const total = data.reduce((s, d) => s + d.pct, 0);
@@ -1204,7 +1214,7 @@ export function Donut({
         fill="var(--ink-60)"
         letterSpacing="0.1em"
       >
-        TOTAL MES
+        {t('admin.donut.totalMonth')}
       </text>
     </svg>
   );
@@ -1246,6 +1256,7 @@ export function Sidebar({
   adminEmail,
   adminPhoto,
 }: SidebarProps) {
+  const { t } = useTranslation();
   const { theme, toggle: toggleTheme } = useThemeStore();
   const items: {
     id: AdminPage;
@@ -1253,31 +1264,31 @@ export function Sidebar({
     icon: string;
     count?: number;
   }[] = [
-    { id: "dashboard", label: "Dashboard", icon: "shield" },
-    { id: "orders", label: "Pedidos", icon: "bag", count: counts?.orders },
+    { id: "dashboard", label: t('admin.sidebar.nav.dashboard'), icon: "shield" },
+    { id: "orders", label: t('admin.sidebar.nav.orders'), icon: "bag", count: counts?.orders },
     {
       id: "products",
-      label: "Productos",
+      label: t('admin.sidebar.nav.products'),
       icon: "leaf",
       count: counts?.products,
     },
     {
       id: "categories",
-      label: "Categorías",
+      label: t('admin.sidebar.nav.categories'),
       icon: "layers",
       count: counts?.categories,
     },
-    { id: "coupons", label: "Cupones", icon: "percent", count: counts?.coupons },
-    { id: "banners", label: "Banners", icon: "gift" },
-    { id: "users", label: "Clientes", icon: "user", count: counts?.users },
-    { id: "returns", label: "Devoluciones", icon: "arrow-left", count: counts?.returns },
-    { id: "reviews", label: "Reseñas", icon: "star", count: counts?.reviews },
-    { id: "sales", label: "Ventas", icon: "truck" },
-    { id: "earnings", label: "Ganancias", icon: "percent" },
-    { id: "reports", label: "Cohortes", icon: "layers" },
-    { id: "audit", label: "Auditoría", icon: "lock" },
-    { id: "repurchase", label: "Recompra", icon: "bell" },
-    { id: "analytics", label: "Analítica", icon: "package" },
+    { id: "coupons", label: t('admin.sidebar.nav.coupons'), icon: "percent", count: counts?.coupons },
+    { id: "banners", label: t('admin.sidebar.nav.banners'), icon: "gift" },
+    { id: "users", label: t('admin.sidebar.nav.users'), icon: "user", count: counts?.users },
+    { id: "returns", label: t('admin.sidebar.nav.returns'), icon: "arrow-left", count: counts?.returns },
+    { id: "reviews", label: t('admin.sidebar.nav.reviews'), icon: "star", count: counts?.reviews },
+    { id: "sales", label: t('admin.sidebar.nav.sales'), icon: "truck" },
+    { id: "earnings", label: t('admin.sidebar.nav.earnings'), icon: "percent" },
+    { id: "reports", label: t('admin.sidebar.nav.reports'), icon: "layers" },
+    { id: "audit", label: t('admin.sidebar.nav.audit'), icon: "lock" },
+    { id: "repurchase", label: t('admin.sidebar.nav.repurchase'), icon: "bell" },
+    { id: "analytics", label: t('admin.sidebar.nav.analytics'), icon: "package" },
   ];
   return (
     <aside
@@ -1347,25 +1358,39 @@ export function Sidebar({
                 marginTop: 2,
               }}
             >
-              ADMIN PANEL
+              {t('admin.sidebar.panelLabel')}
             </div>
           </div>
         </div>
-        <NotificationCenter
-          panelAlign="left"
-          buttonStyle={{
-            background: "transparent",
-            border: "1px solid var(--ink-06)",
-            borderRadius: 999,
-            padding: 7,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            color: "var(--ink)",
-            flexShrink: 0,
-          }}
-          iconSize={15}
-        />
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <LanguageSwitcher
+            buttonStyle={{
+              background: "transparent",
+              border: "1px solid var(--ink-06)",
+              borderRadius: 999,
+              padding: "7px 8px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              color: "var(--ink)",
+            }}
+          />
+          <NotificationCenter
+            panelAlign="left"
+            buttonStyle={{
+              background: "transparent",
+              border: "1px solid var(--ink-06)",
+              borderRadius: 999,
+              padding: 7,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              color: "var(--ink)",
+              flexShrink: 0,
+            }}
+            iconSize={15}
+          />
+        </div>
       </div>
       <nav style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {items.map((it) => (
@@ -1426,12 +1451,12 @@ export function Sidebar({
             cursor: "pointer",
             textAlign: "left",
           }}
-          title={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+          title={theme === "dark" ? t('admin.sidebar.toLightMode') : t('admin.sidebar.toDarkMode')}
         >
           <span style={{ display: "flex", transition: "transform 400ms cubic-bezier(.34,1.56,.64,1)", transform: theme === "dark" ? "rotate(180deg)" : "rotate(0deg)" }}>
             <Icon name={theme === "dark" ? "sun" : "moon"} size={14} />
           </span>
-          {theme === "dark" ? "Modo claro" : "Modo oscuro"}
+          {theme === "dark" ? t('admin.sidebar.lightMode') : t('admin.sidebar.darkMode')}
         </button>
         <button
           onClick={onGoToStore}
@@ -1454,7 +1479,7 @@ export function Sidebar({
           }}
         >
           <Icon name="arrow-left" size={14} />
-          Ver tienda
+          {t('admin.sidebar.goToStore')}
         </button>
         <div
           style={{
@@ -1489,7 +1514,7 @@ export function Sidebar({
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 500, lineHeight: 1.2 }}>
-                {adminName || "Admin"}
+                {adminName || t('admin.sidebar.defaultName')}
               </div>
               <div
                 style={{
@@ -1502,7 +1527,7 @@ export function Sidebar({
                   whiteSpace: "nowrap",
                 }}
               >
-                {adminEmail || "ADMIN@HEALTHORA"}
+                {adminEmail || t('admin.sidebar.defaultEmail')}
               </div>
             </div>
           </div>
