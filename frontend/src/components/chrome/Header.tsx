@@ -23,6 +23,7 @@ type View =
   | "admin"
   | "orders"
   | "profile"
+  | "club"
   | "compare"
   | "wishlist";
 
@@ -1145,6 +1146,25 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               >
                 <Icon name="receipt" size={14} style={{ marginRight: 8 }} /> Mis
                 pedidos
+              </button>
+              <button
+                style={{
+                  ...iconBtn,
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  justifyContent: "flex-start",
+                  color: "var(--ink)",
+                  fontSize: 13,
+                  whiteSpace: "nowrap",
+                }}
+                onClick={() => {
+                  onNav("club");
+                  setUserMenuOpen(false);
+                }}
+              >
+                <Icon name="gift" size={14} style={{ marginRight: 8 }} /> Club
+                Healthora
               </button>
               <button
                 style={{
