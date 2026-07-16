@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
@@ -23,6 +24,7 @@ import { resolveShipping, SHIPPING_METHOD_OPTIONS, type ShippingMethod } from '.
 import { formatPanamaPhone } from '../lib/phone';
 import { computeItbms } from '../lib/tax';
 import { trackCheckoutStarted } from '../lib/analyticsEvents';
+import { formatCurrency } from '../lib/currency';
 
 const stripePromise = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
@@ -51,14 +53,14 @@ function Row({ k, v }: { k: ReactNode; v: ReactNode }) {
   );
 }
 
-function FormInput({ label, value, onChange, placeholder, full, required }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; full?: boolean; required?: boolean }) {
+function FormInput({ label, value, onChange, placeholder, full, required, autoComplete }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; full?: boolean; required?: boolean; autoComplete?: string }) {
   const id = useId();
   return (
     <label htmlFor={id} style={{ display: 'flex', flexDirection: 'column', gap: 6, gridColumn: full ? '1 / -1' : 'auto' }}>
       <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>
         {label} {required && <span style={{ color: 'var(--coral)' }}>*</span>}
       </span>
-      <input id={id} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} autoComplete={label === 'Nombre' ? 'name' : label === 'Teléfono' ? 'tel' : label === 'Ciudad' ? 'address-level2' : label === 'Código postal' ? 'postal-code' : label === 'Dirección' ? 'street-address' : undefined} style={{ padding: '12px 14px', border: '1px solid var(--ink-20)', borderRadius: 10, background: 'var(--cream)', fontSize: 14, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', outline: 'none' }} />
+      <input id={id} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} autoComplete={autoComplete} style={{ padding: '12px 14px', border: '1px solid var(--ink-20)', borderRadius: 10, background: 'var(--cream)', fontSize: 14, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', outline: 'none' }} />
     </label>
   );
 }
@@ -169,6 +171,7 @@ function CheckoutPaymentStep({
   buildCheckoutBody: () => CheckoutRequestBody;
   onSuccess: (paymentIntentId: string) => void;
 }) {
+  const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -192,14 +195,14 @@ function CheckoutPaymentStep({
     setError('');
     try {
       const token = await getEffectiveToken();
-      if (!token) throw new Error('Sesión no disponible');
+      if (!token) throw new Error(t('checkout.errors.sessionUnavailable'));
       const { clientSecret, paymentIntentId } = await api.checkout.createPaymentIntent(buildCheckoutBody(), token);
 
       const confirmResult = activeSelection !== NEW_CARD_OPTION
         ? await stripe.confirmCardPayment(clientSecret, { payment_method: activeSelection })
         : await (async () => {
             const cardElement = elements.getElement(CardElement);
-            if (!cardElement) throw new Error('No se pudo cargar el formulario de tarjeta');
+            if (!cardElement) throw new Error(t('checkout.errors.cardFormFailed'));
             // Cards entered here are a one-time payment, never saved - saving a card only happens
             // explicitly in Profile, so this never sets allow_redisplay/setup_future_usage.
             return stripe.confirmCardPayment(clientSecret, {
@@ -208,16 +211,16 @@ function CheckoutPaymentStep({
           })();
 
       if (confirmResult.error) {
-        setError(confirmResult.error.message || 'No se pudo procesar el pago');
+        setError(confirmResult.error.message || t('checkout.errors.paymentFailed'));
         return;
       }
       if (confirmResult.paymentIntent?.status === 'succeeded') {
         onSuccess(paymentIntentId);
       } else {
-        setError('El pago no se pudo confirmar. Intenta de nuevo.');
+        setError(t('checkout.errors.paymentNotConfirmed'));
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al procesar el pago');
+      setError(e instanceof Error ? e.message : t('checkout.errors.paymentGeneric'));
     } finally {
       setProcessing(false);
     }
@@ -257,7 +260,7 @@ function CheckoutPaymentStep({
           color: 'var(--ink)',
         }}
       >
-        <Icon name="plus" size={14} /> Usar tarjeta nueva
+        <Icon name="plus" size={14} /> {t('checkout.steps.payment.useNewCard')}
       </button>
 
       {activeSelection === NEW_CARD_OPTION && (
@@ -268,7 +271,7 @@ function CheckoutPaymentStep({
 
       {error && <div role="alert" style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{error}</div>}
       <AnimatedButton
-        aria-label={processing ? 'Procesando pago' : `Pagar $${total.toFixed(2)}`}
+        aria-label={processing ? t('checkout.steps.payment.processingAria') : t('checkout.steps.payment.payButton', { amount: formatCurrency(total) })}
         variant="primary"
         size="lg"
         full
@@ -276,13 +279,14 @@ function CheckoutPaymentStep({
         style={{ marginTop: 20 }}
         icon={<Icon name="lock" size={14} />}
         disabled={processing || !stripe}
-        text={processing ? 'Procesando pago…' : `Pagar $${total.toFixed(2)}`}
+        text={processing ? t('checkout.steps.payment.processingButton') : t('checkout.steps.payment.payButton', { amount: formatCurrency(total) })}
       />
     </div>
   );
 }
 
 export function Checkout({ items, onBack }: CheckoutProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
@@ -395,12 +399,12 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     const normalizedCode = normalizePromotionCode(code);
 
     if (!normalizedCode) {
-      setPromoError('Ingresa un código de descuento.');
+      setPromoError(t('checkout.errors.promoEmpty'));
       return;
     }
 
     if (!isSignedIn) {
-      setPromoError('Inicia sesión para aplicar un cupón.');
+      setPromoError(t('checkout.errors.promoNeedsSignIn'));
       return;
     }
 
@@ -408,7 +412,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     setPromoError('');
     try {
       const token = await getEffectiveToken();
-      if (!token) throw new Error('Sesión no disponible');
+      if (!token) throw new Error(t('checkout.errors.sessionUnavailable'));
       const result = await api.promotions.validate(
         {
           code: normalizedCode,
@@ -430,7 +434,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
       setPromoError('');
     } catch (e: unknown) {
       setAppliedPromo(null);
-      setPromoError(e instanceof Error ? e.message : 'No se pudo validar el cupón.');
+      setPromoError(e instanceof Error ? e.message : t('checkout.errors.promoGeneric'));
     } finally {
       setPromoValidating(false);
     }
@@ -462,20 +466,20 @@ export function Checkout({ items, onBack }: CheckoutProps) {
 
   return (
     <div style={{ padding: isMobile ? '20px 16px 0' : isTablet ? '24px 24px 0' : '24px 40px 0' }}>
-      <button type="button" onClick={onBack} aria-label="Volver a la tienda" style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--ink-60)', fontSize: 13, marginBottom: 24, fontFamily: '"Geist", sans-serif' }}>
-        <Icon name="arrow-left" size={14} /> Volver a la tienda
+      <button type="button" onClick={onBack} aria-label={t('checkout.backToStore')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--ink-60)', fontSize: 13, marginBottom: 24, fontFamily: '"Geist", sans-serif' }}>
+        <Icon name="arrow-left" size={14} /> {t('checkout.backToStore')}
       </button>
 
       <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1.3fr 1fr', gap: isSmall ? 24 : 48, alignItems: 'start' }}>
         <div>
           <div style={{ marginBottom: 32 }}>
-            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 10 }}>Checkout · Paso {step} de 3</div>
-            <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 40 : isTablet ? 50 : 60, letterSpacing: '-0.035em', lineHeight: 1, margin: 0, color: 'var(--ink)', fontWeight: 400 }}>Finaliza tu <em style={{ color: 'var(--green)' }}>compra</em></h1>
+            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 10 }}>{t('checkout.stepIndicator', { step })}</div>
+            <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 40 : isTablet ? 50 : 60, letterSpacing: '-0.035em', lineHeight: 1, margin: 0, color: 'var(--ink)', fontWeight: 400 }}>{t('checkout.headingPrefix')} <em style={{ color: 'var(--green)' }}>{t('checkout.headingEmphasis')}</em></h1>
           </div>
 
           <div
             role="progressbar"
-            aria-label="Progreso del checkout"
+            aria-label={t('checkout.progressAria')}
             aria-valuemin={1}
             aria-valuemax={3}
             aria-valuenow={step}
@@ -489,33 +493,33 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             <div style={stepHeader}>
               <div>
                 <div style={stepNum}>01</div>
-                <h2 style={stepTitle}>Identifícate</h2>
+                <h2 style={stepTitle}>{t('checkout.steps.auth.title')}</h2>
               </div>
-              {isSignedIn && <span style={{ fontSize: 12, color: 'var(--green)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>✓ AUTENTICADO</span>}
+              {isSignedIn && <span style={{ fontSize: 12, color: 'var(--green)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>{t('checkout.steps.auth.authenticated')}</span>}
             </div>
             {!isSignedIn ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 20 }}>
-                <AuthButton 
-                  onClick={() => setShowSignInModal(true)} 
-                  icon={<img src="/brands/google.svg" alt="Google" style={authLogoImg} />} 
-                  text="Continuar con Google" 
+                <AuthButton
+                  onClick={() => setShowSignInModal(true)}
+                  icon={<img src="/brands/google.svg" alt="Google" style={authLogoImg} />}
+                  text={t('checkout.steps.auth.continueWithGoogle')}
                 />
-                <AuthButton 
-                  onClick={() => setShowSignInModal(true)} 
-                  icon={<img src="/brands/microsoft.svg" alt="Microsoft" style={authLogoImg} />} 
-                  text="Continuar con Microsoft" 
+                <AuthButton
+                  onClick={() => setShowSignInModal(true)}
+                  icon={<img src="/brands/microsoft.svg" alt="Microsoft" style={authLogoImg} />}
+                  text={t('checkout.steps.auth.continueWithMicrosoft')}
                 />
-                <AuthButton 
-                  onClick={() => setShowSignInModal(true)} 
-                  icon={<Icon name="lock" size={16} />} 
-                  text="Recibir código OTP por email" 
+                <AuthButton
+                  onClick={() => setShowSignInModal(true)}
+                  icon={<Icon name="lock" size={16} />}
+                  text={t('checkout.steps.auth.otpEmail')}
                 />
-                <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', marginTop: 6, textAlign: 'center' }}>AUTENTICACIÓN PROTEGIDA POR CLERK</div>
+                <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', marginTop: 6, textAlign: 'center' }}>{t('checkout.steps.auth.protectedByClerk')}</div>
               </div>
             ) : (
               <div style={{ marginTop: 16, padding: 16, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 14 }}>
                 {user?.imageUrl ? (
-                  <img src={user.imageUrl} alt={user?.fullName || 'Usuario'} style={{ width: 40, height: 40, borderRadius: 999, objectFit: 'cover' }} />
+                  <img src={user.imageUrl} alt={user?.fullName || t('checkout.steps.auth.defaultUserAlt')} style={{ width: 40, height: 40, borderRadius: 999, objectFit: 'cover' }} />
                 ) : (
                   <div style={{ width: 40, height: 40, borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontFamily: '"Instrument Serif", serif' }}>
                     {user?.firstName?.[0] || user?.primaryEmailAddress?.emailAddress?.[0]?.toUpperCase() || 'U'}
@@ -523,7 +527,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                 )}
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{user?.fullName || user?.primaryEmailAddress?.emailAddress}</div>
-                  <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', marginTop: 2 }}>SESIÓN ACTIVA</div>
+                  <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', marginTop: 2 }}>{t('checkout.steps.auth.activeSession')}</div>
                 </div>
               </div>
             )}
@@ -534,12 +538,12 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             <div style={stepHeader}>
               <div>
                 <div style={stepNum}>02</div>
-                <h2 style={stepTitle}>{shippingMethod === 'pickup' ? 'Tus datos' : 'Dirección de envío'}</h2>
+                <h2 style={stepTitle}>{shippingMethod === 'pickup' ? t('checkout.steps.address.titlePickup') : t('checkout.steps.address.titleShipping')}</h2>
               </div>
             </div>
 
             <div style={{ marginTop: 20 }}>
-              <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>Entrega</span>
+              <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)' }}>{t('checkout.steps.address.deliveryLabel')}</span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
                 {SHIPPING_METHOD_OPTIONS.map((option) => {
                   const resolved = resolveShipping(option.value, discountedSubtotal);
@@ -558,8 +562,8 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                         fontFamily: '"Geist", sans-serif',
                       }}
                     >
-                      <div style={{ fontSize: 13, color: 'var(--ink)' }}>{option.label} <span style={{ color: 'var(--ink-60)' }}>· {resolved.eta}</span></div>
-                      <div style={{ fontSize: 12, color: 'var(--green)', marginTop: 2 }}>{resolved.cost === 0 ? 'GRATIS' : `$${resolved.cost.toFixed(2)}`}</div>
+                      <div style={{ fontSize: 13, color: 'var(--ink)' }}>{t(`checkout.shipping.methods.${option.value}`)} <span style={{ color: 'var(--ink-60)' }}>· {t(`checkout.shipping.eta.${option.value}`)}</span></div>
+                      <div style={{ fontSize: 12, color: 'var(--green)', marginTop: 2 }}>{resolved.cost === 0 ? t('checkout.shipping.free') : formatCurrency(resolved.cost)}</div>
                     </button>
                   );
                 })}
@@ -589,26 +593,26 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                       color: 'var(--ink)',
                     }}
                   >
-                    {savedAddress.label || `Dirección ${index + 1}`}
+                    {savedAddress.label || t('checkout.steps.address.unnamed', { n: index + 1 })}
                   </button>
                 ))}
               </div>
             )}
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginTop: 20 }}>
-              <FormInput label="Nombre completo" value={address.name} onChange={(v) => { setAddress({ ...address, name: v }); setAddressError(''); }} placeholder="María Gómez" required />
-              <FormInput label="Teléfono" value={address.phone} onChange={(v) => { setAddress({ ...address, phone: formatPanamaPhone(v) }); setAddressError(''); }} placeholder="6123-4567" required />
+              <FormInput label={t('checkout.steps.address.form.fullName')} value={address.name} onChange={(v) => { setAddress({ ...address, name: v }); setAddressError(''); }} placeholder={t('checkout.steps.address.form.fullNamePlaceholder')} autoComplete="name" required />
+              <FormInput label={t('checkout.steps.address.form.phone')} value={address.phone} onChange={(v) => { setAddress({ ...address, phone: formatPanamaPhone(v) }); setAddressError(''); }} placeholder={t('checkout.steps.address.form.phonePlaceholder')} autoComplete="tel" required />
               {shippingMethod === 'delivery' && (
                 <>
-                  <FormInput label="Dirección" value={address.address} onChange={(v) => { setAddress({ ...address, address: v }); setAddressError(''); }} placeholder="Calle, número, apto" full required />
-                  <FormInput label="Ciudad" value={address.city} onChange={(v) => { setAddress({ ...address, city: v }); setAddressError(''); }} placeholder="Ciudad" required />
-                  <FormInput label="Código postal" value={address.postal} onChange={(v) => { setAddress({ ...address, postal: v.replace(/\D/g, '') }); setAddressError(''); }} placeholder="10001" required />
+                  <FormInput label={t('checkout.steps.address.form.address')} value={address.address} onChange={(v) => { setAddress({ ...address, address: v }); setAddressError(''); }} placeholder={t('checkout.steps.address.form.addressPlaceholder')} autoComplete="street-address" full required />
+                  <FormInput label={t('checkout.steps.address.form.city')} value={address.city} onChange={(v) => { setAddress({ ...address, city: v }); setAddressError(''); }} placeholder={t('checkout.steps.address.form.cityPlaceholder')} autoComplete="address-level2" required />
+                  <FormInput label={t('checkout.steps.address.form.postal')} value={address.postal} onChange={(v) => { setAddress({ ...address, postal: v.replace(/\D/g, '') }); setAddressError(''); }} placeholder={t('checkout.steps.address.form.postalPlaceholder')} autoComplete="postal-code" required />
                 </>
               )}
             </div>
             {addressError && <div role="alert" style={{ marginTop: 12, color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>{addressError}</div>}
 
             {step === 2 && (
-              <AnimatedButton aria-label="Continuar al pago" variant="primary" onClick={() => { if (!isAddressValid) { setAddressError('Por favor completa todos los campos requeridos'); } else { setStep(3); }}} style={{ marginTop: 16 }} disabled={!isAddressValid} text="Continuar al pago" />
+              <AnimatedButton aria-label={t('checkout.steps.address.continueToPayment')} variant="primary" onClick={() => { if (!isAddressValid) { setAddressError(t('checkout.steps.address.requiredFieldsError')); } else { setStep(3); }}} style={{ marginTop: 16 }} disabled={!isAddressValid} text={t('checkout.steps.address.continueToPayment')} />
             )}
           </section>
 
@@ -617,9 +621,9 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             <div style={stepHeader}>
               <div>
                 <div style={stepNum}>03</div>
-                <h2 style={stepTitle}>Método de pago</h2>
+                <h2 style={stepTitle}>{t('checkout.steps.payment.title')}</h2>
               </div>
-              <span style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>PAGO SEGURO</span>
+              <span style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>{t('checkout.steps.payment.securePayment')}</span>
             </div>
             {stripePromise ? (
               <Elements stripe={stripePromise}>
@@ -637,7 +641,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
               </Elements>
             ) : (
               <p style={{ marginTop: 20, fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>
-                Falta configurar VITE_STRIPE_PUBLISHABLE_KEY para procesar pagos.
+                {t('checkout.steps.payment.stripeMissing')}
               </p>
             )}
           </section>
@@ -645,7 +649,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
 
         {/* Order Summary */}
         <aside style={{ position: isSmall ? 'static' : 'sticky', top: 100, background: 'var(--cream-2)', borderRadius: 24, padding: 28, border: '1px solid var(--ink-06)', marginBottom: isSmall ? 40 : 0 }}>
-          <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 14 }}>Resumen de orden</div>
+          <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 14 }}>{t('checkout.summary.title')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 28, marginBottom: 18 }}>
             {items.map((it) => (
               <div key={it.product.id + (it.variant?.id ?? '')} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -657,7 +661,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                   <div style={{ fontWeight: 500, lineHeight: 1.3 }}>{it.product.name}</div>
                   <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>{it.variant ? it.variant.label : it.product.brand}</div>
                 </div>
-                <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 16 }}>${((it.variant?.price ?? it.product.price) * it.qty).toFixed(2)}</div>
+                <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 16 }}>{formatCurrency((it.variant?.price ?? it.product.price) * it.qty)}</div>
               </div>
             ))}
             {freeSample && (
@@ -668,15 +672,15 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                 </div>
                 <div style={{ flex: 1, fontSize: 13, fontFamily: '"Geist", sans-serif' }}>
                   <div style={{ fontWeight: 500, lineHeight: 1.3 }}>{freeSample.product.name}{freeSample.label ? ` · ${freeSample.label}` : ''}</div>
-                  <div style={{ fontSize: 10, color: 'var(--green)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', marginTop: 2 }}>MUESTRA GRATIS · CLUB HEALTHORA</div>
+                  <div style={{ fontSize: 10, color: 'var(--green)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', marginTop: 2 }}>{t('checkout.summary.freeSampleBadge')}</div>
                 </div>
-                <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 16, color: 'var(--green)' }}>$0.00</div>
+                <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 16, color: 'var(--green)' }}>{formatCurrency(0)}</div>
               </div>
             )}
           </div>
           <div style={{ padding: '16px 0', borderTop: '1px solid var(--ink-06)' }}>
             <label htmlFor="promo-code" style={{ display: 'block', marginBottom: 8, fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)' }}>
-              Código de descuento
+              {t('checkout.summary.promoCodeLabel')}
             </label>
             <form
               onSubmit={(event) => {
@@ -692,16 +696,16 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                   setPromoInput(event.target.value.toUpperCase());
                   setPromoError('');
                 }}
-                placeholder="BIENVENIDA"
+                placeholder={t('checkout.summary.promoPlaceholder')}
                 disabled={processing || promoValidating}
                 style={{ flex: 1, minWidth: 0, height: 44, border: '1px solid var(--ink-20)', borderRadius: 999, background: 'var(--cream)', padding: '0 14px', outline: 'none', color: 'var(--ink)', fontSize: 13, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}
               />
               {appliedPromo ? (
                 <button type="button" onClick={handleRemovePromo} disabled={processing} style={{ height: 44, border: '1px solid var(--ink-20)', borderRadius: 999, background: 'transparent', padding: '0 14px', cursor: processing ? 'not-allowed' : 'pointer', color: 'var(--ink-60)', fontSize: 12, fontFamily: '"Geist", sans-serif' }}>
-                  Quitar
+                  {t('checkout.summary.remove')}
                 </button>
               ) : (
-                <AnimatedButton type="submit" disabled={processing || promoValidating} variant="primary" size="sm" text={promoValidating ? 'Validando…' : 'Aplicar'} />
+                <AnimatedButton type="submit" disabled={processing || promoValidating} variant="primary" size="sm" text={promoValidating ? t('checkout.summary.validating') : t('checkout.summary.apply')} />
               )}
             </form>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
@@ -716,8 +720,8 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             </div>
             {appliedPromo && (
               <div aria-live="polite" style={{ marginTop: 10, padding: 10, borderRadius: 12, background: 'color-mix(in oklab, var(--green) 9%, white)', border: '1px solid color-mix(in oklab, var(--green) 18%, white)', color: 'var(--green)', fontSize: 12, fontFamily: '"Geist", sans-serif', lineHeight: 1.4 }}>
-                {appliedPromo.label}: ahorras ${discountAmount.toFixed(2)}.
-                {appliedPromo.code === 'BIENVENIDA' && <span> Solo válido en tu primera compra pagada.</span>}
+                {t('checkout.summary.savings', { label: appliedPromo.label, amount: formatCurrency(discountAmount) })}
+                {appliedPromo.code === 'BIENVENIDA' && <span>{t('checkout.summary.welcomeCodeNote')}</span>}
               </div>
             )}
             {promoError && <div role="alert" style={{ marginTop: 8, color: 'var(--coral)', fontSize: 12, fontFamily: '"Geist", sans-serif', lineHeight: 1.4 }}>{promoError}</div>}
@@ -726,25 +730,25 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             <div style={{ padding: '16px 0', borderTop: '1px solid var(--ink-06)' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontFamily: '"Geist", sans-serif', cursor: 'pointer' }}>
                 <Checkbox checked={usePoints} onChange={(e) => setUsePoints(e.target.checked)} disabled={processing} />
-                Usar mis {loyaltyBalance} puntos del Club Healthora
-                {usePoints && loyaltyDiscountAmount > 0 && <span style={{ color: 'var(--green)' }}> (-${loyaltyDiscountAmount.toFixed(2)})</span>}
+                {t('checkout.summary.useLoyaltyPoints', { points: loyaltyBalance })}
+                {usePoints && loyaltyDiscountAmount > 0 && <span style={{ color: 'var(--green)' }}> (-{formatCurrency(loyaltyDiscountAmount)})</span>}
               </label>
             </div>
           )}
           <div style={{ padding: '14px 0', borderTop: '1px solid var(--ink-06)' }}>
-            <Row k="Subtotal" v={`$${subtotal.toFixed(2)}`} />
-            {discountAmount > 0 && <Row k={`Descuento ${appliedPromo?.code}`} v={<span style={{ color: 'var(--green)' }}>-${discountAmount.toFixed(2)}</span>} />}
-            {loyaltyDiscountAmount > 0 && <Row k="Puntos Club Healthora" v={<span style={{ color: 'var(--green)' }}>-${loyaltyDiscountAmount.toFixed(2)}</span>} />}
-            {freeSample && <Row k="Muestra gratis" v={<span style={{ color: 'var(--green)' }}>$0.00</span>} />}
-            <Row k={`Envío (${shippingResolved.eta})`} v={shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`} />
-            <Row k="ITBMS" v={`$${tax.toFixed(2)}`} />
+            <Row k={t('checkout.summary.subtotal')} v={formatCurrency(subtotal)} />
+            {discountAmount > 0 && <Row k={t('checkout.summary.discountLabel', { code: appliedPromo?.code })} v={<span style={{ color: 'var(--green)' }}>-{formatCurrency(discountAmount)}</span>} />}
+            {loyaltyDiscountAmount > 0 && <Row k={t('checkout.summary.loyaltyPoints')} v={<span style={{ color: 'var(--green)' }}>-{formatCurrency(loyaltyDiscountAmount)}</span>} />}
+            {freeSample && <Row k={t('checkout.summary.freeSample')} v={<span style={{ color: 'var(--green)' }}>{formatCurrency(0)}</span>} />}
+            <Row k={t('checkout.summary.shippingLabel', { eta: t(`checkout.shipping.eta.${shippingMethod}`) })} v={shipping === 0 ? t('checkout.shipping.free') : formatCurrency(shipping)} />
+            <Row k={t('checkout.summary.tax')} v={formatCurrency(tax)} />
           </div>
           <div style={{ padding: '14px 0', borderTop: '1px solid var(--ink-06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <strong style={{ fontSize: 16, fontFamily: '"Geist", sans-serif' }}>Total</strong>
-            <strong style={{ fontSize: 30, fontFamily: '"Instrument Serif", serif', color: 'var(--ink)', letterSpacing: '-0.02em' }}>${total.toFixed(2)}</strong>
+            <strong style={{ fontSize: 16, fontFamily: '"Geist", sans-serif' }}>{t('checkout.summary.total')}</strong>
+            <strong style={{ fontSize: 30, fontFamily: '"Instrument Serif", serif', color: 'var(--ink)', letterSpacing: '-0.02em' }}>{formatCurrency(total)}</strong>
           </div>
           <div style={{ marginTop: 16, padding: 12, background: 'var(--cream)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: 'var(--ink-80)' }}>
-            <Icon name="shield" size={16} /> Pago procesado de forma segura por Stripe
+            <Icon name="shield" size={16} /> {t('checkout.summary.securedByStripe')}
           </div>
         </aside>
       </div>

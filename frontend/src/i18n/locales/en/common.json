@@ -300,5 +300,94 @@
       "titlePrefix": "Related",
       "titleEmphasis": "products"
     }
+  },
+  "checkout": {
+    "backToStore": "Back to store",
+    "stepIndicator": "Checkout · Step {{step}} of 3",
+    "headingPrefix": "Complete your",
+    "headingEmphasis": "purchase",
+    "progressAria": "Checkout progress",
+    "shipping": {
+      "methods": {
+        "delivery": "Home delivery",
+        "pickup": "Store pickup"
+      },
+      "eta": {
+        "delivery": "24h - 48h",
+        "pickup": "Ready in 24h"
+      },
+      "free": "FREE"
+    },
+    "steps": {
+      "auth": {
+        "title": "Sign in",
+        "authenticated": "✓ SIGNED IN",
+        "continueWithGoogle": "Continue with Google",
+        "continueWithMicrosoft": "Continue with Microsoft",
+        "otpEmail": "Get an OTP code by email",
+        "protectedByClerk": "AUTHENTICATION PROTECTED BY CLERK",
+        "activeSession": "ACTIVE SESSION",
+        "defaultUserAlt": "User"
+      },
+      "address": {
+        "titleShipping": "Shipping address",
+        "titlePickup": "Your details",
+        "deliveryLabel": "Delivery",
+        "unnamed": "Address {{n}}",
+        "form": {
+          "fullName": "Full name",
+          "fullNamePlaceholder": "Maria Gomez",
+          "phone": "Phone",
+          "phonePlaceholder": "6123-4567",
+          "address": "Address",
+          "addressPlaceholder": "Street, number, apt",
+          "city": "City",
+          "cityPlaceholder": "City",
+          "postal": "Postal code",
+          "postalPlaceholder": "10001"
+        },
+        "requiredFieldsError": "Please fill in all required fields",
+        "continueToPayment": "Continue to payment"
+      },
+      "payment": {
+        "title": "Payment method",
+        "securePayment": "SECURE PAYMENT",
+        "useNewCard": "Use a new card",
+        "processingAria": "Processing payment",
+        "processingButton": "Processing payment…",
+        "payButton": "Pay {{amount}}",
+        "stripeMissing": "VITE_STRIPE_PUBLISHABLE_KEY needs to be configured to process payments."
+      }
+    },
+    "errors": {
+      "sessionUnavailable": "Session not available",
+      "cardFormFailed": "The card form couldn't be loaded",
+      "paymentFailed": "The payment couldn't be processed",
+      "paymentNotConfirmed": "The payment couldn't be confirmed. Try again.",
+      "paymentGeneric": "Error processing the payment",
+      "promoEmpty": "Enter a discount code.",
+      "promoNeedsSignIn": "Sign in to apply a coupon.",
+      "promoGeneric": "The coupon couldn't be validated."
+    },
+    "summary": {
+      "title": "Order summary",
+      "freeSampleBadge": "FREE SAMPLE · HEALTHORA CLUB",
+      "promoCodeLabel": "Discount code",
+      "promoPlaceholder": "BIENVENIDA",
+      "remove": "Remove",
+      "validating": "Validating…",
+      "apply": "Apply",
+      "savings": "{{label}}: you save {{amount}}.",
+      "welcomeCodeNote": " Only valid on your first paid purchase.",
+      "useLoyaltyPoints": "Use my {{points}} Healthora Club points",
+      "subtotal": "Subtotal",
+      "discountLabel": "Discount {{code}}",
+      "loyaltyPoints": "Healthora Club points",
+      "freeSample": "Free sample",
+      "shippingLabel": "Shipping ({{eta}})",
+      "tax": "ITBMS",
+      "total": "Total",
+      "securedByStripe": "Payment securely processed by Stripe"
+    }
   }
 }

@@ -300,5 +300,94 @@
       "titlePrefix": "Productos",
       "titleEmphasis": "relacionados"
     }
+  },
+  "checkout": {
+    "backToStore": "Volver a la tienda",
+    "stepIndicator": "Checkout · Paso {{step}} de 3",
+    "headingPrefix": "Finaliza tu",
+    "headingEmphasis": "compra",
+    "progressAria": "Progreso del checkout",
+    "shipping": {
+      "methods": {
+        "delivery": "Envío a domicilio",
+        "pickup": "Retiro en tienda"
+      },
+      "eta": {
+        "delivery": "24h - 48h",
+        "pickup": "Listo en 24h"
+      },
+      "free": "GRATIS"
+    },
+    "steps": {
+      "auth": {
+        "title": "Identifícate",
+        "authenticated": "✓ AUTENTICADO",
+        "continueWithGoogle": "Continuar con Google",
+        "continueWithMicrosoft": "Continuar con Microsoft",
+        "otpEmail": "Recibir código OTP por email",
+        "protectedByClerk": "AUTENTICACIÓN PROTEGIDA POR CLERK",
+        "activeSession": "SESIÓN ACTIVA",
+        "defaultUserAlt": "Usuario"
+      },
+      "address": {
+        "titleShipping": "Dirección de envío",
+        "titlePickup": "Tus datos",
+        "deliveryLabel": "Entrega",
+        "unnamed": "Dirección {{n}}",
+        "form": {
+          "fullName": "Nombre completo",
+          "fullNamePlaceholder": "María Gómez",
+          "phone": "Teléfono",
+          "phonePlaceholder": "6123-4567",
+          "address": "Dirección",
+          "addressPlaceholder": "Calle, número, apto",
+          "city": "Ciudad",
+          "cityPlaceholder": "Ciudad",
+          "postal": "Código postal",
+          "postalPlaceholder": "10001"
+        },
+        "requiredFieldsError": "Por favor completa todos los campos requeridos",
+        "continueToPayment": "Continuar al pago"
+      },
+      "payment": {
+        "title": "Método de pago",
+        "securePayment": "PAGO SEGURO",
+        "useNewCard": "Usar tarjeta nueva",
+        "processingAria": "Procesando pago",
+        "processingButton": "Procesando pago…",
+        "payButton": "Pagar {{amount}}",
+        "stripeMissing": "Falta configurar VITE_STRIPE_PUBLISHABLE_KEY para procesar pagos."
+      }
+    },
+    "errors": {
+      "sessionUnavailable": "Sesión no disponible",
+      "cardFormFailed": "No se pudo cargar el formulario de tarjeta",
+      "paymentFailed": "No se pudo procesar el pago",
+      "paymentNotConfirmed": "El pago no se pudo confirmar. Intenta de nuevo.",
+      "paymentGeneric": "Error al procesar el pago",
+      "promoEmpty": "Ingresa un código de descuento.",
+      "promoNeedsSignIn": "Inicia sesión para aplicar un cupón.",
+      "promoGeneric": "No se pudo validar el cupón."
+    },
+    "summary": {
+      "title": "Resumen de orden",
+      "freeSampleBadge": "MUESTRA GRATIS · CLUB HEALTHORA",
+      "promoCodeLabel": "Código de descuento",
+      "promoPlaceholder": "BIENVENIDA",
+      "remove": "Quitar",
+      "validating": "Validando…",
+      "apply": "Aplicar",
+      "savings": "{{label}}: ahorras {{amount}}.",
+      "welcomeCodeNote": " Solo válido en tu primera compra pagada.",
+      "useLoyaltyPoints": "Usar mis {{points}} puntos del Club Healthora",
+      "subtotal": "Subtotal",
+      "discountLabel": "Descuento {{code}}",
+      "loyaltyPoints": "Puntos Club Healthora",
+      "freeSample": "Muestra gratis",
+      "shippingLabel": "Envío ({{eta}})",
+      "tax": "ITBMS",
+      "total": "Total",
+      "securedByStripe": "Pago procesado de forma segura por Stripe"
+    }
   }
 }
