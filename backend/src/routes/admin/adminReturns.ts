@@ -6,6 +6,7 @@ import { auditAdminMutations } from '../../middleware/auditAdminAction';
 import type { AppEnv } from '../../types/hono';
 import { objectIdSchema, parseJson, parseParams, parseQuery } from '../../lib/validation';
 import { sendReturnStatusEmail, getReturnedToCustomerCopy, capitalizeSentence } from '../../lib/email';
+import { shouldSendEmail } from '../../lib/notificationPreferences';
 import { notifyUser } from '../../lib/realtime';
 import { resolvePendingRefunds, updateReturnStatus } from '../../lib/returns';
 
@@ -70,15 +71,17 @@ export const adminReturnsRouter = new Hono<AppEnv>()
 
     const copy = getReturnedToCustomerCopy(returnDoc.returnMethod);
 
-    sendReturnStatusEmail({
-      customerName: returnDoc.customerName || 'cliente',
-      customerEmail: returnDoc.customerEmail || '',
-      orderId: String(returnDoc.orderId),
-      status: 'rejected',
-      refundAmount: returnDoc.refundAmount,
-      returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
-      copyOverride: copy,
-    }).catch((err) => console.error('[ADMIN_RETURNS] Failed to send returned-to-customer email:', err));
+    if (await shouldSendEmail(returnDoc.customerId, 'orderUpdates')) {
+      sendReturnStatusEmail({
+        customerName: returnDoc.customerName || 'cliente',
+        customerEmail: returnDoc.customerEmail || '',
+        orderId: String(returnDoc.orderId),
+        status: 'rejected',
+        refundAmount: returnDoc.refundAmount,
+        returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
+        copyOverride: copy,
+      }).catch((err) => console.error('[ADMIN_RETURNS] Failed to send returned-to-customer email:', err));
+    }
 
     if (returnDoc.customerId) {
       try {

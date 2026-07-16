@@ -9,6 +9,7 @@ import { useBreakpoint } from '../hooks/useBreakpoint';
 import type { CartItem, OrderAddress, SavedAddress, SavedPaymentMethod } from '../types';
 import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
+import { Checkbox } from '../components/shared/Checkbox';
 import { Icon } from '../components/shared/Icon';
 import { StripeCardInput } from '../components/shared/StripeCardInput';
 import { SignInModal } from '../components/chrome/SignInModal';
@@ -724,7 +725,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
           {isSignedIn && loyaltyBalance > 0 && (
             <div style={{ padding: '16px 0', borderTop: '1px solid var(--ink-06)' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontFamily: '"Geist", sans-serif', cursor: 'pointer' }}>
-                <input type="checkbox" checked={usePoints} onChange={(e) => setUsePoints(e.target.checked)} disabled={processing} />
+                <Checkbox checked={usePoints} onChange={(e) => setUsePoints(e.target.checked)} disabled={processing} />
                 Usar mis {loyaltyBalance} puntos del Club Healthora
                 {usePoints && loyaltyDiscountAmount > 0 && <span style={{ color: 'var(--green)' }}> (-${loyaltyDiscountAmount.toFixed(2)})</span>}
               </label>

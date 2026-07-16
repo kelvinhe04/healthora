@@ -11,6 +11,8 @@ import {
 } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
+import { Checkbox } from '../../../components/shared/Checkbox';
+import { Select } from '../../../components/shared/Select';
 import { api } from '../../../lib/api';
 import type { Category, Coupon } from '../../../types';
 import { useAdminToken } from '../hooks/useAdminToken';
@@ -190,10 +192,10 @@ export function CouponsSection() {
           <div style={{ display: 'grid', gap: 12 }}>
             <input placeholder="Código (ej. SAVE10)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
             <input placeholder="Etiqueta visible" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
-            <select value={form.discountType} onChange={(e) => setForm({ ...form, discountType: e.target.value as 'percent' | 'fixed' })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }}>
+            <Select value={form.discountType} onChange={(e) => setForm({ ...form, discountType: e.target.value as 'percent' | 'fixed' })}>
               <option value="percent">Porcentaje</option>
               <option value="fixed">Monto fijo</option>
-            </select>
+            </Select>
             {form.discountType === 'percent' ? (
               <input type="number" min={1} max={100} placeholder="Porcentaje" value={form.percentOff} onChange={(e) => setForm({ ...form, percentOff: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
             ) : (
@@ -202,7 +204,7 @@ export function CouponsSection() {
             <input type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
             <input type="number" min={1} placeholder="Máximo de usos (opcional)" value={form.maxUses} onChange={(e) => setForm({ ...form, maxUses: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
-              <input type="checkbox" checked={form.firstPurchaseOnly} onChange={(e) => setForm({ ...form, firstPurchaseOnly: e.target.checked })} />
+              <Checkbox checked={form.firstPurchaseOnly} onChange={(e) => setForm({ ...form, firstPurchaseOnly: e.target.checked })} />
               Solo primera compra
             </label>
             <div>

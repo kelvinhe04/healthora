@@ -14,6 +14,7 @@ import type { FulfillmentStatus } from '../../../types';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
+import { Select } from '../../../components/shared/Select';
 import { PaginationControls } from '../components/PaginationControls';
 import { useAdminToken } from '../hooks/useAdminToken';
 import { useAdminPanelContext } from '../AdminPanelContext';
@@ -797,7 +798,7 @@ export function OrdersSection() {
                               pickupFulfillmentStatusSequence. */}
                           {getNextFulfillmentStatus(order.fulfillmentStatus, order.shippingMethod) !== null && (
                             <>
-                              <select
+                              <Select
                                 value={(() => {
                                   const draft = orderStatusDrafts[order._id];
                                   const current = order.fulfillmentStatus || "unfulfilled";
@@ -812,12 +813,11 @@ export function OrdersSection() {
                                     [order._id]: nextStatus,
                                   }));
                                 }}
+                                wrapperStyle={{ width: "auto" }}
                                 style={{
-                                  padding: "8px 10px",
+                                  padding: "8px 28px 8px 10px",
                                   borderRadius: 8,
-                                  border: "1px solid var(--ink-20)",
                                   background: "var(--cream-2)",
-                                  color: "var(--ink)",
                                   fontSize: 12,
                                 }}
                               >
@@ -831,7 +831,7 @@ export function OrdersSection() {
                                     </option>
                                   ));
                                 })()}
-                              </select>
+                              </Select>
                               {orderStatusDrafts[order._id] &&
                                 orderStatusDrafts[order._id] !==
                                   (order.fulfillmentStatus ||

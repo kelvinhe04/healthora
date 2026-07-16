@@ -21,6 +21,14 @@ const UserSchema = new Schema(
       },
     ],
     wishlist: [{ type: String }],
+    // Preferencias de notificacion (HU-058): que categorias de correo quiere seguir recibiendo el
+    // cliente, y una baja total que las anula a todas. No cubre correos transaccionales criticos
+    // (confirmacion de pedido) - esos no dependen de esto, ver lib/notificationPreferences.ts.
+    notificationPreferences: {
+      orderUpdates: { type: Boolean, default: true },
+      promotions: { type: Boolean, default: true },
+      unsubscribedAll: { type: Boolean, default: false },
+    },
     // Saldo de puntos del Club Healthora (HU-060), denormalizado para lectura rapida - el
     // historial/auditoria vive en LoyaltyTransaction (lib/loyalty.ts es la unica fuente que lo
     // modifica, siempre junto con una entrada del ledger).

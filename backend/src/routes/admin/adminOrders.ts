@@ -5,6 +5,7 @@ import { auditAdminMutations } from '../../middleware/auditAdminAction';
 import type { AppEnv } from '../../types/hono';
 import { Order } from '../../db/models/Order';
 import { sendOrderStatusUpdateEmail } from '../../lib/email';
+import { shouldSendEmail } from '../../lib/notificationPreferences';
 import { combineOrderStatus, normalizeOrder, type FulfillmentStatus } from '../../lib/orderStatus';
 import { notifyUser } from '../../lib/realtime';
 import { generateTrackingNumber } from '../../lib/tracking';
@@ -159,7 +160,7 @@ export const adminOrdersRouter = new Hono<AppEnv>()
     if (!order) return c.json({ error: 'Not found' }, 404);
 
     if (normalizedCurrent.fulfillmentStatus !== fulfillmentStatus) {
-      if (order.customerEmail) {
+      if (order.customerEmail && (await shouldSendEmail(order.customerId, 'orderUpdates'))) {
         // Not awaited: SMTP can take several seconds to respond (and, e.g., Gmail's daily
         // send-limit rejection is itself a slow round-trip) - the admin shouldn't have to wait on
         // it to see "Guardado". Errors are still caught and logged, just asynchronously.

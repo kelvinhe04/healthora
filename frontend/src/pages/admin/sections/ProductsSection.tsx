@@ -20,6 +20,8 @@ import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { ProductImage } from '../../../components/shared/ProductImage';
 import { Stars } from '../../../components/shared/Stars';
+import { Checkbox } from '../../../components/shared/Checkbox';
+import { Select } from '../../../components/shared/Select';
 import { PaginationControls } from '../components/PaginationControls';
 import { ProductModal } from '../components/ProductModal';
 import { useAdminPanelContext } from '../AdminPanelContext';
@@ -257,18 +259,18 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
         )}
         <div style={{ marginBottom: 14 }}>
           <label style={modalFieldLabel}>Categoría</label>
-          <select style={modalInput} value={category} onChange={(e) => { setCategory(e.target.value); setMessage(''); }}>
+          <Select value={category} onChange={(e) => { setCategory(e.target.value); setMessage(''); }}>
             <option value="">Seleccionar categoría…</option>
             {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
+          </Select>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
           <div>
             <label style={modalFieldLabel}>Tipo</label>
-            <select style={modalInput} value={discountType} onChange={(e) => setDiscountType(e.target.value as 'percent' | 'fixed')}>
+            <Select value={discountType} onChange={(e) => setDiscountType(e.target.value as 'percent' | 'fixed')}>
               <option value="percent">Porcentaje (%)</option>
               <option value="fixed">Monto fijo ($)</option>
-            </select>
+            </Select>
           </div>
           <div>
             <label style={modalFieldLabel}>Valor</label>
@@ -827,8 +829,7 @@ export function ProductsSection() {
                 <thead>
                   <tr>
                     <th style={{ ...th, width: 52 }}>
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={allDisplayedSelected}
                         onChange={(e) =>
                           setSelectedProductIds((current) =>
@@ -842,12 +843,7 @@ export function ProductsSection() {
                           )
                         }
                         aria-label="Seleccionar productos visibles"
-                        style={{
-                          width: 16,
-                          height: 16,
-                          accentColor: "var(--green)",
-                          cursor: "pointer",
-                        }}
+                        style={{ width: 16, height: 16, minWidth: 16 }}
                       />
                     </th>
                     <th style={th}>Producto</th>
@@ -865,8 +861,7 @@ export function ProductsSection() {
                     return (
                     <tr key={product.id} style={trStyle}>
                       <td style={{ ...td, width: 52 }}>
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={selectedProductIds.includes(
                             product._id || product.id,
                           )}
@@ -879,12 +874,7 @@ export function ProductsSection() {
                             );
                           }}
                           aria-label={`Seleccionar ${product.name}`}
-                          style={{
-                            width: 16,
-                            height: 16,
-                            accentColor: "var(--green)",
-                            cursor: "pointer",
-                          }}
+                          style={{ width: 16, height: 16, minWidth: 16 }}
                         />
                       </td>
                       <td style={td}>

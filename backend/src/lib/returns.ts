@@ -4,6 +4,7 @@ import { Return } from '../db/models/Return';
 import { decrementStock } from './inventory';
 import { scanAndNotifyLowStock } from './lowStock';
 import { sendReturnStatusEmail, getReturnStatusCopy, capitalizeSentence } from './email';
+import { shouldSendEmail } from './notificationPreferences';
 import { notifyAdmins, notifyUser } from './realtime';
 import { stripe } from './stripe';
 
@@ -141,14 +142,16 @@ export async function confirmReturnRefund(stripeRefundId: string, stripeStatus: 
     await returnDoc.save();
     await Order.updateOne({ _id: returnDoc.orderId }, { paymentStatus: 'refunded', status: 'refunded' });
 
-    sendReturnStatusEmail({
-      customerName: returnDoc.customerName || 'cliente',
-      customerEmail: returnDoc.customerEmail || '',
-      orderId: String(returnDoc.orderId),
-      status: 'refunded',
-      refundAmount: returnDoc.refundAmount,
-      returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
-    }).catch((err) => console.error('[RETURNS] Failed to send refunded email:', err));
+    if (await shouldSendEmail(returnDoc.customerId, 'orderUpdates')) {
+      sendReturnStatusEmail({
+        customerName: returnDoc.customerName || 'cliente',
+        customerEmail: returnDoc.customerEmail || '',
+        orderId: String(returnDoc.orderId),
+        status: 'refunded',
+        refundAmount: returnDoc.refundAmount,
+        returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
+      }).catch((err) => console.error('[RETURNS] Failed to send refunded email:', err));
+    }
 
     if (returnDoc.customerId) {
       try {
@@ -271,15 +274,17 @@ export async function updateReturnStatus(
   if (rejectedAfterReview) returnDoc.rejectedAfterReview = true;
   await returnDoc.save();
 
-  sendReturnStatusEmail({
-    customerName: returnDoc.customerName || 'cliente',
-    customerEmail: returnDoc.customerEmail || '',
-    orderId: String(returnDoc.orderId),
-    status: nextStatus,
-    refundAmount: returnDoc.refundAmount,
-    returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
-    rejectedAfterReview,
-  }).catch((err) => console.error('[RETURNS] Failed to send status email:', err));
+  if (await shouldSendEmail(returnDoc.customerId, 'orderUpdates')) {
+    sendReturnStatusEmail({
+      customerName: returnDoc.customerName || 'cliente',
+      customerEmail: returnDoc.customerEmail || '',
+      orderId: String(returnDoc.orderId),
+      status: nextStatus,
+      refundAmount: returnDoc.refundAmount,
+      returnMethod: returnDoc.returnMethod as 'courier_pickup' | 'store_dropoff' | undefined,
+      rejectedAfterReview,
+    }).catch((err) => console.error('[RETURNS] Failed to send status email:', err));
+  }
 
   if (returnDoc.customerId) {
     try {

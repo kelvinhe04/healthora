@@ -7,9 +7,10 @@ import { useBreakpoint } from '../hooks/useBreakpoint';
 import { Icon } from '../components/shared/Icon';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { StripeCardInput } from '../components/shared/StripeCardInput';
+import { Checkbox } from '../components/shared/Checkbox';
 import { api } from '../lib/api';
 import { formatPanamaMedium } from '../lib/dates';
-import type { ProductSubscription, SubscriptionStatus } from '../types';
+import type { NotificationPreferences, ProductSubscription, SubscriptionStatus } from '../types';
 
 interface ProfileProps {
   onBack: () => void;
@@ -337,6 +338,111 @@ function PaymentMethodsSection() {
   );
 }
 
+const NOTIFICATION_PREFERENCES_DEFAULTS: NotificationPreferences = {
+  orderUpdates: true,
+  promotions: true,
+  unsubscribedAll: false,
+};
+
+function NotificationPreferencesSection() {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  const [error, setError] = useState('');
+  const queryKey = ['notification-preferences'];
+
+  const prefsQuery = useQuery({
+    queryKey,
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('No autenticado');
+      return api.account.notificationPreferences.get(token);
+    },
+  });
+
+  const updateMut = useMutation({
+    mutationFn: async (next: NotificationPreferences) => {
+      const token = await getToken();
+      if (!token) throw new Error('No autenticado');
+      return api.account.notificationPreferences.update(next, token);
+    },
+    // Optimista: el checkbox tiene que reflejar el click al instante, no recien cuando vuelve la
+    // respuesta del PUT - si algo falla (red, sesion vencida) se revierte al valor previo y se
+    // muestra el error, en vez de dejar el checkbox "sin hacer nada" en silencio.
+    onMutate: async (next) => {
+      setError('');
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<NotificationPreferences>(queryKey);
+      queryClient.setQueryData(queryKey, next);
+      return { previous };
+    },
+    onError: (err, _next, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+      setError(err instanceof Error ? err.message : 'No se pudo guardar el cambio.');
+    },
+    onSuccess: (data) => queryClient.setQueryData(queryKey, data),
+  });
+
+  const prefs = prefsQuery.data ?? NOTIFICATION_PREFERENCES_DEFAULTS;
+  const setPref = (key: keyof NotificationPreferences, value: boolean) => updateMut.mutate({ ...prefs, [key]: value });
+  const busy = updateMut.isPending;
+
+  return (
+    <section style={sectionCard}>
+      <h2 style={sectionTitle}>Preferencias de notificación</h2>
+      {prefsQuery.isLoading ? (
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Cargando…</p>
+      ) : prefsQuery.isError ? (
+        <p style={{ fontSize: 13, color: 'var(--coral)', fontFamily: '"Geist", sans-serif' }}>No se pudieron cargar tus preferencias. Recarga la página.</p>
+      ) : (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: prefs.unsubscribedAll ? 'not-allowed' : 'pointer', opacity: prefs.unsubscribedAll ? 0.5 : 1 }}>
+              <Checkbox
+                checked={prefs.orderUpdates}
+                disabled={prefs.unsubscribedAll || busy}
+                onChange={(e) => setPref('orderUpdates', e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <span>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>Actualizaciones de pedidos y devoluciones</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Cuando tu pedido cambia de estado (enviado, entregado) o hay novedades en una devolución.</div>
+              </span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: prefs.unsubscribedAll ? 'not-allowed' : 'pointer', opacity: prefs.unsubscribedAll ? 0.5 : 1 }}>
+              <Checkbox
+                checked={prefs.promotions}
+                disabled={prefs.unsubscribedAll || busy}
+                onChange={(e) => setPref('promotions', e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <span>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>Recordatorios y promociones</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Avisos de recompra y ofertas.</div>
+              </span>
+            </label>
+          </div>
+          <div style={{ borderTop: '1px solid var(--ink-06)', marginTop: 20, paddingTop: 16 }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+              <Checkbox
+                checked={prefs.unsubscribedAll}
+                disabled={busy}
+                onChange={(e) => setPref('unsubscribedAll', e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <span>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--coral)', fontFamily: '"Geist", sans-serif' }}>Darme de baja de todos los correos</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>No recibirás ningún correo de las categorías de arriba. La confirmación de tu compra siempre llega, sin importar esta opción.</div>
+              </span>
+            </label>
+          </div>
+          {error && <p role="alert" style={{ fontSize: 12, color: 'var(--coral)', marginTop: 14, fontFamily: '"Geist", sans-serif' }}>{error}</p>}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function Profile({ onBack }: ProfileProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
@@ -377,6 +483,9 @@ export function Profile({ onBack }: ProfileProps) {
       <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1fr 1fr', gap: 16, alignItems: 'start' }}>
         <PaymentMethodsSection />
         <SubscriptionsSection />
+        <div style={{ gridColumn: isSmall ? 'auto' : '1 / -1' }}>
+          <NotificationPreferencesSection />
+        </div>
       </div>
     </div>
   );

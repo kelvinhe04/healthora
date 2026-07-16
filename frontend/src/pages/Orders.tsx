@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-react';
 import { useOrders } from '../hooks/useOrders';
 import { Icon } from '../components/shared/Icon';
+import { Select } from '../components/shared/Select';
 import { api } from '../lib/api';
 import type { Order, OrderAddress, OrderReturn, ReasonCategory, ReturnResolution, ReturnStatus } from '../types';
 import { useOnceLoading, Skeleton } from '../components/admin';
@@ -319,16 +320,15 @@ function ReturnPanel({ order, onSelectOrder }: { order: Order; onSelectOrder: (i
           <label style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 6, display: 'block' }}>
             Tipo de motivo <span style={{ color: 'var(--coral)' }}>*</span>
           </label>
-          <select
+          <Select
             value={reasonCategory}
             onChange={(e) => setReasonCategory(e.target.value as ReasonCategory)}
-            style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--ink-20)', background: 'var(--cream)', fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', boxSizing: 'border-box' }}
           >
             <option value="" disabled>Selecciona una opción…</option>
             {REASON_CATEGORY_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
-          </select>
+          </Select>
           <label style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginTop: 12, marginBottom: 6, display: 'block' }}>
             Cuéntanos más detalles <span style={{ color: 'var(--coral)' }}>*</span>
           </label>
