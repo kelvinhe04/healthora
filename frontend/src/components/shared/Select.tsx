@@ -9,6 +9,16 @@ type SelectChangeEvent = { target: { value: string } };
 type SelectProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'multiple' | 'size'> & {
   onChange?: (event: SelectChangeEvent) => void;
   wrapperStyle?: CSSProperties;
+  /** Alinea el texto de las opciones del popup (por defecto heredan text-align: left de .hlt-select-option). */
+  optionsAlign?: CSSProperties['textAlign'];
+  /**
+   * 'left' (default) mantiene el layout clasico: label a la izquierda, chevron fijo pegado al
+   * borde derecho del wrapper (posicion absoluta, independiente del ancho del texto).
+   * 'center' mueve el chevron adentro del boton, como flex item junto al label, para que el
+   * grupo "texto + flecha" quede centrado como una sola unidad en vez de que el chevron quede
+   * pegado al borde mientras el texto se centra por su cuenta.
+   */
+  align?: 'left' | 'center';
 };
 
 function parseOptions(children: ReactNode) {
@@ -35,6 +45,8 @@ export function Select({
   className,
   style,
   wrapperStyle,
+  optionsAlign,
+  align = 'left',
   disabled,
   id,
   'aria-label': ariaLabel,
@@ -143,7 +155,11 @@ export function Select({
         type="button"
         id={baseId}
         className={className ? `hlt-select ${className}` : 'hlt-select'}
-        style={style}
+        style={
+          align === 'center'
+            ? { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, ...style }
+            : style
+        }
         disabled={disabled}
         role="combobox"
         aria-haspopup="listbox"
@@ -157,22 +173,44 @@ export function Select({
         <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {selected?.label ?? ' '}
         </span>
+        {align === 'center' && (
+          <Icon
+            name="chevron-down"
+            size={14}
+            style={{
+              flexShrink: 0,
+              transform: open ? 'rotate(180deg)' : undefined,
+              transition: 'transform 150ms ease',
+              pointerEvents: 'none',
+              color: 'var(--ink-60)',
+            }}
+          />
+        )}
       </button>
-      <Icon
-        name="chevron-down"
-        size={14}
-        style={{
-          position: 'absolute',
-          top: '50%',
-          right: 12,
-          transform: open ? 'translateY(-50%) rotate(180deg)' : 'translateY(-50%)',
-          transition: 'transform 150ms ease',
-          pointerEvents: 'none',
-          color: 'var(--ink-60)',
-        }}
-      />
+      {align !== 'center' && (
+        <Icon
+          name="chevron-down"
+          size={14}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            right: 12,
+            transform: open ? 'translateY(-50%) rotate(180deg)' : 'translateY(-50%)',
+            transition: 'transform 150ms ease',
+            pointerEvents: 'none',
+            color: 'var(--ink-60)',
+          }}
+        />
+      )}
       {open && (
-        <ul ref={listRef} id={listboxId} role="listbox" aria-labelledby={baseId} className="hlt-select-popup">
+        <ul
+          ref={listRef}
+          id={listboxId}
+          role="listbox"
+          aria-labelledby={baseId}
+          className="hlt-select-popup"
+          style={optionsAlign ? { textAlign: optionsAlign } : undefined}
+        >
           {options.map((opt, index) => (
             <li
               key={`${opt.value}-${index}`}

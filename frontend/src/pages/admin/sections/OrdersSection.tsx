@@ -815,11 +815,13 @@ export function OrdersSection() {
                                 }}
                                 wrapperStyle={{ width: "auto" }}
                                 style={{
-                                  padding: "8px 28px 8px 10px",
+                                  padding: "8px 12px",
                                   borderRadius: 8,
                                   background: "var(--cream-2)",
                                   fontSize: 12,
                                 }}
+                                align="center"
+                                optionsAlign="center"
                               >
                                 {(() => {
                                   const current = order.fulfillmentStatus || "unfulfilled";
