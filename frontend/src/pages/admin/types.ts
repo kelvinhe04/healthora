@@ -235,10 +235,12 @@ export type ProductAnalyticsData = {
   error?: string;
 };
 
-export const productAnalyticsEventLabels: Record<string, string> = {
-  checkout_started: 'Checkout iniciado',
-  checkout_completed: 'Checkout completado',
-  add_to_cart: 'Agregado al carrito',
+// Maps the raw PostHog event name to an i18n key suffix under `admin.productAnalytics.eventLabels`
+// (HU-084) - kept as a plain lookup (not a component) so the display label stays translatable.
+export const productAnalyticsEventLabelKeys: Record<string, string> = {
+  checkout_started: 'checkoutStarted',
+  checkout_completed: 'checkoutCompleted',
+  add_to_cart: 'addedToCart',
 };
 
 export const fulfillmentStatusOptions: (FulfillmentStatus | "")[] = [

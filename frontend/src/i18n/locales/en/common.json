@@ -923,6 +923,88 @@
       "deniedTitlePrefix": "Access",
       "deniedTitleEmphasis": "denied",
       "deniedBody": "Your account doesn't have admin permissions."
+    },
+    "repurchase": {
+      "kicker_one": "{{count}} reminder sent",
+      "kicker_other": "{{count}} reminders sent",
+      "titlePrefix": "Repurchase",
+      "titleEmphasis": "reminders",
+      "sub": "Free emails sent before a customer runs out of a product they've already bought (HU-102).",
+      "scanButton": "Run now",
+      "scanning": "Scanning…",
+      "lastScan": {
+        "prefix": "Last manual scan:",
+        "cyclesEvaluated_one": "{{count}} purchase cycle evaluated",
+        "cyclesEvaluated_other": "{{count}} purchase cycles evaluated",
+        "remindersSent_one": "{{count}} new reminder sent",
+        "remindersSent_other": "{{count}} new reminders sent"
+      },
+      "table": {
+        "title": "Sent",
+        "sub": "A customer/product pair only appears once per purchase cycle (won't repeat until they buy again)",
+        "columns": {
+          "product": "Product",
+          "customer": "Customer",
+          "lastPurchase": "Last purchase",
+          "estimatedRunOut": "Estimated run-out",
+          "sentAt": "Sent"
+        },
+        "empty": "No reminders sent yet."
+      }
+    },
+    "earnings": {
+      "kicker": "Earnings",
+      "titlePrefix": "The",
+      "titleEmphasis": "earnings",
+      "sub": "Gross, net, and monthly trend overview for the store.",
+      "kpi": {
+        "grossRevenue": "Gross revenue",
+        "tax": "Tax",
+        "netProfit": "Net profit",
+        "stripeFees": "Stripe fees",
+        "stripeFeesSub": "estimated 2.9%"
+      },
+      "monthly": {
+        "title": "Monthly breakdown",
+        "sub": "Revenue and orders by month",
+        "columns": {
+          "month": "Month"
+        }
+      }
+    },
+    "productAnalytics": {
+      "titlePrefix": "Product",
+      "titleEmphasis": "analytics",
+      "sub": "Checkout funnel and cart abandonment, based on real user behavior.",
+      "periodAria": "Analytics period",
+      "period": {
+        "last7": "Last 7 days",
+        "last30": "Last 30 days",
+        "last90": "Last 90 days"
+      },
+      "notConfigured": {
+        "prefix": "PostHog isn't configured for queries",
+        "body": "The funnel and cart abandonment show as zero until you configure them — see"
+      },
+      "eventLabels": {
+        "checkoutStarted": "Checkout started",
+        "checkoutCompleted": "Checkout completed",
+        "addedToCart": "Added to cart"
+      },
+      "kpi": {
+        "conversion": "Conversion",
+        "cartAbandonment": "Cart abandonment"
+      },
+      "table": {
+        "title": "Recent key events",
+        "sub": "Latest funnel events captured by PostHog",
+        "columns": {
+          "event": "Event",
+          "userSession": "User/session",
+          "date": "Date"
+        },
+        "empty": "No events for this period."
+      }
     }
   }
 }

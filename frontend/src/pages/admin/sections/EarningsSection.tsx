@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   KpiCard,
@@ -9,8 +10,10 @@ import {
   trStyle,
 } from '../../../components/admin';
 import { useAdminPanelContext } from '../AdminPanelContext';
+import { formatCurrency } from '../../../lib/currency';
 
 export function EarningsSection() {
+  const { t } = useTranslation();
   const {
   showEarningsSkeleton,
   earnings,
@@ -20,13 +23,13 @@ export function EarningsSection() {
     <>
             <PageHeader
               loading={showEarningsSkeleton}
-              kicker="Ganancias"
+              kicker={t('admin.earnings.kicker')}
               title={
                 <>
-                  Las <em style={{ color: "var(--green)" }}>ganancias</em>
+                  {t('admin.earnings.titlePrefix')} <em style={{ color: "var(--green)" }}>{t('admin.earnings.titleEmphasis')}</em>
                 </>
               }
-              sub="Resumen bruto, neto y evolución mensual del ecommerce."
+              sub={t('admin.earnings.sub')}
             />
             <div
               style={{
@@ -38,50 +41,50 @@ export function EarningsSection() {
             >
               <KpiCard
                 mode="dark"
-                label="Ingresos brutos"
+                label={t('admin.earnings.kpi.grossRevenue')}
                 value={
                   earnings?.summary
-                    ? `$${earnings.summary.gross.toFixed(2)}`
+                    ? formatCurrency(earnings.summary.gross)
                     : "—"
                 }
                 loading={showEarningsSkeleton}
                 animKey="earn_gross"
               />
               <KpiCard
-                label="ITBMS"
+                label={t('admin.earnings.kpi.tax')}
                 value={
                   earnings?.summary
-                    ? `$${earnings.summary.tax.toFixed(2)}`
+                    ? formatCurrency(earnings.summary.tax)
                     : "—"
                 }
                 loading={showEarningsSkeleton}
                 animKey="earn_tax"
               />
               <KpiCard
-                label="Utilidad neta"
+                label={t('admin.earnings.kpi.netProfit')}
                 value={
                   earnings?.summary
-                    ? `$${earnings.summary.net.toLocaleString()}`
+                    ? formatCurrency(earnings.summary.net)
                     : "—"
                 }
                 loading={showEarningsSkeleton}
                 animKey="earn_net"
               />
               <KpiCard
-                label="Comisiones Stripe"
+                label={t('admin.earnings.kpi.stripeFees')}
                 value={
                   earnings?.summary
-                    ? `$${earnings.summary.fees.toFixed(2)}`
+                    ? formatCurrency(earnings.summary.fees)
                     : "—"
                 }
-                sub="estimado 2.9%"
+                sub={t('admin.earnings.kpi.stripeFeesSub')}
                 loading={showEarningsSkeleton}
                 animKey="earn_fees"
               />
             </div>
             <Card
-              title="Detalle mensual"
-              sub="Ingresos y órdenes por mes"
+              title={t('admin.earnings.monthly.title')}
+              sub={t('admin.earnings.monthly.sub')}
               pad={20}
               loading={showEarningsSkeleton}
               skeletonContent={
@@ -118,9 +121,9 @@ export function EarningsSection() {
               <table style={{ ...tableStyle, minWidth: 340 }}>
                 <thead>
                   <tr>
-                    <th style={th}>Mes</th>
-                    <th style={th}>Órdenes</th>
-                    <th style={th}>Ingresos</th>
+                    <th style={th}>{t('admin.earnings.monthly.columns.month')}</th>
+                    <th style={th}>{t('admin.charts.orders')}</th>
+                    <th style={th}>{t('admin.charts.revenue')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -145,7 +148,7 @@ export function EarningsSection() {
                           fontSize: 18,
                         }}
                       >
-                        ${row.revenue.toLocaleString()}
+                        {formatCurrency(row.revenue)}
                       </td>
                     </tr>
                   ))}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   PageHeader,
@@ -14,6 +15,7 @@ import { PaginationControls } from '../components/PaginationControls';
 import { ADMIN_PAGE_SIZE } from '../utils';
 
 export function RepurchaseSection() {
+  const { t } = useTranslation();
   const {
     showRepurchaseSkeleton,
     repurchaseReminders,
@@ -33,13 +35,13 @@ export function RepurchaseSection() {
     <>
       <PageHeader
         loading={showRepurchaseSkeleton}
-        kicker={repurchaseReminders ? `${total} recordatorio${total !== 1 ? 's' : ''} enviados` : undefined}
+        kicker={repurchaseReminders ? t('admin.repurchase.kicker', { count: total }) : undefined}
         title={
           <>
-            Recordatorios de <em style={{ color: 'var(--green)' }}>recompra</em>
+            {t('admin.repurchase.titlePrefix')} <em style={{ color: 'var(--green)' }}>{t('admin.repurchase.titleEmphasis')}</em>
           </>
         }
-        sub="Correos sin costo enviados antes de que se le acabe a un cliente un producto ya comprado (HU-102)."
+        sub={t('admin.repurchase.sub')}
         actions={
           <button
             type="button"
@@ -57,7 +59,7 @@ export function RepurchaseSection() {
               opacity: repurchaseScanMutation.isPending ? 0.6 : 1,
             }}
           >
-            {repurchaseScanMutation.isPending ? 'Escaneando…' : 'Ejecutar ahora'}
+            {repurchaseScanMutation.isPending ? t('admin.repurchase.scanning') : t('admin.repurchase.scanButton')}
           </button>
         }
       />
@@ -66,15 +68,15 @@ export function RepurchaseSection() {
         <div style={{ marginBottom: 24 }}>
           <Card pad={20}>
             <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-60)' }}>
-              Último escaneo manual: {lastScanResult.scanned} ciclo{lastScanResult.scanned !== 1 ? 's' : ''} de compra evaluados, {lastScanResult.sent} recordatorio{lastScanResult.sent !== 1 ? 's' : ''} nuevo{lastScanResult.sent !== 1 ? 's' : ''} enviado{lastScanResult.sent !== 1 ? 's' : ''}.
+              {t('admin.repurchase.lastScan.prefix')} {t('admin.repurchase.lastScan.cyclesEvaluated', { count: lastScanResult.scanned })}, {t('admin.repurchase.lastScan.remindersSent', { count: lastScanResult.sent })}.
             </p>
           </Card>
         </div>
       )}
 
       <Card
-        title="Enviados"
-        sub="Un cliente y producto solo aparece una vez por ciclo de compra (no se repite hasta que vuelva a comprar)"
+        title={t('admin.repurchase.table.title')}
+        sub={t('admin.repurchase.table.sub')}
         pad={0}
         loading={showRepurchaseSkeleton}
         skeletonContent={
@@ -103,11 +105,11 @@ export function RepurchaseSection() {
           <table style={{ ...tableStyle, minWidth: 860 }}>
             <thead>
               <tr>
-                <th scope="col" style={th}>Producto</th>
-                <th scope="col" style={th}>Cliente</th>
-                <th scope="col" style={th}>Última compra</th>
-                <th scope="col" style={th}>Estimado de agotamiento</th>
-                <th scope="col" style={th}>Enviado</th>
+                <th scope="col" style={th}>{t('admin.repurchase.table.columns.product')}</th>
+                <th scope="col" style={th}>{t('admin.repurchase.table.columns.customer')}</th>
+                <th scope="col" style={th}>{t('admin.repurchase.table.columns.lastPurchase')}</th>
+                <th scope="col" style={th}>{t('admin.repurchase.table.columns.estimatedRunOut')}</th>
+                <th scope="col" style={th}>{t('admin.repurchase.table.columns.sentAt')}</th>
               </tr>
             </thead>
             <tbody>
@@ -129,7 +131,7 @@ export function RepurchaseSection() {
               {!items.length && (
                 <tr>
                   <td style={{ ...td, textAlign: 'center', color: 'var(--ink-60)' }} colSpan={5}>
-                    Sin recordatorios enviados todavía.
+                    {t('admin.repurchase.table.empty')}
                   </td>
                 </tr>
               )}

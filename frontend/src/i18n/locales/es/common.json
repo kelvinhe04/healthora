@@ -923,6 +923,88 @@
       "deniedTitlePrefix": "Acceso",
       "deniedTitleEmphasis": "denegado",
       "deniedBody": "Tu cuenta no tiene permisos de administrador."
+    },
+    "repurchase": {
+      "kicker_one": "{{count}} recordatorio enviado",
+      "kicker_other": "{{count}} recordatorios enviados",
+      "titlePrefix": "Recordatorios de",
+      "titleEmphasis": "recompra",
+      "sub": "Correos sin costo enviados antes de que se le acabe a un cliente un producto ya comprado (HU-102).",
+      "scanButton": "Ejecutar ahora",
+      "scanning": "Escaneando…",
+      "lastScan": {
+        "prefix": "Último escaneo manual:",
+        "cyclesEvaluated_one": "{{count}} ciclo de compra evaluado",
+        "cyclesEvaluated_other": "{{count}} ciclos de compra evaluados",
+        "remindersSent_one": "{{count}} recordatorio nuevo enviado",
+        "remindersSent_other": "{{count}} recordatorios nuevos enviados"
+      },
+      "table": {
+        "title": "Enviados",
+        "sub": "Un cliente y producto solo aparece una vez por ciclo de compra (no se repite hasta que vuelva a comprar)",
+        "columns": {
+          "product": "Producto",
+          "customer": "Cliente",
+          "lastPurchase": "Última compra",
+          "estimatedRunOut": "Estimado de agotamiento",
+          "sentAt": "Enviado"
+        },
+        "empty": "Sin recordatorios enviados todavía."
+      }
+    },
+    "earnings": {
+      "kicker": "Ganancias",
+      "titlePrefix": "Las",
+      "titleEmphasis": "ganancias",
+      "sub": "Resumen bruto, neto y evolución mensual del ecommerce.",
+      "kpi": {
+        "grossRevenue": "Ingresos brutos",
+        "tax": "ITBMS",
+        "netProfit": "Utilidad neta",
+        "stripeFees": "Comisiones Stripe",
+        "stripeFeesSub": "estimado 2.9%"
+      },
+      "monthly": {
+        "title": "Detalle mensual",
+        "sub": "Ingresos y órdenes por mes",
+        "columns": {
+          "month": "Mes"
+        }
+      }
+    },
+    "productAnalytics": {
+      "titlePrefix": "Analítica de",
+      "titleEmphasis": "producto",
+      "sub": "Embudo de checkout y abandono de carrito, sobre el comportamiento real de los usuarios.",
+      "periodAria": "Periodo de analítica",
+      "period": {
+        "last7": "Últimos 7 días",
+        "last30": "Últimos 30 días",
+        "last90": "Últimos 90 días"
+      },
+      "notConfigured": {
+        "prefix": "PostHog no está configurado para consultas",
+        "body": "El embudo y el abandono de carrito se muestran en cero hasta configurarlos — ver"
+      },
+      "eventLabels": {
+        "checkoutStarted": "Checkout iniciado",
+        "checkoutCompleted": "Checkout completado",
+        "addedToCart": "Agregado al carrito"
+      },
+      "kpi": {
+        "conversion": "Conversión",
+        "cartAbandonment": "Abandono de carrito"
+      },
+      "table": {
+        "title": "Eventos clave recientes",
+        "sub": "Últimos eventos de embudo capturados por PostHog",
+        "columns": {
+          "event": "Evento",
+          "userSession": "Usuario/sesión",
+          "date": "Fecha"
+        },
+        "empty": "Sin eventos para este periodo."
+      }
     }
   }
 }
