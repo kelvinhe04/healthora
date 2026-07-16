@@ -195,5 +195,54 @@
       "titlePrefix": "You might also",
       "titleEmphasis": "like"
     }
+  },
+  "cart": {
+    "title": "Your cart",
+    "itemCount_one": "{{count}} ITEM",
+    "itemCount_other": "{{count}} ITEMS",
+    "closeAria": "Close cart",
+    "emptyTitle": "Your cart is empty",
+    "emptyBody": "Add products to your cart to start your purchase.",
+    "exploreProducts": "Explore products",
+    "clearCart": "Clear cart",
+    "reduceQtyAria": "Decrease quantity of {{name}}",
+    "qtyAria": "Quantity: {{qty}}",
+    "increaseQtyAria": "Increase quantity of {{name}}",
+    "removeAria": "Remove",
+    "variantEditor": {
+      "changeFlavorAria": "Change flavor",
+      "changeSizeAria": "Change size",
+      "changeVariantAria": "Change variant",
+      "outOfStockSuffix": " (out of stock)",
+      "change": "CHANGE",
+      "close": "CLOSE"
+    },
+    "club": {
+      "title": "Healthora Club",
+      "addMorePrefix": "Add",
+      "addMoreSuffix": "more to get 1 free sample",
+      "freeSampleKicker": "✦ Healthora Club · Free sample",
+      "chooseFreeSamplePrefix": "Choose",
+      "chooseFreeSampleBold": "1 free sample",
+      "chooseButton": "CHOOSE →"
+    },
+    "summary": {
+      "subtotal": "Subtotal",
+      "freeSample": "Free sample",
+      "shipping": "Shipping",
+      "free": "FREE",
+      "tax": "ITBMS",
+      "total": "Total"
+    },
+    "checkoutButton": "Go to checkout",
+    "securePayment": "SECURE PAYMENT WITH STRIPE",
+    "confirmClear": {
+      "kicker": "Confirmation",
+      "headingPrefix": "Clear",
+      "headingEmphasis": "cart",
+      "body": "All products will be removed from your cart. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Yes, clear everything"
+    }
   }
 }

@@ -195,5 +195,54 @@
       "titlePrefix": "También te puede",
       "titleEmphasis": "interesar"
     }
+  },
+  "cart": {
+    "title": "Tu carrito",
+    "itemCount_one": "{{count}} ARTÍCULO",
+    "itemCount_other": "{{count}} ARTÍCULOS",
+    "closeAria": "Cerrar carrito",
+    "emptyTitle": "Tu carrito está vacío",
+    "emptyBody": "Agrega productos al carrito para empezar tu compra.",
+    "exploreProducts": "Explorar productos",
+    "clearCart": "Vaciar carrito",
+    "reduceQtyAria": "Reducir cantidad de {{name}}",
+    "qtyAria": "Cantidad: {{qty}}",
+    "increaseQtyAria": "Aumentar cantidad de {{name}}",
+    "removeAria": "Eliminar",
+    "variantEditor": {
+      "changeFlavorAria": "Cambiar sabor",
+      "changeSizeAria": "Cambiar tamaño",
+      "changeVariantAria": "Cambiar variante",
+      "outOfStockSuffix": " (agotado)",
+      "change": "CAMBIAR",
+      "close": "CERRAR"
+    },
+    "club": {
+      "title": "Club Healthora",
+      "addMorePrefix": "Agrega",
+      "addMoreSuffix": "más para recibir 1 muestra gratis",
+      "freeSampleKicker": "✦ Club Healthora · Muestra gratis",
+      "chooseFreeSamplePrefix": "¡Elige",
+      "chooseFreeSampleBold": "1 muestra gratis",
+      "chooseButton": "ELEGIR →"
+    },
+    "summary": {
+      "subtotal": "Subtotal",
+      "freeSample": "Muestra gratis",
+      "shipping": "Envío",
+      "free": "GRATIS",
+      "tax": "ITBMS",
+      "total": "Total"
+    },
+    "checkoutButton": "Ir a checkout",
+    "securePayment": "PAGO SEGURO CON STRIPE",
+    "confirmClear": {
+      "kicker": "Confirmación",
+      "headingPrefix": "Vaciar",
+      "headingEmphasis": "carrito",
+      "body": "Se eliminarán todos los productos del carrito. Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "confirm": "Sí, vaciar todo"
+    }
   }
 }
