@@ -389,5 +389,29 @@
       "total": "Total",
       "securedByStripe": "Payment securely processed by Stripe"
     }
+  },
+  "success": {
+    "error": {
+      "title": "Your payment was processed, but we're still confirming your order.",
+      "body": "It may take a few minutes to show up. Check \"My orders\" later or contact us if it doesn't appear."
+    },
+    "confirming": "Confirming your order…",
+    "orderLabel": "ORDER #{{id}} · {{status}}",
+    "status": {
+      "paid": "PAID",
+      "confirmed": "CONFIRMED"
+    },
+    "headingPrefix": "Thank you for your",
+    "headingEmphasis": "purchase",
+    "receivedPrefix": "We received your payment of",
+    "receivedSuffix": ". We sent you the confirmation by email and will let you know when your order is on its way.",
+    "details": {
+      "status": "Status",
+      "statusValue": "Paid",
+      "estimatedShipping": "Estimated shipping",
+      "estimatedShippingValue": "24 – 48h",
+      "tracking": "Tracking"
+    },
+    "continueShopping": "Keep shopping"
   }
 }
