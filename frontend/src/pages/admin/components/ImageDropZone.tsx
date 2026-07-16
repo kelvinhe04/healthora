@@ -1,4 +1,5 @@
 import { type DragEvent, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Icon } from '../../../components/shared/Icon';
 import { useAdminToken } from '../hooks/useAdminToken';
 import { uploadImage } from '../../../lib/uploadImage';
@@ -16,6 +17,7 @@ export function ImageDropZone({
   folder?: string;
   required?: boolean;
 }) {
+  const { t } = useTranslation();
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -31,7 +33,7 @@ export function ImageDropZone({
       const url = await uploadImage(file, folder, token);
       onChange(url);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al subir imagen');
+      setError(e instanceof Error ? e.message : t('admin.imageUpload.uploadError'));
     } finally {
       setUploading(false);
     }
@@ -82,7 +84,7 @@ export function ImageDropZone({
       >
         {uploading ? (
           <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: "var(--ink-40)" }}>
-            SUBIENDO…
+            {t('admin.imageUpload.uploading')}
           </div>
         ) : value ? (
           <>
@@ -140,7 +142,7 @@ export function ImageDropZone({
                 opacity: 0.7,
               }}
             >
-              cambiar
+              {t('admin.imageUpload.change')}
             </button>
           </>
         ) : (
@@ -173,7 +175,7 @@ export function ImageDropZone({
                 letterSpacing: "0.08em",
               }}
             >
-              ARRASTRA O HAZ CLIC
+              {t('admin.imageUpload.dragOrClick')}
             </div>
           </div>
         )}

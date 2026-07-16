@@ -1,4 +1,5 @@
 import { useRef, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /** Wraps a plain <textarea> with a bold-insert button so admins don't have to remember the
  * `**texto**` syntax by hand - selects/wraps at the cursor, same trick as markdown editors. */
@@ -13,13 +14,14 @@ export function FormattedTextarea({
   placeholder?: string;
   style?: CSSProperties;
 }) {
+  const { t } = useTranslation();
   const ref = useRef<HTMLTextAreaElement>(null);
 
   const insertBold = () => {
     const el = ref.current;
     if (!el) return;
     const { selectionStart, selectionEnd } = el;
-    const selected = value.slice(selectionStart, selectionEnd) || 'texto';
+    const selected = value.slice(selectionStart, selectionEnd) || t('admin.formattedTextarea.defaultBoldText');
     const next = value.slice(0, selectionStart) + `**${selected}**` + value.slice(selectionEnd);
     onChange(next);
     requestAnimationFrame(() => {
@@ -34,7 +36,7 @@ export function FormattedTextarea({
         <button
           type="button"
           onClick={insertBold}
-          title="Negrita (**texto**)"
+          title={t('admin.formattedTextarea.boldTitle')}
           style={{
             width: 26,
             height: 26,
@@ -59,7 +61,7 @@ export function FormattedTextarea({
         placeholder={placeholder}
       />
       <div style={{ fontSize: 10, color: 'var(--ink-40)', marginTop: 4, fontFamily: '"Geist", sans-serif' }}>
-        Selecciona texto y usa <strong>B</strong> para negrita, o empieza una línea con "- " para una lista.
+        {t('admin.formattedTextarea.helpPrefix')} <strong>B</strong> {t('admin.formattedTextarea.helpSuffix')}
       </div>
     </div>
   );

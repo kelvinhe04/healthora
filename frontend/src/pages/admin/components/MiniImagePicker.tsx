@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Icon } from '../../../components/shared/Icon';
 import { useAdminToken } from '../hooks/useAdminToken';
 import { uploadImage } from '../../../lib/uploadImage';
@@ -14,6 +15,7 @@ export function MiniImagePicker({
   folder: string;
   max?: number;
 }) {
+  const { t } = useTranslation();
   const getToken = useAdminToken();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -27,7 +29,7 @@ export function MiniImagePicker({
       const url = await uploadImage(file, folder, token);
       onChange([...images, url].slice(0, max));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al subir imagen');
+      setError(e instanceof Error ? e.message : t('admin.imageUpload.uploadError'));
     } finally {
       setUploading(false);
     }
@@ -72,7 +74,7 @@ export function MiniImagePicker({
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            title="Subir imagen"
+            title={t('admin.imageUpload.uploadTitle')}
             style={{
               width: 36,
               height: 36,

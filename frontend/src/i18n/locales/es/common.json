@@ -894,6 +894,35 @@
     },
     "productSuccessModal": {
       "understood": "Entendido"
+    },
+    "pagination": {
+      "previousAria": "Página anterior",
+      "nextAria": "Página siguiente"
+    },
+    "formattedTextarea": {
+      "defaultBoldText": "texto",
+      "boldTitle": "Negrita (**texto**)",
+      "helpPrefix": "Selecciona texto y usa",
+      "helpSuffix": "para negrita, o empieza una línea con \"- \" para una lista."
+    },
+    "imageUpload": {
+      "uploadTitle": "Subir imagen",
+      "uploadError": "Error al subir imagen",
+      "uploading": "SUBIENDO…",
+      "change": "cambiar",
+      "dragOrClick": "ARRASTRA O HAZ CLIC"
+    },
+    "accessGate": {
+      "kicker": "Acceso interno",
+      "titlePrefix": "Panel de",
+      "titleEmphasis": "administración",
+      "signedOutBody": "Debes iniciar sesión con una cuenta autorizada como admin para continuar.",
+      "signInButton": "Iniciar sesión como admin",
+      "backToStore": "Volver a la tienda",
+      "validating": "Validando acceso admin…",
+      "deniedTitlePrefix": "Acceso",
+      "deniedTitleEmphasis": "denegado",
+      "deniedBody": "Tu cuenta no tiene permisos de administrador."
     }
   }
 }

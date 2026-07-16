@@ -894,6 +894,35 @@
     },
     "productSuccessModal": {
       "understood": "Got it"
+    },
+    "pagination": {
+      "previousAria": "Previous page",
+      "nextAria": "Next page"
+    },
+    "formattedTextarea": {
+      "defaultBoldText": "text",
+      "boldTitle": "Bold (**text**)",
+      "helpPrefix": "Select text and use",
+      "helpSuffix": "for bold, or start a line with \"- \" for a list."
+    },
+    "imageUpload": {
+      "uploadTitle": "Upload image",
+      "uploadError": "Couldn't upload the image",
+      "uploading": "UPLOADING…",
+      "change": "change",
+      "dragOrClick": "DRAG OR CLICK"
+    },
+    "accessGate": {
+      "kicker": "Internal access",
+      "titlePrefix": "Admin",
+      "titleEmphasis": "panel",
+      "signedOutBody": "You need to sign in with an authorized admin account to continue.",
+      "signInButton": "Sign in as admin",
+      "backToStore": "Back to the store",
+      "validating": "Validating admin access…",
+      "deniedTitlePrefix": "Access",
+      "deniedTitleEmphasis": "denied",
+      "deniedBody": "Your account doesn't have admin permissions."
     }
   }
 }
