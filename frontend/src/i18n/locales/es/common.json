@@ -1648,6 +1648,55 @@
       "removeAdmin": "Quitar admin",
       "makeAdmin": "Hacer admin",
       "roleChangeError": "No se pudo cambiar el rol."
+    },
+    "sales": {
+      "titlePrefix": "Análisis de",
+      "titleEmphasis": "ventas",
+      "sub": "Tendencia diaria, productos y categorías más vendidas.",
+      "kpi": {
+        "totalOrders": "Total órdenes",
+        "totalOrdersSub": "pagadas en total",
+        "totalRevenue": "Ingresos totales",
+        "totalRevenueSub": "todos los pedidos",
+        "avgOrderValue": "Promedio por pedido",
+        "avgOrderValueSub": "por orden",
+        "totalUnits": "Unidades vendidas",
+        "totalUnitsSub": "total de productos"
+      },
+      "dailyOrders": {
+        "title": "Órdenes por día",
+        "sub": "Pedidos diarios · últimos 30 días"
+      },
+      "revenueByCategory": {
+        "title": "Ingresos por categoría",
+        "sub": "Ingresos por categoría"
+      },
+      "topProducts": {
+        "title": "Productos con más ingresos",
+        "sub": "Basado en órdenes pagadas",
+        "columns": {
+          "product": "Producto",
+          "brand": "Marca",
+          "category": "Categoría",
+          "units": "Unidades",
+          "revenue": "Ingresos"
+        }
+      },
+      "topCategories": {
+        "title": "Mejores categorías",
+        "sub": "Por unidades vendidas"
+      },
+      "topBrands": {
+        "title": "Mejores marcas",
+        "sub": "Por unidades vendidas"
+      },
+      "topVariants": {
+        "title": "Top variantes vendidas",
+        "sub": "Combos sabor/color x tamaño con más unidades vendidas",
+        "empty": "No hay datos de variantes vendidas."
+      },
+      "noData": "No hay datos.",
+      "unitsAbbrev": "{{count}} uds"
     }
   }
 }

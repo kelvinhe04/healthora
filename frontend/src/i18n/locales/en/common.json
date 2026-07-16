@@ -1648,6 +1648,55 @@
       "removeAdmin": "Remove admin",
       "makeAdmin": "Make admin",
       "roleChangeError": "Couldn't change the role."
+    },
+    "sales": {
+      "titlePrefix": "Sales",
+      "titleEmphasis": "analysis",
+      "sub": "Daily trend, best-selling products and categories.",
+      "kpi": {
+        "totalOrders": "Total orders",
+        "totalOrdersSub": "paid in total",
+        "totalRevenue": "Total revenue",
+        "totalRevenueSub": "all orders",
+        "avgOrderValue": "Average per order",
+        "avgOrderValueSub": "per order",
+        "totalUnits": "Units sold",
+        "totalUnitsSub": "total products"
+      },
+      "dailyOrders": {
+        "title": "Orders per day",
+        "sub": "Daily orders · last 30 days"
+      },
+      "revenueByCategory": {
+        "title": "Revenue by category",
+        "sub": "Revenue by category"
+      },
+      "topProducts": {
+        "title": "Top revenue products",
+        "sub": "Based on paid orders",
+        "columns": {
+          "product": "Product",
+          "brand": "Brand",
+          "category": "Category",
+          "units": "Units",
+          "revenue": "Revenue"
+        }
+      },
+      "topCategories": {
+        "title": "Best categories",
+        "sub": "By units sold"
+      },
+      "topBrands": {
+        "title": "Best brands",
+        "sub": "By units sold"
+      },
+      "topVariants": {
+        "title": "Top selling variants",
+        "sub": "Flavor/color x size combos with the most units sold",
+        "empty": "No data on sold variants."
+      },
+      "noData": "No data.",
+      "unitsAbbrev": "{{count}} units"
     }
   }
 }

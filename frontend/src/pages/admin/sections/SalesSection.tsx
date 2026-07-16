@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   BarChart,
   Card,
@@ -11,8 +12,10 @@ import {
   trStyle,
 } from '../../../components/admin';
 import { useAdminPanelContext } from '../AdminPanelContext';
+import { formatCurrency, formatNumber } from '../../../lib/currency';
 
 export function SalesSection() {
+  const { t } = useTranslation();
   const {
   showSalesSkeleton,
   sales,
@@ -24,13 +27,13 @@ export function SalesSection() {
           <>
             <PageHeader
               loading={showSalesSkeleton}
-              kicker="Ventas"
+              kicker={t('admin.sidebar.nav.sales')}
               title={
                 <>
-                  Análisis de <em style={{ color: "var(--green)" }}>ventas</em>
+                  {t('admin.sales.titlePrefix')} <em style={{ color: "var(--green)" }}>{t('admin.sales.titleEmphasis')}</em>
                 </>
               }
-              sub="Tendencia diaria, productos y categorías más vendidas."
+              sub={t('admin.sales.sub')}
             />
             <div
               style={{
@@ -41,39 +44,39 @@ export function SalesSection() {
               }}
             >
               <KpiCard
-                label="Total órdenes"
-                value={sales?.summary?.totalOrders?.toLocaleString() ?? "—"}
-                sub="pagadas en total"
+                label={t('admin.sales.kpi.totalOrders')}
+                value={sales?.summary?.totalOrders != null ? formatNumber(sales.summary.totalOrders) : "—"}
+                sub={t('admin.sales.kpi.totalOrdersSub')}
                 loading={showSalesSkeleton}
                 animKey="sales_orders"
               />
               <KpiCard
-                label="Ingresos totales"
+                label={t('admin.sales.kpi.totalRevenue')}
                 value={
                   sales?.summary
-                    ? `$${sales.summary.totalRevenue.toLocaleString()}`
+                    ? formatCurrency(sales.summary.totalRevenue)
                     : "—"
                 }
-                sub="todos los pedidos"
+                sub={t('admin.sales.kpi.totalRevenueSub')}
                 loading={showSalesSkeleton}
                 animKey="sales_revenue"
               />
               <KpiCard
                 mode="dark"
-                label="Promedio por pedido"
+                label={t('admin.sales.kpi.avgOrderValue')}
                 value={
                   sales?.summary
-                    ? `$${sales.summary.avgOrderValue.toFixed(2)}`
+                    ? formatCurrency(sales.summary.avgOrderValue)
                     : "—"
                 }
-                sub="por orden"
+                sub={t('admin.sales.kpi.avgOrderValueSub')}
                 loading={showSalesSkeleton}
                 animKey="sales_avg"
               />
               <KpiCard
-                label="Unidades vendidas"
-                value={sales?.summary?.totalUnits?.toLocaleString() ?? "—"}
-                sub="total de productos"
+                label={t('admin.sales.kpi.totalUnits')}
+                value={sales?.summary?.totalUnits != null ? formatNumber(sales.summary.totalUnits) : "—"}
+                sub={t('admin.sales.kpi.totalUnitsSub')}
                 loading={showSalesSkeleton}
                 animKey="sales_units"
               />
@@ -87,8 +90,8 @@ export function SalesSection() {
               }}
             >
               <Card
-                title="Órdenes por día"
-                sub="Pedidos diarios · últimos 30 días"
+                title={t('admin.sales.dailyOrders.title')}
+                sub={t('admin.sales.dailyOrders.sub')}
                 loading={showSalesSkeleton}
                 skeletonContent={<Skeleton height={240} borderRadius={8} />}
               >
@@ -99,8 +102,8 @@ export function SalesSection() {
                 )}
               </Card>
               <Card
-                title="Ingresos por categoría"
-                sub="Ingresos por categoría"
+                title={t('admin.sales.revenueByCategory.title')}
+                sub={t('admin.sales.revenueByCategory.sub')}
                 loading={showSalesSkeleton}
                 skeletonContent={<Skeleton height={240} borderRadius={8} />}
               >
@@ -119,8 +122,8 @@ export function SalesSection() {
               }}
             >
               <Card
-                title="Productos con más ingresos"
-                sub="Basado en órdenes pagadas"
+                title={t('admin.sales.topProducts.title')}
+                sub={t('admin.sales.topProducts.sub')}
                 loading={showSalesSkeleton}
                 skeletonContent={
                   <div
@@ -153,11 +156,11 @@ export function SalesSection() {
                 <table style={{ ...tableStyle, minWidth: 420 }}>
                   <thead>
                     <tr>
-                      <th style={th}>Producto</th>
-                      <th style={th}>Marca</th>
-                      <th style={th}>Categoría</th>
-                      <th style={th}>Unidades</th>
-                      <th style={th}>Ingresos</th>
+                      <th style={th}>{t('admin.sales.topProducts.columns.product')}</th>
+                      <th style={th}>{t('admin.sales.topProducts.columns.brand')}</th>
+                      <th style={th}>{t('admin.sales.topProducts.columns.category')}</th>
+                      <th style={th}>{t('admin.sales.topProducts.columns.units')}</th>
+                      <th style={th}>{t('admin.sales.topProducts.columns.revenue')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -185,7 +188,7 @@ export function SalesSection() {
                             fontSize: 18,
                           }}
                         >
-                          ${row.revenue.toFixed(2)}
+                          {formatCurrency(row.revenue)}
                         </td>
                       </tr>
                     ))}
@@ -201,8 +204,8 @@ export function SalesSection() {
                 }}
               >
                 <Card
-                  title="Mejores categorías"
-                  sub="Por unidades vendidas"
+                  title={t('admin.sales.topCategories.title')}
+                  sub={t('admin.sales.topCategories.sub')}
                   loading={showSalesSkeleton}
                   skeletonContent={
                     <div
@@ -254,7 +257,7 @@ export function SalesSection() {
                           color: "var(--ink-60)",
                         }}
                       >
-                        No hay datos.
+                        {t('admin.sales.noData')}
                       </div>
                     ) : (
                       (sales?.topCategories || []).map((row, i) => (
@@ -292,7 +295,7 @@ export function SalesSection() {
                                 fontFamily: '"JetBrains Mono", monospace',
                               }}
                             >
-                              {row.units} uds
+                              {t('admin.sales.unitsAbbrev', { count: row.units })}
                             </span>
                           </div>
                           <div
@@ -318,8 +321,8 @@ export function SalesSection() {
                   </div>
                 </Card>
                 <Card
-                  title="Mejores marcas"
-                  sub="Por unidades vendidas"
+                  title={t('admin.sales.topBrands.title')}
+                  sub={t('admin.sales.topBrands.sub')}
                   loading={showSalesSkeleton}
                   skeletonContent={
                     <div
@@ -371,7 +374,7 @@ export function SalesSection() {
                           color: "var(--ink-60)",
                         }}
                       >
-                        No hay datos.
+                        {t('admin.sales.noData')}
                       </div>
                     ) : (
                       (sales?.topBrands || []).map((row, i) => (
@@ -409,7 +412,7 @@ export function SalesSection() {
                                 fontFamily: '"JetBrains Mono", monospace',
                               }}
                             >
-                              {row.units} uds
+                              {t('admin.sales.unitsAbbrev', { count: row.units })}
                             </span>
                           </div>
                           <div
@@ -438,8 +441,8 @@ export function SalesSection() {
             </div>
             <div style={{ marginTop: 24 }}>
               <Card
-                title="Top variantes vendidas"
-                sub="Combos sabor/color x tamaño con más unidades vendidas"
+                title={t('admin.sales.topVariants.title')}
+                sub={t('admin.sales.topVariants.sub')}
                 loading={showSalesSkeleton}
                 skeletonContent={
                   <div
@@ -483,7 +486,7 @@ export function SalesSection() {
                         color: "var(--ink-60)",
                       }}
                     >
-                      No hay datos de variantes vendidas.
+                      {t('admin.sales.topVariants.empty')}
                     </div>
                   ) : (
                     (sales?.topVariants || []).map((row, i) => (
@@ -524,7 +527,7 @@ export function SalesSection() {
                               fontFamily: '"JetBrains Mono", monospace',
                             }}
                           >
-                            {row.units} uds
+                            {t('admin.sales.unitsAbbrev', { count: row.units })}
                           </span>
                         </div>
                         <div
