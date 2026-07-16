@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   PageHeader,
@@ -16,27 +17,29 @@ import { PaginationControls } from '../components/PaginationControls';
 import { useAdminPanelContext } from '../AdminPanelContext';
 import type { UserSortKey } from '../hooks/useAdminPanel';
 import { formatPanamaShortDate } from '../../../lib/dates';
+import { formatCurrency } from '../../../lib/currency';
 
-const ROLE_LABELS: Record<string, string> = {
-  owner: 'Owner',
-  admin: 'Admin',
-  customer: 'Cliente',
+// Key suffixes under `admin.users.role.*` (HU-084) - module-level consts can't call t().
+const ROLE_LABEL_KEYS: Record<string, string> = {
+  owner: 'owner',
+  admin: 'admin',
+  customer: 'customer',
 };
 
-const ROLE_FILTER_OPTIONS: { value: '' | 'customer' | 'admin' | 'owner'; label: string }[] = [
-  { value: '', label: 'Todos' },
-  { value: 'customer', label: 'Cliente' },
-  { value: 'admin', label: 'Admin' },
-  { value: 'owner', label: 'Owner' },
+const ROLE_FILTER_OPTIONS: { value: '' | 'customer' | 'admin' | 'owner'; labelKey: string }[] = [
+  { value: '', labelKey: 'all' },
+  { value: 'customer', labelKey: 'customer' },
+  { value: 'admin', labelKey: 'admin' },
+  { value: 'owner', labelKey: 'owner' },
 ];
 
-const USER_SORT_LABEL: Record<UserSortKey, string> = {
-  orders: 'Órdenes',
-  spend: 'Gasto total',
-  registered: 'Registro',
-};
-
 export function UsersSection() {
+  const { t } = useTranslation();
+  const USER_SORT_LABEL: Record<UserSortKey, string> = {
+    orders: t('admin.users.table.columns.orders'),
+    spend: t('admin.users.table.columns.spend'),
+    registered: t('admin.users.table.columns.registered'),
+  };
   const {
   access,
   showUsersSkeleton,
@@ -67,14 +70,14 @@ export function UsersSection() {
               kicker={
                 showUsersSkeleton
                   ? undefined
-                  : `Clientes · ${customers.length} cuentas`
+                  : t('admin.users.kicker', { count: customers.length })
               }
               title={
                 <>
-                  Gestión de <em style={{ color: "var(--green)" }}>clientes</em>
+                  {t('admin.users.titlePrefix')} <em style={{ color: "var(--green)" }}>{t('admin.users.titleEmphasis')}</em>
                 </>
               }
-              sub="Listado de clientes finales del e-commerce."
+              sub={t('admin.users.sub')}
             />
             {!showUsersSkeleton && (
               <div
@@ -104,7 +107,7 @@ export function UsersSection() {
                   <input
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
-                    placeholder="Buscar por nombre o email…"
+                    placeholder={t('admin.users.searchPlaceholder')}
                     style={{
                       border: "none",
                       outline: "none",
@@ -142,8 +145,8 @@ export function UsersSection() {
                   }}
                 >
                   {userSearch
-                    ? `${displayedUsers.length} resultado${displayedUsers.length !== 1 ? "s" : ""} de ${customers.length}`
-                    : `${displayedUsers.length} cliente${displayedUsers.length !== 1 ? "s" : ""}`}
+                    ? t('admin.users.resultsCount', { count: displayedUsers.length, total: customers.length })
+                    : t('admin.users.customersCount', { count: displayedUsers.length })}
                 </div>
                 <SortClearChip sort={userSort} labels={USER_SORT_LABEL} onClear={clearUserSort} />
               </div>
@@ -169,7 +172,7 @@ export function UsersSection() {
                     width: 48,
                   }}
                 >
-                  Rol
+                  {t('admin.users.roleFilterLabel')}
                 </span>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {ROLE_FILTER_OPTIONS.map((option) => (
@@ -190,7 +193,7 @@ export function UsersSection() {
                         fontFamily: '"Geist", sans-serif',
                       }}
                     >
-                      <span>{option.label}</span>
+                      <span>{t(`admin.users.role.${option.labelKey}`)}</span>
                       <span
                         style={{
                           fontSize: 10,
@@ -298,11 +301,11 @@ export function UsersSection() {
               <table style={{ ...tableStyle, minWidth: 520 }}>
                 <thead>
                   <tr>
-                    <th style={th}>Usuario</th>
-                    <th style={th}>Rol</th>
-                    <SortableTh label="Órdenes" sortKey="orders" activeSort={userSort} onSort={toggleUserSort} />
-                    <SortableTh label="Gasto total" sortKey="spend" activeSort={userSort} onSort={toggleUserSort} />
-                    <SortableTh label="Registro" sortKey="registered" activeSort={userSort} onSort={toggleUserSort} />
+                    <th style={th}>{t('admin.users.table.columns.user')}</th>
+                    <th style={th}>{t('admin.users.table.columns.role')}</th>
+                    <SortableTh label={t('admin.users.table.columns.orders')} sortKey="orders" activeSort={userSort} onSort={toggleUserSort} />
+                    <SortableTh label={t('admin.users.table.columns.spend')} sortKey="spend" activeSort={userSort} onSort={toggleUserSort} />
+                    <SortableTh label={t('admin.users.table.columns.registered')} sortKey="registered" activeSort={userSort} onSort={toggleUserSort} />
                   </tr>
                 </thead>
                 <tbody>
@@ -319,7 +322,7 @@ export function UsersSection() {
                           {user.imageUrl ? (
                             <img
                               src={user.imageUrl}
-                              alt={user.name || "Avatar"}
+                              alt={user.name || t('admin.users.table.defaultAvatarAlt')}
                               style={{
                                 width: 36,
                                 height: 36,
@@ -354,7 +357,7 @@ export function UsersSection() {
                                 fontWeight: 500,
                               }}
                             >
-                              {user.name || "Sin nombre"}
+                              {user.name || t('admin.users.table.noName')}
                             </div>
                             <div
                               style={{
@@ -379,7 +382,10 @@ export function UsersSection() {
                               backgroundColor: justUpdatedId === user._id ? "color-mix(in oklch, var(--green) 25%, transparent)" : "transparent",
                             }}
                           >
-                            <StatusPill status={ROLE_LABELS[user.role || "customer"] || user.role || "Cliente"} />
+                            <StatusPill
+                              status={user.role || "customer"}
+                              label={t(`admin.users.role.${ROLE_LABEL_KEYS[user.role || "customer"] ?? "customer"}`)}
+                            />
                           </span>
                           {isOwnerViewer && user.role !== "owner" && (
                             confirmRoleChange?.id === user._id ? (
@@ -395,7 +401,7 @@ export function UsersSection() {
                                       animation: "usersRoleSpin 0.7s linear infinite",
                                     }}
                                   />
-                                  Guardando…
+                                  {t('admin.users.saving')}
                                 </span>
                               ) : (
                                 <>
@@ -420,14 +426,14 @@ export function UsersSection() {
                                     }}
                                     style={{ background: "var(--green)", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", color: "var(--lime)", fontSize: 12 }}
                                   >
-                                    Confirmar
+                                    {t('admin.users.confirm')}
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setConfirmRoleChange(null)}
                                     style={{ background: "transparent", border: "1px solid var(--ink-12)", borderRadius: 8, padding: "6px 10px", cursor: "pointer", color: "var(--ink-60)", fontSize: 12 }}
                                   >
-                                    Cancelar
+                                    {t('admin.users.cancel')}
                                   </button>
                                 </>
                               )
@@ -442,14 +448,14 @@ export function UsersSection() {
                                 }
                                 style={{ background: "transparent", border: "1px solid var(--ink-12)", borderRadius: 8, padding: "6px 10px", cursor: "pointer", color: "var(--ink-60)", fontSize: 12 }}
                               >
-                                {user.role === "admin" ? "Quitar admin" : "Hacer admin"}
+                                {user.role === "admin" ? t('admin.users.removeAdmin') : t('admin.users.makeAdmin')}
                               </button>
                             )
                           )}
                         </div>
                         {roleMutation.isError && confirmRoleChange === null && roleMutation.variables?.id === user._id && (
                           <div style={{ fontSize: 11, color: "var(--coral)", marginTop: 4 }}>
-                            {roleMutation.error?.message || "No se pudo cambiar el rol."}
+                            {roleMutation.error?.message || t('admin.users.roleChangeError')}
                           </div>
                         )}
                       </td>
@@ -468,7 +474,7 @@ export function UsersSection() {
                           fontSize: 18,
                         }}
                       >
-                        ${(user.ltv ?? 0).toFixed(2)}
+                        {formatCurrency(user.ltv ?? 0)}
                       </td>
                       <td
                         style={{

@@ -1612,6 +1612,42 @@
         "deleteTitle": "Delete",
         "banTitle": "Ban this product's author (deletes the review and prevents them from commenting here again)"
       }
+    },
+    "users": {
+      "kicker_one": "Customers · {{count}} account",
+      "kicker_other": "Customers · {{count}} accounts",
+      "titlePrefix": "Customer",
+      "titleEmphasis": "management",
+      "sub": "List of the e-commerce's end customers.",
+      "searchPlaceholder": "Search by name or email…",
+      "resultsCount_one": "{{count}} result of {{total}}",
+      "resultsCount_other": "{{count}} results of {{total}}",
+      "customersCount_one": "{{count}} customer",
+      "customersCount_other": "{{count}} customers",
+      "roleFilterLabel": "Role",
+      "role": {
+        "all": "All",
+        "customer": "Customer",
+        "admin": "Admin",
+        "owner": "Owner"
+      },
+      "table": {
+        "columns": {
+          "user": "User",
+          "role": "Role",
+          "orders": "Orders",
+          "spend": "Total spend",
+          "registered": "Registered"
+        },
+        "defaultAvatarAlt": "Avatar",
+        "noName": "No name"
+      },
+      "saving": "Saving…",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "removeAdmin": "Remove admin",
+      "makeAdmin": "Make admin",
+      "roleChangeError": "Couldn't change the role."
     }
   }
 }

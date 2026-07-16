@@ -1612,6 +1612,42 @@
         "deleteTitle": "Eliminar",
         "banTitle": "Banear autor de este producto (elimina la reseña y evita que vuelva a comentar aquí)"
       }
+    },
+    "users": {
+      "kicker_one": "Clientes · {{count}} cuenta",
+      "kicker_other": "Clientes · {{count}} cuentas",
+      "titlePrefix": "Gestión de",
+      "titleEmphasis": "clientes",
+      "sub": "Listado de clientes finales del e-commerce.",
+      "searchPlaceholder": "Buscar por nombre o email…",
+      "resultsCount_one": "{{count}} resultado de {{total}}",
+      "resultsCount_other": "{{count}} resultados de {{total}}",
+      "customersCount_one": "{{count}} cliente",
+      "customersCount_other": "{{count}} clientes",
+      "roleFilterLabel": "Rol",
+      "role": {
+        "all": "Todos",
+        "customer": "Cliente",
+        "admin": "Admin",
+        "owner": "Owner"
+      },
+      "table": {
+        "columns": {
+          "user": "Usuario",
+          "role": "Rol",
+          "orders": "Órdenes",
+          "spend": "Gasto total",
+          "registered": "Registro"
+        },
+        "defaultAvatarAlt": "Avatar",
+        "noName": "Sin nombre"
+      },
+      "saving": "Guardando…",
+      "confirm": "Confirmar",
+      "cancel": "Cancelar",
+      "removeAdmin": "Quitar admin",
+      "makeAdmin": "Hacer admin",
+      "roleChangeError": "No se pudo cambiar el rol."
     }
   }
 }
