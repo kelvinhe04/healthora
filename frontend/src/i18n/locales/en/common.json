@@ -1697,6 +1697,79 @@
       },
       "noData": "No data.",
       "unitsAbbrev": "{{count}} units"
+    },
+    "returns": {
+      "kicker": "Returns and refunds",
+      "titlePrefix": "Customer",
+      "titleEmphasis": "returns",
+      "sub": "Approve, mark in transit, confirm the review, and process what the customer requested (refund via Stripe or reshipping the correct product).",
+      "searchPlaceholder": "Search by customer, email, or order…",
+      "filters": {
+        "allStatus": "All",
+        "methodLabel": "Method",
+        "allMethods": "All"
+      },
+      "method": {
+        "courierPickup": "Courier picks up",
+        "storeDropoff": "Customer brings to store"
+      },
+      "resolution": {
+        "refund": "Prefers: refund",
+        "replacement": "Prefers: resend of the correct product"
+      },
+      "reasonCategory": {
+        "wrongItem": "Different product than ordered"
+      },
+      "table": {
+        "title": "Return requests",
+        "requestsCount_one": "{{count}} request",
+        "requestsCount_other": "{{count}} requests",
+        "columns": {
+          "customer": "Customer",
+          "reasonItems": "Reason / items",
+          "amount": "Amount",
+          "method": "Method",
+          "location": "Location",
+          "status": "Status",
+          "action": "Action"
+        },
+        "photoTitle": "View evidence photo {{n}}",
+        "photoAlt": "Evidence {{n}} from {{name}}",
+        "defaultCustomerNameLower": "customer",
+        "replacementOrderBadge": "REPLACEMENT ORDER #{{id}}",
+        "replacementOrderTitle": "View that order in Orders - it still needs to be prepared and shipped.",
+        "notMatchingBadge": "Doesn't match what was reported",
+        "notMatchingTitle": "The product had already physically come back and didn't match what was reported in the request.",
+        "readyForPickup": "Ready for pickup",
+        "returnedToCustomer": "Returned",
+        "returnedOn": "on {{date}}",
+        "empty": "No requests for this filter."
+      },
+      "nextAction": {
+        "approve": "Approve",
+        "markInTransit": "Mark in transit",
+        "markInReview": "In review"
+      },
+      "resolve": {
+        "prepareCorrectProduct": "Prepare correct product",
+        "resendCorrectProduct": "Resend correct product",
+        "refund": "Refund"
+      },
+      "reject": "Reject",
+      "markReadyForPickup": "Mark ready for pickup",
+      "markSentBack": "Mark sent back",
+      "rejectModal": {
+        "kicker": "Confirm rejection",
+        "titlePrefix": "Reject",
+        "titleEmphasis": "return",
+        "fromReviewBodyPrefix": "You're about to reject the return from",
+        "fromReviewBodySuffix": "for order #{{orderId}} because the received product doesn't match what was reported. The customer will get an email and a notification - this action can't be undone. Remember to separately coordinate returning the physical product to the customer.",
+        "defaultBodyPrefix": "You're about to reject the return request from",
+        "defaultBodySuffix": "for order #{{orderId}}. The customer will get an email and a notification - this action can't be undone.",
+        "cancel": "Cancel",
+        "rejecting": "Rejecting...",
+        "confirmReject": "Yes, reject"
+      }
     }
   }
 }

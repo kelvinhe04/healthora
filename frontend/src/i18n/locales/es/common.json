@@ -1697,6 +1697,79 @@
       },
       "noData": "No hay datos.",
       "unitsAbbrev": "{{count}} uds"
+    },
+    "returns": {
+      "kicker": "Devoluciones y reembolsos",
+      "titlePrefix": "Devoluciones de",
+      "titleEmphasis": "clientes",
+      "sub": "Aprueba, marca en tránsito, confirma la revisión y procesa lo que el cliente pidió (reembolso vía Stripe o reenvío del producto correcto).",
+      "searchPlaceholder": "Buscar por cliente, email o pedido…",
+      "filters": {
+        "allStatus": "Todas",
+        "methodLabel": "Método",
+        "allMethods": "Todos"
+      },
+      "method": {
+        "courierPickup": "Mensajería recoge",
+        "storeDropoff": "Cliente trae a tienda"
+      },
+      "resolution": {
+        "refund": "Prefiere: reembolso",
+        "replacement": "Prefiere: reenvío del producto correcto"
+      },
+      "reasonCategory": {
+        "wrongItem": "Producto diferente al pedido"
+      },
+      "table": {
+        "title": "Solicitudes de devolución",
+        "requestsCount_one": "{{count}} solicitud",
+        "requestsCount_other": "{{count}} solicitudes",
+        "columns": {
+          "customer": "Cliente",
+          "reasonItems": "Motivo / ítems",
+          "amount": "Monto",
+          "method": "Método",
+          "location": "Ubicación",
+          "status": "Estado",
+          "action": "Acción"
+        },
+        "photoTitle": "Ver foto {{n}} de evidencia",
+        "photoAlt": "Evidencia {{n}} de {{name}}",
+        "defaultCustomerNameLower": "cliente",
+        "replacementOrderBadge": "PEDIDO DE REEMPLAZO #{{id}}",
+        "replacementOrderTitle": "Ver ese pedido en Pedidos - todavía necesita prepararse y enviarse.",
+        "notMatchingBadge": "No coincide con lo reportado",
+        "notMatchingTitle": "El producto ya había vuelto físicamente y no coincidía con lo reportado en la solicitud.",
+        "readyForPickup": "Listo para recoger",
+        "returnedToCustomer": "Devuelto",
+        "returnedOn": "el {{date}}",
+        "empty": "Sin solicitudes para este filtro."
+      },
+      "nextAction": {
+        "approve": "Aprobar",
+        "markInTransit": "Marcar en tránsito",
+        "markInReview": "En revisión"
+      },
+      "resolve": {
+        "prepareCorrectProduct": "Preparar producto correcto",
+        "resendCorrectProduct": "Reenviar producto correcto",
+        "refund": "Reembolsar"
+      },
+      "reject": "Rechazar",
+      "markReadyForPickup": "Marcar listo para recoger",
+      "markSentBack": "Marcar enviado de vuelta",
+      "rejectModal": {
+        "kicker": "Confirmar rechazo",
+        "titlePrefix": "Rechazar",
+        "titleEmphasis": "devolución",
+        "fromReviewBodyPrefix": "Vas a rechazar la devolución de",
+        "fromReviewBodySuffix": "para el pedido #{{orderId}} porque el producto recibido no coincide con lo reportado. El cliente recibirá un email y una notificación - esta acción no se puede deshacer. Recuerda coordinar aparte la devolución del producto físico al cliente.",
+        "defaultBodyPrefix": "Vas a rechazar la solicitud de devolución de",
+        "defaultBodySuffix": "para el pedido #{{orderId}}. El cliente recibirá un email y una notificación - esta acción no se puede deshacer.",
+        "cancel": "Cancelar",
+        "rejecting": "Rechazando...",
+        "confirmReject": "Sí, rechazar"
+      }
     }
   }
 }
