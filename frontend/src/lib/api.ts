@@ -22,6 +22,8 @@ import type {
   NotificationInbox,
   Coupon,
   SampleOption,
+  Banner,
+  BannerSlot,
 } from "../types";
 import type { CartItem } from "../types";
 
@@ -57,6 +59,19 @@ async function request<T>(
   return res.json();
 }
 
+type BannerPayload = {
+  kicker?: string;
+  title: string;
+  highlightWord?: string;
+  description?: string;
+  ctaText: string;
+  backgroundColor?: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  /** Obligatorio al guardar el slot 'promo'; se ignora para 'club'. */
+  categoryId?: string;
+};
+
 function filtersToQuery(f: ProductFilters): string {
   const p = new URLSearchParams();
   if (f.category) p.set("category", f.category);
@@ -80,6 +95,9 @@ export const api = {
   },
   categories: {
     list: () => request<Category[]>("/categories"),
+  },
+  banners: {
+    list: () => request<{ promo: Banner | null; club: Banner | null }>("/banners"),
   },
   orders: {
     list: (token: string) => request<Order[]>("/orders", undefined, token),
@@ -500,6 +518,15 @@ export const api = {
         request<{ sampleMaxPrice: number }>(
           "/admin/settings",
           { method: "PUT", body: JSON.stringify(body) },
+          token,
+        ),
+    },
+    banners: {
+      list: (token: string) => request<Banner[]>("/admin/banners", undefined, token),
+      update: (slot: BannerSlot, data: BannerPayload, token: string) =>
+        request<Banner>(
+          `/admin/banners/${slot}`,
+          { method: "PUT", body: JSON.stringify(data) },
           token,
         ),
     },

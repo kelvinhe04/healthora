@@ -3,6 +3,7 @@ import { Product } from './models/Product';
 import { Category } from './models/Category';
 import { isTaxExemptCategory } from '../lib/tax';
 import { seedCoupons } from './seed-coupons';
+import { seedBanners } from './seed-banners';
 import { getSettings } from './models/Settings';
 
 const CATEGORY_FOLDER_BY_ID: Record<string, string> = {
@@ -11614,6 +11615,7 @@ async function seed() {
   );
   await Category.insertMany(CATEGORIES);
   await seedCoupons();
+  await seedBanners();
   await getSettings(); // crea el singleton de Settings con sus defaults si aun no existe
   console.log(`Seeded ${PRODUCTS.length} products and ${CATEGORIES.length} categories`);
   process.exit(0);

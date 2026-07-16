@@ -61,7 +61,7 @@ function orderMatchesSearch(order: AdminOrder, term: string): boolean {
   );
 }
 
-const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "coupons", "users", "returns", "reviews", "sales", "earnings", "reports", "audit", "repurchase", "analytics"];
+const ADMIN_PAGES: AdminPage[] = ["dashboard", "orders", "products", "categories", "coupons", "banners", "users", "returns", "reviews", "sales", "earnings", "reports", "audit", "repurchase", "analytics"];
 
 export function useAdminPanel({
   access,
