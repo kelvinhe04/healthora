@@ -1770,6 +1770,93 @@
         "rejecting": "Rejecting...",
         "confirmReject": "Yes, reject"
       }
+    },
+    "productModal": {
+      "validation": {
+        "nameRequired": "The name is required.",
+        "brandRequired": "The brand is required.",
+        "categoryRequired": "The category is required.",
+        "shortRequired": "The short description is required.",
+        "priceMustBePositive": "The price must be greater than 0.",
+        "stockMustBePositive": "Stock must be greater than 0.",
+        "variantNeedsLabel": "Every variant needs a label.",
+        "variantNeedsPrice": "\"{{label}}\" needs a price greater than 0.",
+        "variantNeedsStock": "\"{{label}}\" needs stock greater than 0.",
+        "variantNeedsImage": "\"{{label}}\" needs at least 1 image.",
+        "matrixNeedsPrimary": "Add at least one flavor/variant.",
+        "matrixNeedsSize": "Add at least one size.",
+        "primaryNeedsLabel": "Every flavor needs a label.",
+        "sizeNeedsLabel": "Every size needs a label.",
+        "sizeNeedsPrice": "\"{{label}}\" needs a base price greater than 0.",
+        "sizeNeedsStock": "\"{{label}}\" needs a base stock greater than 0.",
+        "comboNeedsImage": "\"{{primary}} × {{size}}\" needs at least 1 image (or add images to \"{{primary}}\" so they apply to all its sizes).",
+        "image1Required": "Image 1 is required.",
+        "variantDateRange": "\"{{label}}\": \"Valid until\" can't be earlier than \"Valid from\".",
+        "extraTabIncomplete": "Every custom tab needs a title and content (or remove it)."
+      },
+      "kickerNew": "New product",
+      "kickerEdit": "Edit product",
+      "addTitlePrefix": "Add",
+      "addTitleEmphasis": "product",
+      "editFallbackTitle": "Edit",
+      "activeToggleAria": "Active product (visible in the store)",
+      "basicInfo": {
+        "sectionTitle": "Basic information",
+        "nameLabel": "Name",
+        "namePlaceholder": "Product name",
+        "brandLabel": "Brand",
+        "brandPlaceholder": "Brand name",
+        "categoryLabel": "Category",
+        "shortLabel": "Short description",
+        "shortPlaceholder": "Brief product description…",
+        "lowStockLabel": "Low stock threshold",
+        "lowStockPlaceholder": "Global ({{count}})",
+        "sampleEligibleLabel": "Free sample (Club Healthora)",
+        "sampleAuto": "Automatic (based on price cap)",
+        "sampleInclude": "Always include",
+        "sampleExclude": "Always exclude"
+      },
+      "productType": {
+        "sectionTitle": "Product type",
+        "hint": "Does the product have a single price/stock, or does it vary by option (e.g. flavor, size, color)? This determines which fields you see below."
+      },
+      "pricingInventory": {
+        "sectionTitle": "Price · Inventory",
+        "priceLabel": "Price ($)",
+        "stockLabel": "Stock"
+      },
+      "images": {
+        "sectionTitle": "Product images",
+        "image1Label": "Image 1 · main",
+        "image2Label": "Image 2 (optional)",
+        "image3Label": "Image 3 (optional)",
+        "image4Label": "Image 4 (optional)"
+      },
+      "details": {
+        "sectionTitle": "Product details (optional)",
+        "benefitsLabel": "Benefits (optional)",
+        "benefitsHint": "(one per line)",
+        "benefitsPlaceholder": "Optional: boosts the immune system\nIncreases energy\nReduces stress",
+        "usageLabel": "How to use (optional)",
+        "usagePlaceholder": "Optional: take 1 capsule daily with water…",
+        "ingredientsLabel": "Ingredients (optional)",
+        "ingredientsPlaceholder": "Optional: vitamin C 500mg, Zinc 10mg…",
+        "warningsLabel": "Warnings (optional)",
+        "warningsPlaceholder": "Optional: keep out of reach of children…"
+      },
+      "extraTabs": {
+        "sectionTitle": "Custom tabs",
+        "titleLabel": "Title",
+        "titlePlaceholder": "e.g. Formula",
+        "contentLabel": "Content",
+        "contentPlaceholder": "Tab content…",
+        "removeTitle": "Remove tab",
+        "addButton": "+ Add tab"
+      },
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "addProduct": "Add product",
+      "saveChanges": "Save changes"
     }
   }
 }

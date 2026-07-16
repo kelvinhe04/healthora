@@ -1770,6 +1770,93 @@
         "rejecting": "Rechazando...",
         "confirmReject": "Sí, rechazar"
       }
+    },
+    "productModal": {
+      "validation": {
+        "nameRequired": "El nombre es obligatorio.",
+        "brandRequired": "La marca es obligatoria.",
+        "categoryRequired": "La categoría es obligatoria.",
+        "shortRequired": "La descripción corta es obligatoria.",
+        "priceMustBePositive": "El precio debe ser mayor a 0.",
+        "stockMustBePositive": "Las existencias tienen que ser mayor a 0.",
+        "variantNeedsLabel": "Cada variante necesita una etiqueta.",
+        "variantNeedsPrice": "\"{{label}}\" necesita un precio mayor a 0.",
+        "variantNeedsStock": "\"{{label}}\" necesita stock mayor a 0.",
+        "variantNeedsImage": "\"{{label}}\" necesita al menos 1 imagen.",
+        "matrixNeedsPrimary": "Agrega al menos un sabor/variante.",
+        "matrixNeedsSize": "Agrega al menos un tamaño.",
+        "primaryNeedsLabel": "Cada sabor necesita una etiqueta.",
+        "sizeNeedsLabel": "Cada tamaño necesita una etiqueta.",
+        "sizeNeedsPrice": "\"{{label}}\" necesita un precio base mayor a 0.",
+        "sizeNeedsStock": "\"{{label}}\" necesita un stock base mayor a 0.",
+        "comboNeedsImage": "\"{{primary}} × {{size}}\" necesita al menos 1 imagen (o agrega imágenes a \"{{primary}}\" para que apliquen a todos sus tamaños).",
+        "image1Required": "La imagen 1 es obligatoria.",
+        "variantDateRange": "\"{{label}}\": \"Vigente hasta\" no puede ser anterior a \"Vigente desde\".",
+        "extraTabIncomplete": "Cada pestaña personalizada necesita título y contenido (o elimínala)."
+      },
+      "kickerNew": "Nuevo producto",
+      "kickerEdit": "Editar producto",
+      "addTitlePrefix": "Agregar",
+      "addTitleEmphasis": "producto",
+      "editFallbackTitle": "Editar",
+      "activeToggleAria": "Producto activo (visible en la tienda)",
+      "basicInfo": {
+        "sectionTitle": "Información básica",
+        "nameLabel": "Nombre",
+        "namePlaceholder": "Nombre del producto",
+        "brandLabel": "Marca",
+        "brandPlaceholder": "Nombre de la marca",
+        "categoryLabel": "Categoría",
+        "shortLabel": "Descripción corta",
+        "shortPlaceholder": "Breve descripción del producto…",
+        "lowStockLabel": "Umbral de stock bajo",
+        "lowStockPlaceholder": "Global ({{count}})",
+        "sampleEligibleLabel": "Muestra gratis (Club Healthora)",
+        "sampleAuto": "Automático (según tope de precio)",
+        "sampleInclude": "Incluir siempre",
+        "sampleExclude": "Excluir siempre"
+      },
+      "productType": {
+        "sectionTitle": "Tipo de producto",
+        "hint": "¿El producto tiene un solo precio/stock, o varía por opción (ej. sabor, tamaño, color)? Esto define qué campos ves más abajo."
+      },
+      "pricingInventory": {
+        "sectionTitle": "Precio · Inventario",
+        "priceLabel": "Precio ($)",
+        "stockLabel": "Existencias"
+      },
+      "images": {
+        "sectionTitle": "Imágenes del producto",
+        "image1Label": "Imagen 1 · principal",
+        "image2Label": "Imagen 2 (opcional)",
+        "image3Label": "Imagen 3 (opcional)",
+        "image4Label": "Imagen 4 (opcional)"
+      },
+      "details": {
+        "sectionTitle": "Detalles del producto (opcional)",
+        "benefitsLabel": "Beneficios (opcional)",
+        "benefitsHint": "(uno por línea)",
+        "benefitsPlaceholder": "Opcional: mejora el sistema inmune\nAumenta la energía\nReduce el estrés",
+        "usageLabel": "Modo de uso (opcional)",
+        "usagePlaceholder": "Opcional: tomar 1 cápsula al día con agua…",
+        "ingredientsLabel": "Ingredientes (opcional)",
+        "ingredientsPlaceholder": "Opcional: vitamina C 500mg, Zinc 10mg…",
+        "warningsLabel": "Advertencias (opcional)",
+        "warningsPlaceholder": "Opcional: mantener fuera del alcance de los niños…"
+      },
+      "extraTabs": {
+        "sectionTitle": "Pestañas personalizadas",
+        "titleLabel": "Título",
+        "titlePlaceholder": "ej: Fórmula",
+        "contentLabel": "Contenido",
+        "contentPlaceholder": "Contenido de la pestaña…",
+        "removeTitle": "Eliminar pestaña",
+        "addButton": "+ Agregar pestaña"
+      },
+      "cancel": "Cancelar",
+      "saving": "Guardando…",
+      "addProduct": "Agregar producto",
+      "saveChanges": "Guardar cambios"
     }
   }
 }

@@ -1,4 +1,5 @@
 import { type ChangeEvent, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Product } from '../../../types';
 import { DateInputDDMMYYYY, iconBtnAd } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
@@ -37,6 +38,7 @@ export function ProductModal({
   saving: boolean;
   error?: string | null;
 }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState<ProductForm>(() =>
     product ? productToForm(product) : { ...emptyForm },
   );
@@ -82,74 +84,74 @@ export function ProductModal({
 
   const handleSave = () => {
     if (!form.name.trim()) {
-      setValidationError("El nombre es obligatorio.");
+      setValidationError(t('admin.productModal.validation.nameRequired'));
       return;
     }
     if (!form.brand.trim()) {
-      setValidationError("La marca es obligatoria.");
+      setValidationError(t('admin.productModal.validation.brandRequired'));
       return;
     }
     if (!form.category.trim()) {
-      setValidationError("La categoría es obligatoria.");
+      setValidationError(t('admin.productModal.validation.categoryRequired'));
       return;
     }
     if (!form.short.trim()) {
-      setValidationError("La descripción corta es obligatoria.");
+      setValidationError(t('admin.productModal.validation.shortRequired'));
       return;
     }
     if (usesGenericFields && (parseFloat(form.price) || 0) <= 0) {
-      setValidationError("El precio debe ser mayor a 0.");
+      setValidationError(t('admin.productModal.validation.priceMustBePositive'));
       return;
     }
     if (usesGenericFields && (parseInt(form.stock) || 0) <= 0) {
-      setValidationError("Las existencias tienen que ser mayor a 0.");
+      setValidationError(t('admin.productModal.validation.stockMustBePositive'));
       return;
     }
     if (variantTab === "simple") {
       for (const row of form.variantsSimple) {
         if (!row.label.trim()) {
-          setValidationError("Cada variante necesita una etiqueta.");
+          setValidationError(t('admin.productModal.validation.variantNeedsLabel'));
           return;
         }
         if ((parseFloat(row.price) || 0) <= 0) {
-          setValidationError(`"${row.label.trim()}" necesita un precio mayor a 0.`);
+          setValidationError(t('admin.productModal.validation.variantNeedsPrice', { label: row.label.trim() }));
           return;
         }
         if ((parseInt(row.stock, 10) || 0) <= 0) {
-          setValidationError(`"${row.label.trim()}" necesita stock mayor a 0.`);
+          setValidationError(t('admin.productModal.validation.variantNeedsStock', { label: row.label.trim() }));
           return;
         }
         if (row.images.length === 0) {
-          setValidationError(`"${row.label.trim()}" necesita al menos 1 imagen.`);
+          setValidationError(t('admin.productModal.validation.variantNeedsImage', { label: row.label.trim() }));
           return;
         }
       }
     } else if (variantTab === "matrix") {
       if (form.variantsMatrix.primary.length === 0) {
-        setValidationError("Agrega al menos un sabor/variante.");
+        setValidationError(t('admin.productModal.validation.matrixNeedsPrimary'));
         return;
       }
       if (form.variantsMatrix.sizes.length === 0) {
-        setValidationError("Agrega al menos un tamaño.");
+        setValidationError(t('admin.productModal.validation.matrixNeedsSize'));
         return;
       }
       for (const row of form.variantsMatrix.primary) {
         if (!row.label.trim()) {
-          setValidationError("Cada sabor necesita una etiqueta.");
+          setValidationError(t('admin.productModal.validation.primaryNeedsLabel'));
           return;
         }
       }
       for (const row of form.variantsMatrix.sizes) {
         if (!row.label.trim()) {
-          setValidationError("Cada tamaño necesita una etiqueta.");
+          setValidationError(t('admin.productModal.validation.sizeNeedsLabel'));
           return;
         }
         if ((parseFloat(row.price) || 0) <= 0) {
-          setValidationError(`"${row.label.trim()}" necesita un precio base mayor a 0.`);
+          setValidationError(t('admin.productModal.validation.sizeNeedsPrice', { label: row.label.trim() }));
           return;
         }
         if ((parseInt(row.stock, 10) || 0) <= 0) {
-          setValidationError(`"${row.label.trim()}" necesita un stock base mayor a 0.`);
+          setValidationError(t('admin.productModal.validation.sizeNeedsStock', { label: row.label.trim() }));
           return;
         }
       }
@@ -166,7 +168,7 @@ export function ProductModal({
           const effectiveLength = cell.imagesTouched ? cell.images.length : p.images.length;
           if (effectiveLength === 0) {
             setValidationError(
-              `"${p.label.trim()} × ${s.label.trim()}" necesita al menos 1 imagen (o agrega imágenes a "${p.label.trim()}" para que apliquen a todos sus tamaños).`,
+              t('admin.productModal.validation.comboNeedsImage', { primary: p.label.trim(), size: s.label.trim() }),
             );
             return;
           }
@@ -174,24 +176,24 @@ export function ProductModal({
       }
     }
     if (usesGenericFields && !form.imageUrl.trim()) {
-      setValidationError("La imagen 1 es obligatoria.");
+      setValidationError(t('admin.productModal.validation.image1Required'));
       return;
     }
     if (usesGenericFields && form.priceBefore && form.discountStartsAt && form.discountEndsAt && form.discountEndsAt < form.discountStartsAt) {
-      setValidationError('"Vigente hasta" no puede ser anterior a "Vigente desde".');
+      setValidationError(t('admin.products.categoryDiscountModal.invalidRange'));
       return;
     }
     if (variantTab === "simple") {
       for (const row of form.variantsSimple) {
         if (row.priceBefore && row.discountStartsAt && row.discountEndsAt && row.discountEndsAt < row.discountStartsAt) {
-          setValidationError(`"${row.label.trim()}": "Vigente hasta" no puede ser anterior a "Vigente desde".`);
+          setValidationError(t('admin.productModal.validation.variantDateRange', { label: row.label.trim() }));
           return;
         }
       }
     }
     for (const tab of form.extraTabs) {
       if (Boolean(tab.label.trim()) !== Boolean(tab.content.trim())) {
-        setValidationError("Cada pestaña personalizada necesita título y contenido (o elimínala).");
+        setValidationError(t('admin.productModal.validation.extraTabIncomplete'));
         return;
       }
     }
@@ -279,7 +281,7 @@ export function ProductModal({
                 marginBottom: 4,
               }}
             >
-              {mode === "add" ? "Nuevo producto" : "Editar producto"}
+              {mode === "add" ? t('admin.productModal.kickerNew') : t('admin.productModal.kickerEdit')}
             </div>
             <h2
               style={{
@@ -292,10 +294,10 @@ export function ProductModal({
             >
               {mode === "add" ? (
                 <>
-                  Agregar <em style={{ color: "var(--green)" }}>producto</em>
+                  {t('admin.productModal.addTitlePrefix')} <em style={{ color: "var(--green)" }}>{t('admin.productModal.addTitleEmphasis')}</em>
                 </>
               ) : (
-                form.name || "Editar"
+                form.name || t('admin.productModal.editFallbackTitle')
               )}
             </h2>
           </div>
@@ -317,13 +319,13 @@ export function ProductModal({
                   color: form.active ? "var(--green)" : "var(--ink-40)",
                 }}
               >
-                {form.active ? "Activo" : "Inactivo"}
+                {form.active ? t('admin.products.filters.statusActive') : t('admin.products.filters.statusInactive')}
               </span>
               <button
                 type="button"
                 role="switch"
                 aria-checked={form.active}
-                aria-label="Producto activo (visible en la tienda)"
+                aria-label={t('admin.productModal.activeToggleAria')}
                 onClick={() =>
                   setForm((prev) => ({ ...prev, active: !prev.active }))
                 }
@@ -378,7 +380,7 @@ export function ProductModal({
         {/* Body */}
         <div ref={contentRef} style={{ flex: 1, overflowY: "auto", padding: 28 }}>
           {/* Información básica */}
-          <div style={sectionS}>Información básica</div>
+          <div style={sectionS}>{t('admin.productModal.basicInfo.sectionTitle')}</div>
           <div
             style={{
               display: "grid",
@@ -388,25 +390,25 @@ export function ProductModal({
             }}
           >
             <div style={fieldS}>
-              <label style={labelS}>Nombre <span style={{ color: "#e53e3e" }}>*</span></label>
+              <label style={labelS}>{t('admin.productModal.basicInfo.nameLabel')} <span style={{ color: "#e53e3e" }}>*</span></label>
               <input
                 style={inputS}
                 value={form.name}
                 onChange={setF("name")}
-                placeholder="Nombre del producto"
+                placeholder={t('admin.productModal.basicInfo.namePlaceholder')}
               />
             </div>
             <div style={fieldS}>
-              <label style={labelS}>Marca <span style={{ color: "#e53e3e" }}>*</span></label>
+              <label style={labelS}>{t('admin.productModal.basicInfo.brandLabel')} <span style={{ color: "#e53e3e" }}>*</span></label>
               <input
                 style={inputS}
                 value={form.brand}
                 onChange={setF("brand")}
-                placeholder="Nombre de la marca"
+                placeholder={t('admin.productModal.basicInfo.brandPlaceholder')}
               />
             </div>
             <div style={fieldS}>
-              <label style={labelS}>Categoría <span style={{ color: "#e53e3e" }}>*</span></label>
+              <label style={labelS}>{t('admin.productModal.basicInfo.categoryLabel')} <span style={{ color: "#e53e3e" }}>*</span></label>
               <Select
                 value={form.category}
                 onChange={(e) =>
@@ -416,7 +418,7 @@ export function ProductModal({
                   }))
                 }
               >
-                <option value="">Seleccionar categoría…</option>
+                <option value="">{t('admin.products.categoryDiscountModal.categoryPlaceholder')}</option>
                 {categories.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -426,7 +428,7 @@ export function ProductModal({
             </div>
           </div>
           <div style={fieldS}>
-            <label style={labelS}>Descripción corta <span style={{ color: "#e53e3e" }}>*</span></label>
+            <label style={labelS}>{t('admin.productModal.basicInfo.shortLabel')} <span style={{ color: "#e53e3e" }}>*</span></label>
             <textarea
               style={{
                 ...inputS,
@@ -435,32 +437,32 @@ export function ProductModal({
               }}
               value={form.short}
               onChange={setF("short")}
-              placeholder="Breve descripción del producto…"
+              placeholder={t('admin.productModal.basicInfo.shortPlaceholder')}
             />
           </div>
           <div style={{ ...fieldS, maxWidth: 220, marginTop: 12 }}>
-            <label style={labelS}>Umbral de stock bajo</label>
+            <label style={labelS}>{t('admin.productModal.basicInfo.lowStockLabel')}</label>
             <input
               style={inputS}
               type="number"
               value={form.lowStockThreshold}
               onChange={setF("lowStockThreshold")}
               min={0}
-              placeholder={`Global (${DEFAULT_LOW_STOCK_THRESHOLD})`}
+              placeholder={t('admin.productModal.basicInfo.lowStockPlaceholder', { count: DEFAULT_LOW_STOCK_THRESHOLD })}
             />
           </div>
           <div style={{ ...fieldS, maxWidth: 280, marginTop: 16 }}>
-            <label style={labelS}>Muestra gratis (Club Healthora)</label>
+            <label style={labelS}>{t('admin.productModal.basicInfo.sampleEligibleLabel')}</label>
             <Select value={form.sampleEligible} onChange={setSelect("sampleEligible")}>
-              <option value="auto">Automático (según tope de precio)</option>
-              <option value="include">Incluir siempre</option>
-              <option value="exclude">Excluir siempre</option>
+              <option value="auto">{t('admin.productModal.basicInfo.sampleAuto')}</option>
+              <option value="include">{t('admin.productModal.basicInfo.sampleInclude')}</option>
+              <option value="exclude">{t('admin.productModal.basicInfo.sampleExclude')}</option>
             </Select>
           </div>
           <div style={dividerS} />
 
           {/* Tipo de producto / variantes — decide esto primero, define lo que sigue */}
-          <div style={sectionS}>Tipo de producto</div>
+          <div style={sectionS}>{t('admin.productModal.productType.sectionTitle')}</div>
           <div
             style={{
               fontSize: 12,
@@ -470,7 +472,7 @@ export function ProductModal({
               maxWidth: 520,
             }}
           >
-            ¿El producto tiene un solo precio/stock, o varía por opción (ej. sabor, tamaño, color)? Esto define qué campos ves más abajo.
+            {t('admin.productModal.productType.hint')}
           </div>
           <ProductVariantsMatrixEditor
             mode={form.variantsMode}
@@ -487,7 +489,7 @@ export function ProductModal({
               <div style={dividerS} />
 
               {/* Precio & Inventario */}
-              <div style={sectionS}>Precio · Inventario</div>
+              <div style={sectionS}>{t('admin.productModal.pricingInventory.sectionTitle')}</div>
               <div
                 style={{
                   display: "grid",
@@ -497,7 +499,7 @@ export function ProductModal({
                 }}
               >
                 <div style={fieldS}>
-                  <label style={labelS}>Precio ($) <span style={{ color: "#e53e3e" }}>*</span></label>
+                  <label style={labelS}>{t('admin.productModal.pricingInventory.priceLabel')} <span style={{ color: "#e53e3e" }}>*</span></label>
                   <input
                     style={inputS}
                     type="number"
@@ -508,7 +510,7 @@ export function ProductModal({
                   />
                 </div>
                 <div style={fieldS}>
-                  <label style={labelS}>Existencias <span style={{ color: "#e53e3e" }}>*</span></label>
+                  <label style={labelS}>{t('admin.productModal.pricingInventory.stockLabel')} <span style={{ color: "#e53e3e" }}>*</span></label>
                   <input
                     style={inputS}
                     type="number"
@@ -528,7 +530,7 @@ export function ProductModal({
                 }}
               >
                 <div style={fieldS}>
-                  <label style={labelS}>Precio antes ($)</label>
+                  <label style={labelS}>{t('admin.productVariantsEditor.priceBeforeLabel')}</label>
                   <input
                     style={inputS}
                     type="number"
@@ -536,11 +538,11 @@ export function ProductModal({
                     onChange={setF("priceBefore")}
                     min={0}
                     step={0.01}
-                    placeholder="Sin descuento"
+                    placeholder={t('admin.productVariantsEditor.priceBeforePlaceholder')}
                   />
                 </div>
                 <div style={fieldS}>
-                  <label style={labelS}>Vigente desde</label>
+                  <label style={labelS}>{t('admin.productVariantsEditor.validFromLabel')}</label>
                   <DateInputDDMMYYYY
                     style={inputS}
                     value={form.discountStartsAt}
@@ -549,7 +551,7 @@ export function ProductModal({
                   />
                 </div>
                 <div style={fieldS}>
-                  <label style={labelS}>Vigente hasta</label>
+                  <label style={labelS}>{t('admin.productVariantsEditor.validUntilLabel')}</label>
                   <DateInputDDMMYYYY
                     style={inputS}
                     value={form.discountEndsAt}
@@ -566,7 +568,7 @@ export function ProductModal({
               <div style={dividerS} />
 
               {/* Imágenes */}
-              <div style={sectionS}>Imágenes del producto</div>
+              <div style={sectionS}>{t('admin.productModal.images.sectionTitle')}</div>
               <div
                 style={{
                   display: "grid",
@@ -577,26 +579,26 @@ export function ProductModal({
               <ImageDropZone
                 value={form.imageUrl}
                 onChange={setVal("imageUrl")}
-                label="Imagen 1 · principal"
+                label={t('admin.productModal.images.image1Label')}
                 required
                 folder={slugify(form.name) || 'general'}
               />
               <ImageDropZone
                 value={form.image2}
                 onChange={setVal("image2")}
-                label="Imagen 2 (opcional)"
+                label={t('admin.productModal.images.image2Label')}
                 folder={slugify(form.name) || 'general'}
               />
               <ImageDropZone
                 value={form.image3}
                 onChange={setVal("image3")}
-                label="Imagen 3 (opcional)"
+                label={t('admin.productModal.images.image3Label')}
                 folder={slugify(form.name) || 'general'}
               />
               <ImageDropZone
                 value={form.image4}
                 onChange={setVal("image4")}
-                label="Imagen 4 (opcional)"
+                label={t('admin.productModal.images.image4Label')}
                 folder={slugify(form.name) || 'general'}
               />
               </div>
@@ -606,7 +608,7 @@ export function ProductModal({
           <div style={dividerS} />
 
           {/* Detalles */}
-          <div style={sectionS}>Detalles del producto (opcional)</div>
+          <div style={sectionS}>{t('admin.productModal.details.sectionTitle')}</div>
           <div
             style={{
               display: "flex",
@@ -616,7 +618,7 @@ export function ProductModal({
           >
             <div style={fieldS}>
               <label style={labelS}>
-                Beneficios (opcional){" "}
+                {t('admin.productModal.details.benefitsLabel')}{" "}
                 <span
                   style={{
                     fontFamily: '"Geist", sans-serif',
@@ -625,7 +627,7 @@ export function ProductModal({
                     fontWeight: 400,
                   }}
                 >
-                  (uno por línea)
+                  {t('admin.productModal.details.benefitsHint')}
                 </span>
               </label>
               <FormattedTextarea
@@ -636,13 +638,11 @@ export function ProductModal({
                 }}
                 value={form.benefits}
                 onChange={setVal("benefits")}
-                placeholder={
-                  "Opcional: mejora el sistema inmune\nAumenta la energía\nReduce el estrés"
-                }
+                placeholder={t('admin.productModal.details.benefitsPlaceholder')}
               />
             </div>
             <div style={fieldS}>
-              <label style={labelS}>Modo de uso (opcional)</label>
+              <label style={labelS}>{t('admin.productModal.details.usageLabel')}</label>
               <FormattedTextarea
                 style={{
                   ...inputS,
@@ -651,11 +651,11 @@ export function ProductModal({
                 }}
                 value={form.usage}
                 onChange={setVal("usage")}
-                placeholder="Opcional: tomar 1 cápsula al día con agua…"
+                placeholder={t('admin.productModal.details.usagePlaceholder')}
               />
             </div>
             <div style={fieldS}>
-              <label style={labelS}>Ingredientes (opcional)</label>
+              <label style={labelS}>{t('admin.productModal.details.ingredientsLabel')}</label>
               <FormattedTextarea
                 style={{
                   ...inputS,
@@ -664,11 +664,11 @@ export function ProductModal({
                 }}
                 value={form.ingredients}
                 onChange={setVal("ingredients")}
-                placeholder="Opcional: vitamina C 500mg, Zinc 10mg…"
+                placeholder={t('admin.productModal.details.ingredientsPlaceholder')}
               />
             </div>
             <div style={fieldS}>
-              <label style={labelS}>Advertencias (opcional)</label>
+              <label style={labelS}>{t('admin.productModal.details.warningsLabel')}</label>
               <FormattedTextarea
                 style={{
                   ...inputS,
@@ -677,7 +677,7 @@ export function ProductModal({
                 }}
                 value={form.warnings}
                 onChange={setVal("warnings")}
-                placeholder="Opcional: mantener fuera del alcance de los niños…"
+                placeholder={t('admin.productModal.details.warningsPlaceholder')}
               />
             </div>
           </div>
@@ -701,7 +701,7 @@ export function ProductModal({
                 marginTop: 16,
               }}
             >
-              Pestañas personalizadas
+              {t('admin.productModal.extraTabs.sectionTitle')}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {form.extraTabs.map((tab, idx) => (
@@ -725,7 +725,7 @@ export function ProductModal({
                       gap: 6,
                     }}
                   >
-                    <label style={labelS}>Título <span style={{ color: "#e53e3e" }}>*</span></label>
+                    <label style={labelS}>{t('admin.productModal.extraTabs.titleLabel')} <span style={{ color: "#e53e3e" }}>*</span></label>
                     <input
                       value={tab.label}
                       onChange={(e) => {
@@ -736,10 +736,10 @@ export function ProductModal({
                         };
                         setForm((prev) => ({ ...prev, extraTabs: newTabs }));
                       }}
-                      placeholder="ej: Fórmula"
+                      placeholder={t('admin.productModal.extraTabs.titlePlaceholder')}
                       style={{ ...inputS, fontSize: 12, fontWeight: 500 }}
                     />
-                    <label style={labelS}>Contenido <span style={{ color: "#e53e3e" }}>*</span></label>
+                    <label style={labelS}>{t('admin.productModal.extraTabs.contentLabel')} <span style={{ color: "#e53e3e" }}>*</span></label>
                     <FormattedTextarea
                       value={tab.content}
                       onChange={(content) => {
@@ -750,7 +750,7 @@ export function ProductModal({
                         };
                         setForm((prev) => ({ ...prev, extraTabs: newTabs }));
                       }}
-                      placeholder="Contenido de la pestaña…"
+                      placeholder={t('admin.productModal.extraTabs.contentPlaceholder')}
                       style={{
                         ...inputS,
                         minHeight: 60,
@@ -767,7 +767,7 @@ export function ProductModal({
                       setForm((prev) => ({ ...prev, extraTabs: newTabs }));
                     }}
                     style={{ ...iconBtnAd, color: "var(--coral)" }}
-                    title="Eliminar pestaña"
+                    title={t('admin.productModal.extraTabs.removeTitle')}
                   >
                     <Icon name="trash" size={14} />
                   </button>
@@ -793,7 +793,7 @@ export function ProductModal({
                   border: "none",
                 }}
               >
-                + Agregar pestaña
+                {t('admin.productModal.extraTabs.addButton')}
               </button>
             </div>
           </div>
@@ -820,8 +820,8 @@ export function ProductModal({
             {validationError || error || ""}
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <AnimatedButton variant="outline" onClick={onClose} text="Cancelar" />
-            <AnimatedButton variant="primary" onClick={handleSave} disabled={saving} text={saving ? "Guardando…" : mode === "add" ? "Agregar producto" : "Guardar cambios"} />
+            <AnimatedButton variant="outline" onClick={onClose} text={t('admin.productModal.cancel')} />
+            <AnimatedButton variant="primary" onClick={handleSave} disabled={saving} text={saving ? t('admin.productModal.saving') : mode === "add" ? t('admin.productModal.addProduct') : t('admin.productModal.saveChanges')} />
           </div>
         </div>
       </div>
