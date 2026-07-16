@@ -295,6 +295,13 @@ html.theme-transition *:after {
   box-sizing: border-box;
 }
 
+.hlt-select:focus-visible {
+  /* El anillo de foco global crece hacia afuera (outline-offset: 2px), lo que se ve como si el
+     control se "moviera"/creciera al abrirlo, sobre todo con un boton ajustado al contenido. Se
+     dibuja hacia adentro solo aqui para que abrir el dropdown no cambie el tamano visual del boton. */
+  outline-offset: -3px;
+}
+
 .hlt-select:disabled {
   opacity: 0.5;
   cursor: not-allowed;
