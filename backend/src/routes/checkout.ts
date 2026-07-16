@@ -13,6 +13,7 @@ type CheckoutBody = {
   promoCode?: string;
   freeSampleId?: string;
   freeSampleVariantId?: string;
+  usePoints?: boolean;
   shippingMethod: 'delivery' | 'pickup';
 };
 
@@ -22,6 +23,7 @@ const checkoutSchema = z.object({
   promoCode: optionalTextField(40).transform((code) => code?.toUpperCase()),
   freeSampleId: productIdSchema.optional(),
   freeSampleVariantId: optionalTextField(180),
+  usePoints: z.coerce.boolean().optional(),
   shippingMethod: shippingMethodSchema,
 }).superRefine((body, ctx) => {
   if (body.shippingMethod !== 'pickup') requireFullAddress(ctx, body.address);
@@ -38,8 +40,9 @@ export const checkoutRouter = new Hono<AppEnv>()
 
     const pricing = await computeCheckoutPricing(c, body, user);
     if (!pricing.success) return pricing.response;
-    const { address, lineItems, freeSampleProduct, discountAmount, promoCodeApplied, discountedSubtotal, tax, shippingResolved, shipping } = pricing.data;
+    const { address, lineItems, freeSampleProduct, discountAmount, promoCodeApplied, loyaltyPointsRedeemed, loyaltyDiscountAmount, discountedSubtotal, tax, shippingResolved, shipping } = pricing.data;
     const { items, shippingMethod } = body;
+    const totalDiscountCents = Math.round((discountAmount + loyaltyDiscountAmount) * 100);
 
     try {
       const origin = c.req.header('origin');
@@ -78,12 +81,12 @@ export const checkoutRouter = new Hono<AppEnv>()
             quantity: 1,
           }] : []),
         ],
-        ...(discountAmount > 0 ? {
+        ...(totalDiscountCents > 0 ? {
           discounts: [{
             coupon: await stripe.coupons.create({
-              amount_off: Math.round(discountAmount * 100),
+              amount_off: totalDiscountCents,
               currency: 'usd',
-              name: promoCodeApplied,
+              name: [promoCodeApplied, loyaltyDiscountAmount > 0 ? 'Puntos Club Healthora' : ''].filter(Boolean).join(' + ') || 'Descuento',
               duration: 'once',
             }).then((coupon) => coupon.id),
           }],
@@ -99,6 +102,8 @@ export const checkoutRouter = new Hono<AppEnv>()
           address: JSON.stringify(address),
           discountCode: promoCodeApplied,
           discountAmount: String(discountAmount),
+          loyaltyPointsRedeemed: String(loyaltyPointsRedeemed),
+          loyaltyDiscountAmount: String(loyaltyDiscountAmount),
           discountedSubtotal: String(discountedSubtotal),
           tax: String(tax),
           shipping: String(shipping),
@@ -126,7 +131,7 @@ export const checkoutRouter = new Hono<AppEnv>()
 
     const pricing = await computeCheckoutPricing(c, body, user);
     if (!pricing.success) return pricing.response;
-    const { address, freeSampleProduct, discountAmount, promoCodeApplied, discountedSubtotal, tax, shippingResolved, shipping, total } = pricing.data;
+    const { address, freeSampleProduct, discountAmount, promoCodeApplied, loyaltyPointsRedeemed, loyaltyDiscountAmount, discountedSubtotal, tax, shippingResolved, shipping, total } = pricing.data;
     const { items, shippingMethod } = body;
 
     try {
@@ -148,6 +153,8 @@ export const checkoutRouter = new Hono<AppEnv>()
           address: JSON.stringify(address),
           discountCode: promoCodeApplied,
           discountAmount: String(discountAmount),
+          loyaltyPointsRedeemed: String(loyaltyPointsRedeemed),
+          loyaltyDiscountAmount: String(loyaltyDiscountAmount),
           discountedSubtotal: String(discountedSubtotal),
           tax: String(tax),
           shipping: String(shipping),

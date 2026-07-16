@@ -21,6 +21,10 @@ const UserSchema = new Schema(
       },
     ],
     wishlist: [{ type: String }],
+    // Saldo de puntos del Club Healthora (HU-060), denormalizado para lectura rapida - el
+    // historial/auditoria vive en LoyaltyTransaction (lib/loyalty.ts es la unica fuente que lo
+    // modifica, siempre junto con una entrada del ledger).
+    loyaltyPoints: { type: Number, default: 0, min: 0 },
     addresses: [
       {
         label: { type: String, default: '' },

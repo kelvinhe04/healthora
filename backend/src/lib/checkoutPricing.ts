@@ -9,6 +9,8 @@ import { resolveShipping, type ResolvedShipping, type ShippingMethod } from './s
 import { computeItbms } from './tax';
 import { getSettings } from '../db/models/Settings';
 import { isSampleCellEligible } from './sampleEligibility';
+import { User } from '../db/models/User';
+import { computeRedeemablePoints, getLoyaltyRates } from './loyalty';
 
 type CheckoutBody = {
   items: { productId: string; qty: number; variantId?: string }[];
@@ -16,6 +18,7 @@ type CheckoutBody = {
   promoCode?: string;
   freeSampleId?: string;
   freeSampleVariantId?: string;
+  usePoints?: boolean;
   shippingMethod: ShippingMethod;
 };
 
@@ -28,6 +31,8 @@ export type CheckoutPricing = {
   subtotal: number;
   discountAmount: number;
   promoCodeApplied: string;
+  loyaltyPointsRedeemed: number;
+  loyaltyDiscountAmount: number;
   discountedSubtotal: number;
   tax: number;
   shippingResolved: ResolvedShipping;
@@ -49,7 +54,7 @@ export async function computeCheckoutPricing(
   body: CheckoutBody,
   user: PricingUser,
 ): Promise<{ success: true; data: CheckoutPricing } | { success: false; response: Response }> {
-  const { items, promoCode, freeSampleId, freeSampleVariantId, shippingMethod } = body;
+  const { items, promoCode, freeSampleId, freeSampleVariantId, usePoints, shippingMethod } = body;
   const address = {
     name: body.address.name,
     phone: body.address.phone,
@@ -112,8 +117,30 @@ export async function computeCheckoutPricing(
 
   const discountAmount = promotion?.valid ? promotion.discountAmount : 0;
   const promoCodeApplied = promotion?.valid ? promotion.code : '';
-  const discountedSubtotal = roundMoney(Math.max(0, subtotal - discountAmount));
-  const tax = computeItbms(lineItems, discountAmount, subtotal);
+
+  // Canje de puntos del Club (HU-060): todo-o-nada, capado a lo que queda del subtotal despues del
+  // cupon - nunca deja el pedido en negativo ni se calcula en base a tax/shipping.
+  let loyaltyPointsRedeemed = 0;
+  let loyaltyDiscountAmount = 0;
+  if (usePoints) {
+    const [settings, dbUser] = await Promise.all([
+      getSettings(),
+      User.findOne({ clerkId: user.clerkId }).select('loyaltyPoints').lean(),
+    ]);
+    const { pointValueCents } = getLoyaltyRates(settings);
+    const subtotalAfterCoupon = roundMoney(Math.max(0, subtotal - discountAmount));
+    const redeemable = computeRedeemablePoints({
+      availablePoints: dbUser?.loyaltyPoints ?? 0,
+      maxDiscountCents: Math.round(subtotalAfterCoupon * 100),
+      pointValueCents,
+    });
+    loyaltyPointsRedeemed = redeemable.pointsToRedeem;
+    loyaltyDiscountAmount = roundMoney(redeemable.discountCents / 100);
+  }
+
+  const totalDiscount = roundMoney(discountAmount + loyaltyDiscountAmount);
+  const discountedSubtotal = roundMoney(Math.max(0, subtotal - totalDiscount));
+  const tax = computeItbms(lineItems, totalDiscount, subtotal);
   const shippingResolved = resolveShipping(shippingMethod, discountedSubtotal);
   const shipping = shippingResolved.cost;
   const total = roundMoney(discountedSubtotal + tax + shipping);
@@ -127,6 +154,8 @@ export async function computeCheckoutPricing(
       subtotal,
       discountAmount,
       promoCodeApplied,
+      loyaltyPointsRedeemed,
+      loyaltyDiscountAmount,
       discountedSubtotal,
       tax,
       shippingResolved,

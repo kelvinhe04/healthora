@@ -57,6 +57,8 @@ function SampleSettingsModal({ open, onClose }: { open: boolean; onClose: () => 
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [maxPrice, setMaxPrice] = useState('');
+  const [pointsPerDollar, setPointsPerDollar] = useState('');
+  const [pointValueCents, setPointValueCents] = useState('');
   const [message, setMessage] = useState('');
 
   const settingsQuery = useQuery({
@@ -66,25 +68,37 @@ function SampleSettingsModal({ open, onClose }: { open: boolean; onClose: () => 
   });
 
   useEffect(() => {
-    if (settingsQuery.data) setMaxPrice(String(settingsQuery.data.sampleMaxPrice));
+    if (!settingsQuery.data) return;
+    setMaxPrice(String(settingsQuery.data.sampleMaxPrice));
+    setPointsPerDollar(String(settingsQuery.data.loyaltyPointsPerDollar ?? 1));
+    setPointValueCents(String(settingsQuery.data.loyaltyPointValueCents ?? 1));
   }, [settingsQuery.data]);
 
   const saveMut = useMutation({
     mutationFn: async () => {
       const token = await getToken();
-      return api.admin.settings.update({ sampleMaxPrice: parseFloat(maxPrice) || 0 }, token!);
+      return api.admin.settings.update(
+        {
+          sampleMaxPrice: parseFloat(maxPrice) || 0,
+          loyaltyPointsPerDollar: parseFloat(pointsPerDollar) || 0,
+          loyaltyPointValueCents: parseFloat(pointValueCents) || 0,
+        },
+        token!,
+      );
     },
-    onSuccess: (data) => {
-      setMessage(`Tope actualizado a $${data.sampleMaxPrice.toFixed(2)}.`);
+    onSuccess: () => {
+      setMessage('Ajustes actualizados.');
       void queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
     },
   });
 
   return (
     <ModalOverlay open={open} onClose={onClose}>
-      <div style={{ width: '100%', maxWidth: 380, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: 24 }}>
-        <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 8px' }}>Muestra gratis (Club Healthora)</h3>
-        <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '0 0 16px', lineHeight: 1.5 }}>
+      <div style={{ width: '100%', maxWidth: 420, background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 20, padding: 24 }}>
+        <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 24, margin: '0 0 8px' }}>Club Healthora</h3>
+
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '16px 0 8px', lineHeight: 1.5, fontWeight: 600 }}>Muestra gratis</p>
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '0 0 12px', lineHeight: 1.5 }}>
           Un producto (o una de sus variantes/combinaciones) califica automáticamente para la muestra gratis si su precio es menor o igual a este tope. Un producto con "Incluir siempre"/"Excluir siempre" en su propio editor ignora este tope.
         </p>
         <label style={modalFieldLabel}>Precio máximo (USD)</label>
@@ -96,6 +110,36 @@ function SampleSettingsModal({ open, onClose }: { open: boolean; onClose: () => 
           onChange={(e) => setMaxPrice(e.target.value)}
           style={modalInput}
         />
+
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '20px 0 8px', lineHeight: 1.5, fontWeight: 600 }}>Puntos de lealtad (HU-060)</p>
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', margin: '0 0 12px', lineHeight: 1.5 }}>
+          El cliente gana puntos por cada $1 pagado en una orden, y puede canjearlos por un descuento en el checkout.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div>
+            <label style={modalFieldLabel}>Puntos por cada $1</label>
+            <input
+              type="number"
+              min={0}
+              step="0.1"
+              value={pointsPerDollar}
+              onChange={(e) => setPointsPerDollar(e.target.value)}
+              style={modalInput}
+            />
+          </div>
+          <div>
+            <label style={modalFieldLabel}>Valor de 1 punto (¢)</label>
+            <input
+              type="number"
+              min={0}
+              step="0.1"
+              value={pointValueCents}
+              onChange={(e) => setPointValueCents(e.target.value)}
+              style={modalInput}
+            />
+          </div>
+        </div>
+
         {message && <p style={{ fontSize: 13, color: 'var(--green)', marginTop: 12 }}>{message}</p>}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
           <button type="button" onClick={onClose} style={{ padding: '10px 16px', borderRadius: 999, background: 'transparent', border: '1px solid var(--ink-12)', color: 'var(--ink)', cursor: 'pointer', fontSize: 13, fontFamily: '"Geist", sans-serif' }}>
@@ -392,7 +436,7 @@ export function ProductsSection() {
                       onClick={() => setSampleSettingsModalOpen(true)}
                       style={{ padding: "10px 16px", borderRadius: 999, background: "transparent", border: "1px solid var(--ink-12)", color: "var(--ink)", cursor: "pointer", fontSize: 13, fontFamily: '"Geist", sans-serif', whiteSpace: "nowrap" }}
                     >
-                      Muestra gratis
+                      Club Healthora
                     </button>
                     <AnimatedButton variant="primary" onClick={() => setProductModal({ mode: "add" })} text="+ Agregar producto" />
                   </>

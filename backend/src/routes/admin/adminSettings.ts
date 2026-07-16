@@ -7,7 +7,9 @@ import { Settings, getSettings } from '../../db/models/Settings';
 import { parseJson } from '../../lib/validation';
 
 const settingsPayloadSchema = z.object({
-  sampleMaxPrice: z.coerce.number().min(0).max(999999),
+  sampleMaxPrice: z.coerce.number().min(0).max(999999).optional(),
+  loyaltyPointsPerDollar: z.coerce.number().min(0).max(999999).optional(),
+  loyaltyPointValueCents: z.coerce.number().min(0).max(999999).optional(),
 });
 
 export const adminSettingsRouter = new Hono<AppEnv>()

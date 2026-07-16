@@ -10,6 +10,10 @@ const SettingsSchema = new Schema(
      * (`Product.sampleEligible`) califica automaticamente si su precio (o el de la
      * variante/combo elegida) es menor o igual a este tope. */
     sampleMaxPrice: { type: Number, default: 25, min: 0 },
+    /** Club Healthora "puntos" (HU-060): puntos otorgados por cada $1 pagado en una orden. */
+    loyaltyPointsPerDollar: { type: Number, default: 1, min: 0 },
+    /** Valor de canje: centavos de descuento que vale 1 punto (default 1 = 100 puntos = $1). */
+    loyaltyPointValueCents: { type: Number, default: 1, min: 0 },
   },
   { timestamps: true },
 );

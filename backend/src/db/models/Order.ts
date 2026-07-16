@@ -22,6 +22,12 @@ const OrderSchema = new Schema(
     subtotal: Number,
     discountCode: String,
     discountAmount: { type: Number, default: 0 },
+    // Puntos del Club Healthora (HU-060) - canjeados en esta orden (descuento) y ganados por
+    // pagarla. El movimiento real de saldo/ledger lo hace settleLoyaltyForOrder (lib/loyalty.ts);
+    // estos campos son solo el registro de lo que le paso a esta orden en particular.
+    loyaltyPointsRedeemed: { type: Number, default: 0 },
+    loyaltyDiscountAmount: { type: Number, default: 0 },
+    loyaltyPointsEarned: { type: Number, default: 0 },
     tax: Number,
     shipping: Number,
     shippingMethod: { type: String, enum: ['delivery', 'pickup'] },

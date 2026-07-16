@@ -6,6 +6,7 @@ import { User } from '../db/models/User';
 import { parseJson, savedAddressSchema } from '../lib/validation';
 import { stripe } from '../lib/stripe';
 import { getOrCreateStripeCustomer } from '../lib/stripeCustomer';
+import { getLoyaltyAccount } from '../lib/loyalty';
 
 type StripePaymentMethod = {
   id: string;
@@ -48,6 +49,10 @@ function normalizeAddresses(addresses: Address[]) {
 
 export const accountRouter = new Hono<AppEnv>()
   .use('*', clerkAuth)
+  .get('/loyalty', async (c) => {
+    const account = await getLoyaltyAccount(c.get('user').clerkId);
+    return c.json(account);
+  })
   .get('/addresses', async (c) => {
     const currentUser = await User.findOne({ clerkId: c.get('user').clerkId }).select('addresses').lean();
     return c.json(currentUser?.addresses || []);

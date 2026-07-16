@@ -1,11 +1,60 @@
+import { useAuth, useUser } from '@clerk/clerk-react';
+import { useQuery } from '@tanstack/react-query';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import { api } from '../lib/api';
+import { formatPanamaMedium } from '../lib/dates';
 
 type View = 'landing' | 'catalog' | 'product' | 'checkout' | 'success' | 'admin';
 
 interface ClubProps {
   onNav: (view: View) => void;
+}
+
+function LoyaltyPointsCard() {
+  const { isSignedIn } = useUser();
+  const { getToken } = useAuth();
+
+  const loyaltyQuery = useQuery({
+    queryKey: ['loyalty-account'],
+    queryFn: async () => api.account.loyalty.get((await getToken())!),
+    enabled: Boolean(isSignedIn),
+  });
+
+  if (!isSignedIn || !loyaltyQuery.data) return null;
+
+  const { balance, pointsPerDollar, pointValueCents, transactions } = loyaltyQuery.data;
+  const pointsPerDollarRedeemed = pointValueCents > 0 ? Math.round(100 / pointValueCents) : 0;
+
+  return (
+    <div style={{ background: 'var(--cream-2)', borderRadius: 24, padding: 32, border: '1px solid var(--ink-06)', marginBottom: 56 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 8 }}>
+            Tus puntos
+          </div>
+          <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 48, letterSpacing: '-0.03em', lineHeight: 1 }}>{balance}</div>
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', maxWidth: 340, lineHeight: 1.5, margin: 0 }}>
+          Ganas {pointsPerDollar} punto{pointsPerDollar === 1 ? '' : 's'} por cada $1 en compras pagadas.
+          {pointsPerDollarRedeemed > 0 && ` Canjéalos en el checkout: ${pointsPerDollarRedeemed} puntos = $1 de descuento.`}
+        </p>
+      </div>
+      {transactions.length > 0 && (
+        <div style={{ marginTop: 24, borderTop: '1px solid var(--ink-06)', paddingTop: 16 }}>
+          {transactions.slice(0, 5).map((t, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 13 }}>
+              <span style={{ color: 'var(--ink-60)' }}>{t.type === 'earn' ? 'Ganados' : 'Canjeados'} · {formatPanamaMedium(t.createdAt)}</span>
+              <span style={{ fontFamily: '"JetBrains Mono", monospace', color: t.type === 'earn' ? 'var(--green)' : 'var(--ink)' }}>
+                {t.type === 'earn' ? '+' : '-'}{t.points}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function Club({ onNav }: ClubProps) {
@@ -26,6 +75,8 @@ export function Club({ onNav }: ClubProps) {
           Forma parte del club y disfruta de beneficios exclusivos en cada compra.
         </p>
       </div>
+
+      <LoyaltyPointsCard />
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 20, marginBottom: 64 }}>
         {[
