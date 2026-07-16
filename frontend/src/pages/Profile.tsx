@@ -9,7 +9,7 @@ import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { StripeCardInput } from '../components/shared/StripeCardInput';
 import { api } from '../lib/api';
 import { formatPanamaMedium } from '../lib/dates';
-import type { ProductSubscription, SubscriptionStatus } from '../types';
+import type { NotificationPreferences, ProductSubscription, SubscriptionStatus } from '../types';
 
 interface ProfileProps {
   onBack: () => void;
@@ -337,6 +337,92 @@ function PaymentMethodsSection() {
   );
 }
 
+const NOTIFICATION_PREFERENCES_DEFAULTS: NotificationPreferences = {
+  orderUpdates: true,
+  promotions: true,
+  unsubscribedAll: false,
+};
+
+function NotificationPreferencesSection() {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  const prefsQuery = useQuery({
+    queryKey: ['notification-preferences'],
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) return NOTIFICATION_PREFERENCES_DEFAULTS;
+      return api.account.notificationPreferences.get(token);
+    },
+  });
+
+  const updateMut = useMutation({
+    mutationFn: async (next: NotificationPreferences) => {
+      const token = await getToken();
+      if (!token) throw new Error('No autenticado');
+      return api.account.notificationPreferences.update(next, token);
+    },
+    onSuccess: (data) => queryClient.setQueryData(['notification-preferences'], data),
+  });
+
+  const prefs = prefsQuery.data ?? NOTIFICATION_PREFERENCES_DEFAULTS;
+  const setPref = (key: keyof NotificationPreferences, value: boolean) => updateMut.mutate({ ...prefs, [key]: value });
+  const busy = updateMut.isPending;
+
+  return (
+    <section style={sectionCard}>
+      <h2 style={sectionTitle}>Preferencias de notificación</h2>
+      {prefsQuery.isLoading ? (
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Cargando…</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: prefs.unsubscribedAll ? 'not-allowed' : 'pointer', opacity: prefs.unsubscribedAll ? 0.5 : 1 }}>
+            <input
+              type="checkbox"
+              checked={prefs.orderUpdates}
+              disabled={prefs.unsubscribedAll || busy}
+              onChange={(e) => setPref('orderUpdates', e.target.checked)}
+              style={{ marginTop: 3 }}
+            />
+            <span>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>Actualizaciones de pedidos y devoluciones</div>
+              <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Cuando tu pedido cambia de estado (enviado, entregado) o hay novedades en una devolución.</div>
+            </span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: prefs.unsubscribedAll ? 'not-allowed' : 'pointer', opacity: prefs.unsubscribedAll ? 0.5 : 1 }}>
+            <input
+              type="checkbox"
+              checked={prefs.promotions}
+              disabled={prefs.unsubscribedAll || busy}
+              onChange={(e) => setPref('promotions', e.target.checked)}
+              style={{ marginTop: 3 }}
+            />
+            <span>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>Recordatorios y promociones</div>
+              <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Avisos de recompra y ofertas.</div>
+            </span>
+          </label>
+          <div style={{ borderTop: '1px solid var(--ink-06)', paddingTop: 16 }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={prefs.unsubscribedAll}
+                disabled={busy}
+                onChange={(e) => setPref('unsubscribedAll', e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <span>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--coral)', fontFamily: '"Geist", sans-serif' }}>Darme de baja de todos los correos</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>No recibirás ningún correo de las categorías de arriba. La confirmación de tu compra siempre llega, sin importar esta opción.</div>
+              </span>
+            </label>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function Profile({ onBack }: ProfileProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
@@ -377,6 +463,7 @@ export function Profile({ onBack }: ProfileProps) {
       <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1fr 1fr', gap: 16, alignItems: 'start' }}>
         <PaymentMethodsSection />
         <SubscriptionsSection />
+        <NotificationPreferencesSection />
       </div>
     </div>
   );

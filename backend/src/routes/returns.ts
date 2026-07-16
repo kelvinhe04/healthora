@@ -8,6 +8,7 @@ import { objectIdSchema, parseJson, productIdSchema, textField } from '../lib/va
 import { isWithinReturnWindow, refundIncludesShipping, resolvePendingRefunds } from '../lib/returns';
 import { saveImageFile } from '../lib/imageStorage';
 import { sendReturnStatusEmail } from '../lib/email';
+import { shouldSendEmail } from '../lib/notificationPreferences';
 import { notifyAdmins } from '../lib/realtime';
 import { computeItbms } from '../lib/tax';
 
@@ -142,14 +143,16 @@ export const returnsRouter = new Hono<AppEnv>()
       pickupAddress: returnMethod === 'courier_pickup' ? order.address : undefined,
     });
 
-    sendReturnStatusEmail({
-      customerName: user.name || 'cliente',
-      customerEmail: user.email || '',
-      orderId: String(orderId),
-      status: 'requested',
-      refundAmount: returnDoc.refundAmount,
-      returnMethod,
-    }).catch((err) => console.error('[RETURNS] Failed to send requested email:', err));
+    if (await shouldSendEmail(user.clerkId, 'orderUpdates')) {
+      sendReturnStatusEmail({
+        customerName: user.name || 'cliente',
+        customerEmail: user.email || '',
+        orderId: String(orderId),
+        status: 'requested',
+        refundAmount: returnDoc.refundAmount,
+        returnMethod,
+      }).catch((err) => console.error('[RETURNS] Failed to send requested email:', err));
+    }
 
     // Real-time alert to admins (HU-061), mirroring new_review. Best-effort - a notification
     // failure must not fail the return request itself.

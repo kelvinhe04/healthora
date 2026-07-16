@@ -4,6 +4,7 @@ import { Order } from '../../db/models/Order';
 import { buildOrdersCsv } from '../../lib/ordersCsv';
 import { combineOrderStatus, normalizeOrder } from '../../lib/orderStatus';
 import { sendOrderStatusUpdateEmail } from '../../lib/email';
+import { shouldSendEmail } from '../../lib/notificationPreferences';
 import { emailField, objectIdSchema, textField } from '../../lib/validation';
 import { errorResult, jsonResult } from '../toolHelpers';
 
@@ -65,7 +66,11 @@ export function registerOrderTools(server: McpServer) {
       ).lean();
       if (!order) return errorResult(`Orden "${orderId}" no encontrada.`);
 
-      if (normalizedCurrent.fulfillmentStatus !== nextFulfillmentStatus && order.customerEmail) {
+      if (
+        normalizedCurrent.fulfillmentStatus !== nextFulfillmentStatus &&
+        order.customerEmail &&
+        (await shouldSendEmail(order.customerId, 'orderUpdates'))
+      ) {
         try {
           await sendOrderStatusUpdateEmail({
             customerName: order.customerName || 'cliente',

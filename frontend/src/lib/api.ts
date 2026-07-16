@@ -25,6 +25,7 @@ import type {
   Banner,
   BannerSlot,
   LoyaltyAccount,
+  NotificationPreferences,
 } from "../types";
 import type { CartItem } from "../types";
 
@@ -154,6 +155,16 @@ export const api = {
   account: {
     loyalty: {
       get: (token: string) => request<LoyaltyAccount>("/account/loyalty", undefined, token),
+    },
+    notificationPreferences: {
+      get: (token: string) =>
+        request<NotificationPreferences>("/account/notification-preferences", undefined, token),
+      update: (body: NotificationPreferences, token: string) =>
+        request<NotificationPreferences>(
+          "/account/notification-preferences",
+          { method: "PUT", body: JSON.stringify(body) },
+          token,
+        ),
     },
     addresses: {
       list: (token: string) =>

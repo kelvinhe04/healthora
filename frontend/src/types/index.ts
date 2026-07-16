@@ -306,6 +306,12 @@ export type LoyaltyAccount = {
   transactions: LoyaltyTransaction[];
 };
 
+export type NotificationPreferences = {
+  orderUpdates: boolean;
+  promotions: boolean;
+  unsubscribedAll: boolean;
+};
+
 export type BannerSlot = 'promo' | 'club';
 
 export type Banner = {

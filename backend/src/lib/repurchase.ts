@@ -2,6 +2,7 @@ import { Order } from '../db/models/Order';
 import { Product } from '../db/models/Product';
 import { RepurchaseReminder } from '../db/models/RepurchaseReminder';
 import { sendRepurchaseReminderEmail } from './email';
+import { shouldSendEmail } from './notificationPreferences';
 import { logger } from './logger';
 
 /** Cuantos dias le dura en promedio a un cliente un producto de esta categoria, usado como
@@ -105,6 +106,8 @@ export async function scanAndSendRepurchaseReminders(leadDays = DEFAULT_LEAD_DAY
       logger.error({ err, productId: row._id.productId, customerId: row._id.customerId }, '[REPURCHASE] Error guardando recordatorio');
       continue;
     }
+
+    if (!(await shouldSendEmail(row._id.customerId, 'promotions'))) continue;
 
     try {
       await sendRepurchaseReminderEmail({

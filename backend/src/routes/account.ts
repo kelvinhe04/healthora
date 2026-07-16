@@ -7,6 +7,7 @@ import { parseJson, savedAddressSchema } from '../lib/validation';
 import { stripe } from '../lib/stripe';
 import { getOrCreateStripeCustomer } from '../lib/stripeCustomer';
 import { getLoyaltyAccount } from '../lib/loyalty';
+import { getNotificationPreferences } from '../lib/notificationPreferences';
 
 type StripePaymentMethod = {
   id: string;
@@ -20,6 +21,12 @@ type StripeCustomerWithDefaultPm = {
 
 const addressesPayloadSchema = z.object({
   addresses: z.array(savedAddressSchema).max(20).default([]),
+});
+
+const notificationPreferencesPayloadSchema = z.object({
+  orderUpdates: z.boolean(),
+  promotions: z.boolean(),
+  unsubscribedAll: z.boolean(),
 });
 
 type Address = z.infer<typeof savedAddressSchema>;
@@ -52,6 +59,23 @@ export const accountRouter = new Hono<AppEnv>()
   .get('/loyalty', async (c) => {
     const account = await getLoyaltyAccount(c.get('user').clerkId);
     return c.json(account);
+  })
+  .get('/notification-preferences', async (c) => {
+    const prefs = await getNotificationPreferences(c.get('user').clerkId);
+    return c.json(prefs);
+  })
+  .put('/notification-preferences', async (c) => {
+    const parsed = await parseJson(c, notificationPreferencesPayloadSchema);
+    if (!parsed.success) return parsed.response;
+
+    const updatedUser = await User.findOneAndUpdate(
+      { clerkId: c.get('user').clerkId },
+      { $set: { notificationPreferences: parsed.data } },
+      { returnDocument: 'after' },
+    ).select('notificationPreferences').lean();
+
+    if (!updatedUser) return c.json({ error: 'User not found' }, 404);
+    return c.json(updatedUser.notificationPreferences);
   })
   .get('/addresses', async (c) => {
     const currentUser = await User.findOne({ clerkId: c.get('user').clerkId }).select('addresses').lean();
