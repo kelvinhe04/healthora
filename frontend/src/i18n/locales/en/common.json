@@ -1176,6 +1176,88 @@
         "saving": "Saving…",
         "save": "Save"
       }
+    },
+    "dashboard": {
+      "kicker": "Admin panel",
+      "titleWord": "Dashboard",
+      "sub": "Live overview of sales, orders, users, and inventory.",
+      "kpi": {
+        "revenueMonth": "Revenue this month",
+        "revenueMonthSub": "vs previous month",
+        "ordersMonth": "Orders this month",
+        "ordersMonthSub": "paid or in progress",
+        "customers": "Customers",
+        "customersSub": "registered customers",
+        "lowStock": "Low stock",
+        "lowStockSub": "products with 5 units or fewer"
+      },
+      "revenueChart": {
+        "title": "Revenue · last 30 days",
+        "sub": "Daily revenue, in USD"
+      },
+      "recentOrders": {
+        "title": "Recent orders",
+        "sub": "Last 5 orders in the store",
+        "columns": {
+          "order": "Order",
+          "customer": "Customer",
+          "total": "Total",
+          "payment": "Payment"
+        },
+        "defaultCustomerName": "Customer",
+        "empty": "No recent orders."
+      },
+      "paymentStatus": {
+        "paid": "Paid",
+        "cancelled": "Cancelled",
+        "refunded": "Refunded",
+        "pending": "Pending"
+      },
+      "lowStockCard": {
+        "title": "Critical inventory",
+        "sub": "Products that need restocking",
+        "unitsBadge": "{{count}} units",
+        "empty": "No products with critical stock levels."
+      }
+    },
+    "categories": {
+      "kicker_one": "Catalog · {{count}} category",
+      "kicker_other": "Catalog · {{count}} categories",
+      "titlePrefix": "Category",
+      "titleEmphasis": "management",
+      "sub": "Create, edit, deactivate, and reassign products between categories without touching the seed.",
+      "newButton": "New category",
+      "table": {
+        "columns": {
+          "category": "Category",
+          "id": "ID",
+          "products": "Products",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "statusActive": "Active",
+        "statusInactive": "Inactive",
+        "editButton": "Edit"
+      },
+      "noCategorySelectedError": "No category selected",
+      "modal": {
+        "createTitle": "New category",
+        "editTitle": "Edit category",
+        "idLabel": "ID (internal slug)",
+        "idPlaceholder": "E.g. Vitamins",
+        "labelLabel": "Visible name",
+        "subLabel": "Subtitle",
+        "colorLabel": "Color (CSS)",
+        "renameIdLabel": "Rename ID (reassigns products)",
+        "activeCheckboxLabel": "Category active in the store",
+        "reassignSectionLabel": "Reassign all products to another category",
+        "reassignPlaceholder": "Select a destination…",
+        "moving": "Moving…",
+        "reassign": "Reassign",
+        "cancel": "Cancel",
+        "saving": "Saving…",
+        "save": "Save"
+      }
     }
   }
 }

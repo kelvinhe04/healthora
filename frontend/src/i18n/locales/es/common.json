@@ -1176,6 +1176,88 @@
         "saving": "Guardando…",
         "save": "Guardar"
       }
+    },
+    "dashboard": {
+      "kicker": "Panel de administración",
+      "titleWord": "Dashboard",
+      "sub": "Resumen en vivo de ventas, órdenes, usuarios e inventario.",
+      "kpi": {
+        "revenueMonth": "Ingresos mes",
+        "revenueMonthSub": "vs mes anterior",
+        "ordersMonth": "Órdenes mes",
+        "ordersMonthSub": "pagadas o en curso",
+        "customers": "Clientes",
+        "customersSub": "clientes registrados",
+        "lowStock": "Existencias bajas",
+        "lowStockSub": "productos con 5 unidades o menos"
+      },
+      "revenueChart": {
+        "title": "Ingresos · últimos 30 días",
+        "sub": "Ingresos diarios, en USD"
+      },
+      "recentOrders": {
+        "title": "Pedidos recientes",
+        "sub": "Últimas 5 órdenes del ecommerce",
+        "columns": {
+          "order": "Orden",
+          "customer": "Cliente",
+          "total": "Total",
+          "payment": "Pago"
+        },
+        "defaultCustomerName": "Cliente",
+        "empty": "No hay pedidos recientes."
+      },
+      "paymentStatus": {
+        "paid": "Pagado",
+        "cancelled": "Cancelado",
+        "refunded": "Reembolsado",
+        "pending": "Pendiente"
+      },
+      "lowStockCard": {
+        "title": "Inventario crítico",
+        "sub": "Productos que requieren reposición",
+        "unitsBadge": "{{count}} uds",
+        "empty": "No hay productos con existencias críticas."
+      }
+    },
+    "categories": {
+      "kicker_one": "Catálogo · {{count}} categoría",
+      "kicker_other": "Catálogo · {{count}} categorías",
+      "titlePrefix": "Gestión de",
+      "titleEmphasis": "categorías",
+      "sub": "Crea, edita, desactiva y reasigna productos entre categorías sin tocar el seed.",
+      "newButton": "Nueva categoría",
+      "table": {
+        "columns": {
+          "category": "Categoría",
+          "id": "ID",
+          "products": "Productos",
+          "status": "Estado",
+          "actions": "Acciones"
+        },
+        "statusActive": "Activa",
+        "statusInactive": "Inactiva",
+        "editButton": "Editar"
+      },
+      "noCategorySelectedError": "Categoría no seleccionada",
+      "modal": {
+        "createTitle": "Nueva categoría",
+        "editTitle": "Editar categoría",
+        "idLabel": "ID (slug interno)",
+        "idPlaceholder": "Ej. Vitaminas",
+        "labelLabel": "Nombre visible",
+        "subLabel": "Subtítulo",
+        "colorLabel": "Color (CSS)",
+        "renameIdLabel": "Renombrar ID (reasigna productos)",
+        "activeCheckboxLabel": "Categoría activa en la tienda",
+        "reassignSectionLabel": "Reasignar todos los productos a otra categoría",
+        "reassignPlaceholder": "Seleccionar destino…",
+        "moving": "Moviendo…",
+        "reassign": "Reasignar",
+        "cancel": "Cancelar",
+        "saving": "Guardando…",
+        "save": "Guardar"
+      }
     }
   }
 }
