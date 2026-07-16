@@ -1,0 +1,162 @@
+{
+  "common": {
+    "languageSwitcherAria": "Cambiar idioma"
+  },
+  "header": {
+    "nav": {
+      "categories": "Categorías",
+      "bestsellers": "Más vendidos",
+      "recentlyViewed": "Vistos recientemente",
+      "deals": "Ofertas",
+      "newArrivals": "Recién llegados",
+      "brands": "Marcas"
+    },
+    "search": {
+      "placeholderWide": "Buscar vitaminas, cuidado de piel, marcas...",
+      "placeholderNarrow": "Buscar productos...",
+      "ariaLabel": "Buscar productos",
+      "ariaClear": "Limpiar búsqueda",
+      "ariaSubmit": "Buscar"
+    },
+    "account": {
+      "aria": "Cuenta",
+      "profileAlt": "Perfil",
+      "myOrders": "Mis pedidos",
+      "club": "Club Healthora",
+      "myProfile": "Mi perfil",
+      "shippingAddresses": "Direcciones de envío",
+      "adminPanel": "Panel admin",
+      "signOut": "Cerrar sesión"
+    },
+    "theme": {
+      "toLight": "Activar modo claro",
+      "toDark": "Activar modo oscuro"
+    },
+    "wishlistAria": "Lista de deseos",
+    "compareAria": "Comparar productos",
+    "cartAria": "Carrito",
+    "menuAria": "Menú",
+    "closeMenuAria": "Cerrar menú",
+    "signOutModal": {
+      "title": "¿Cerrar sesión?",
+      "body": "Tu carrito y preferencias se conservarán para la próxima vez que entres.",
+      "cancel": "Cancelar",
+      "confirm": "Cerrar sesión"
+    },
+    "addresses": {
+      "account": "Cuenta",
+      "headingPrefix": "Direcciones de",
+      "headingEmphasis": "envío",
+      "intro": "Guarda varias direcciones y usa una como principal para autollenar el checkout.",
+      "loading": "Cargando direcciones…",
+      "empty": "Aún no tienes direcciones guardadas.",
+      "unnamed": "Dirección {{n}}",
+      "principal": "Principal",
+      "editAria": "Editar dirección",
+      "deleteAria": "Eliminar dirección",
+      "useAsPrimary": "Usar como principal",
+      "newAddress": "Nueva dirección",
+      "editAddress": "Editar dirección",
+      "closeAria": "Cerrar",
+      "form": {
+        "label": "Etiqueta",
+        "labelPlaceholder": "Casa, oficina, mamá…",
+        "name": "Nombre",
+        "namePlaceholder": "Nombre completo",
+        "phone": "Teléfono",
+        "phonePlaceholder": "6123-4567",
+        "city": "Ciudad",
+        "cityPlaceholder": "Ciudad",
+        "address": "Dirección",
+        "addressPlaceholder": "Calle, número, apto",
+        "postal": "Código postal",
+        "postalPlaceholder": "10001"
+      },
+      "addButton": "Agregar dirección",
+      "updateButton": "Actualizar dirección",
+      "saveAllButton": "Guardar direcciones",
+      "savingButton": "Guardando…",
+      "confirmDeleteKicker": "Confirmación",
+      "confirmDeleteHeadingPrefix": "Eliminar",
+      "confirmDeleteHeadingEmphasis": "dirección",
+      "confirmDeleteBody": "Se eliminará {{target}} de tu cuenta.",
+      "thisAddress": "esta dirección",
+      "cancel": "Cancelar",
+      "confirmDeleteButton": "Sí, eliminar",
+      "savedKicker": "Direcciones guardadas",
+      "savedHeadingPrefix": "Cambios",
+      "savedHeadingEmphasis": "guardados",
+      "savedBody": "Tus direcciones de envío se actualizaron correctamente.",
+      "understood": "Entendido"
+    },
+    "errors": {
+      "needSignIn": "Necesitas iniciar sesión",
+      "loadAddressesFailed": "No se pudieron cargar las direcciones",
+      "saveAddressesFailed": "No se pudieron guardar las direcciones",
+      "deleteAddressFailed": "No se pudo eliminar la dirección",
+      "fillRequiredFields": "Completa nombre, teléfono, dirección, ciudad y código postal."
+    }
+  },
+  "footer": {
+    "ariaLabel": "Pie de página",
+    "description": "Tu farmacia online para salud, cuidado personal, belleza y bienestar.",
+    "columns": {
+      "shop": "Comprar",
+      "help": "Ayuda",
+      "legal": "Legal"
+    },
+    "categories": {
+      "vitamins": "Vitaminas",
+      "medications": "Medicamentos",
+      "personalCare": "Cuidado personal",
+      "babyCare": "Cuidado del bebé",
+      "skinHealth": "Salud de la piel",
+      "fitness": "Fitness",
+      "fragrances": "Fragancias",
+      "moisturizers": "Hidratantes",
+      "makeup": "Maquillaje",
+      "wellnessSupplements": "Suplementos de Bienestar"
+    },
+    "help": {
+      "contact": "Contacto",
+      "faq": "Preguntas frecuentes",
+      "shipping": "Envíos",
+      "returns": "Devoluciones",
+      "orderStatus": "Estado de mi orden"
+    },
+    "legal": {
+      "terms": "Términos y condiciones",
+      "privacy": "Política de privacidad",
+      "medications": "Política de medicamentos",
+      "cookies": "Cookies"
+    },
+    "newsletter": {
+      "title": "Newsletter",
+      "body": "Recibe ofertas, lanzamientos y consejos de bienestar.",
+      "placeholder": "tu@email.com",
+      "submitting": "Enviando...",
+      "submit": "Suscribirme",
+      "errorEmpty": "Ingresa tu correo para suscribirte.",
+      "success": "Te enviamos un correo de confirmación.",
+      "errorGeneric": "No pudimos completar la suscripción."
+    },
+    "copyright": "© 2026 Healthora · Farmacia digital",
+    "payments": "Pagos seguros · Visa · Mastercard · Amex · Stripe"
+  },
+  "productCard": {
+    "outOfStock": "Agotado",
+    "lowStock": "Solo quedan {{count}}",
+    "compareMax": "Máximo 4 productos",
+    "removeFromCompareAria": "Quitar de comparación",
+    "addToCompareAria": "Agregar a comparación",
+    "removeFromWishlistAria": "Quitar de wishlist",
+    "addToWishlistAria": "Agregar a wishlist",
+    "addToCartAria": "Agregar al carrito",
+    "noReviews": "SIN RESEÑAS",
+    "purchasesLastMonth": "{{count}} compraron el último mes",
+    "tags": {
+      "new": "Nuevo",
+      "bestseller": "Más vendido"
+    }
+  }
+}

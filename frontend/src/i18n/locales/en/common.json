@@ -1,0 +1,162 @@
+{
+  "common": {
+    "languageSwitcherAria": "Change language"
+  },
+  "header": {
+    "nav": {
+      "categories": "Categories",
+      "bestsellers": "Bestsellers",
+      "recentlyViewed": "Recently viewed",
+      "deals": "Deals",
+      "newArrivals": "New arrivals",
+      "brands": "Brands"
+    },
+    "search": {
+      "placeholderWide": "Search vitamins, skin care, brands...",
+      "placeholderNarrow": "Search products...",
+      "ariaLabel": "Search products",
+      "ariaClear": "Clear search",
+      "ariaSubmit": "Search"
+    },
+    "account": {
+      "aria": "Account",
+      "profileAlt": "Profile",
+      "myOrders": "My orders",
+      "club": "Healthora Club",
+      "myProfile": "My profile",
+      "shippingAddresses": "Shipping addresses",
+      "adminPanel": "Admin panel",
+      "signOut": "Sign out"
+    },
+    "theme": {
+      "toLight": "Turn on light mode",
+      "toDark": "Turn on dark mode"
+    },
+    "wishlistAria": "Wishlist",
+    "compareAria": "Compare products",
+    "cartAria": "Cart",
+    "menuAria": "Menu",
+    "closeMenuAria": "Close menu",
+    "signOutModal": {
+      "title": "Sign out?",
+      "body": "Your cart and preferences will be kept for the next time you sign in.",
+      "cancel": "Cancel",
+      "confirm": "Sign out"
+    },
+    "addresses": {
+      "account": "Account",
+      "headingPrefix": "Shipping",
+      "headingEmphasis": "addresses",
+      "intro": "Save several addresses and set one as default to autofill checkout.",
+      "loading": "Loading addresses…",
+      "empty": "You don't have any saved addresses yet.",
+      "unnamed": "Address {{n}}",
+      "principal": "Default",
+      "editAria": "Edit address",
+      "deleteAria": "Delete address",
+      "useAsPrimary": "Set as default",
+      "newAddress": "New address",
+      "editAddress": "Edit address",
+      "closeAria": "Close",
+      "form": {
+        "label": "Label",
+        "labelPlaceholder": "Home, office, mom…",
+        "name": "Name",
+        "namePlaceholder": "Full name",
+        "phone": "Phone",
+        "phonePlaceholder": "6123-4567",
+        "city": "City",
+        "cityPlaceholder": "City",
+        "address": "Address",
+        "addressPlaceholder": "Street, number, apt",
+        "postal": "Postal code",
+        "postalPlaceholder": "10001"
+      },
+      "addButton": "Add address",
+      "updateButton": "Update address",
+      "saveAllButton": "Save addresses",
+      "savingButton": "Saving…",
+      "confirmDeleteKicker": "Confirmation",
+      "confirmDeleteHeadingPrefix": "Delete",
+      "confirmDeleteHeadingEmphasis": "address",
+      "confirmDeleteBody": "{{target}} will be deleted from your account.",
+      "thisAddress": "This address",
+      "cancel": "Cancel",
+      "confirmDeleteButton": "Yes, delete",
+      "savedKicker": "Addresses saved",
+      "savedHeadingPrefix": "Changes",
+      "savedHeadingEmphasis": "saved",
+      "savedBody": "Your shipping addresses were updated successfully.",
+      "understood": "Got it"
+    },
+    "errors": {
+      "needSignIn": "You need to sign in",
+      "loadAddressesFailed": "We couldn't load your addresses",
+      "saveAddressesFailed": "We couldn't save your addresses",
+      "deleteAddressFailed": "We couldn't delete the address",
+      "fillRequiredFields": "Fill in name, phone, address, city and postal code."
+    }
+  },
+  "footer": {
+    "ariaLabel": "Footer",
+    "description": "Your online pharmacy for health, personal care, beauty and wellness.",
+    "columns": {
+      "shop": "Shop",
+      "help": "Help",
+      "legal": "Legal"
+    },
+    "categories": {
+      "vitamins": "Vitamins",
+      "medications": "Medications",
+      "personalCare": "Personal care",
+      "babyCare": "Baby care",
+      "skinHealth": "Skin health",
+      "fitness": "Fitness",
+      "fragrances": "Fragrances",
+      "moisturizers": "Moisturizers",
+      "makeup": "Makeup",
+      "wellnessSupplements": "Wellness supplements"
+    },
+    "help": {
+      "contact": "Contact",
+      "faq": "FAQ",
+      "shipping": "Shipping",
+      "returns": "Returns",
+      "orderStatus": "Order status"
+    },
+    "legal": {
+      "terms": "Terms and conditions",
+      "privacy": "Privacy policy",
+      "medications": "Medication policy",
+      "cookies": "Cookies"
+    },
+    "newsletter": {
+      "title": "Newsletter",
+      "body": "Get deals, launches and wellness tips.",
+      "placeholder": "you@email.com",
+      "submitting": "Sending...",
+      "submit": "Subscribe",
+      "errorEmpty": "Enter your email to subscribe.",
+      "success": "We sent you a confirmation email.",
+      "errorGeneric": "We couldn't complete the subscription."
+    },
+    "copyright": "© 2026 Healthora · Digital pharmacy",
+    "payments": "Secure payments · Visa · Mastercard · Amex · Stripe"
+  },
+  "productCard": {
+    "outOfStock": "Out of stock",
+    "lowStock": "Only {{count}} left",
+    "compareMax": "Maximum of 4 products",
+    "removeFromCompareAria": "Remove from comparison",
+    "addToCompareAria": "Add to comparison",
+    "removeFromWishlistAria": "Remove from wishlist",
+    "addToWishlistAria": "Add to wishlist",
+    "addToCartAria": "Add to cart",
+    "noReviews": "NO REVIEWS",
+    "purchasesLastMonth": "{{count}} bought last month",
+    "tags": {
+      "new": "New",
+      "bestseller": "Bestseller"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSearchParamsCompat as useSearchParams } from "../../hooks/useSearchParamsCompat";
 import { useCartStore } from "../../store/cartStore";
 import { useCompareStore } from "../../store/compareStore";
@@ -7,6 +8,7 @@ import { useThemeStore, toggleThemeWithTransition } from "../../store/themeStore
 import { Icon } from "../shared/Icon";
 import { NotificationCenter } from "../shared/NotificationCenter";
 import { AnimatedButton } from "../shared/AnimatedButton";
+import { LanguageSwitcher } from "../shared/LanguageSwitcher";
 import { useAuth, useUser, useClerk } from "@clerk/clerk-react";
 import { api } from "../../lib/api";
 import type { SavedAddress } from "../../types";
@@ -104,6 +106,8 @@ function AddressManagerModal({
   onSaveEntry: () => void;
   onPersist: () => void;
 }) {
+  const { t } = useTranslation();
+
   if (!open) return null;
 
   const labelStyle = {
@@ -175,7 +179,7 @@ function AddressManagerModal({
                 marginBottom: 8,
               }}
             >
-              Cuenta
+              {t("header.addresses.account")}
             </div>
             <h2
               style={{
@@ -187,7 +191,8 @@ function AddressManagerModal({
                 fontWeight: 400,
               }}
             >
-              Direcciones de <em style={{ color: "var(--green)" }}>envío</em>
+              {t("header.addresses.headingPrefix")}{" "}
+              <em style={{ color: "var(--green)" }}>{t("header.addresses.headingEmphasis")}</em>
             </h2>
           </div>
           <p
@@ -199,8 +204,7 @@ function AddressManagerModal({
               fontFamily: '"Geist", sans-serif',
             }}
           >
-            Guarda varias direcciones y usa una como principal para autollenar
-            el checkout.
+            {t("header.addresses.intro")}
           </p>
 
           {loading ? (
@@ -211,7 +215,7 @@ function AddressManagerModal({
                 fontFamily: '"Geist", sans-serif',
               }}
             >
-              Cargando direcciones…
+              {t("header.addresses.loading")}
             </div>
           ) : addresses.length === 0 ? (
             <div
@@ -224,7 +228,7 @@ function AddressManagerModal({
                 fontFamily: '"Geist", sans-serif',
               }}
             >
-              Aún no tienes direcciones guardadas.
+              {t("header.addresses.empty")}
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -265,7 +269,7 @@ function AddressManagerModal({
                             fontFamily: '"Geist", sans-serif',
                           }}
                         >
-                          {address.label || `Dirección ${index + 1}`}
+                          {address.label || t("header.addresses.unnamed", { n: index + 1 })}
                         </strong>
                         {address.isDefault && (
                           <span
@@ -277,7 +281,7 @@ function AddressManagerModal({
                               color: "var(--green)",
                             }}
                           >
-                            Principal
+                            {t("header.addresses.principal")}
                           </span>
                         )}
                       </div>
@@ -300,14 +304,14 @@ function AddressManagerModal({
                       <button
                         onClick={() => onEdit(index)}
                         style={{ ...iconBtn, color: "var(--ink-60)" }}
-                        aria-label="Editar dirección"
+                        aria-label={t("header.addresses.editAria")}
                       >
                         <Icon name="pencil" size={15} />
                       </button>
                       <button
                         onClick={() => onDelete(index)}
                         style={{ ...iconBtn, color: "var(--coral)" }}
-                        aria-label="Eliminar dirección"
+                        aria-label={t("header.addresses.deleteAria")}
                       >
                         <Icon name="trash" size={15} />
                       </button>
@@ -324,7 +328,7 @@ function AddressManagerModal({
                         color: "var(--green)",
                       }}
                     >
-                      Usar como principal
+                      {t("header.addresses.useAsPrimary")}
                     </button>
                   )}
                 </div>
@@ -358,7 +362,7 @@ function AddressManagerModal({
                 color: "var(--ink-60)",
               }}
             >
-              {editingIndex === null ? "Nueva dirección" : "Editar dirección"}
+              {editingIndex === null ? t("header.addresses.newAddress") : t("header.addresses.editAddress")}
             </div>
             <button
               onClick={onClose}
@@ -370,6 +374,7 @@ function AddressManagerModal({
                 borderRadius: 999,
                 border: "1px solid var(--ink-06)",
               }}
+              aria-label={t("header.addresses.closeAria")}
             >
               <Icon name="x" size={16} />
             </button>
@@ -378,56 +383,56 @@ function AddressManagerModal({
             style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}
           >
             <label>
-              <span style={labelStyle}>Etiqueta</span>
+              <span style={labelStyle}>{t("header.addresses.form.label")}</span>
               <input
                 value={form.label || ""}
                 onChange={(e) => onFormChange("label", e.target.value)}
-                placeholder="Casa, oficina, mamá…"
+                placeholder={t("header.addresses.form.labelPlaceholder")}
                 style={inputStyle}
               />
             </label>
             <label>
-              <span style={labelStyle}>Nombre</span>
+              <span style={labelStyle}>{t("header.addresses.form.name")}</span>
               <input
                 value={form.name}
                 onChange={(e) => onFormChange("name", e.target.value)}
-                placeholder="Nombre completo"
+                placeholder={t("header.addresses.form.namePlaceholder")}
                 style={inputStyle}
               />
             </label>
             <label>
-              <span style={labelStyle}>Teléfono</span>
+              <span style={labelStyle}>{t("header.addresses.form.phone")}</span>
               <input
                 value={form.phone}
                 onChange={(e) => onFormChange("phone", formatPanamaPhone(e.target.value))}
-                placeholder="6123-4567"
+                placeholder={t("header.addresses.form.phonePlaceholder")}
                 style={inputStyle}
               />
             </label>
             <label>
-              <span style={labelStyle}>Ciudad</span>
+              <span style={labelStyle}>{t("header.addresses.form.city")}</span>
               <input
                 value={form.city}
                 onChange={(e) => onFormChange("city", e.target.value)}
-                placeholder="Ciudad"
+                placeholder={t("header.addresses.form.cityPlaceholder")}
                 style={inputStyle}
               />
             </label>
             <label style={{ gridColumn: "1 / -1" }}>
-              <span style={labelStyle}>Dirección</span>
+              <span style={labelStyle}>{t("header.addresses.form.address")}</span>
               <input
                 value={form.address}
                 onChange={(e) => onFormChange("address", e.target.value)}
-                placeholder="Calle, número, apto"
+                placeholder={t("header.addresses.form.addressPlaceholder")}
                 style={inputStyle}
               />
             </label>
             <label>
-              <span style={labelStyle}>Código postal</span>
+              <span style={labelStyle}>{t("header.addresses.form.postal")}</span>
               <input
                 value={form.postal}
                 onChange={(e) => onFormChange("postal", e.target.value)}
-                placeholder="10001"
+                placeholder={t("header.addresses.form.postalPlaceholder")}
                 style={inputStyle}
               />
             </label>
@@ -452,8 +457,8 @@ function AddressManagerModal({
               onClick={onSaveEntry}
               text={
                 editingIndex === null
-                  ? "Agregar dirección"
-                  : "Actualizar dirección"
+                  ? t("header.addresses.addButton")
+                  : t("header.addresses.updateButton")
               }
             />
           </div>
@@ -471,7 +476,7 @@ function AddressManagerModal({
             full
             onClick={onPersist}
             disabled={saving}
-            text={saving ? "Guardando…" : "Guardar direcciones"}
+            text={saving ? t("header.addresses.savingButton") : t("header.addresses.saveAllButton")}
           />
         </div>
 
@@ -517,7 +522,7 @@ function AddressManagerModal({
                     marginBottom: 8,
                   }}
                 >
-                  Confirmación
+                  {t("header.addresses.confirmDeleteKicker")}
                 </div>
                 <div
                   style={{
@@ -528,7 +533,8 @@ function AddressManagerModal({
                     color: "var(--ink)",
                   }}
                 >
-                  Eliminar <em style={{ color: "var(--coral)" }}>dirección</em>
+                  {t("header.addresses.confirmDeleteHeadingPrefix")}{" "}
+                  <em style={{ color: "var(--coral)" }}>{t("header.addresses.confirmDeleteHeadingEmphasis")}</em>
                 </div>
                 <p
                   style={{
@@ -539,11 +545,11 @@ function AddressManagerModal({
                     fontFamily: '"Geist", sans-serif',
                   }}
                 >
-                  Se eliminará{" "}
-                  {addresses[confirmDeleteIndex].label
-                    ? `"${addresses[confirmDeleteIndex].label}"`
-                    : "esta dirección"}{" "}
-                  de tu cuenta.
+                  {t("header.addresses.confirmDeleteBody", {
+                    target: addresses[confirmDeleteIndex].label
+                      ? `"${addresses[confirmDeleteIndex].label}"`
+                      : t("header.addresses.thisAddress"),
+                  })}
                 </p>
               </div>
               <div
@@ -558,7 +564,7 @@ function AddressManagerModal({
                 <AnimatedButton
                   variant="outline"
                   onClick={onCancelDelete}
-                  text="Cancelar"
+                  text={t("header.addresses.cancel")}
                 />
                 <AnimatedButton
                   variant="primary"
@@ -566,7 +572,7 @@ function AddressManagerModal({
                     void onConfirmDelete();
                   }}
                   disabled={saving}
-                  text="Sí, eliminar"
+                  text={t("header.addresses.confirmDeleteButton")}
                 />
               </div>
             </div>
@@ -578,6 +584,7 @@ function AddressManagerModal({
 }
 
 export function Header({ onNav, onOpenCart }: HeaderProps) {
+  const { t } = useTranslation();
   const cartCount = useCartStore((s) => s.count());
   const compareCount = useCompareStore((s) => s.productIds.length);
   const wishlistCount = useWishlistStore((s) => s.productIds.length);
@@ -688,7 +695,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
 
       try {
         const token = await getToken();
-        if (!token) throw new Error("Necesitas iniciar sesión");
+        if (!token) throw new Error(t("header.errors.needSignIn"));
         const addresses = await api.account.addresses.list(token);
         if (cancelled) return;
         setSavedAddresses(addresses);
@@ -699,7 +706,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
         setAddressError(
           error instanceof Error
             ? error.message
-            : "No se pudieron cargar las direcciones",
+            : t("header.errors.loadAddressesFailed"),
         );
       } finally {
         if (!cancelled) setAddressLoading(false);
@@ -711,7 +718,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
     return () => {
       cancelled = true;
     };
-  }, [addressModalOpen, getToken, isSignedIn]);
+  }, [addressModalOpen, getToken, isSignedIn, t]);
 
   const resetAddressEditor = () => {
     setAddressForm(emptyAddress);
@@ -731,9 +738,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
       !addressForm.city.trim() ||
       !addressForm.postal.trim()
     ) {
-      setAddressError(
-        "Completa nombre, teléfono, dirección, ciudad y código postal.",
-      );
+      setAddressError(t("header.errors.fillRequiredFields"));
       return;
     }
 
@@ -773,7 +778,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
 
     try {
       const token = await getToken();
-      if (!token) throw new Error("Necesitas iniciar sesión");
+      if (!token) throw new Error(t("header.errors.needSignIn"));
       const addresses = await api.account.addresses.save(savedAddresses, token);
       setSavedAddresses(addresses);
       resetAddressEditor();
@@ -783,7 +788,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
       setAddressError(
         error instanceof Error
           ? error.message
-          : "No se pudieron guardar las direcciones",
+          : t("header.errors.saveAddressesFailed"),
       );
     } finally {
       setAddressSaving(false);
@@ -803,12 +808,12 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   };
 
   const navLinks = [
-    { label: "Categorías", anchor: "categorias" },
-    { label: "Más vendidos", anchor: "bestsellers" },
-    { label: "Vistos recientemente", anchor: "vistos-recientemente" },
-    { label: "Ofertas", anchor: "ofertas" },
-    { label: "Recién llegados", anchor: "nuevos" },
-    { label: "Marcas", anchor: "marcas" },
+    { label: t("header.nav.categories"), anchor: "categorias" },
+    { label: t("header.nav.bestsellers"), anchor: "bestsellers" },
+    { label: t("header.nav.recentlyViewed"), anchor: "vistos-recientemente" },
+    { label: t("header.nav.deals"), anchor: "ofertas" },
+    { label: t("header.nav.newArrivals"), anchor: "nuevos" },
+    { label: t("header.nav.brands"), anchor: "marcas" },
   ];
 
   const scrollToSection = (anchor: string) => {
@@ -969,10 +974,10 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             onChange={(e) => setSearch(e.target.value)}
             placeholder={
               headerWide
-                ? "Buscar vitaminas, cuidado de piel, marcas..."
-                : "Buscar productos..."
+                ? t("header.search.placeholderWide")
+                : t("header.search.placeholderNarrow")
             }
-            aria-label="Buscar productos"
+            aria-label={t("header.search.ariaLabel")}
             style={{
               flex: 1,
               border: "none",
@@ -997,14 +1002,14 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                 color: "var(--ink-60)",
                 justifyContent: "center",
               }}
-              aria-label="Limpiar búsqueda"
+              aria-label={t("header.search.ariaClear")}
             >
               <Icon name="x" size={14} />
             </button>
           )}
           <button
             type="submit"
-            aria-label="Buscar"
+            aria-label={t("header.search.ariaSubmit")}
             onMouseEnter={() => setSearchBtnHovered(true)}
             onMouseLeave={() => setSearchBtnHovered(false)}
             style={{
@@ -1072,10 +1077,12 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
           marginLeft: isMobile ? "auto" : undefined,
         }}
       >
+        <LanguageSwitcher buttonStyle={headerIconBtn} />
+
         <div ref={userMenuRef} style={{ position: "relative" }}>
           <button
             style={headerIconBtn}
-            aria-label="Cuenta"
+            aria-label={t("header.account.aria")}
             onClick={() => {
               if (isSignedIn) setUserMenuOpen(!userMenuOpen);
               else setSignInModalOpen(true);
@@ -1084,7 +1091,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             {isSignedIn && user?.imageUrl ? (
               <img
                 src={user.imageUrl}
-                alt="Perfil"
+                alt={t("header.account.profileAlt")}
                 style={{
                   width: 24,
                   height: 24,
@@ -1144,8 +1151,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                   setUserMenuOpen(false);
                 }}
               >
-                <Icon name="receipt" size={14} style={{ marginRight: 8 }} /> Mis
-                pedidos
+                <Icon name="receipt" size={14} style={{ marginRight: 8 }} /> {t("header.account.myOrders")}
               </button>
               <button
                 style={{
@@ -1163,8 +1169,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                   setUserMenuOpen(false);
                 }}
               >
-                <Icon name="gift" size={14} style={{ marginRight: 8 }} /> Club
-                Healthora
+                <Icon name="gift" size={14} style={{ marginRight: 8 }} /> {t("header.account.club")}
               </button>
               <button
                 style={{
@@ -1182,8 +1187,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                   setUserMenuOpen(false);
                 }}
               >
-                <Icon name="user" size={14} style={{ marginRight: 8 }} /> Mi
-                perfil
+                <Icon name="user" size={14} style={{ marginRight: 8 }} /> {t("header.account.myProfile")}
               </button>
               <button
                 style={{
@@ -1202,7 +1206,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                 }}
               >
                 <Icon name="truck" size={14} style={{ marginRight: 8 }} />{" "}
-                Direcciones de envío
+                {t("header.account.shippingAddresses")}
               </button>
               {isAdmin && (
                 <button
@@ -1221,7 +1225,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                   }}
                 >
                   <Icon name="shield" size={14} style={{ marginRight: 8 }} />{" "}
-                  Panel admin
+                  {t("header.account.adminPanel")}
                 </button>
               )}
               <button
@@ -1240,7 +1244,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                 }}
               >
                 <Icon name="log-out" size={14} style={{ marginRight: 8 }} />{" "}
-                Cerrar sesión
+                {t("header.account.signOut")}
               </button>
             </div>
           )}
@@ -1262,7 +1266,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             transition: "background 200ms, border-color 200ms",
           }}
           aria-label={
-            theme === "dark" ? "Activar modo claro" : "Activar modo oscuro"
+            theme === "dark" ? t("header.theme.toLight") : t("header.theme.toDark")
           }
         >
           <span
@@ -1281,7 +1285,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
         <button
           style={{ ...headerIconBtn, position: "relative" }}
           onClick={() => onNav("wishlist")}
-          aria-label="Lista de deseos"
+          aria-label={t("header.wishlistAria")}
         >
           <Icon name="heart" />
           {wishlistCount > 0 && (
@@ -1311,7 +1315,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
         <button
           style={{ ...headerIconBtn, position: "relative" }}
           onClick={() => onNav("compare")}
-          aria-label="Comparar productos"
+          aria-label={t("header.compareAria")}
         >
           <Icon name="layers" />
           {compareCount > 0 && (
@@ -1341,7 +1345,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
         <button
           style={{ ...headerIconBtn, position: "relative" }}
           onClick={onOpenCart}
-          aria-label="Carrito"
+          aria-label={t("header.cartAria")}
         >
           <Icon name="bag" />
           {cartCount > 0 && (
@@ -1380,7 +1384,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               justifyContent: "center",
             }}
             onClick={() => setMobileMenuOpen(true)}
-            aria-label="Menú"
+            aria-label={t("header.menuAria")}
           >
             <Icon name="menu" size={18} />
           </button>
@@ -1460,7 +1464,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                   border: "1px solid var(--ink-06)",
                 }}
                 onClick={() => setMobileMenuOpen(false)}
-                aria-label="Cerrar menú"
+                aria-label={t("header.closeMenuAria")}
               >
                 <Icon name="x" size={18} />
               </button>
@@ -1488,8 +1492,8 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar productos..."
-                aria-label="Buscar"
+                placeholder={t("header.search.placeholderNarrow")}
+                aria-label={t("header.search.ariaSubmit")}
                 style={{
                   flex: 1,
                   border: "none",
@@ -1568,7 +1572,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
 
           try {
             const token = await getToken();
-            if (!token) throw new Error("Necesitas iniciar sesión");
+            if (!token) throw new Error(t("header.errors.needSignIn"));
             const persistedAddresses = await api.account.addresses.save(
               nextAddresses,
               token,
@@ -1581,7 +1585,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             setAddressError(
               error instanceof Error
                 ? error.message
-                : "No se pudo eliminar la dirección",
+                : t("header.errors.deleteAddressFailed"),
             );
           } finally {
             setAddressSaving(false);
@@ -1657,7 +1661,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                   marginBottom: 8,
                 }}
               >
-                Direcciones guardadas
+                {t("header.addresses.savedKicker")}
               </div>
               <div
                 style={{
@@ -1668,7 +1672,8 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                   color: "var(--ink)",
                 }}
               >
-                Cambios <em style={{ color: "var(--green)" }}>guardados</em>
+                {t("header.addresses.savedHeadingPrefix")}{" "}
+                <em style={{ color: "var(--green)" }}>{t("header.addresses.savedHeadingEmphasis")}</em>
               </div>
               <p
                 style={{
@@ -1679,7 +1684,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                   fontFamily: '"Geist", sans-serif',
                 }}
               >
-                Tus direcciones de envío se actualizaron correctamente.
+                {t("header.addresses.savedBody")}
               </p>
             </div>
             <div
@@ -1693,7 +1698,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               <AnimatedButton
                 variant="primary"
                 onClick={() => setAddressSaveSuccess(false)}
-                text="Entendido"
+                text={t("header.addresses.understood")}
               />
             </div>
           </div>
@@ -1759,7 +1764,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                   color: "var(--ink)",
                 }}
               >
-                ¿Cerrar sesión?
+                {t("header.signOutModal.title")}
               </h3>
               <p
                 style={{
@@ -1770,8 +1775,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                   fontFamily: '"Geist", sans-serif',
                 }}
               >
-                Tu carrito y preferencias se conservarán para la próxima vez que
-                entres.
+                {t("header.signOutModal.body")}
               </p>
             </div>
             <div style={{ padding: "0 28px 28px", display: "flex", gap: 10 }}>
@@ -1790,7 +1794,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                 }}
                 onClick={() => setSignOutModal(false)}
               >
-                Cancelar
+                {t("header.signOutModal.cancel")}
               </button>
               <button
                 style={{
@@ -1810,7 +1814,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                   signOut();
                 }}
               >
-                Cerrar sesión
+                {t("header.signOutModal.confirm")}
               </button>
             </div>
           </div>
