@@ -815,12 +815,12 @@ export function OrdersSection() {
                                 }}
                                 wrapperStyle={{ width: "auto" }}
                                 style={{
-                                  padding: "8px 28px",
+                                  padding: "8px 12px",
                                   borderRadius: 8,
                                   background: "var(--cream-2)",
                                   fontSize: 12,
-                                  textAlign: "center",
                                 }}
+                                align="center"
                                 optionsAlign="center"
                               >
                                 {(() => {
