@@ -375,34 +375,36 @@ function NotificationPreferencesSection() {
       {prefsQuery.isLoading ? (
         <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Cargando…</p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: prefs.unsubscribedAll ? 'not-allowed' : 'pointer', opacity: prefs.unsubscribedAll ? 0.5 : 1 }}>
-            <input
-              type="checkbox"
-              checked={prefs.orderUpdates}
-              disabled={prefs.unsubscribedAll || busy}
-              onChange={(e) => setPref('orderUpdates', e.target.checked)}
-              style={{ marginTop: 3 }}
-            />
-            <span>
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>Actualizaciones de pedidos y devoluciones</div>
-              <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Cuando tu pedido cambia de estado (enviado, entregado) o hay novedades en una devolución.</div>
-            </span>
-          </label>
-          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: prefs.unsubscribedAll ? 'not-allowed' : 'pointer', opacity: prefs.unsubscribedAll ? 0.5 : 1 }}>
-            <input
-              type="checkbox"
-              checked={prefs.promotions}
-              disabled={prefs.unsubscribedAll || busy}
-              onChange={(e) => setPref('promotions', e.target.checked)}
-              style={{ marginTop: 3 }}
-            />
-            <span>
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>Recordatorios y promociones</div>
-              <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Avisos de recompra y ofertas.</div>
-            </span>
-          </label>
-          <div style={{ borderTop: '1px solid var(--ink-06)', paddingTop: 16 }}>
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: prefs.unsubscribedAll ? 'not-allowed' : 'pointer', opacity: prefs.unsubscribedAll ? 0.5 : 1 }}>
+              <input
+                type="checkbox"
+                checked={prefs.orderUpdates}
+                disabled={prefs.unsubscribedAll || busy}
+                onChange={(e) => setPref('orderUpdates', e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <span>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>Actualizaciones de pedidos y devoluciones</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Cuando tu pedido cambia de estado (enviado, entregado) o hay novedades en una devolución.</div>
+              </span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: prefs.unsubscribedAll ? 'not-allowed' : 'pointer', opacity: prefs.unsubscribedAll ? 0.5 : 1 }}>
+              <input
+                type="checkbox"
+                checked={prefs.promotions}
+                disabled={prefs.unsubscribedAll || busy}
+                onChange={(e) => setPref('promotions', e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <span>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>Recordatorios y promociones</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Avisos de recompra y ofertas.</div>
+              </span>
+            </label>
+          </div>
+          <div style={{ borderTop: '1px solid var(--ink-06)', marginTop: 20, paddingTop: 16 }}>
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
               <input
                 type="checkbox"
@@ -463,7 +465,9 @@ export function Profile({ onBack }: ProfileProps) {
       <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1fr 1fr', gap: 16, alignItems: 'start' }}>
         <PaymentMethodsSection />
         <SubscriptionsSection />
-        <NotificationPreferencesSection />
+        <div style={{ gridColumn: isSmall ? 'auto' : '1 / -1' }}>
+          <NotificationPreferencesSection />
+        </div>
       </div>
     </div>
   );
