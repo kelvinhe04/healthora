@@ -9,6 +9,8 @@ import { decrementStock, validateCartStock } from './inventory';
 import { notifyAdmins, notifyUser } from './realtime';
 import { scanAndNotifyLowStock } from './lowStock';
 import { recordCouponRedemption } from './promotions';
+import { computePointsEarned, getLoyaltyRates, settleLoyaltyForOrder } from './loyalty';
+import { getSettings } from '../db/models/Settings';
 
 export const orderCartItemSchema = cartItemSchema.extend({
   isSample: z.coerce.boolean().optional(),
@@ -22,6 +24,8 @@ export const orderMetadataSchema = z.object({
   address: textField(5000),
   discountCode: optionalTextField(80),
   discountAmount: moneyFromInput().default(0),
+  loyaltyPointsRedeemed: z.coerce.number().int().min(0).default(0),
+  loyaltyDiscountAmount: moneyFromInput().default(0),
   tax: moneyFromInput().default(0),
   shipping: moneyFromInput().default(0),
   shippingMethod: shippingMethodSchema.optional(),
@@ -89,9 +93,14 @@ export async function createPaidOrder(params: {
   const subtotal = lineItems.reduce((sum, item) => sum + item.price * item.qty, 0);
   const discountCode = metadata.discountCode || undefined;
   const discountAmount = metadata.discountAmount;
+  const loyaltyPointsRedeemed = metadata.loyaltyPointsRedeemed;
+  const loyaltyDiscountAmount = metadata.loyaltyDiscountAmount;
   const tax = metadata.tax;
   const shipping = metadata.shipping;
-  const total = Math.round((subtotal - discountAmount + tax + shipping) * 100) / 100;
+  const total = Math.round((subtotal - discountAmount - loyaltyDiscountAmount + tax + shipping) * 100) / 100;
+
+  const loyaltySettings = await getSettings();
+  const loyaltyPointsEarned = computePointsEarned(total, getLoyaltyRates(loyaltySettings).pointsPerDollar);
 
   const order = await Order.create({
     customerId: metadata.customerId,
@@ -101,6 +110,9 @@ export async function createPaidOrder(params: {
     subtotal,
     discountCode,
     discountAmount,
+    loyaltyPointsRedeemed,
+    loyaltyDiscountAmount,
+    loyaltyPointsEarned,
     tax,
     shipping,
     shippingMethod: metadata.shippingMethod,
@@ -117,6 +129,12 @@ export async function createPaidOrder(params: {
 
   if (discountCode) {
     await recordCouponRedemption(discountCode);
+  }
+
+  try {
+    await settleLoyaltyForOrder(order);
+  } catch (loyaltyError) {
+    console.error('[ORDER_FULFILLMENT] Failed to settle loyalty points:', loyaltyError);
   }
 
   const customerEmail = metadata.customerEmail || customerEmailFallback;

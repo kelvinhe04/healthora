@@ -24,6 +24,7 @@ import type {
   SampleOption,
   Banner,
   BannerSlot,
+  LoyaltyAccount,
 } from "../types";
 import type { CartItem } from "../types";
 
@@ -151,6 +152,9 @@ export const api = {
     },
   },
   account: {
+    loyalty: {
+      get: (token: string) => request<LoyaltyAccount>("/account/loyalty", undefined, token),
+    },
     addresses: {
       list: (token: string) =>
         request<SavedAddress[]>("/account/addresses", undefined, token),
@@ -211,6 +215,7 @@ export const api = {
         promoCode?: string;
         freeSampleId?: string;
         freeSampleVariantId?: string;
+        usePoints?: boolean;
         shippingMethod: "delivery" | "pickup";
       },
       token: string,
@@ -227,6 +232,7 @@ export const api = {
         promoCode?: string;
         freeSampleId?: string;
         freeSampleVariantId?: string;
+        usePoints?: boolean;
         shippingMethod: "delivery" | "pickup";
       },
       token: string,
@@ -513,9 +519,12 @@ export const api = {
     },
     settings: {
       get: (token: string) =>
-        request<{ sampleMaxPrice: number }>("/admin/settings", undefined, token),
-      update: (body: { sampleMaxPrice: number }, token: string) =>
-        request<{ sampleMaxPrice: number }>(
+        request<{ sampleMaxPrice: number; loyaltyPointsPerDollar: number; loyaltyPointValueCents: number }>("/admin/settings", undefined, token),
+      update: (
+        body: Partial<{ sampleMaxPrice: number; loyaltyPointsPerDollar: number; loyaltyPointValueCents: number }>,
+        token: string,
+      ) =>
+        request<{ sampleMaxPrice: number; loyaltyPointsPerDollar: number; loyaltyPointValueCents: number }>(
           "/admin/settings",
           { method: "PUT", body: JSON.stringify(body) },
           token,

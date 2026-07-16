@@ -8,6 +8,8 @@ import { sendOrderConfirmationEmail } from './email';
 import { notifyAdmins, notifyUser } from './realtime';
 import { scanAndNotifyLowStock } from './lowStock';
 import { recalculateAfterPayment } from './bestsellers';
+import { computePointsEarned, getLoyaltyRates, settleLoyaltyForOrder } from './loyalty';
+import { getSettings } from '../db/models/Settings';
 import {
   emailField,
   intFromInput,
@@ -67,12 +69,16 @@ export async function createSubscriptionOrder(sub: SubscriptionDoc) {
     taxExempt: sub.taxExempt,
   };
 
+  const loyaltySettings = await getSettings();
+  const loyaltyPointsEarned = computePointsEarned(sub.total, getLoyaltyRates(loyaltySettings).pointsPerDollar);
+
   const order = await Order.create({
     customerId: sub.customerId,
     customerName: sub.customerName,
     customerEmail: sub.customerEmail,
     items: [lineItem],
     subtotal: sub.subtotal,
+    loyaltyPointsEarned,
     tax: sub.tax,
     shipping: sub.shipping,
     shippingMethod: sub.shippingMethod,
@@ -85,6 +91,12 @@ export async function createSubscriptionOrder(sub: SubscriptionDoc) {
     address: sub.address,
     subscriptionId: sub._id,
   });
+
+  try {
+    await settleLoyaltyForOrder(order);
+  } catch (loyaltyError) {
+    console.error('[SUBSCRIPTIONS] Failed to settle loyalty points:', loyaltyError);
+  }
 
   const stockOk = await decrementStock(sub.productId, sub.qty, sub.variantId || undefined);
   if (!stockOk) {

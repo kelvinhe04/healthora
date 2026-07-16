@@ -15,6 +15,7 @@ import { SignInModal } from '../components/chrome/SignInModal';
 import { api } from '../lib/api';
 import { useAuth } from '@clerk/clerk-react';
 import { normalizePromotionCode } from '../lib/promotions';
+import { computeRedeemablePoints } from '../lib/loyalty';
 import { useCartStore } from '../store/cartStore';
 import { getE2EAuthToken, getE2EUser } from '../lib/e2eAuth';
 import { resolveShipping, SHIPPING_METHOD_OPTIONS, type ShippingMethod } from '../lib/shipping';
@@ -32,6 +33,7 @@ type CheckoutRequestBody = {
   promoCode?: string;
   freeSampleId?: string;
   freeSampleVariantId?: string;
+  usePoints?: boolean;
   shippingMethod: ShippingMethod;
 };
 
@@ -311,6 +313,15 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   const [appliedPromo, setAppliedPromo] = useState<ValidatedPromo | null>(null);
   const [promoError, setPromoError] = useState('');
   const [promoValidating, setPromoValidating] = useState(false);
+  const [usePoints, setUsePoints] = useState(false);
+
+  const loyaltyQuery = useQuery({
+    queryKey: ['loyalty-account'],
+    queryFn: async () => api.account.loyalty.get((await getEffectiveToken())!),
+    enabled: isSignedIn,
+  });
+  const loyaltyBalance = loyaltyQuery.data?.balance ?? 0;
+  const loyaltyPointValueCents = loyaltyQuery.data?.pointValueCents ?? 0;
 
   const isAddressValid = address.name.trim() && address.phone.trim()
     && (shippingMethod === 'pickup' || (address.address.trim() && address.city.trim() && address.postal.trim()));
@@ -354,12 +365,22 @@ export function Checkout({ items, onBack }: CheckoutProps) {
 
   const subtotal = roundMoney(items.reduce((s, it) => s + (it.variant?.price ?? it.product.price) * it.qty, 0));
   const discountAmount = appliedPromo?.discountAmount ?? 0;
-  const discountedSubtotal = roundMoney(Math.max(0, subtotal - discountAmount));
+  const subtotalAfterCoupon = roundMoney(Math.max(0, subtotal - discountAmount));
+  const redeemable = usePoints
+    ? computeRedeemablePoints({
+        availablePoints: loyaltyBalance,
+        maxDiscountCents: Math.round(subtotalAfterCoupon * 100),
+        pointValueCents: loyaltyPointValueCents,
+      })
+    : { pointsToRedeem: 0, discountCents: 0 };
+  const loyaltyDiscountAmount = roundMoney(redeemable.discountCents / 100);
+  const totalDiscount = roundMoney(discountAmount + loyaltyDiscountAmount);
+  const discountedSubtotal = roundMoney(Math.max(0, subtotal - totalDiscount));
   const shippingResolved = resolveShipping(shippingMethod, discountedSubtotal);
   const shipping = shippingResolved.cost;
   const tax = computeItbms(
     items.map((it) => ({ price: it.variant?.price ?? it.product.price, qty: it.qty, taxExempt: it.product.taxExempt })),
-    discountAmount,
+    totalDiscount,
     subtotal,
   );
   const total = roundMoney(discountedSubtotal + shipping + tax);
@@ -430,6 +451,7 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     promoCode: appliedPromo?.code,
     freeSampleId: freeSample?.productId,
     ...(freeSample?.variantId ? { freeSampleVariantId: freeSample.variantId } : {}),
+    usePoints,
     shippingMethod,
   });
 
@@ -699,9 +721,19 @@ export function Checkout({ items, onBack }: CheckoutProps) {
             )}
             {promoError && <div role="alert" style={{ marginTop: 8, color: 'var(--coral)', fontSize: 12, fontFamily: '"Geist", sans-serif', lineHeight: 1.4 }}>{promoError}</div>}
           </div>
+          {isSignedIn && loyaltyBalance > 0 && (
+            <div style={{ padding: '16px 0', borderTop: '1px solid var(--ink-06)' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontFamily: '"Geist", sans-serif', cursor: 'pointer' }}>
+                <input type="checkbox" checked={usePoints} onChange={(e) => setUsePoints(e.target.checked)} disabled={processing} />
+                Usar mis {loyaltyBalance} puntos del Club Healthora
+                {usePoints && loyaltyDiscountAmount > 0 && <span style={{ color: 'var(--green)' }}> (-${loyaltyDiscountAmount.toFixed(2)})</span>}
+              </label>
+            </div>
+          )}
           <div style={{ padding: '14px 0', borderTop: '1px solid var(--ink-06)' }}>
             <Row k="Subtotal" v={`$${subtotal.toFixed(2)}`} />
             {discountAmount > 0 && <Row k={`Descuento ${appliedPromo?.code}`} v={<span style={{ color: 'var(--green)' }}>-${discountAmount.toFixed(2)}</span>} />}
+            {loyaltyDiscountAmount > 0 && <Row k="Puntos Club Healthora" v={<span style={{ color: 'var(--green)' }}>-${loyaltyDiscountAmount.toFixed(2)}</span>} />}
             {freeSample && <Row k="Muestra gratis" v={<span style={{ color: 'var(--green)' }}>$0.00</span>} />}
             <Row k={`Envío (${shippingResolved.eta})`} v={shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`} />
             <Row k="ITBMS" v={`$${tax.toFixed(2)}`} />

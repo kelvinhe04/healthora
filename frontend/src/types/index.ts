@@ -291,6 +291,21 @@ export type Coupon = {
   updatedAt?: string;
 };
 
+export type LoyaltyTransaction = {
+  type: 'earn' | 'redeem';
+  points: number;
+  orderId: string;
+  balanceAfter: number;
+  createdAt: string;
+};
+
+export type LoyaltyAccount = {
+  balance: number;
+  pointsPerDollar: number;
+  pointValueCents: number;
+  transactions: LoyaltyTransaction[];
+};
+
 export type BannerSlot = 'promo' | 'club';
 
 export type Banner = {
