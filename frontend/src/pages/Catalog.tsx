@@ -6,6 +6,7 @@ import {
   ProductCardSkeleton,
 } from "../components/shared/ProductCard";
 import { Icon } from "../components/shared/Icon";
+import { Checkbox } from "../components/shared/Checkbox";
 import { useProducts } from "../hooks/useProducts";
 import { useCategories } from "../hooks/useCategories";
 import { useBreakpoint } from "../hooks/useBreakpoint";
@@ -511,11 +512,9 @@ export function Catalog({
             fontFamily: '"Geist", sans-serif',
           }}
         >
-          <input
-            type="checkbox"
+          <Checkbox
             checked={inStock}
             onChange={(e) => setInStock(e.target.checked)}
-            style={{ accentColor: "var(--green)" }}
           />{" "}
           En stock
         </label>

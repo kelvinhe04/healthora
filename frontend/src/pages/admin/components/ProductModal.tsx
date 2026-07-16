@@ -4,6 +4,7 @@ import { DateInputDDMMYYYY, iconBtnAd } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { Icon } from '../../../components/shared/Icon';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
+import { Select } from '../../../components/shared/Select';
 import { DEFAULT_LOW_STOCK_THRESHOLD, emptyForm, type ProductForm } from '../types';
 import { formToPayload, productToForm } from '../utils';
 import { FormattedTextarea } from './FormattedTextarea';
@@ -406,16 +407,7 @@ export function ProductModal({
             </div>
             <div style={fieldS}>
               <label style={labelS}>Categoría <span style={{ color: "#e53e3e" }}>*</span></label>
-              <select
-                style={{
-                  ...inputS,
-                  appearance: "none",
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "right 12px center",
-                  paddingRight: 32,
-                  cursor: "pointer",
-                }}
+              <Select
                 value={form.category}
                 onChange={(e) =>
                   setForm((prev) => ({
@@ -430,7 +422,7 @@ export function ProductModal({
                     {c}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
           <div style={fieldS}>
@@ -459,11 +451,11 @@ export function ProductModal({
           </div>
           <div style={{ ...fieldS, maxWidth: 280, marginTop: 16 }}>
             <label style={labelS}>Muestra gratis (Club Healthora)</label>
-            <select style={inputS} value={form.sampleEligible} onChange={setSelect("sampleEligible")}>
+            <Select value={form.sampleEligible} onChange={setSelect("sampleEligible")}>
               <option value="auto">Automático (según tope de precio)</option>
               <option value="include">Incluir siempre</option>
               <option value="exclude">Excluir siempre</option>
-            </select>
+            </Select>
           </div>
           <div style={dividerS} />
 

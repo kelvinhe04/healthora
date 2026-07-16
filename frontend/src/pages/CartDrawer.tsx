@@ -6,6 +6,7 @@ import { ModalOverlay } from '../components/shared/ModalOverlay';
 import { ProductImage } from '../components/shared/ProductImage';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
+import { Select } from '../components/shared/Select';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import type { Product, ProductVariant } from '../types';
 import { PRIMARY_VARIANT_TYPES, hasTwoDimensions, pickSizeKeepingCurrent, resolveVariantById, sizesFor } from '../lib/productVariants';
@@ -35,10 +36,9 @@ const variantSelectStyle = {
   background: 'var(--cream-2)',
   border: '1px solid var(--ink-12)',
   borderRadius: 8,
-  padding: '5px 6px',
-  flex: 1,
-  minWidth: 0,
+  padding: '5px 24px 5px 6px',
 } as const;
+const variantSelectWrapperStyle = { flex: 1, minWidth: 0 } as const;
 
 /** Inline sabor/tamaño (or single-dimension) picker for an existing cart line, so a wrong
  * variant/combo doesn't require removing the line and re-adding the product from scratch. Reuses
@@ -64,7 +64,7 @@ function CartItemVariantEditor({
 
     return (
       <div style={{ display: 'flex', gap: 6, marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
-        <select
+        <Select
           aria-label="Cambiar sabor"
           value={currentPrimary?.id ?? ''}
           onChange={(e) => {
@@ -76,12 +76,13 @@ function CartItemVariantEditor({
             if (nextVariant) onChange(nextVariant);
           }}
           style={variantSelectStyle}
+          wrapperStyle={variantSelectWrapperStyle}
         >
           {primaryVariants.map((v) => (
             <option key={v.id} value={v.id}>{v.label}</option>
           ))}
-        </select>
-        <select
+        </Select>
+        <Select
           aria-label="Cambiar tamaño"
           value={currentSize?.id ?? ''}
           onChange={(e) => {
@@ -90,6 +91,7 @@ function CartItemVariantEditor({
             if (nextVariant) onChange(nextVariant);
           }}
           style={variantSelectStyle}
+          wrapperStyle={variantSelectWrapperStyle}
         >
           {sizeOptions.map((v) => {
             const stock = currentPrimary?.stockBySize?.[v.id] ?? v.stock;
@@ -99,14 +101,14 @@ function CartItemVariantEditor({
               </option>
             );
           })}
-        </select>
+        </Select>
       </div>
     );
   }
 
   return (
     <div style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
-      <select
+      <Select
         aria-label="Cambiar variante"
         value={currentVariantId}
         onChange={(e) => {
@@ -120,7 +122,7 @@ function CartItemVariantEditor({
             {v.label}{v.stock <= 0 ? ' (agotado)' : ''}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 }

@@ -10,15 +10,7 @@ import {
 import { useAdminPanelContext } from '../AdminPanelContext';
 import { formatPanamaDateTime } from '../../../lib/dates';
 import { productAnalyticsEventLabels } from '../types';
-
-const inputStyle = {
-  border: '1px solid var(--ink-10)',
-  borderRadius: 999,
-  background: 'var(--cream)',
-  color: 'var(--ink)',
-  padding: '10px 14px',
-  fontSize: 13,
-};
+import { Select } from '../../../components/shared/Select';
 
 export function ProductAnalyticsSection() {
   const {
@@ -42,24 +34,16 @@ export function ProductAnalyticsSection() {
         }
         sub="Embudo de checkout y abandono de carrito, sobre el comportamiento real de los usuarios."
         actions={
-          <select
+          <Select
             value={analyticsPeriodDays}
             onChange={(event) => setAnalyticsPeriodDays(Number(event.target.value))}
             aria-label="Periodo de analítica"
-            style={{
-              ...inputStyle,
-              appearance: 'none',
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 12px center',
-              paddingRight: 32,
-              cursor: 'pointer',
-            }}
+            wrapperStyle={{ width: 'auto' }}
           >
             <option value={7}>Últimos 7 días</option>
             <option value={30}>Últimos 30 días</option>
             <option value={90}>Últimos 90 días</option>
-          </select>
+          </Select>
         }
       />
 
