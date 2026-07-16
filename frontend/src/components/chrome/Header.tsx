@@ -581,9 +581,9 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   const compareCount = useCompareStore((s) => s.productIds.length);
   const wishlistCount = useWishlistStore((s) => s.productIds.length);
   const { theme } = useThemeStore();
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn, user, isLoaded: userLoaded } = useUser();
   const { signOut } = useClerk();
-  const { getToken } = useAuth();
+  const { getToken, isLoaded: authLoaded } = useAuth();
   const bp = useBreakpoint();
   const isMobile = bp === "mobile";
   const headerIconBtn = isMobile
@@ -638,6 +638,12 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   }, [searchParams]);
 
   useEffect(() => {
+    // Esperar a que Clerk termine de cargar (authLoaded/userLoaded): antes de eso, isSignedIn
+    // puede ya ser true mientras getToken() todavia devuelve null por una fraccion de segundo,
+    // y como el efecto no vuelve a dispararse solo, isAdmin se quedaba pegado en false el resto
+    // de la sesion aunque el usuario si fuera admin/owner.
+    if (!authLoaded || !userLoaded) return;
+
     if (!isSignedIn) {
       setIsAdmin(false);
       return;
@@ -648,13 +654,17 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
     const loadAdminState = async () => {
       try {
         const token = await getToken();
-        if (!token) return;
+        if (!token) {
+          console.error("[Admin] getToken() devolvio null con la sesion ya cargada");
+          return;
+        }
         const access = await api.admin.access(token);
         if (!cancelled) {
           setIsAdmin(Boolean(access.allowed));
           console.log("[Admin] access:", access);
         }
-      } catch {
+      } catch (error) {
+        console.error("[Admin] fallo el chequeo de acceso:", error);
         if (!cancelled) setIsAdmin(false);
       }
     };
@@ -664,7 +674,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
     return () => {
       cancelled = true;
     };
-  }, [getToken, isSignedIn]);
+  }, [authLoaded, userLoaded, getToken, isSignedIn]);
 
   useEffect(() => {
     if (!addressModalOpen || !isSignedIn) return;
