@@ -568,5 +568,161 @@
         "desc": "No recibirás ningún correo de las categorías de arriba. La confirmación de tu compra siempre llega, sin importar esta opción."
       }
     }
+  },
+  "orders": {
+    "backAria": "Regresar al catálogo",
+    "back": "Regresar",
+    "kicker": "Cuenta",
+    "headingPrefix": "Mis",
+    "headingEmphasis": "pedidos",
+    "orderCount_one": "{{count}} pedido",
+    "orderCount_other": "{{count}} pedidos",
+    "empty": {
+      "title": "Sin pedidos aún",
+      "body": "Cuando realices una compra, aparecerá aquí con toda la información."
+    },
+    "card": {
+      "dateAndItems_one": "{{date}} · {{count}} artículo",
+      "dateAndItems_other": "{{date}} · {{count}} artículos",
+      "replacementSuffix": " · Reemplazo"
+    },
+    "status": {
+      "pendingPayment": "Pago pendiente",
+      "pending": "Pendiente",
+      "processing": "Preparando",
+      "shipped": "Enviada",
+      "delivered": "Entregada",
+      "cancelled": "Cancelada",
+      "refunded": "Reembolsada",
+      "readyForPickup": "Listo para retirar",
+      "pickedUp": "Retirado"
+    },
+    "timeline": {
+      "cancelledBadge": "Cancelado"
+    },
+    "returns": {
+      "status": {
+        "requested": "Solicitada",
+        "approved": "Aprobada",
+        "inTransit": "En tránsito",
+        "inReview": "En revisión",
+        "refundPending": "Reembolso en proceso",
+        "refunded": "Reembolsada",
+        "replaced": "Reemplazo en camino",
+        "rejected": "Rechazada"
+      },
+      "replacedInStore": "Reemplazo en tienda",
+      "badgeLabel": "Devolución {{label}}",
+      "flowNote": {
+        "storeDropoff": "Este pedido se retiró en tienda, así que la devolución también es en tienda: primero envías la solicitud y debes esperar a que la aprobemos - recién ahí puedes traer el producto, no antes. Ese día mismo lo revisamos en la tienda: si no coincide con lo reportado, te lo devolvemos en el momento; si todo está en orden, procesamos tu reembolso (o el reemplazo, según lo que hayas pedido).",
+        "courier": "Primero envías la solicitud y debes esperar a que la aprobemos. Una vez aprobada, un mensajero pasará a recoger el producto en la dirección de tu pedido - no lo envíes por tu cuenta antes de eso. Al llegar a nuestro almacén lo revisamos: si no coincide con lo reportado, te lo enviamos de vuelta a esa misma dirección; si todo está en orden, procesamos tu reembolso (o el reemplazo, según lo que hayas pedido)."
+      },
+      "messages": {
+        "refunded": "Reembolso de {{amount}} procesado.",
+        "refundPending": "Estamos procesando tu reembolso.",
+        "replacedStorePickup": "Confirmamos que te llegó el producto equivocado. Creamos un nuevo pedido sin costo adicional para el producto correcto - ya está listo, puedes pasar a recogerlo a la tienda cuando gustes.",
+        "replacedShipping": "Confirmamos que te llegó el producto equivocado. Creamos un nuevo pedido sin costo adicional para el producto correcto - revisa su progreso abajo.",
+        "inTransit": "Registramos que tu producto está en camino de vuelta a nuestro almacén.",
+        "inReview": "Recibimos tu producto y lo estamos revisando antes de continuar.",
+        "approvedStoreDropoff": "Puedes traer el producto a nuestra tienda cuando gustes, dentro de la ventana de devolución.",
+        "approvedCourierPickup": "Un mensajero pasará a recoger el producto en la dirección de tu pedido.",
+        "rejectedReturnedStorePickup": "Revisamos el producto y no coincide con lo reportado, así que no pudimos aprobar la devolución. Ya puedes pasar a la tienda a recogerlo.",
+        "rejectedReturnedShipped": "Revisamos el producto y no coincide con lo reportado, así que no pudimos aprobar la devolución. Te lo enviamos de vuelta a la dirección de tu pedido.",
+        "rejectedAfterReviewPending": "Revisamos el producto que recibimos y no coincide con lo reportado en tu solicitud, así que no pudimos aprobar la devolución. Contáctanos si tienes preguntas.",
+        "rejectedBeforeReview": "No pudimos aprobar tu solicitud de devolución. Contáctanos si tienes preguntas."
+      },
+      "requestedPrefix": "Solicitaste:",
+      "requestedReplacement": "que te reenvíen el producto correcto",
+      "requestedRefund": "reembolso",
+      "viewReplacementOrder": "Ver pedido de reemplazo #{{id}} →",
+      "requestButton": "Solicitar devolución",
+      "errors": {
+        "submitFailed": "No se pudo enviar la solicitud"
+      },
+      "form": {
+        "reasonCategoryLabel": "Tipo de motivo",
+        "selectPlaceholder": "Selecciona una opción…",
+        "reasons": {
+          "damaged": "Llegó dañado",
+          "wrongItem": "Me enviaron un producto diferente",
+          "defective": "No funciona / defectuoso",
+          "changedMind": "Ya no lo necesito",
+          "other": "Otro"
+        },
+        "detailsLabel": "Cuéntanos más detalles",
+        "detailsPlaceholder": "Cuéntanos qué pasó…",
+        "preferenceLabel": "¿Qué prefieres?",
+        "refundOption": "Reembolso",
+        "replacementOption": "Que me envíen el producto correcto",
+        "photosLabel": "Fotos de evidencia (1 a {{max}})",
+        "photoAlt": "Evidencia {{n}}",
+        "removePhotoAria": "Quitar foto",
+        "missingPrefix": "Falta completar: {{items}}.",
+        "missingReasonCategory": "el tipo de motivo",
+        "missingDetails": "los detalles",
+        "missingPhoto": "al menos 1 foto de evidencia",
+        "submitting": "Enviando…",
+        "submit": "Enviar solicitud",
+        "cancel": "Cancelar"
+      }
+    },
+    "detail": {
+      "orderNumber": "PEDIDO #{{id}}",
+      "replacementBadge": "Reemplazo del pedido #{{id}} · sin costo →",
+      "tracking": {
+        "label": "N° de guía",
+        "defaultCarrier": "Courier"
+      },
+      "productsLabel": "Productos",
+      "variantLabel": "Variante · {{label}}",
+      "freeSampleBadge": "MUESTRA GRATIS · CLUB HEALTHORA",
+      "replacementNoCostBadge": "REEMPLAZO · SIN COSTO",
+      "unitBreakdown": "{{qty}} unidades · {{price}} c/u",
+      "free": "GRATIS",
+      "reorderButton": "Volver a comprar",
+      "reorderingButton": "Agregando al carrito…",
+      "reorderNoneAvailable": "Ningún producto de este pedido está disponible ahora.",
+      "reorderSuccess_one": "{{count}} producto agregado al carrito.",
+      "reorderSuccess_other": "{{count}} productos agregados al carrito.",
+      "breakdownLabel": "Desglose del pedido",
+      "subtotalProducts": "Subtotal de productos",
+      "discountLabel": "Descuento {{code}}",
+      "shippingWithLabel": "Envío ({{label}})",
+      "shipping": "Envío",
+      "tax": "ITBMS",
+      "freeLowercase": "Gratis",
+      "total": "Total",
+      "contactInfo": "Datos de contacto",
+      "deliveryAddress": "Dirección de entrega",
+      "edit": "Editar",
+      "addressForm": {
+        "name": "Nombre",
+        "namePlaceholder": "Nombre completo",
+        "phone": "Teléfono",
+        "phonePlaceholder": "6123-4567",
+        "city": "Ciudad",
+        "cityPlaceholder": "Ciudad",
+        "postal": "Código postal",
+        "postalPlaceholder": "10001",
+        "address": "Dirección",
+        "addressPlaceholder": "Calle, número, apto",
+        "saving": "Guardando…",
+        "saveChanges": "Guardar cambios",
+        "cancel": "Cancelar",
+        "requiredFieldsError": "Completa todos los campos requeridos."
+      },
+      "cancelConfirm": {
+        "title": "¿Confirmar cancelación?",
+        "body": "Esta acción no se puede deshacer. El pedido quedará cancelado permanentemente.",
+        "cancelling": "Cancelando…",
+        "confirmButton": "Sí, cancelar pedido",
+        "abortButton": "No, mantener"
+      },
+      "cancelOrderButton": "Cancelar pedido",
+      "errors": {
+        "addressUpdateFailed": "No se pudo actualizar la dirección",
+        "cancelFailed": "No se pudo cancelar el pedido"
+      }
+    }
   }
 }

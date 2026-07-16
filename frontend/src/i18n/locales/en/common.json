@@ -568,5 +568,161 @@
         "desc": "You won't receive any emails from the categories above. Your purchase confirmation always arrives, regardless of this setting."
       }
     }
+  },
+  "orders": {
+    "backAria": "Back to catalog",
+    "back": "Back",
+    "kicker": "Account",
+    "headingPrefix": "My",
+    "headingEmphasis": "orders",
+    "orderCount_one": "{{count}} order",
+    "orderCount_other": "{{count}} orders",
+    "empty": {
+      "title": "No orders yet",
+      "body": "Once you make a purchase, it will show up here with all the details."
+    },
+    "card": {
+      "dateAndItems_one": "{{date}} · {{count}} item",
+      "dateAndItems_other": "{{date}} · {{count}} items",
+      "replacementSuffix": " · Replacement"
+    },
+    "status": {
+      "pendingPayment": "Pending payment",
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded",
+      "readyForPickup": "Ready for pickup",
+      "pickedUp": "Picked up"
+    },
+    "timeline": {
+      "cancelledBadge": "Cancelled"
+    },
+    "returns": {
+      "status": {
+        "requested": "Requested",
+        "approved": "Approved",
+        "inTransit": "In transit",
+        "inReview": "In review",
+        "refundPending": "Refund pending",
+        "refunded": "Refunded",
+        "replaced": "Replacement on its way",
+        "rejected": "Rejected"
+      },
+      "replacedInStore": "Replacement in store",
+      "badgeLabel": "Return {{label}}",
+      "flowNote": {
+        "storeDropoff": "This order was picked up in store, so the return is also in store: first you send the request and have to wait for us to approve it - only then can you bring the product, not before. That same day we check it in the store: if it doesn't match what was reported, we return it to you on the spot; if everything checks out, we process your refund (or replacement, depending on what you requested).",
+        "courier": "First you send the request and have to wait for us to approve it. Once approved, a courier will pick up the product at your order's address - don't send it on your own before that. When it arrives at our warehouse we check it: if it doesn't match what was reported, we'll send it back to that same address; if everything checks out, we process your refund (or replacement, depending on what you requested)."
+      },
+      "messages": {
+        "refunded": "Refund of {{amount}} processed.",
+        "refundPending": "We're processing your refund.",
+        "replacedStorePickup": "We confirmed you received the wrong product. We created a new order at no extra cost for the correct product - it's ready, you can pick it up in store whenever you like.",
+        "replacedShipping": "We confirmed you received the wrong product. We created a new order at no extra cost for the correct product - check its progress below.",
+        "inTransit": "We logged that your product is on its way back to our warehouse.",
+        "inReview": "We received your product and are reviewing it before continuing.",
+        "approvedStoreDropoff": "You can bring the product to our store whenever you like, within the return window.",
+        "approvedCourierPickup": "A courier will pick up the product at your order's address.",
+        "rejectedReturnedStorePickup": "We checked the product and it doesn't match what was reported, so we couldn't approve the return. You can now pick it up at the store.",
+        "rejectedReturnedShipped": "We checked the product and it doesn't match what was reported, so we couldn't approve the return. We're sending it back to your order's address.",
+        "rejectedAfterReviewPending": "We checked the product we received and it doesn't match what was reported in your request, so we couldn't approve the return. Contact us if you have questions.",
+        "rejectedBeforeReview": "We couldn't approve your return request. Contact us if you have questions."
+      },
+      "requestedPrefix": "You requested:",
+      "requestedReplacement": "to have the correct product resent",
+      "requestedRefund": "refund",
+      "viewReplacementOrder": "View replacement order #{{id}} →",
+      "requestButton": "Request return",
+      "errors": {
+        "submitFailed": "The request couldn't be sent"
+      },
+      "form": {
+        "reasonCategoryLabel": "Reason type",
+        "selectPlaceholder": "Select an option…",
+        "reasons": {
+          "damaged": "Arrived damaged",
+          "wrongItem": "I received a different product",
+          "defective": "Doesn't work / defective",
+          "changedMind": "I no longer need it",
+          "other": "Other"
+        },
+        "detailsLabel": "Tell us more details",
+        "detailsPlaceholder": "Tell us what happened…",
+        "preferenceLabel": "What would you prefer?",
+        "refundOption": "Refund",
+        "replacementOption": "Have the correct product sent to me",
+        "photosLabel": "Evidence photos (1 to {{max}})",
+        "photoAlt": "Evidence {{n}}",
+        "removePhotoAria": "Remove photo",
+        "missingPrefix": "Still needed: {{items}}.",
+        "missingReasonCategory": "the reason type",
+        "missingDetails": "the details",
+        "missingPhoto": "at least 1 evidence photo",
+        "submitting": "Sending…",
+        "submit": "Send request",
+        "cancel": "Cancel"
+      }
+    },
+    "detail": {
+      "orderNumber": "ORDER #{{id}}",
+      "replacementBadge": "Replacement for order #{{id}} · at no cost →",
+      "tracking": {
+        "label": "Tracking No.",
+        "defaultCarrier": "Courier"
+      },
+      "productsLabel": "Products",
+      "variantLabel": "Variant · {{label}}",
+      "freeSampleBadge": "FREE SAMPLE · HEALTHORA CLUB",
+      "replacementNoCostBadge": "REPLACEMENT · NO COST",
+      "unitBreakdown": "{{qty}} units · {{price}} each",
+      "free": "FREE",
+      "reorderButton": "Buy again",
+      "reorderingButton": "Adding to cart…",
+      "reorderNoneAvailable": "No products from this order are available right now.",
+      "reorderSuccess_one": "{{count}} product added to cart.",
+      "reorderSuccess_other": "{{count}} products added to cart.",
+      "breakdownLabel": "Order breakdown",
+      "subtotalProducts": "Products subtotal",
+      "discountLabel": "Discount {{code}}",
+      "shippingWithLabel": "Shipping ({{label}})",
+      "shipping": "Shipping",
+      "tax": "ITBMS",
+      "freeLowercase": "Free",
+      "total": "Total",
+      "contactInfo": "Contact details",
+      "deliveryAddress": "Delivery address",
+      "edit": "Edit",
+      "addressForm": {
+        "name": "Name",
+        "namePlaceholder": "Full name",
+        "phone": "Phone",
+        "phonePlaceholder": "6123-4567",
+        "city": "City",
+        "cityPlaceholder": "City",
+        "postal": "Postal code",
+        "postalPlaceholder": "10001",
+        "address": "Address",
+        "addressPlaceholder": "Street, number, apt",
+        "saving": "Saving…",
+        "saveChanges": "Save changes",
+        "cancel": "Cancel",
+        "requiredFieldsError": "Fill in all required fields."
+      },
+      "cancelConfirm": {
+        "title": "Confirm cancellation?",
+        "body": "This action cannot be undone. The order will be permanently cancelled.",
+        "cancelling": "Cancelling…",
+        "confirmButton": "Yes, cancel order",
+        "abortButton": "No, keep it"
+      },
+      "cancelOrderButton": "Cancel order",
+      "errors": {
+        "addressUpdateFailed": "The address couldn't be updated",
+        "cancelFailed": "The order couldn't be cancelled"
+      }
+    }
   }
 }

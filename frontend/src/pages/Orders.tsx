@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation, type TFunction } from 'react-i18next';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-react';
@@ -14,6 +15,7 @@ import { useUiStore } from '../store/uiStore';
 import { resolveVariantById } from '../lib/productVariants';
 import { formatPanamaFull, formatPanamaMedium } from '../lib/dates';
 import { formatPanamaPhone } from '../lib/phone';
+import { formatCurrency } from '../lib/currency';
 import { carrierLabel, getTrackingUrl } from '../lib/tracking';
 
 interface OrdersProps {
@@ -23,61 +25,69 @@ interface OrdersProps {
 
 const DARK_GREEN = 'oklch(0.28 0.055 155)';
 
-// Labels matching admin's fulfillmentStatusLabels exactly
-const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> = {
-  pending_payment: { label: 'Pago pendiente', color: '#a06800',        bg: '#fff8e1' },
-  paid:            { label: 'Pendiente',       color: 'var(--green)',   bg: 'color-mix(in oklab, var(--green) 10%, white)' },
-  processing:      { label: 'Preparando',      color: '#1a5fa8',        bg: '#e3eefb' },
-  shipped:         { label: 'Enviada',          color: '#1459a0',        bg: '#ddeeff' },
-  delivered:       { label: 'Entregada',        color: 'var(--green)',   bg: 'color-mix(in oklab, var(--green) 12%, white)' },
-  cancelled:       { label: 'Cancelada',        color: 'var(--coral)',   bg: 'color-mix(in oklab, var(--coral) 10%, white)' },
-  refunded:        { label: 'Reembolsada',      color: 'var(--coral)',   bg: 'color-mix(in oklab, var(--coral) 10%, white)' },
+// Colors matching admin's fulfillmentStatusLabels exactly - labels come from t('orders.status.*')
+// via STATUS_LABEL_KEY below, not from this table (can't call t() at module scope).
+const STATUS_CFG: Record<string, { color: string; bg: string }> = {
+  pending_payment: { color: '#a06800',        bg: '#fff8e1' },
+  paid:            { color: 'var(--green)',   bg: 'color-mix(in oklab, var(--green) 10%, white)' },
+  processing:      { color: '#1a5fa8',        bg: '#e3eefb' },
+  shipped:         { color: '#1459a0',        bg: '#ddeeff' },
+  delivered:       { color: 'var(--green)',   bg: 'color-mix(in oklab, var(--green) 12%, white)' },
+  cancelled:       { color: 'var(--coral)',   bg: 'color-mix(in oklab, var(--coral) 10%, white)' },
+  refunded:        { color: 'var(--coral)',   bg: 'color-mix(in oklab, var(--coral) 10%, white)' },
 };
 
-// Steps matching admin fulfillmentStatusLabels
-const STEPS = [
-  { key: 'unfulfilled', label: 'Pendiente' },
-  { key: 'processing',  label: 'Preparando' },
-  { key: 'shipped',     label: 'Enviada' },
-  { key: 'delivered',   label: 'Entregada' },
-];
-
-// Retiro en tienda no pasa por "Enviada": se prepara, queda listo para retirar y termina cuando
-// el cliente efectivamente lo retira (fulfillmentStatus 'picked_up', distinto de 'delivered' que
-// solo significa "listo en tienda" - ver Order.ts).
-const PICKUP_STEPS = [
-  { key: 'unfulfilled', label: 'Pendiente' },
-  { key: 'processing',  label: 'Preparando' },
-  { key: 'delivered',   label: 'Listo para retirar' },
-  { key: 'picked_up',   label: 'Retirado' },
-];
+// status -> i18n key suffix (not translatable text itself, just an internal lookup)
+const STATUS_LABEL_KEY: Record<string, string> = {
+  pending_payment: 'pendingPayment',
+  paid: 'pending',
+  processing: 'processing',
+  shipped: 'shipped',
+  delivered: 'delivered',
+  cancelled: 'cancelled',
+  refunded: 'refunded',
+};
 
 /** "Entregada" no aplica a retiro en tienda: no se entrega nada, el cliente lo recoge. `status` es
  * el campo legado (picked_up y delivered colapsan ahi al mismo 'delivered'), por eso para
  * distinguir "listo para retirar" de "ya retirado" hace falta el fulfillmentStatus granular. */
-function getStatusLabel(status: string, shippingMethod?: Order['shippingMethod'], fulfillmentStatus?: Order['fulfillmentStatus']): string {
+function getStatusLabel(t: TFunction, status: string, shippingMethod?: Order['shippingMethod'], fulfillmentStatus?: Order['fulfillmentStatus']): string {
   if (shippingMethod === 'pickup') {
-    if (fulfillmentStatus === 'picked_up') return 'Retirado';
-    if (status === 'delivered') return 'Listo para retirar';
+    if (fulfillmentStatus === 'picked_up') return t('orders.status.pickedUp');
+    if (status === 'delivered') return t('orders.status.readyForPickup');
   }
-  return STATUS_CFG[status]?.label ?? STATUS_CFG.paid.label;
+  return t(`orders.status.${STATUS_LABEL_KEY[status] ?? 'pending'}`);
 }
 
 const formatFull = formatPanamaFull;
 const formatShort = formatPanamaMedium;
 
 function FulfillmentTimeline({ status, shippingMethod }: { status: string; shippingMethod?: Order['shippingMethod'] }) {
+  const { t } = useTranslation();
+
   if (status === 'cancelled') {
     return (
       <div style={{ padding: '14px 0' }}>
         <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 6, background: 'color-mix(in oklab, var(--coral) 10%, white)', color: 'var(--coral)' }}>
-          Cancelado
+          {t('orders.timeline.cancelledBadge')}
         </span>
       </div>
     );
   }
 
-  const steps = shippingMethod === 'pickup' ? PICKUP_STEPS : STEPS;
+  const steps = shippingMethod === 'pickup'
+    ? [
+        { key: 'unfulfilled', label: t('orders.status.pending') },
+        { key: 'processing', label: t('orders.status.processing') },
+        { key: 'delivered', label: t('orders.status.readyForPickup') },
+        { key: 'picked_up', label: t('orders.status.pickedUp') },
+      ]
+    : [
+        { key: 'unfulfilled', label: t('orders.status.pending') },
+        { key: 'processing', label: t('orders.status.processing') },
+        { key: 'shipped', label: t('orders.status.shipped') },
+        { key: 'delivered', label: t('orders.status.delivered') },
+      ];
   const currentIdx = steps.findIndex(s => s.key === status);
 
   return (
@@ -115,52 +125,57 @@ function FulfillmentTimeline({ status, shippingMethod }: { status: string; shipp
 
 const RETURN_WINDOW_DAYS = 30;
 
-const REASON_CATEGORY_OPTIONS: { value: ReasonCategory; label: string }[] = [
-  { value: 'damaged', label: 'Llegó dañado' },
-  { value: 'wrong_item', label: 'Me enviaron un producto diferente' },
-  { value: 'defective', label: 'No funciona / defectuoso' },
-  { value: 'changed_mind', label: 'Ya no lo necesito' },
-  { value: 'other', label: 'Otro' },
+// ReasonCategory -> i18n key suffix (not translatable text itself, just an internal lookup)
+const REASON_CATEGORY_KEYS: { value: ReasonCategory; key: string }[] = [
+  { value: 'damaged', key: 'damaged' },
+  { value: 'wrong_item', key: 'wrongItem' },
+  { value: 'defective', key: 'defective' },
+  { value: 'changed_mind', key: 'changedMind' },
+  { value: 'other', key: 'other' },
 ];
 
 const MAX_RETURN_PHOTOS = 4;
 
-const RETURN_STATUS_LABELS: Record<ReturnStatus, string> = {
-  requested: 'Solicitada',
-  approved: 'Aprobada',
-  in_transit: 'En tránsito',
-  in_review: 'En revisión',
-  refund_pending: 'Reembolso en proceso',
-  refunded: 'Reembolsada',
+// ReturnStatus -> i18n key suffix (not translatable text itself, just an internal lookup)
+const RETURN_STATUS_KEY: Record<ReturnStatus, string> = {
+  requested: 'requested',
+  approved: 'approved',
+  in_transit: 'inTransit',
+  in_review: 'inReview',
+  refund_pending: 'refundPending',
+  refunded: 'refunded',
   // Not "enviado" - approving the replacement only creates the replacement Order (see
   // createReplacementOrder), which starts at fulfillmentStatus 'unfulfilled' just like any other
   // order. It still has to go through Preparando/Enviada/Entregada on its own, tracked as its own
   // order (linked via replacesOrderId) - this badge must not claim that's already done.
-  replaced: 'Reemplazo en camino',
-  rejected: 'Rechazada',
+  replaced: 'replaced',
+  rejected: 'rejected',
 };
 
 /** Once a return exists for an order, that's the more relevant status to show than the plain
  * fulfillment badge ("Entregada" stops mattering once a return is in motion) - used by both the
  * sidebar order card and the detail panel's header badge. */
 const RETURN_BADGE_ACCENT = { bg: 'var(--ink-06)', color: 'var(--ink-60)' };
-function returnBadgeLabel(status: ReturnStatus, returnMethod: OrderReturn['returnMethod']): string {
+function returnBadgeLabel(t: TFunction, status: ReturnStatus, returnMethod: OrderReturn['returnMethod']): string {
   // A store pickup return never leaves via courier, so its replacement doesn't either - the
   // customer picks it up in-store once it's ready, it's not "on its way" anywhere.
-  const label = status === 'replaced' && returnMethod === 'store_dropoff' ? 'Reemplazo en tienda' : RETURN_STATUS_LABELS[status];
-  return `Devolución ${label}`;
+  const label = status === 'replaced' && returnMethod === 'store_dropoff'
+    ? t('orders.returns.replacedInStore')
+    : t(`orders.returns.status.${RETURN_STATUS_KEY[status]}`);
+  return t('orders.returns.badgeLabel', { label });
 }
 
 /** Explains the full return flow (request → approval → physical handoff → review → outcome) so
  * the customer knows what's coming next. Shown both before submitting the request and afterwards
  * (while the return is still in progress) so they can come back and re-read it. */
-function returnFlowNote(isStoreDropoff: boolean): string {
+function returnFlowNote(t: TFunction, isStoreDropoff: boolean): string {
   return isStoreDropoff
-    ? 'Este pedido se retiró en tienda, así que la devolución también es en tienda: primero envías la solicitud y debes esperar a que la aprobemos - recién ahí puedes traer el producto, no antes. Ese día mismo lo revisamos en la tienda: si no coincide con lo reportado, te lo devolvemos en el momento; si todo está en orden, procesamos tu reembolso (o el reemplazo, según lo que hayas pedido).'
-    : 'Primero envías la solicitud y debes esperar a que la aprobemos. Una vez aprobada, un mensajero pasará a recoger el producto en la dirección de tu pedido - no lo envíes por tu cuenta antes de eso. Al llegar a nuestro almacén lo revisamos: si no coincide con lo reportado, te lo enviamos de vuelta a esa misma dirección; si todo está en orden, procesamos tu reembolso (o el reemplazo, según lo que hayas pedido).';
+    ? t('orders.returns.flowNote.storeDropoff')
+    : t('orders.returns.flowNote.courier');
 }
 
 function ReturnPanel({ order, onSelectOrder }: { order: Order; onSelectOrder: (id: string) => void }) {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -219,7 +234,7 @@ function ReturnPanel({ order, onSelectOrder }: { order: Order; onSelectOrder: (i
       setPhotos([]);
       setError('');
     },
-    onError: (err: Error) => setError(err.message || 'No se pudo enviar la solicitud'),
+    onError: (err: Error) => setError(err.message || t('orders.returns.errors.submitFailed')),
   });
 
   const [now] = useState(() => Date.now());
@@ -242,49 +257,49 @@ function ReturnPanel({ order, onSelectOrder }: { order: Order; onSelectOrder: (i
     return (
       <div style={{ padding: '14px 16px', borderRadius: 14, border: '1px solid var(--ink-06)', background: 'var(--cream-2)' }}>
         <div style={{ fontSize: 13, fontFamily: '"Geist", sans-serif', fontWeight: 500, color: 'var(--ink)' }}>
-          {returnBadgeLabel(existingReturn.status, existingReturn.returnMethod)}
+          {returnBadgeLabel(t, existingReturn.status, existingReturn.returnMethod)}
         </div>
         <div style={{ fontSize: 12, color: 'var(--ink-60)', marginTop: 4, fontFamily: '"Geist", sans-serif' }}>
           {existingReturn.status === 'refunded'
-            ? `Reembolso de $${existingReturn.refundAmount.toFixed(2)} procesado.`
+            ? t('orders.returns.messages.refunded', { amount: formatCurrency(existingReturn.refundAmount) })
             : existingReturn.status === 'refund_pending'
-            ? 'Estamos procesando tu reembolso.'
+            ? t('orders.returns.messages.refundPending')
             : existingReturn.status === 'replaced'
             ? (existingReturn.returnMethod === 'store_dropoff'
                 // Un reemplazo en tienda nace ya "listo para retirar" (ver isStorePickup en
                 // lib/returns.ts) - se recoge en el mismo mostrador donde se entregó la
                 // devolución, sin ningún paso de preparación de por medio.
-                ? 'Confirmamos que te llegó el producto equivocado. Creamos un nuevo pedido sin costo adicional para el producto correcto - ya está listo, puedes pasar a recogerlo a la tienda cuando gustes.'
-                : 'Confirmamos que te llegó el producto equivocado. Creamos un nuevo pedido sin costo adicional para el producto correcto - revisa su progreso abajo.')
+                ? t('orders.returns.messages.replacedStorePickup')
+                : t('orders.returns.messages.replacedShipping'))
             : existingReturn.status === 'in_transit'
             // Not "el mensajero va a buscar el paquete" - that's `approved`. By the time a return
             // is `in_transit` the courier already picked it up; it's on its way back to the
             // warehouse (matches the copy in lib/email.ts#RETURN_STATUS_COPY, the source of truth
             // shared with the push notification for this same status).
-            ? 'Registramos que tu producto está en camino de vuelta a nuestro almacén.'
+            ? t('orders.returns.messages.inTransit')
             : existingReturn.status === 'in_review'
-            ? 'Recibimos tu producto y lo estamos revisando antes de continuar.'
+            ? t('orders.returns.messages.inReview')
             : existingReturn.status === 'approved'
             ? (existingReturn.returnMethod === 'store_dropoff'
-                ? 'Puedes traer el producto a nuestra tienda cuando gustes, dentro de la ventana de devolución.'
-                : 'Un mensajero pasará a recoger el producto en la dirección de tu pedido.')
+                ? t('orders.returns.messages.approvedStoreDropoff')
+                : t('orders.returns.messages.approvedCourierPickup'))
             : existingReturn.status === 'rejected'
             ? (existingReturn.rejectedAfterReview
                 ? (existingReturn.returnedToCustomerAt
                     ? (existingReturn.returnMethod === 'store_dropoff'
-                        ? 'Revisamos el producto y no coincide con lo reportado, así que no pudimos aprobar la devolución. Ya puedes pasar a la tienda a recogerlo.'
-                        : 'Revisamos el producto y no coincide con lo reportado, así que no pudimos aprobar la devolución. Te lo enviamos de vuelta a la dirección de tu pedido.')
-                    : 'Revisamos el producto que recibimos y no coincide con lo reportado en tu solicitud, así que no pudimos aprobar la devolución. Contáctanos si tienes preguntas.')
-                : 'No pudimos aprobar tu solicitud de devolución. Contáctanos si tienes preguntas.')
+                        ? t('orders.returns.messages.rejectedReturnedStorePickup')
+                        : t('orders.returns.messages.rejectedReturnedShipped'))
+                    : t('orders.returns.messages.rejectedAfterReviewPending'))
+                : t('orders.returns.messages.rejectedBeforeReview'))
             : existingReturn.reason}
         </div>
         {['requested', 'approved', 'in_transit', 'in_review'].includes(existingReturn.status) && (
           <>
             <div style={{ fontSize: 11, color: 'var(--ink-40)', marginTop: 6, fontFamily: '"Geist", sans-serif' }}>
-              Solicitaste: {existingReturn.desiredResolution === 'replacement' ? 'que te reenvíen el producto correcto' : 'reembolso'}
+              {t('orders.returns.requestedPrefix')} {existingReturn.desiredResolution === 'replacement' ? t('orders.returns.requestedReplacement') : t('orders.returns.requestedRefund')}
             </div>
             <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--ink-12)', background: 'var(--cream)', fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', lineHeight: 1.5 }}>
-              {returnFlowNote(existingReturn.returnMethod === 'store_dropoff')}
+              {returnFlowNote(t, existingReturn.returnMethod === 'store_dropoff')}
             </div>
           </>
         )}
@@ -294,7 +309,7 @@ function ReturnPanel({ order, onSelectOrder }: { order: Order; onSelectOrder: (i
             onClick={() => onSelectOrder(existingReturn.replacementOrderId!)}
             style={{ marginTop: 10, padding: '8px 14px', borderRadius: 10, background: 'transparent', border: '1px solid var(--ink-12)', color: DARK_GREEN, fontSize: 12, fontFamily: '"Geist", sans-serif', fontWeight: 500, cursor: 'pointer' }}
           >
-            Ver pedido de reemplazo #{existingReturn.replacementOrderId.slice(-8).toUpperCase()} →
+            {t('orders.returns.viewReplacementOrder', { id: existingReturn.replacementOrderId.slice(-8).toUpperCase() })}
           </button>
         )}
       </div>
@@ -310,42 +325,42 @@ function ReturnPanel({ order, onSelectOrder }: { order: Order; onSelectOrder: (i
           onClick={() => setOpen(true)}
           style={{ padding: '10px 20px', borderRadius: 10, background: 'transparent', color: 'var(--ink-60)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: '1px solid var(--ink-12)', cursor: 'pointer' }}
         >
-          Solicitar devolución
+          {t('orders.returns.requestButton')}
         </button>
       ) : (
         <div style={{ padding: 16, borderRadius: 14, border: '1px solid var(--ink-06)', background: 'var(--cream-2)' }}>
           <div style={{ marginBottom: 14, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--ink-12)', background: 'var(--cream)', fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', lineHeight: 1.5 }}>
-            {returnFlowNote(order.shippingMethod === 'pickup')}
+            {returnFlowNote(t, order.shippingMethod === 'pickup')}
           </div>
           <label style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 6, display: 'block' }}>
-            Tipo de motivo <span style={{ color: 'var(--coral)' }}>*</span>
+            {t('orders.returns.form.reasonCategoryLabel')} <span style={{ color: 'var(--coral)' }}>*</span>
           </label>
           <Select
             value={reasonCategory}
             onChange={(e) => setReasonCategory(e.target.value as ReasonCategory)}
           >
-            <option value="" disabled>Selecciona una opción…</option>
-            {REASON_CATEGORY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option value="" disabled>{t('orders.returns.form.selectPlaceholder')}</option>
+            {REASON_CATEGORY_KEYS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{t(`orders.returns.form.reasons.${opt.key}`)}</option>
             ))}
           </Select>
           <label style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginTop: 12, marginBottom: 6, display: 'block' }}>
-            Cuéntanos más detalles <span style={{ color: 'var(--coral)' }}>*</span>
+            {t('orders.returns.form.detailsLabel')} <span style={{ color: 'var(--coral)' }}>*</span>
           </label>
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={3}
-            placeholder="Cuéntanos qué pasó…"
+            placeholder={t('orders.returns.form.detailsPlaceholder')}
             style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--ink-20)', background: 'var(--cream)', fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', boxSizing: 'border-box', resize: 'vertical' }}
           />
           <label style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginTop: 12, marginBottom: 6, display: 'block' }}>
-            ¿Qué prefieres?
+            {t('orders.returns.form.preferenceLabel')}
           </label>
-          <div role="radiogroup" aria-label="¿Qué prefieres?" style={{ display: 'flex', gap: 8 }}>
+          <div role="radiogroup" aria-label={t('orders.returns.form.preferenceLabel')} style={{ display: 'flex', gap: 8 }}>
             {([
-              { value: 'refund' as const, label: 'Reembolso' },
-              { value: 'replacement' as const, label: 'Que me envíen el producto correcto' },
+              { value: 'refund' as const, label: t('orders.returns.form.refundOption') },
+              { value: 'replacement' as const, label: t('orders.returns.form.replacementOption') },
             ]).map((option) => (
               <button
                 key={option.value}
@@ -371,16 +386,16 @@ function ReturnPanel({ order, onSelectOrder }: { order: Order; onSelectOrder: (i
             ))}
           </div>
           <label style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginTop: 12, marginBottom: 6, display: 'block' }}>
-            Fotos de evidencia (1 a {MAX_RETURN_PHOTOS}) <span style={{ color: 'var(--coral)' }}>*</span>
+            {t('orders.returns.form.photosLabel', { max: MAX_RETURN_PHOTOS })} <span style={{ color: 'var(--coral)' }}>*</span>
           </label>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {photoPreviews.map((url, idx) => (
               <div key={idx} style={{ position: 'relative', width: 64, height: 64, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--ink-12)' }}>
-                <img src={url} alt={`Evidencia ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={url} alt={t('orders.returns.form.photoAlt', { n: idx + 1 })} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <button
                   type="button"
                   onClick={() => removePhoto(idx)}
-                  aria-label="Quitar foto"
+                  aria-label={t('orders.returns.form.removePhotoAria')}
                   style={{ position: 'absolute', top: 2, right: 2, width: 18, height: 18, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 11, lineHeight: 1, cursor: 'pointer' }}
                 >
                   ×
@@ -411,15 +426,15 @@ function ReturnPanel({ order, onSelectOrder }: { order: Order; onSelectOrder: (i
           </div>
           {(() => {
             const missing: string[] = [];
-            if (!reasonCategory) missing.push('el tipo de motivo');
-            if (!reason.trim()) missing.push('los detalles');
-            if (photos.length < 1) missing.push('al menos 1 foto de evidencia');
+            if (!reasonCategory) missing.push(t('orders.returns.form.missingReasonCategory'));
+            if (!reason.trim()) missing.push(t('orders.returns.form.missingDetails'));
+            if (photos.length < 1) missing.push(t('orders.returns.form.missingPhoto'));
             const canSubmit = missing.length === 0;
             return (
               <>
                 {!canSubmit && (
                   <div style={{ marginTop: 8, fontSize: 12, color: 'var(--ink-40)' }}>
-                    Falta completar: {missing.join(', ')}.
+                    {t('orders.returns.form.missingPrefix', { items: missing.join(', ') })}
                   </div>
                 )}
                 {error && <div role="alert" style={{ marginTop: 8, fontSize: 12, color: 'var(--coral)' }}>{error}</div>}
@@ -440,13 +455,13 @@ function ReturnPanel({ order, onSelectOrder }: { order: Order; onSelectOrder: (i
                       opacity: !canSubmit || createMut.isPending ? 0.4 : 1,
                     }}
                   >
-                    {createMut.isPending ? 'Enviando…' : 'Enviar solicitud'}
+                    {createMut.isPending ? t('orders.returns.form.submitting') : t('orders.returns.form.submit')}
                   </button>
                   <button
                     onClick={() => { setOpen(false); setError(''); }}
                     style={{ padding: '10px 20px', borderRadius: 10, background: 'transparent', color: 'var(--ink-60)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: '1px solid var(--ink-12)', cursor: 'pointer' }}
                   >
-                    Cancelar
+                    {t('orders.returns.form.cancel')}
                   </button>
                 </div>
               </>
@@ -478,6 +493,7 @@ interface OrderDetailProps {
   onReorder: () => void;
   isReordering: boolean;
   reorderMessage: string;
+  reorderFailed: boolean;
   onSelectOrder: (id: string) => void;
 }
 
@@ -486,8 +502,9 @@ function OrderDetail({
   existingReturn,
   showCancelConfirm, isCancelling, cancelError, onRequestCancel, onConfirmCancel, onAbortCancel,
   editingAddress, addrForm, isSavingAddr, addrError, onStartEditAddr, onAddrChange, onSaveAddr, onCancelEditAddr,
-  onReorder, isReordering, reorderMessage, onSelectOrder,
+  onReorder, isReordering, reorderMessage, reorderFailed, onSelectOrder,
 }: OrderDetailProps) {
+  const { t } = useTranslation();
   const bpInner = useBreakpoint();
   const isMobileInner = bpInner === 'mobile';
   const s = STATUS_CFG[order.status] ?? STATUS_CFG.paid;
@@ -521,14 +538,14 @@ function OrderDetail({
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <div>
             <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.1em', color: 'var(--ink-60)' }}>
-              PEDIDO #{order._id.slice(-8).toUpperCase()}
+              {t('orders.detail.orderNumber', { id: order._id.slice(-8).toUpperCase() })}
             </span>
             <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, letterSpacing: '-0.02em', lineHeight: 1.1, marginTop: 4, fontWeight: 400 }}>
               {formatFull(order.createdAt)}
             </div>
           </div>
           <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: 8, background: existingReturn ? RETURN_BADGE_ACCENT.bg : s.bg, color: existingReturn ? RETURN_BADGE_ACCENT.color : s.color, flexShrink: 0, marginTop: 4 }}>
-            {existingReturn ? returnBadgeLabel(existingReturn.status, existingReturn.returnMethod) : getStatusLabel(order.status, order.shippingMethod, order.fulfillmentStatus)}
+            {existingReturn ? returnBadgeLabel(t, existingReturn.status, existingReturn.returnMethod) : getStatusLabel(t, order.status, order.shippingMethod, order.fulfillmentStatus)}
           </span>
         </div>
         {order.replacesOrderId && (
@@ -537,7 +554,7 @@ function OrderDetail({
             onClick={() => onSelectOrder(order.replacesOrderId!)}
             style={{ marginTop: 8, padding: '6px 12px', borderRadius: 999, background: 'color-mix(in oklab, var(--green) 10%, white)', border: '1px solid color-mix(in oklab, var(--green) 25%, white)', color: 'var(--green)', fontSize: 11, fontFamily: '"Geist", sans-serif', fontWeight: 500, cursor: 'pointer' }}
           >
-            Reemplazo del pedido #{order.replacesOrderId.slice(-8).toUpperCase()} · sin costo →
+            {t('orders.detail.replacementBadge', { id: order.replacesOrderId.slice(-8).toUpperCase() })}
           </button>
         )}
       </div>
@@ -549,7 +566,7 @@ function OrderDetail({
             <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 12, background: 'var(--cream-2)', display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontFamily: '"Geist", sans-serif' }}>
               <Icon name="truck" size={16} />
               <span>
-                {carrierLabel(order.carrier) || 'Courier'} · N° de guía{' '}
+                {carrierLabel(order.carrier) || t('orders.detail.tracking.defaultCarrier')} · {t('orders.detail.tracking.label')}{' '}
                 {(() => {
                   const url = getTrackingUrl(order.carrier, order.trackingNumber);
                   return url ? (
@@ -570,7 +587,7 @@ function OrderDetail({
 
       {/* Products */}
       <div>
-        <span style={sectionLabel}>Productos</span>
+        <span style={sectionLabel}>{t('orders.detail.productsLabel')}</span>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {order.items.map((item, idx) => (
             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -589,26 +606,26 @@ function OrderDetail({
                 </div>
                 {item.variantLabel && (
                   <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', color: 'var(--ink-60)', marginTop: 4, textTransform: 'uppercase' }}>
-                    Variante · {item.variantLabel}
+                    {t('orders.detail.variantLabel', { label: item.variantLabel })}
                   </div>
                 )}
                 {item.isSample ? (
                   <div style={{ display: 'inline-block', marginTop: 4, fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.08em', color: 'var(--green)', background: 'color-mix(in oklab, var(--green) 10%, white)', border: '1px solid color-mix(in oklab, var(--green) 25%, white)', borderRadius: 999, padding: '2px 8px' }}>
-                    MUESTRA GRATIS · CLUB HEALTHORA
+                    {t('orders.detail.freeSampleBadge')}
                   </div>
                 ) : item.price === 0 && order.replacesOrderId ? (
                   <div style={{ display: 'inline-block', marginTop: 4, fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.08em', color: 'var(--green)', background: 'color-mix(in oklab, var(--green) 10%, white)', border: '1px solid color-mix(in oklab, var(--green) 25%, white)', borderRadius: 999, padding: '2px 8px' }}>
-                    REEMPLAZO · SIN COSTO
+                    {t('orders.detail.replacementNoCostBadge')}
                   </div>
                 ) : item.qty > 1 && (
                   <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginTop: 3 }}>
-                    {item.qty} unidades · ${item.price.toFixed(2)} c/u
+                    {t('orders.detail.unitBreakdown', { qty: item.qty, price: formatCurrency(item.price) })}
                   </div>
                 )}
               </div>
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
                 <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20, letterSpacing: '-0.02em', color: (item.isSample || item.price === 0) ? 'var(--green)' : 'var(--ink)' }}>
-                  {(item.isSample || item.price === 0) ? 'GRATIS' : `$${(item.price * item.qty).toFixed(2)}`}
+                  {(item.isSample || item.price === 0) ? t('orders.detail.free') : formatCurrency(item.price * item.qty)}
                 </div>
                 {item.qty > 1 && (
                   <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>×{item.qty}</div>
@@ -640,10 +657,10 @@ function OrderDetail({
               }}
             >
               <Icon name="repeat" size={15} />
-              {isReordering ? 'Agregando al carrito…' : 'Volver a comprar'}
+              {isReordering ? t('orders.detail.reorderingButton') : t('orders.detail.reorderButton')}
             </button>
             {reorderMessage && (
-              <div style={{ marginTop: 10, fontSize: 13, color: reorderMessage.includes('disponible') ? 'var(--coral)' : 'var(--green)', fontFamily: '"Geist", sans-serif' }}>
+              <div style={{ marginTop: 10, fontSize: 13, color: reorderFailed ? 'var(--coral)' : 'var(--green)', fontFamily: '"Geist", sans-serif' }}>
                 {reorderMessage}
               </div>
             )}
@@ -655,26 +672,26 @@ function OrderDetail({
 
       {/* Price breakdown */}
       <div>
-        <span style={sectionLabel}>Desglose del pedido</span>
+        <span style={sectionLabel}>{t('orders.detail.breakdownLabel')}</span>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {([
-            { label: 'Subtotal de productos', value: order.subtotal },
-            ...(order.discountAmount && order.discountAmount > 0 ? [{ label: `Descuento ${order.discountCode || ''}`.trim(), value: -order.discountAmount }] : []),
-            { label: order.shippingLabel ? `Envío (${order.shippingLabel})` : 'Envío', value: order.shipping },
-            { label: 'ITBMS',                  value: order.tax },
-          ] as const).map(row => (
+            { label: t('orders.detail.subtotalProducts'), value: order.subtotal },
+            ...(order.discountAmount && order.discountAmount > 0 ? [{ label: t('orders.detail.discountLabel', { code: order.discountCode || '' }).trim(), value: -order.discountAmount }] : []),
+            { label: order.shippingLabel ? t('orders.detail.shippingWithLabel', { label: order.shippingLabel }) : t('orders.detail.shipping'), value: order.shipping },
+            { label: t('orders.detail.tax'), value: order.tax },
+          ]).map(row => (
             <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink-80)' }}>{row.label}</span>
               <span style={{ fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)' }}>
-                {row.value === 0 ? <span style={{ color: 'var(--green)' }}>Gratis</span> : row.value < 0 ? <span style={{ color: 'var(--green)' }}>-${Math.abs(row.value).toFixed(2)}</span> : `$${row.value.toFixed(2)}`}
+                {row.value === 0 ? <span style={{ color: 'var(--green)' }}>{t('orders.detail.freeLowercase')}</span> : row.value < 0 ? <span style={{ color: 'var(--green)' }}>-{formatCurrency(Math.abs(row.value))}</span> : formatCurrency(row.value)}
               </span>
             </div>
           ))}
           <div style={{ height: 1, background: 'var(--ink-12)', margin: '6px 0' }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 15, fontFamily: '"Geist", sans-serif', fontWeight: 600, color: 'var(--ink)' }}>Total</span>
+            <span style={{ fontSize: 15, fontFamily: '"Geist", sans-serif', fontWeight: 600, color: 'var(--ink)' }}>{t('orders.detail.total')}</span>
             <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
-              ${order.total.toFixed(2)}
+              {formatCurrency(order.total)}
             </span>
           </div>
         </div>
@@ -684,13 +701,13 @@ function OrderDetail({
       {divider}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <span style={{ ...sectionLabel, marginBottom: 0 }}>{order.shippingMethod === 'pickup' ? 'Datos de contacto' : 'Dirección de entrega'}</span>
+          <span style={{ ...sectionLabel, marginBottom: 0 }}>{order.shippingMethod === 'pickup' ? t('orders.detail.contactInfo') : t('orders.detail.deliveryAddress')}</span>
           {canEditAddr && !editingAddress && (
             <button
               onClick={onStartEditAddr}
               style={{ fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--green)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
             >
-              <Icon name="pencil" size={12} stroke="var(--green)" /> Editar
+              <Icon name="pencil" size={12} stroke="var(--green)" /> {t('orders.detail.edit')}
             </button>
           )}
         </div>
@@ -700,11 +717,11 @@ function OrderDetail({
             <div style={{ display: 'grid', gridTemplateColumns: isMobileInner ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 14 }}>
               {(
                 [
-                  { key: 'name',   label: 'Nombre',       placeholder: 'Nombre completo' },
-                  { key: 'phone',  label: 'Teléfono',      placeholder: '6123-4567' },
+                  { key: 'name',   label: t('orders.detail.addressForm.name'),   placeholder: t('orders.detail.addressForm.namePlaceholder') },
+                  { key: 'phone',  label: t('orders.detail.addressForm.phone'),  placeholder: t('orders.detail.addressForm.phonePlaceholder') },
                   ...(order.shippingMethod === 'pickup' ? [] : [
-                    { key: 'city',   label: 'Ciudad',        placeholder: 'Ciudad' },
-                    { key: 'postal', label: 'Código postal', placeholder: '10001' },
+                    { key: 'city',   label: t('orders.detail.addressForm.city'),   placeholder: t('orders.detail.addressForm.cityPlaceholder') },
+                    { key: 'postal', label: t('orders.detail.addressForm.postal'), placeholder: t('orders.detail.addressForm.postalPlaceholder') },
                   ]),
                 ] as Array<{ key: keyof OrderAddress; label: string; placeholder: string }>
               ).map(f => (
@@ -715,18 +732,18 @@ function OrderDetail({
               ))}
               {order.shippingMethod !== 'pickup' && (
                 <label style={{ gridColumn: '1 / -1' }}>
-                  <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 5, display: 'block' }}>Dirección</span>
-                  <input value={addrForm.address} onChange={(e) => onAddrChange('address', e.target.value)} placeholder="Calle, número, apto" style={inputStyle} />
+                  <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 5, display: 'block' }}>{t('orders.detail.addressForm.address')}</span>
+                  <input value={addrForm.address} onChange={(e) => onAddrChange('address', e.target.value)} placeholder={t('orders.detail.addressForm.addressPlaceholder')} style={inputStyle} />
                 </label>
               )}
             </div>
             {addrError && <div style={{ fontSize: 13, color: 'var(--coral)', marginBottom: 10, fontFamily: '"Geist", sans-serif' }}>{addrError}</div>}
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={onSaveAddr} disabled={isSavingAddr} style={{ padding: '10px 20px', borderRadius: 10, background: DARK_GREEN, color: 'var(--lime)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
-                {isSavingAddr ? 'Guardando…' : 'Guardar cambios'}
+                {isSavingAddr ? t('orders.detail.addressForm.saving') : t('orders.detail.addressForm.saveChanges')}
               </button>
               <button onClick={onCancelEditAddr} style={{ padding: '10px 20px', borderRadius: 10, background: 'transparent', color: 'var(--ink-60)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: '1px solid var(--ink-12)', cursor: 'pointer' }}>
-                Cancelar
+                {t('orders.detail.addressForm.cancel')}
               </button>
             </div>
           </div>
@@ -757,18 +774,18 @@ function OrderDetail({
           {showCancelConfirm ? (
             <div style={{ padding: '18px 20px', borderRadius: 14, border: '1px solid var(--coral)', background: 'color-mix(in oklab, var(--coral) 10%, transparent)' }}>
               <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 600, color: 'var(--coral)', marginBottom: 6 }}>
-                ¿Confirmar cancelación?
+                {t('orders.detail.cancelConfirm.title')}
               </div>
               <div style={{ fontSize: 13, color: 'var(--ink-80)', fontFamily: '"Geist", sans-serif', marginBottom: 14, lineHeight: 1.5 }}>
-                Esta acción no se puede deshacer. El pedido quedará cancelado permanentemente.
+                {t('orders.detail.cancelConfirm.body')}
               </div>
               {cancelError && <div style={{ fontSize: 13, color: 'var(--coral)', marginBottom: 10, fontFamily: '"Geist", sans-serif' }}>{cancelError}</div>}
               <div style={{ display: 'flex', gap: 10 }}>
                 <button onClick={onConfirmCancel} disabled={isCancelling} style={{ padding: '10px 20px', borderRadius: 10, background: 'var(--coral)', color: 'white', fontSize: 13, fontFamily: '"Geist", sans-serif', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
-                  {isCancelling ? 'Cancelando…' : 'Sí, cancelar pedido'}
+                  {isCancelling ? t('orders.detail.cancelConfirm.cancelling') : t('orders.detail.cancelConfirm.confirmButton')}
                 </button>
                 <button onClick={onAbortCancel} disabled={isCancelling} style={{ padding: '10px 20px', borderRadius: 10, background: 'transparent', color: 'var(--ink-60)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: '1px solid var(--ink-12)', cursor: 'pointer' }}>
-                  No, mantener
+                  {t('orders.detail.cancelConfirm.abortButton')}
                 </button>
               </div>
             </div>
@@ -777,7 +794,7 @@ function OrderDetail({
               onClick={onRequestCancel}
               style={{ alignSelf: 'flex-start', padding: '10px 20px', borderRadius: 10, background: 'color-mix(in oklab, var(--coral) 10%, transparent)', color: 'var(--coral)', fontSize: 13, fontFamily: '"Geist", sans-serif', border: 'none', cursor: 'pointer', fontWeight: 500 }}
             >
-              Cancelar pedido
+              {t('orders.detail.cancelOrderButton')}
             </button>
           )}
         </>
@@ -789,6 +806,7 @@ function OrderDetail({
 const EMPTY_ADDR: OrderAddress = { name: '', phone: '', address: '', city: '', postal: '' };
 
 export function Orders({ onBack, initialOrderId }: OrdersProps) {
+  const { t } = useTranslation();
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const isTablet = bp === 'tablet';
@@ -826,6 +844,7 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
   const [addrError, setAddrError] = useState('');
   const [isReordering, setIsReordering] = useState(false);
   const [reorderMessage, setReorderMessage] = useState('');
+  const [reorderFailed, setReorderFailed] = useState(false);
   const addToCart = useCartStore((s) => s.add);
   const setCartOpen = useUiStore((s) => s.setCartOpen);
 
@@ -843,6 +862,7 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
     setCancelError('');
     setAddrError('');
     setReorderMessage('');
+    setReorderFailed(false);
   };
 
   const cancelMut = useMutation({
@@ -856,7 +876,7 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
       setCancelError('');
     },
     onError: (err: Error) => {
-      setCancelError(err.message || 'No se pudo cancelar el pedido');
+      setCancelError(err.message || t('orders.detail.errors.cancelFailed'));
     },
   });
 
@@ -871,7 +891,7 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
       setAddrError('');
     },
     onError: (err: Error) => {
-      setAddrError(err.message || 'No se pudo actualizar la dirección');
+      setAddrError(err.message || t('orders.detail.errors.addressUpdateFailed'));
     },
   });
 
@@ -885,7 +905,7 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
   const handleSaveAddr = () => {
     const isPickup = selected?.shippingMethod === 'pickup';
     if (!addrForm.name.trim() || !addrForm.phone.trim() || (!isPickup && (!addrForm.address.trim() || !addrForm.city.trim() || !addrForm.postal.trim()))) {
-      setAddrError('Completa todos los campos requeridos.');
+      setAddrError(t('orders.detail.addressForm.requiredFieldsError'));
       return;
     }
     if (!selected) return;
@@ -896,6 +916,7 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
     if (!selected) return;
     setIsReordering(true);
     setReorderMessage('');
+    setReorderFailed(false);
     let addedLines = 0;
     try {
       for (const item of selected.items.filter((line) => !line.isSample)) {
@@ -911,10 +932,11 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
         }
       }
       if (addedLines === 0) {
-        setReorderMessage('Ningún producto de este pedido está disponible ahora.');
+        setReorderFailed(true);
+        setReorderMessage(t('orders.detail.reorderNoneAvailable'));
       } else {
         setCartOpen(true);
-        setReorderMessage(`${addedLines} producto${addedLines !== 1 ? 's' : ''} agregado${addedLines !== 1 ? 's' : ''} al carrito.`);
+        setReorderMessage(t('orders.detail.reorderSuccess', { count: addedLines }));
       }
     } finally {
       setIsReordering(false);
@@ -937,8 +959,8 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
 
       {/* Page header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 40 }}>
-        <button type="button" onClick={onBack} aria-label="Regresar al catálogo" style={{ ...iconBtn, gap: 6, fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)', padding: '8px 14px', borderRadius: 10, border: '1px solid var(--ink-10)', background: 'var(--cream-2)' }}>
-          <Icon name="arrow-left" size={14} /> Regresar
+        <button type="button" onClick={onBack} aria-label={t('orders.backAria')} style={{ ...iconBtn, gap: 6, fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)', padding: '8px 14px', borderRadius: 10, border: '1px solid var(--ink-10)', background: 'var(--cream-2)' }}>
+          <Icon name="arrow-left" size={14} /> {t('orders.back')}
         </button>
         <div>
           {showOrdersSkeleton || isLoading ? (
@@ -948,12 +970,12 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
             </>
           ) : (
             <>
-              <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 4 }}>Cuenta</div>
+              <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 4 }}>{t('orders.kicker')}</div>
               <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 38, letterSpacing: '-0.03em', lineHeight: 1, margin: 0, fontWeight: 400 }}>
-                Mis <em style={{ color: 'var(--green)' }}>pedidos</em>
+                {t('orders.headingPrefix')} <em style={{ color: 'var(--green)' }}>{t('orders.headingEmphasis')}</em>
                 {sorted.length > 0 && (
                   <span style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 400, color: 'var(--ink-60)', marginLeft: 12 }}>
-                    {sorted.length} {sorted.length === 1 ? 'pedido' : 'pedidos'}
+                    {t('orders.orderCount', { count: sorted.length })}
                   </span>
                 )}
               </h1>
@@ -1007,10 +1029,10 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
             <Icon name="bag" size={48} />
           </div>
           <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 32, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 10 }}>
-            Sin pedidos aún
+            {t('orders.empty.title')}
           </div>
           <div style={{ fontSize: 15, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)', lineHeight: 1.6 }}>
-            Cuando realices una compra, aparecerá aquí con toda la información.
+            {t('orders.empty.body')}
           </div>
         </div>
       ) : (
@@ -1039,16 +1061,16 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
                       #{order._id.slice(-8).toUpperCase()}
                     </span>
                     <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 18, letterSpacing: '-0.02em', color: isActive ? 'white' : 'var(--ink)', lineHeight: 1 }}>
-                      ${order.total.toFixed(2)}
+                      {formatCurrency(order.total)}
                     </span>
                   </div>
                   <div style={{ fontSize: 12, fontFamily: '"Geist", sans-serif', color: isActive ? 'rgba(255,255,255,0.6)' : 'var(--ink-60)', marginBottom: 10 }}>
-                    {formatShort(order.createdAt)} · {order.items.length} {order.items.length === 1 ? 'artículo' : 'artículos'}
+                    {t('orders.card.dateAndItems', { date: formatShort(order.createdAt), count: order.items.length })}
                   </div>
                   <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: 5, background: isActive ? 'rgba(255,255,255,0.14)' : (orderReturn ? RETURN_BADGE_ACCENT.bg : s.bg), color: isActive ? 'rgba(255,255,255,0.9)' : (orderReturn ? RETURN_BADGE_ACCENT.color : s.color) }}>
                     {orderReturn
-                      ? returnBadgeLabel(orderReturn.status, orderReturn.returnMethod)
-                      : getStatusLabel(order.status, order.shippingMethod, order.fulfillmentStatus) + (order.replacesOrderId ? ' · Reemplazo' : '')}
+                      ? returnBadgeLabel(t, orderReturn.status, orderReturn.returnMethod)
+                      : getStatusLabel(t, order.status, order.shippingMethod, order.fulfillmentStatus) + (order.replacesOrderId ? t('orders.card.replacementSuffix') : '')}
                   </span>
                 </div>
               );
@@ -1077,6 +1099,7 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
               onReorder={() => { void handleReorder(); }}
               isReordering={isReordering}
               reorderMessage={reorderMessage}
+              reorderFailed={reorderFailed}
               onSelectOrder={handleSelectOrder}
             />
           )}
