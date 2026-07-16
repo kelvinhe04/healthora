@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { useState, useEffect, useMemo } from 'react';
-import { useTranslation, type TFunction } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-react';

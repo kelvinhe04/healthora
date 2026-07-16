@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   PageHeader,
@@ -26,40 +27,42 @@ const inputStyle = {
   fontSize: 13,
 };
 
-/** Traduce el nombre tecnico de la accion (guardado en ingles/dot-notation en Mongo, ej.
- * "products.update") a una etiqueta legible en español para la tabla y el filtro. El valor crudo
- * sigue siendo lo que viaja al backend (comparacion exacta en `listAuditLogs`) - el <select> del
- * filtro mapea la etiqueta en español de vuelta al valor crudo por su `value`. */
-const ACTION_LABELS: Record<string, string> = {
-  'admin.access': 'Acceso al panel',
-  'admin.access_denied': 'Acceso denegado',
-  'auth.login': 'Inicio de sesión',
-  'user.role_changed': 'Rol de usuario cambiado',
-  'products.create': 'Producto creado',
-  'products.update': 'Producto actualizado',
-  'products.delete': 'Producto eliminado',
-  'categories.create': 'Categoría creada',
-  'categories.update': 'Categoría actualizada',
-  'categories.delete': 'Categoría eliminada',
-  'orders.create': 'Pedido creado',
-  'orders.update': 'Pedido actualizado',
-  'orders.delete': 'Pedido eliminado',
-  'reviews.create': 'Reseña creada / autor baneado',
-  'reviews.update': 'Reseña moderada',
-  'reviews.delete': 'Reseña eliminada / baneo quitado',
-  'returns.create': 'Devolución creada',
-  'returns.update': 'Devolución actualizada',
-  'returns.delete': 'Devolución eliminada',
-  'uploads.create': 'Imagen subida',
-  'uploads.update': 'Imagen actualizada',
-  'uploads.delete': 'Imagen eliminada',
+/** Maps the technical action name (stored in English/dot-notation in Mongo, e.g.
+ * "products.update") to an i18n key suffix under `admin.auditLogs.actionLabels` (HU-084). The raw
+ * value is still what travels to the backend (exact match in `listAuditLogs`) - the filter
+ * <select> maps back to the raw value via its `value`, independent of the displayed label's
+ * language. */
+const ACTION_LABEL_KEYS: Record<string, string> = {
+  'admin.access': 'adminAccess',
+  'admin.access_denied': 'adminAccessDenied',
+  'auth.login': 'authLogin',
+  'user.role_changed': 'userRoleChanged',
+  'products.create': 'productsCreate',
+  'products.update': 'productsUpdate',
+  'products.delete': 'productsDelete',
+  'categories.create': 'categoriesCreate',
+  'categories.update': 'categoriesUpdate',
+  'categories.delete': 'categoriesDelete',
+  'orders.create': 'ordersCreate',
+  'orders.update': 'ordersUpdate',
+  'orders.delete': 'ordersDelete',
+  'reviews.create': 'reviewsCreate',
+  'reviews.update': 'reviewsUpdate',
+  'reviews.delete': 'reviewsDelete',
+  'returns.create': 'returnsCreate',
+  'returns.update': 'returnsUpdate',
+  'returns.delete': 'returnsDelete',
+  'uploads.create': 'uploadsCreate',
+  'uploads.update': 'uploadsUpdate',
+  'uploads.delete': 'uploadsDelete',
 };
 
-function translateAction(action: string): string {
-  return ACTION_LABELS[action] ?? action;
-}
-
 export function AuditLogsSection() {
+  const { t } = useTranslation();
+  const translateAction = (action: string): string => {
+    const key = ACTION_LABEL_KEYS[action];
+    return key ? t(`admin.auditLogs.actionLabels.${key}`) : action;
+  };
   const getAdminToken = useAdminToken();
   const [action, setAction] = useState('');
   const [actorEmailInput, setActorEmailInput] = useState('');
@@ -99,45 +102,45 @@ export function AuditLogsSection() {
     <>
       <PageHeader
         loading={isLoading && !data}
-        kicker={data ? `${total} registro${total !== 1 ? 's' : ''}` : undefined}
+        kicker={data ? t('admin.auditLogs.kicker', { count: total }) : undefined}
         title={
           <>
-            Auditoría de <em style={{ color: 'var(--green)' }}>administradores</em>
+            {t('admin.auditLogs.titlePrefix')} <em style={{ color: 'var(--green)' }}>{t('admin.auditLogs.titleEmphasis')}</em>
           </>
         }
-        sub="Registro append-only de acciones administrativas: quién, qué y cuándo (HU-051)."
+        sub={t('admin.auditLogs.sub')}
         actions={
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <input
               value={actorEmailInput}
               onChange={(e) => setActorEmailInput(e.target.value)}
-              placeholder="Buscar por email de admin…"
-              aria-label="Filtrar por email del actor"
+              placeholder={t('admin.auditLogs.filters.searchPlaceholder')}
+              aria-label={t('admin.auditLogs.filters.actorEmailAria')}
               style={{ ...inputStyle, width: 220 }}
             />
             <Select
               value={action}
               onChange={(e) => { setAction(e.target.value); setPage(1); }}
-              aria-label="Filtrar por acción"
+              aria-label={t('admin.auditLogs.filters.actionAria')}
               wrapperStyle={{ width: 200 }}
             >
-              <option value="">Todas las acciones</option>
-              {Object.entries(ACTION_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
+              <option value="">{t('admin.auditLogs.filters.allActions')}</option>
+              {Object.entries(ACTION_LABEL_KEYS).map(([value, key]) => (
+                <option key={value} value={value}>{t(`admin.auditLogs.actionLabels.${key}`)}</option>
               ))}
             </Select>
             <input
               type="date"
               value={from}
               onChange={(e) => { setFrom(e.target.value); setPage(1); }}
-              aria-label="Desde"
+              aria-label={t('admin.auditLogs.filters.fromAria')}
               style={inputStyle}
             />
             <input
               type="date"
               value={to}
               onChange={(e) => { setTo(e.target.value); setPage(1); }}
-              aria-label="Hasta"
+              aria-label={t('admin.auditLogs.filters.toAria')}
               style={inputStyle}
             />
           </div>
@@ -173,10 +176,10 @@ export function AuditLogsSection() {
           <table style={{ ...tableStyle, minWidth: 860 }}>
             <thead>
               <tr>
-                <th scope="col" style={th}>Fecha</th>
-                <th scope="col" style={th}>Actor</th>
-                <th scope="col" style={th}>Acción</th>
-                <th scope="col" style={th}>Recurso</th>
+                <th scope="col" style={th}>{t('admin.auditLogs.table.columns.date')}</th>
+                <th scope="col" style={th}>{t('admin.auditLogs.table.columns.actor')}</th>
+                <th scope="col" style={th}>{t('admin.auditLogs.table.columns.action')}</th>
+                <th scope="col" style={th}>{t('admin.auditLogs.table.columns.resource')}</th>
               </tr>
             </thead>
             <tbody>
@@ -197,7 +200,7 @@ export function AuditLogsSection() {
               {!isLoading && items.length === 0 && (
                 <tr>
                   <td style={{ ...td, textAlign: 'center', color: 'var(--ink-60)' }} colSpan={4}>
-                    Sin registros para estos filtros.
+                    {t('admin.auditLogs.table.empty')}
                   </td>
                 </tr>
               )}

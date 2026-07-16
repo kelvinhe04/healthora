@@ -1005,6 +1005,93 @@
         },
         "empty": "Sin eventos para este periodo."
       }
+    },
+    "auditLogs": {
+      "kicker_one": "{{count}} registro",
+      "kicker_other": "{{count}} registros",
+      "titlePrefix": "Auditoría de",
+      "titleEmphasis": "administradores",
+      "sub": "Registro append-only de acciones administrativas: quién, qué y cuándo (HU-051).",
+      "filters": {
+        "searchPlaceholder": "Buscar por email de admin…",
+        "actorEmailAria": "Filtrar por email del actor",
+        "actionAria": "Filtrar por acción",
+        "allActions": "Todas las acciones",
+        "fromAria": "Desde",
+        "toAria": "Hasta"
+      },
+      "table": {
+        "columns": {
+          "date": "Fecha",
+          "actor": "Actor",
+          "action": "Acción",
+          "resource": "Recurso"
+        },
+        "empty": "Sin registros para estos filtros."
+      },
+      "actionLabels": {
+        "adminAccess": "Acceso al panel",
+        "adminAccessDenied": "Acceso denegado",
+        "authLogin": "Inicio de sesión",
+        "userRoleChanged": "Rol de usuario cambiado",
+        "productsCreate": "Producto creado",
+        "productsUpdate": "Producto actualizado",
+        "productsDelete": "Producto eliminado",
+        "categoriesCreate": "Categoría creada",
+        "categoriesUpdate": "Categoría actualizada",
+        "categoriesDelete": "Categoría eliminada",
+        "ordersCreate": "Pedido creado",
+        "ordersUpdate": "Pedido actualizado",
+        "ordersDelete": "Pedido eliminado",
+        "reviewsCreate": "Reseña creada / autor baneado",
+        "reviewsUpdate": "Reseña moderada",
+        "reviewsDelete": "Reseña eliminada / baneo quitado",
+        "returnsCreate": "Devolución creada",
+        "returnsUpdate": "Devolución actualizada",
+        "returnsDelete": "Devolución eliminada",
+        "uploadsCreate": "Imagen subida",
+        "uploadsUpdate": "Imagen actualizada",
+        "uploadsDelete": "Imagen eliminada"
+      }
+    },
+    "coupons": {
+      "kicker": "Promociones",
+      "titlePrefix": "Gestión de",
+      "titleEmphasis": "cupones",
+      "sub": "Crea y administra códigos de descuento para el checkout.",
+      "newButton": "+ Nuevo cupón",
+      "table": {
+        "columns": {
+          "code": "Código",
+          "label": "Etiqueta",
+          "discount": "Descuento",
+          "categories": "Categorías",
+          "uses": "Usos",
+          "status": "Estado",
+          "actions": "Acciones"
+        },
+        "allCategories": "Todas",
+        "statusActive": "Activo",
+        "statusInactive": "Inactivo",
+        "deactivate": "Desactivar",
+        "activate": "Activar",
+        "empty": "No hay cupones creados todavía."
+      },
+      "modal": {
+        "title": "Nuevo cupón",
+        "codePlaceholder": "Código (ej. SAVE10)",
+        "labelPlaceholder": "Etiqueta visible",
+        "discountTypePercent": "Porcentaje",
+        "discountTypeFixed": "Monto fijo",
+        "percentPlaceholder": "Porcentaje",
+        "amountPlaceholder": "Monto",
+        "maxUsesPlaceholder": "Máximo de usos (opcional)",
+        "firstPurchaseOnly": "Solo primera compra",
+        "eligibleCategoriesLabel": "Categorías elegibles (vacío = todas)",
+        "cancel": "Cancelar",
+        "create": "Crear cupón",
+        "saving": "Guardando…"
+      }
     }
   }
 }

@@ -1005,6 +1005,93 @@
         },
         "empty": "No events for this period."
       }
+    },
+    "auditLogs": {
+      "kicker_one": "{{count}} record",
+      "kicker_other": "{{count}} records",
+      "titlePrefix": "Admin",
+      "titleEmphasis": "audit log",
+      "sub": "Append-only log of admin actions: who, what, and when (HU-051).",
+      "filters": {
+        "searchPlaceholder": "Search by admin email…",
+        "actorEmailAria": "Filter by actor email",
+        "actionAria": "Filter by action",
+        "allActions": "All actions",
+        "fromAria": "From",
+        "toAria": "To"
+      },
+      "table": {
+        "columns": {
+          "date": "Date",
+          "actor": "Actor",
+          "action": "Action",
+          "resource": "Resource"
+        },
+        "empty": "No records for these filters."
+      },
+      "actionLabels": {
+        "adminAccess": "Panel access",
+        "adminAccessDenied": "Access denied",
+        "authLogin": "Signed in",
+        "userRoleChanged": "User role changed",
+        "productsCreate": "Product created",
+        "productsUpdate": "Product updated",
+        "productsDelete": "Product deleted",
+        "categoriesCreate": "Category created",
+        "categoriesUpdate": "Category updated",
+        "categoriesDelete": "Category deleted",
+        "ordersCreate": "Order created",
+        "ordersUpdate": "Order updated",
+        "ordersDelete": "Order deleted",
+        "reviewsCreate": "Review created / author banned",
+        "reviewsUpdate": "Review moderated",
+        "reviewsDelete": "Review deleted / ban lifted",
+        "returnsCreate": "Return created",
+        "returnsUpdate": "Return updated",
+        "returnsDelete": "Return deleted",
+        "uploadsCreate": "Image uploaded",
+        "uploadsUpdate": "Image updated",
+        "uploadsDelete": "Image deleted"
+      }
+    },
+    "coupons": {
+      "kicker": "Promotions",
+      "titlePrefix": "Coupon",
+      "titleEmphasis": "management",
+      "sub": "Create and manage discount codes for checkout.",
+      "newButton": "+ New coupon",
+      "table": {
+        "columns": {
+          "code": "Code",
+          "label": "Label",
+          "discount": "Discount",
+          "categories": "Categories",
+          "uses": "Uses",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "allCategories": "All",
+        "statusActive": "Active",
+        "statusInactive": "Inactive",
+        "deactivate": "Deactivate",
+        "activate": "Activate",
+        "empty": "No coupons created yet."
+      },
+      "modal": {
+        "title": "New coupon",
+        "codePlaceholder": "Code (e.g. SAVE10)",
+        "labelPlaceholder": "Visible label",
+        "discountTypePercent": "Percentage",
+        "discountTypeFixed": "Fixed amount",
+        "percentPlaceholder": "Percentage",
+        "amountPlaceholder": "Amount",
+        "maxUsesPlaceholder": "Max uses (optional)",
+        "firstPurchaseOnly": "First purchase only",
+        "eligibleCategoriesLabel": "Eligible categories (empty = all)",
+        "cancel": "Cancel",
+        "create": "Create coupon",
+        "saving": "Saving…"
+      }
     }
   }
 }
