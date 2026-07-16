@@ -244,5 +244,61 @@
       "cancel": "Cancel",
       "confirm": "Yes, clear everything"
     }
+  },
+  "productDetail": {
+    "variantTypes": {
+      "size": "SIZE",
+      "color": "COLOR",
+      "weight": "WEIGHT",
+      "count": "PACK",
+      "flavor": "FLAVOR",
+      "scent": "SCENT"
+    },
+    "zoomAria": "Enlarged view of {{name}}",
+    "closeZoomAria": "Close enlarged view",
+    "store": "STORE",
+    "thumbnailsAria": "Product thumbnails",
+    "imageAltFallback": "Image {{n}}",
+    "reviewsCount_one": "{{count}} review",
+    "reviewsCount_other": "{{count}} reviews",
+    "noReviewsYet": "NO REVIEWS YET",
+    "outOfStock": "OUT OF STOCK",
+    "lowStock": "ONLY {{count}} LEFT",
+    "inStock": "IN STOCK",
+    "outOfStockSuffix": ", out of stock",
+    "colorAria": "Color {{label}}",
+    "noStockOption": " · Out of stock",
+    "savings": "SAVE {{amount}}",
+    "decreaseQtyAria": "Decrease quantity",
+    "increaseQtyAria": "Increase quantity",
+    "outOfStockButton": "Out of stock",
+    "addedToCart": "✓ Added to cart",
+    "addToCart": "Add to cart · {{price}}",
+    "buyNow": "Buy now with one click",
+    "subscribe": "Subscribe to auto-replenishment",
+    "trust": {
+      "freeShipping": "Free shipping on orders over {{amount}}",
+      "securePayment": "Secure payment with Stripe · 3D Secure",
+      "verified": "Products verified by pharmacists"
+    },
+    "tabs": {
+      "benefits": "Benefits",
+      "usage": "How to use",
+      "ingredients": "Ingredients",
+      "nutrition": "Nutrition facts",
+      "certs": "Certifications",
+      "interactions": "Compatibility",
+      "faq": "FAQ",
+      "shade": "Shade & skin tone",
+      "application": "Technique",
+      "formula": "Formula",
+      "skintypes": "Skin types",
+      "warnings": "Warnings"
+    },
+    "related": {
+      "subtitle": "You might also like",
+      "titlePrefix": "Related",
+      "titleEmphasis": "products"
+    }
   }
 }

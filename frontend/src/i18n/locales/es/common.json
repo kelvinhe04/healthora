@@ -244,5 +244,61 @@
       "cancel": "Cancelar",
       "confirm": "Sí, vaciar todo"
     }
+  },
+  "productDetail": {
+    "variantTypes": {
+      "size": "TAMAÑO",
+      "color": "COLOR",
+      "weight": "PESO",
+      "count": "PRESENTACIÓN",
+      "flavor": "SABOR",
+      "scent": "FRAGANCIA"
+    },
+    "zoomAria": "Vista ampliada de {{name}}",
+    "closeZoomAria": "Cerrar vista ampliada",
+    "store": "TIENDA",
+    "thumbnailsAria": "Miniaturas del producto",
+    "imageAltFallback": "Imagen {{n}}",
+    "reviewsCount_one": "{{count}} reseña",
+    "reviewsCount_other": "{{count}} reseñas",
+    "noReviewsYet": "SIN RESEÑAS AÚN",
+    "outOfStock": "AGOTADO",
+    "lowStock": "SOLO QUEDAN {{count}}",
+    "inStock": "EN STOCK",
+    "outOfStockSuffix": ", agotado",
+    "colorAria": "Color {{label}}",
+    "noStockOption": " · Sin stock",
+    "savings": "AHORRA {{amount}}",
+    "decreaseQtyAria": "Disminuir cantidad",
+    "increaseQtyAria": "Aumentar cantidad",
+    "outOfStockButton": "Sin stock",
+    "addedToCart": "✓ Agregado al carrito",
+    "addToCart": "Agregar al carrito · {{price}}",
+    "buyNow": "Comprar ahora con un clic",
+    "subscribe": "Suscribirme a reposición automática",
+    "trust": {
+      "freeShipping": "Envío gratis en órdenes sobre {{amount}}",
+      "securePayment": "Pago seguro con Stripe · 3D Secure",
+      "verified": "Productos verificados por farmacéuticos"
+    },
+    "tabs": {
+      "benefits": "Beneficios",
+      "usage": "Modo de uso",
+      "ingredients": "Ingredientes",
+      "nutrition": "Info. nutricional",
+      "certs": "Certificaciones",
+      "interactions": "Compatibilidad",
+      "faq": "Preguntas frecuentes",
+      "shade": "Tono & tez",
+      "application": "Técnica",
+      "formula": "Fórmula",
+      "skintypes": "Tipos de piel",
+      "warnings": "Advertencias"
+    },
+    "related": {
+      "subtitle": "También te puede gustar",
+      "titlePrefix": "Productos",
+      "titleEmphasis": "relacionados"
+    }
   }
 }
