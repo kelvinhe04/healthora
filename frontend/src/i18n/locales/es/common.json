@@ -1092,6 +1092,90 @@
         "create": "Crear cupón",
         "saving": "Guardando…"
       }
+    },
+    "reports": {
+      "kicker": "Reportes avanzados",
+      "titlePrefix": "Cohortes y",
+      "titleEmphasis": "LTV",
+      "sub": "Retención de clientes por mes de primera compra y valor de vida (LTV) acumulado por cohorte.",
+      "filters": {
+        "from": "Desde",
+        "to": "Hasta"
+      },
+      "kpi": {
+        "customersWithPurchase": "Clientes con compra",
+        "customersWithPurchaseSub": "pagaron al menos una vez",
+        "ordersPerCustomer": "Órdenes / cliente",
+        "ordersPerCustomerSub": "promedio histórico",
+        "avgLtv": "LTV promedio",
+        "avgLtvSub": "ingresos por cliente"
+      },
+      "monthColumn": "Mes {{n}}",
+      "table": {
+        "columns": {
+          "cohort": "Cohorte",
+          "customers": "Clientes"
+        }
+      },
+      "retention": {
+        "title": "Retención por cohorte",
+        "sub": "% de la cohorte que volvió a comprar, por mes transcurrido desde su primera compra",
+        "empty": "Todavía no hay suficientes órdenes pagadas para armar cohortes en este rango."
+      },
+      "ltv": {
+        "title": "LTV acumulado por cliente",
+        "sub": "Ingresos acumulados por cliente inicial de la cohorte, mes a mes",
+        "empty": "Todavía no hay suficientes órdenes pagadas para calcular LTV en este rango."
+      },
+      "modal": {
+        "cohortTitle": "Cohorte {{month}}",
+        "sub": "Clientes cuya primera compra fue este mes, y en cuáles meses después volvieron a comprar.",
+        "columns": {
+          "customer": "Cliente",
+          "firstPurchase": "Primera compra"
+        },
+        "empty": "Sin clientes para esta cohorte."
+      }
+    },
+    "banners": {
+      "colorPresets": {
+        "lime": "Lima",
+        "green": "Verde",
+        "coral": "Coral",
+        "cream": "Crema",
+        "custom": "Personalizado"
+      },
+      "colorPicker": {
+        "backgroundColorLabel": "Color de fondo"
+      },
+      "preview": {
+        "notConfigured": "Sin configurar",
+        "editButton": "Editar",
+        "promoLabel": "Promoción destacada",
+        "clubLabel": "Club Healthora"
+      },
+      "noSlotSelectedError": "Banner no seleccionado",
+      "titlePrefix": "Gestión de",
+      "titleEmphasis": "banners",
+      "sub": "Edita los 2 banners de la sección Ofertas del landing sin necesitar deploy.",
+      "modal": {
+        "editTitlePrefix": "Editar banner",
+        "kickerLabel": "Kicker (etiqueta pequeña)",
+        "titleLabel": "Título",
+        "titleHintPrefix": "Usa",
+        "titleHintJoiner": "y",
+        "titleHintSuffix": "donde quieras que se actualicen solas al cambiar la categoría o las fechas de vigencia.",
+        "categoryLabel": "Categoría (define las 2 fotos del banner y a dónde lleva el botón)",
+        "categoryPlaceholder": "Seleccionar categoría…",
+        "descriptionLabel": "Descripción",
+        "previewLabel": "Vista previa (con la categoría y fecha elegidas)",
+        "startDateLabel": "Vigente desde",
+        "endDateLabel": "Vigente hasta",
+        "optionalSuffix": " (opcional)",
+        "cancel": "Cancelar",
+        "saving": "Guardando…",
+        "save": "Guardar"
+      }
     }
   }
 }

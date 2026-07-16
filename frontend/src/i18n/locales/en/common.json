@@ -1092,6 +1092,90 @@
         "create": "Create coupon",
         "saving": "Saving…"
       }
+    },
+    "reports": {
+      "kicker": "Advanced reports",
+      "titlePrefix": "Cohorts and",
+      "titleEmphasis": "LTV",
+      "sub": "Customer retention by first-purchase month, and lifetime value (LTV) accumulated per cohort.",
+      "filters": {
+        "from": "From",
+        "to": "To"
+      },
+      "kpi": {
+        "customersWithPurchase": "Customers with a purchase",
+        "customersWithPurchaseSub": "paid at least once",
+        "ordersPerCustomer": "Orders / customer",
+        "ordersPerCustomerSub": "historical average",
+        "avgLtv": "Average LTV",
+        "avgLtvSub": "revenue per customer"
+      },
+      "monthColumn": "Month {{n}}",
+      "table": {
+        "columns": {
+          "cohort": "Cohort",
+          "customers": "Customers"
+        }
+      },
+      "retention": {
+        "title": "Retention by cohort",
+        "sub": "% of the cohort that came back to buy, by month elapsed since their first purchase",
+        "empty": "Not enough paid orders yet to build cohorts in this range."
+      },
+      "ltv": {
+        "title": "Cumulative LTV per customer",
+        "sub": "Cumulative revenue per initial cohort customer, month by month",
+        "empty": "Not enough paid orders yet to calculate LTV in this range."
+      },
+      "modal": {
+        "cohortTitle": "Cohort {{month}}",
+        "sub": "Customers whose first purchase was this month, and which months after that they came back to buy.",
+        "columns": {
+          "customer": "Customer",
+          "firstPurchase": "First purchase"
+        },
+        "empty": "No customers for this cohort."
+      }
+    },
+    "banners": {
+      "colorPresets": {
+        "lime": "Lime",
+        "green": "Green",
+        "coral": "Coral",
+        "cream": "Cream",
+        "custom": "Custom"
+      },
+      "colorPicker": {
+        "backgroundColorLabel": "Background color"
+      },
+      "preview": {
+        "notConfigured": "Not configured",
+        "editButton": "Edit",
+        "promoLabel": "Featured promotion",
+        "clubLabel": "Club Healthora"
+      },
+      "noSlotSelectedError": "No banner selected",
+      "titlePrefix": "Banner",
+      "titleEmphasis": "management",
+      "sub": "Edit the landing page's 2 Deals-section banners without needing a deploy.",
+      "modal": {
+        "editTitlePrefix": "Edit banner",
+        "kickerLabel": "Kicker (small tag)",
+        "titleLabel": "Title",
+        "titleHintPrefix": "Use",
+        "titleHintJoiner": "and",
+        "titleHintSuffix": "wherever you want them to update themselves when the category or valid dates change.",
+        "categoryLabel": "Category (sets the banner's 2 photos and where the button links to)",
+        "categoryPlaceholder": "Select a category…",
+        "descriptionLabel": "Description",
+        "previewLabel": "Preview (with the chosen category and date)",
+        "startDateLabel": "Valid from",
+        "endDateLabel": "Valid until",
+        "optionalSuffix": " (optional)",
+        "cancel": "Cancel",
+        "saving": "Saving…",
+        "save": "Save"
+      }
     }
   }
 }

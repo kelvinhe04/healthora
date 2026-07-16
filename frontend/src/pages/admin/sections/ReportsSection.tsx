@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   KpiCard,
@@ -11,6 +12,7 @@ import {
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { useAdminPanelContext } from '../AdminPanelContext';
 import { formatPanamaDateTime } from '../../../lib/dates';
+import { formatCurrency, formatNumber } from '../../../lib/currency';
 
 const inputStyle = {
   border: '1px solid var(--ink-10)',
@@ -27,6 +29,7 @@ function retentionColor(percent: number): string {
 }
 
 export function ReportsSection() {
+  const { t } = useTranslation();
   const {
     cohortReport,
     showReportsSkeleton,
@@ -54,17 +57,17 @@ export function ReportsSection() {
     <>
       <PageHeader
         loading={showReportsSkeleton}
-        kicker="Reportes avanzados"
+        kicker={t('admin.reports.kicker')}
         title={
           <>
-            Cohortes y <em style={{ color: 'var(--green)' }}>LTV</em>
+            {t('admin.reports.titlePrefix')} <em style={{ color: 'var(--green)' }}>{t('admin.reports.titleEmphasis')}</em>
           </>
         }
-        sub="Retención de clientes por mes de primera compra y valor de vida (LTV) acumulado por cohorte."
+        sub={t('admin.reports.sub')}
         actions={
           <div style={{ display: 'flex', gap: 12, flexWrap: 'nowrap', alignItems: 'center' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--ink-60)', whiteSpace: 'nowrap' }}>
-              Desde
+              {t('admin.reports.filters.from')}
               <input
                 type="date"
                 value={reportsRange.from}
@@ -73,7 +76,7 @@ export function ReportsSection() {
               />
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--ink-60)', whiteSpace: 'nowrap' }}>
-              Hasta
+              {t('admin.reports.filters.to')}
               <input
                 type="date"
                 value={reportsRange.to}
@@ -94,24 +97,24 @@ export function ReportsSection() {
         }}
       >
         <KpiCard
-          label="Clientes con compra"
-          value={cohortReport?.overall.totalCustomers.toLocaleString() ?? '—'}
-          sub="pagaron al menos una vez"
+          label={t('admin.reports.kpi.customersWithPurchase')}
+          value={cohortReport ? formatNumber(cohortReport.overall.totalCustomers) : '—'}
+          sub={t('admin.reports.kpi.customersWithPurchaseSub')}
           loading={showReportsSkeleton}
           animKey="reports_customers"
         />
         <KpiCard
-          label="Órdenes / cliente"
+          label={t('admin.reports.kpi.ordersPerCustomer')}
           value={cohortReport ? cohortReport.overall.averageOrdersPerCustomer.toFixed(2) : '—'}
-          sub="promedio histórico"
+          sub={t('admin.reports.kpi.ordersPerCustomerSub')}
           loading={showReportsSkeleton}
           animKey="reports_orders_per_customer"
         />
         <KpiCard
           mode="dark"
-          label="LTV promedio"
-          value={cohortReport ? `$${cohortReport.overall.averageRevenuePerCustomer.toFixed(2)}` : '—'}
-          sub="ingresos por cliente"
+          label={t('admin.reports.kpi.avgLtv')}
+          value={cohortReport ? formatCurrency(cohortReport.overall.averageRevenuePerCustomer) : '—'}
+          sub={t('admin.reports.kpi.avgLtvSub')}
           loading={showReportsSkeleton}
           animKey="reports_ltv"
         />
@@ -119,8 +122,8 @@ export function ReportsSection() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 24 }}>
         <Card
-          title="Retención por cohorte"
-          sub="% de la cohorte que volvió a comprar, por mes transcurrido desde su primera compra"
+          title={t('admin.reports.retention.title')}
+          sub={t('admin.reports.retention.sub')}
           pad={0}
           loading={showReportsSkeleton}
           skeletonContent={<Skeleton height={240} borderRadius={8} />}
@@ -130,11 +133,11 @@ export function ReportsSection() {
               <table style={{ ...tableStyle, minWidth: 480 + retentionOffsets.length * 90 }}>
                 <thead>
                   <tr>
-                    <th style={th}>Cohorte</th>
-                    <th style={th}>Clientes</th>
+                    <th style={th}>{t('admin.reports.table.columns.cohort')}</th>
+                    <th style={th}>{t('admin.reports.table.columns.customers')}</th>
                     {retentionOffsets.map((offset) => (
                       <th key={offset} style={{ ...th, textAlign: 'center' }}>
-                        Mes {offset}
+                        {t('admin.reports.monthColumn', { n: offset })}
                       </th>
                     ))}
                   </tr>
@@ -182,14 +185,14 @@ export function ReportsSection() {
             </div>
           ) : (
             <div style={{ padding: 24, fontSize: 13, color: 'var(--ink-60)' }}>
-              Todavía no hay suficientes órdenes pagadas para armar cohortes en este rango.
+              {t('admin.reports.retention.empty')}
             </div>
           )}
         </Card>
 
         <Card
-          title="LTV acumulado por cliente"
-          sub="Ingresos acumulados por cliente inicial de la cohorte, mes a mes"
+          title={t('admin.reports.ltv.title')}
+          sub={t('admin.reports.ltv.sub')}
           pad={0}
           loading={showReportsSkeleton}
           skeletonContent={<Skeleton height={240} borderRadius={8} />}
@@ -199,11 +202,11 @@ export function ReportsSection() {
               <table style={{ ...tableStyle, minWidth: 640 + offsets.length * 90 }}>
                 <thead>
                   <tr>
-                    <th style={th}>Cohorte</th>
-                    <th style={th}>Clientes</th>
+                    <th style={th}>{t('admin.reports.table.columns.cohort')}</th>
+                    <th style={th}>{t('admin.reports.table.columns.customers')}</th>
                     {offsets.map((offset) => (
                       <th key={offset} style={{ ...th, textAlign: 'center' }}>
-                        Mes {offset}
+                        {t('admin.reports.monthColumn', { n: offset })}
                       </th>
                     ))}
                   </tr>
@@ -217,7 +220,7 @@ export function ReportsSection() {
                         const cell = cohort.cumulativeLtv[offset];
                         return (
                           <td key={offset} style={{ ...td, textAlign: 'center' }}>
-                            {cell ? `$${cell.value.toFixed(2)}` : '—'}
+                            {cell ? formatCurrency(cell.value) : '—'}
                           </td>
                         );
                       })}
@@ -228,7 +231,7 @@ export function ReportsSection() {
             </div>
           ) : (
             <div style={{ padding: 24, fontSize: 13, color: 'var(--ink-60)' }}>
-              Todavía no hay suficientes órdenes pagadas para calcular LTV en este rango.
+              {t('admin.reports.ltv.empty')}
             </div>
           )}
         </Card>
@@ -237,10 +240,10 @@ export function ReportsSection() {
       <ModalOverlay open={!!selectedCohortMonth} onClose={() => setSelectedCohortMonth(null)} zIndex={120}>
         <div style={{ width: '100%', maxWidth: 720, background: 'var(--cream)', borderRadius: 20, padding: 24 }}>
           <h3 style={{ margin: '0 0 4px', fontFamily: '"Instrument Serif", serif', fontSize: 26 }}>
-            Cohorte {selectedCohortMonth}
+            {t('admin.reports.modal.cohortTitle', { month: selectedCohortMonth })}
           </h3>
           <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--ink-60)' }}>
-            Clientes cuya primera compra fue este mes, y en cuáles meses después volvieron a comprar.
+            {t('admin.reports.modal.sub')}
           </p>
 
           {loadingCohortCustomers ? (
@@ -250,11 +253,11 @@ export function ReportsSection() {
               <table style={{ ...tableStyle, minWidth: 420 + selectedCohortOffsets.length * 70 }}>
                 <thead>
                   <tr>
-                    <th style={th}>Cliente</th>
-                    <th style={th}>Primera compra</th>
+                    <th style={th}>{t('admin.reports.modal.columns.customer')}</th>
+                    <th style={th}>{t('admin.reports.modal.columns.firstPurchase')}</th>
                     {selectedCohortOffsets.map((offset) => (
                       <th key={offset} style={{ ...th, textAlign: 'center' }}>
-                        Mes {offset}
+                        {t('admin.reports.monthColumn', { n: offset })}
                       </th>
                     ))}
                   </tr>
@@ -282,7 +285,7 @@ export function ReportsSection() {
                   {!loadingCohortCustomers && !cohortCustomers?.customers.length && (
                     <tr>
                       <td style={{ ...td, textAlign: 'center', color: 'var(--ink-60)' }} colSpan={2 + selectedCohortOffsets.length}>
-                        Sin clientes para esta cohorte.
+                        {t('admin.reports.modal.empty')}
                       </td>
                     </tr>
                   )}

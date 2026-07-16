@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Card, PageHeader } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
@@ -31,10 +32,10 @@ const PROMO_TEMPLATE = {
 };
 
 const COLOR_PRESETS = [
-  { label: 'Lima', value: 'var(--lime)' },
-  { label: 'Verde', value: 'var(--green)' },
-  { label: 'Coral', value: 'var(--coral)' },
-  { label: 'Crema', value: 'var(--cream-2)' },
+  { labelKey: 'lime', value: 'var(--lime)' },
+  { labelKey: 'green', value: 'var(--green)' },
+  { labelKey: 'coral', value: 'var(--coral)' },
+  { labelKey: 'cream', value: 'var(--cream-2)' },
 ];
 
 const emptyForm = (): BannerForm => ({
@@ -53,18 +54,19 @@ const inputStyle = { width: '100%', marginTop: 6, padding: '10px 12px', borderRa
 const labelStyle = { fontSize: 12, color: 'var(--ink-60)' };
 
 function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { t } = useTranslation();
   const isCustom = !COLOR_PRESETS.some((p) => p.value === value);
   const hexValue = /^#[0-9a-f]{6}$/i.test(value) ? value : '#e4f248';
 
   return (
     <div>
-      <span style={labelStyle}>Color de fondo</span>
+      <span style={labelStyle}>{t('admin.banners.colorPicker.backgroundColorLabel')}</span>
       <div style={{ display: 'flex', gap: 8, marginTop: 6, alignItems: 'center', flexWrap: 'wrap' }}>
         {COLOR_PRESETS.map((preset) => (
           <button
             key={preset.value}
             type="button"
-            title={preset.label}
+            title={t(`admin.banners.colorPresets.${preset.labelKey}`)}
             onClick={() => onChange(preset.value)}
             style={{
               width: 30,
@@ -79,7 +81,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
         ))}
         <button
           type="button"
-          title="Personalizado"
+          title={t('admin.banners.colorPresets.custom')}
           onClick={() => onChange(hexValue)}
           style={{
             width: 30,
@@ -105,6 +107,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
 }
 
 function BannerPreviewCard({ banner, label, onEdit }: { banner?: Banner; label: string; onEdit: () => void }) {
+  const { t } = useTranslation();
   return (
     <Card>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -120,17 +123,18 @@ function BannerPreviewCard({ banner, label, onEdit }: { banner?: Banner; label: 
         />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 11, color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
-          <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{banner?.title || 'Sin configurar'}</div>
+          <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{banner?.title || t('admin.banners.preview.notConfigured')}</div>
         </div>
       </div>
       <div style={{ marginTop: 16 }}>
-        <AnimatedButton variant="secondary" onClick={onEdit} text="Editar" />
+        <AnimatedButton variant="secondary" onClick={onEdit} text={t('admin.banners.preview.editButton')} />
       </div>
     </Card>
   );
 }
 
 export function BannersSection() {
+  const { t } = useTranslation();
   const getAdminToken = useAdminToken();
   const queryClient = useQueryClient();
   const [editingSlot, setEditingSlot] = useState<BannerSlot | null>(null);
@@ -154,7 +158,7 @@ export function BannersSection() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!editingSlot) throw new Error('Banner no seleccionado');
+      if (!editingSlot) throw new Error(t('admin.banners.noSlotSelectedError'));
       const token = await getAdminToken();
       return api.admin.banners.update(
         editingSlot,
@@ -226,44 +230,44 @@ export function BannersSection() {
         kicker="Landing"
         title={
           <>
-            Gestión de <em style={{ color: 'var(--green)' }}>banners</em>
+            {t('admin.banners.titlePrefix')} <em style={{ color: 'var(--green)' }}>{t('admin.banners.titleEmphasis')}</em>
           </>
         }
-        sub="Edita los 2 banners de la sección Ofertas del landing sin necesitar deploy."
+        sub={t('admin.banners.sub')}
       />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
-        <BannerPreviewCard banner={promoBanner} label="Promoción destacada" onEdit={() => openEdit('promo', promoBanner)} />
-        <BannerPreviewCard banner={clubBanner} label="Club Healthora" onEdit={() => openEdit('club', clubBanner)} />
+        <BannerPreviewCard banner={promoBanner} label={t('admin.banners.preview.promoLabel')} onEdit={() => openEdit('promo', promoBanner)} />
+        <BannerPreviewCard banner={clubBanner} label={t('admin.banners.preview.clubLabel')} onEdit={() => openEdit('club', clubBanner)} />
       </div>
 
       <ModalOverlay open={editingSlot !== null} onClose={() => setEditingSlot(null)} zIndex={120}>
         <div style={{ width: '100%', maxWidth: 560, maxHeight: '86vh', overflowY: 'auto', background: 'var(--cream)', borderRadius: 24, border: '1px solid var(--ink-06)', padding: 24 }}>
           <h2 style={{ margin: '0 0 16px', fontFamily: '"Instrument Serif", serif', fontSize: 28 }}>
-            Editar banner {editingSlot === 'promo' ? '· Promoción destacada' : '· Club Healthora'}
+            {t('admin.banners.modal.editTitlePrefix')} {editingSlot === 'promo' ? `· ${t('admin.banners.preview.promoLabel')}` : `· ${t('admin.banners.preview.clubLabel')}`}
           </h2>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
-              <span style={labelStyle}>Kicker (etiqueta pequeña)</span>
+              <span style={labelStyle}>{t('admin.banners.modal.kickerLabel')}</span>
               <input value={form.kicker} onChange={(e) => setForm((f) => ({ ...f, kicker: e.target.value }))} style={inputStyle} />
             </label>
 
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
-              <span style={labelStyle}>Título</span>
+              <span style={labelStyle}>{t('admin.banners.modal.titleLabel')}</span>
               <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} spellCheck={false} style={inputStyle} />
               {editingSlot === 'promo' && (
                 <span style={{ display: 'block', marginTop: 6, fontSize: 11, color: 'var(--ink-40)' }}>
-                  Usa <code>{'{categoria}'}</code>, <code>{'{fechaDesde}'}</code> y <code>{'{fechaHasta}'}</code> donde quieras que se actualicen solas al cambiar la categoría o las fechas de vigencia.
+                  {t('admin.banners.modal.titleHintPrefix')} <code>{'{categoria}'}</code>, <code>{'{fechaDesde}'}</code> {t('admin.banners.modal.titleHintJoiner')} <code>{'{fechaHasta}'}</code> {t('admin.banners.modal.titleHintSuffix')}
                 </span>
               )}
             </label>
 
             {editingSlot === 'promo' && (
               <label style={{ display: 'block', gridColumn: '1 / -1' }}>
-                <span style={labelStyle}>Categoría (define las 2 fotos del banner y a dónde lleva el botón)</span>
+                <span style={labelStyle}>{t('admin.banners.modal.categoryLabel')}</span>
                 <Select value={form.categoryId} onChange={(e) => handleCategoryChange(e.target.value)} wrapperStyle={{ marginTop: 6 }}>
-                  <option value="">Seleccionar categoría…</option>
+                  <option value="">{t('admin.banners.modal.categoryPlaceholder')}</option>
                   {categoryOptions.map((cat) => (
                     <option key={cat.id} value={cat.id}>{cat.label}</option>
                   ))}
@@ -272,14 +276,14 @@ export function BannersSection() {
             )}
 
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
-              <span style={labelStyle}>Descripción</span>
+              <span style={labelStyle}>{t('admin.banners.modal.descriptionLabel')}</span>
               <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} spellCheck={false} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} />
             </label>
 
             {editingSlot === 'promo' && (
               <div style={{ gridColumn: '1 / -1', background: 'var(--cream-2)', borderRadius: 12, padding: 14 }}>
                 <div style={{ fontSize: 11, color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                  Vista previa (con la categoría y fecha elegidas)
+                  {t('admin.banners.modal.previewLabel')}
                 </div>
                 <div style={{ fontWeight: 600, marginBottom: 4 }}>{resolvedPreview.title}</div>
                 <div style={{ fontSize: 13, color: 'var(--ink-60)', marginBottom: 8 }}>{resolvedPreview.description}</div>
@@ -292,12 +296,12 @@ export function BannersSection() {
             </div>
 
             <label style={{ display: 'block' }}>
-              <span style={labelStyle}>Vigente desde{editingSlot === 'promo' ? '' : ' (opcional)'}</span>
+              <span style={labelStyle}>{t('admin.banners.modal.startDateLabel')}{editingSlot === 'promo' ? '' : t('admin.banners.modal.optionalSuffix')}</span>
               <input type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} style={inputStyle} />
             </label>
 
             <label style={{ display: 'block' }}>
-              <span style={labelStyle}>Vigente hasta{editingSlot === 'promo' ? '' : ' (opcional)'}</span>
+              <span style={labelStyle}>{t('admin.banners.modal.endDateLabel')}{editingSlot === 'promo' ? '' : t('admin.banners.modal.optionalSuffix')}</span>
               <input type="date" value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} style={inputStyle} />
             </label>
           </div>
@@ -305,7 +309,7 @@ export function BannersSection() {
           {error ? <p style={{ color: 'crimson', fontSize: 13, marginTop: 12 }}>{error}</p> : null}
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 20 }}>
-            <AnimatedButton variant="secondary" onClick={() => setEditingSlot(null)} text="Cancelar" />
+            <AnimatedButton variant="secondary" onClick={() => setEditingSlot(null)} text={t('admin.banners.modal.cancel')} />
             <AnimatedButton
               variant="primary"
               disabled={
@@ -315,7 +319,7 @@ export function BannersSection() {
                 (editingSlot === 'promo' && (!form.categoryId || !form.startDate || !form.endDate))
               }
               onClick={() => saveMutation.mutate()}
-              text={saveMutation.isPending ? 'Guardando…' : 'Guardar'}
+              text={saveMutation.isPending ? t('admin.banners.modal.saving') : t('admin.banners.modal.save')}
             />
           </div>
         </div>
