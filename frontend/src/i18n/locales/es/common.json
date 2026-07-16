@@ -504,5 +504,69 @@
     "optionsAvailable_other": "{{count}} opciones disponibles",
     "selectedKicker": "MUESTRA SELECCIONADA",
     "confirmButton": "Confirmar y volver"
+  },
+  "profile": {
+    "backToStore": "Volver a la tienda",
+    "kicker": "Mi cuenta",
+    "headingPrefix": "Tu",
+    "headingEmphasis": "perfil",
+    "defaultUserAlt": "Perfil",
+    "noName": "Sin nombre",
+    "editNameAndPhoto": "Editar nombre y foto",
+    "errors": {
+      "notAuthenticated": "No autenticado",
+      "cardSaveFailed": "No se pudo guardar la tarjeta",
+      "cardFormFailed": "No se pudo cargar el formulario de tarjeta",
+      "prefsSaveFailed": "No se pudo guardar el cambio.",
+      "prefsLoadFailed": "No se pudieron cargar tus preferencias. Recarga la página."
+    },
+    "subscriptions": {
+      "title": "Mis suscripciones",
+      "loading": "Cargando…",
+      "empty": "No tienes reposiciones automáticas activas. Puedes suscribirte desde la ficha de cualquier producto.",
+      "frequency": "Cada {{days}} días · {{amount}} por envío",
+      "status": {
+        "active": "Activa",
+        "paused": "Pausada",
+        "canceled": "Cancelada"
+      },
+      "nextShipment": "Próximo envío: {{date}}",
+      "pause": "Pausar",
+      "resume": "Reanudar",
+      "cancel": "Cancelar"
+    },
+    "addCard": {
+      "saving": "Guardando…",
+      "saveCard": "Guardar tarjeta",
+      "cancel": "Cancelar"
+    },
+    "paymentMethods": {
+      "title": "Métodos de pago",
+      "loading": "Cargando…",
+      "empty": "No tienes tarjetas guardadas todavía.",
+      "default": "PRINCIPAL",
+      "setDefaultAria": "Marcar tarjeta terminada en {{last4}} como principal",
+      "deleteAria": "Eliminar tarjeta terminada en {{last4}}",
+      "stripeMissing": "Falta configurar VITE_STRIPE_PUBLISHABLE_KEY para agregar tarjetas.",
+      "addCard": "Agregar tarjeta",
+      "securityNote": "Tus tarjetas se guardan de forma segura en Stripe — Healthora nunca almacena el número completo. Podrás elegir una tarjeta guardada al pagar en el checkout."
+    },
+    "notifications": {
+      "title": "Preferencias de notificación",
+      "loading": "Cargando…",
+      "loadError": "No se pudieron cargar tus preferencias. Recarga la página.",
+      "orderUpdates": {
+        "title": "Actualizaciones de pedidos y devoluciones",
+        "desc": "Cuando tu pedido cambia de estado (enviado, entregado) o hay novedades en una devolución."
+      },
+      "promotions": {
+        "title": "Recordatorios y promociones",
+        "desc": "Avisos de recompra y ofertas."
+      },
+      "unsubscribeAll": {
+        "title": "Darme de baja de todos los correos",
+        "desc": "No recibirás ningún correo de las categorías de arriba. La confirmación de tu compra siempre llega, sin importar esta opción."
+      }
+    }
   }
 }

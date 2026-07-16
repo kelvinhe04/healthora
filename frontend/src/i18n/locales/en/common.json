@@ -504,5 +504,69 @@
     "optionsAvailable_other": "{{count}} options available",
     "selectedKicker": "SELECTED SAMPLE",
     "confirmButton": "Confirm and go back"
+  },
+  "profile": {
+    "backToStore": "Back to store",
+    "kicker": "My account",
+    "headingPrefix": "Your",
+    "headingEmphasis": "profile",
+    "defaultUserAlt": "Profile",
+    "noName": "No name",
+    "editNameAndPhoto": "Edit name and photo",
+    "errors": {
+      "notAuthenticated": "Not authenticated",
+      "cardSaveFailed": "The card couldn't be saved",
+      "cardFormFailed": "The card form couldn't be loaded",
+      "prefsSaveFailed": "The change couldn't be saved.",
+      "prefsLoadFailed": "We couldn't load your preferences. Reload the page."
+    },
+    "subscriptions": {
+      "title": "My subscriptions",
+      "loading": "Loading…",
+      "empty": "You don't have any active auto-replenishments. You can subscribe from any product's page.",
+      "frequency": "Every {{days}} days · {{amount}} per shipment",
+      "status": {
+        "active": "Active",
+        "paused": "Paused",
+        "canceled": "Canceled"
+      },
+      "nextShipment": "Next shipment: {{date}}",
+      "pause": "Pause",
+      "resume": "Resume",
+      "cancel": "Cancel"
+    },
+    "addCard": {
+      "saving": "Saving…",
+      "saveCard": "Save card",
+      "cancel": "Cancel"
+    },
+    "paymentMethods": {
+      "title": "Payment methods",
+      "loading": "Loading…",
+      "empty": "You don't have any saved cards yet.",
+      "default": "DEFAULT",
+      "setDefaultAria": "Set card ending in {{last4}} as default",
+      "deleteAria": "Delete card ending in {{last4}}",
+      "stripeMissing": "VITE_STRIPE_PUBLISHABLE_KEY needs to be configured to add cards.",
+      "addCard": "Add card",
+      "securityNote": "Your cards are securely stored in Stripe — Healthora never stores the full card number. You'll be able to pick a saved card at checkout."
+    },
+    "notifications": {
+      "title": "Notification preferences",
+      "loading": "Loading…",
+      "loadError": "We couldn't load your preferences. Reload the page.",
+      "orderUpdates": {
+        "title": "Order and return updates",
+        "desc": "When your order changes status (shipped, delivered) or there's news on a return."
+      },
+      "promotions": {
+        "title": "Reminders and promotions",
+        "desc": "Reorder reminders and deals."
+      },
+      "unsubscribeAll": {
+        "title": "Unsubscribe from all emails",
+        "desc": "You won't receive any emails from the categories above. Your purchase confirmation always arrives, regardless of this setting."
+      }
+    }
   }
 }
