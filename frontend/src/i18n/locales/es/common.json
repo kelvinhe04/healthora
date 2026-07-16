@@ -724,5 +724,123 @@
         "cancelFailed": "No se pudo cancelar el pedido"
       }
     }
+  },
+  "landing": {
+    "hero": {
+      "skinHealth": {
+        "pill": "Dermatología avanzada",
+        "titlePrefix": "Piel radiante y",
+        "titleEmphasis": "saludable",
+        "sub": "Dermocosmética de grado médico para proteger y revitalizar tu rostro día tras día."
+      },
+      "vitamins": {
+        "pill": "Defensas al máximo",
+        "titlePrefix": "Vitalidad para tu",
+        "titleEmphasis": "día a día",
+        "sub": "Refuerza tu sistema inmune y mantén tu energía con nuestra selección de vitaminas."
+      },
+      "babyCare": {
+        "pill": "Para los más pequeños",
+        "titlePrefix": "Protección muy",
+        "titleEmphasis": "delicada",
+        "sub": "Fórmulas suaves, hipoalergénicas y pediátricas para cuidar la piel de tu bebé."
+      },
+      "personalCare": {
+        "pill": "Rutina de higiene",
+        "titlePrefix": "Siéntete bien",
+        "titleEmphasis": "por dentro y fuera",
+        "sub": "Productos esenciales para tu cuidado e higiene personal de todos los días."
+      },
+      "wellnessSupplements": {
+        "pill": "Nutrición integral",
+        "titlePrefix": "Optimiza tu",
+        "titleEmphasis": "bienestar total",
+        "sub": "Complementos nutricionales de alta calidad para cubrir tus requerimientos diarios."
+      },
+      "fitness": {
+        "pill": "Rendimiento deportivo",
+        "titlePrefix": "Alcanza tu",
+        "titleEmphasis": "máximo nivel",
+        "sub": "Potencia tus entrenamientos, recupera músculos y supera tus límites."
+      },
+      "medications": {
+        "pill": "Botiquín esencial",
+        "titlePrefix": "Alivio rápido",
+        "titleEmphasis": "y seguro",
+        "sub": "Tu farmacia de confianza con medicamentos OTC para cualquier malestar."
+      },
+      "moisturizers": {
+        "pill": "Humectación profunda",
+        "titlePrefix": "Un oasis para",
+        "titleEmphasis": "tu piel",
+        "sub": "Fórmulas que retienen la humedad durante 24 horas para una piel sedosa y suave."
+      },
+      "fragrances": {
+        "pill": "Aromas exclusivos",
+        "titlePrefix": "Descubre tu",
+        "titleEmphasis": "firma personal",
+        "sub": "Perfumes de diseñador con notas inolvidables que dejan huella."
+      },
+      "makeup": {
+        "pill": "Expresa tu belleza",
+        "titlePrefix": "Color y",
+        "titleEmphasis": "luminosidad",
+        "sub": "Cosméticos en tendencia y clásicos infalibles para realzar tu rostro."
+      }
+    },
+    "ctaBuyNow": "Comprar ahora",
+    "ctaSeeBestsellers": "Ver best sellers",
+    "reviews": {
+      "happyCustomers": "{{amount}} clientes felices",
+      "noReviewsYet": "Sin reseñas aún",
+      "avgRatingLabel": "PROMEDIO GLOBAL DE RESEÑAS"
+    },
+    "categories": {
+      "kicker": "01 · Categorías",
+      "headingPrefix": "Compra por",
+      "headingEmphasis": "necesidad",
+      "seeAll": "Ver todas las categorías"
+    },
+    "bestsellers": {
+      "kicker": "02 · Más vendidos",
+      "headingPrefix": "Lo más vendido",
+      "headingEmphasis": "esta semana",
+      "seeAll": "Ver todos"
+    },
+    "cinematic": {
+      "kicker": "Nuestra selección",
+      "titlePrefix": "El aroma que",
+      "titleEmphasis": "te define"
+    },
+    "byNeed": {
+      "kicker": "03 · Por necesidad",
+      "headingPrefix": "¿Qué estás",
+      "headingEmphasis": "buscando",
+      "headingSuffix": "?",
+      "explore": "Explorar",
+      "items": {
+        "drySkin": "Piel seca",
+        "energyVitamins": "Energía y vitaminas",
+        "babyCare": "Cuidado del bebé",
+        "fitnessRecovery": "Fitness y recuperación"
+      }
+    },
+    "trust": {
+      "payments": { "title": "Pagos seguros", "sub": "Stripe · PCI DSS · 3D Secure" },
+      "verified": { "title": "Productos verificados", "sub": "Farmacéuticos colegiados" },
+      "shipping": { "title": "Envíos rápidos", "sub": "24–48h en toda la región" },
+      "support": { "title": "Atención al cliente", "sub": "Lun a sáb · 8am–8pm" }
+    },
+    "featured": {
+      "kicker": "04 · Nuevos ingresos",
+      "headingPrefix": "Recién",
+      "headingEmphasis": "llegados",
+      "seeAll": "Ver catálogo completo"
+    },
+    "brands": {
+      "kicker": "05 · Marcas",
+      "headingPrefix": "Las marcas en las que",
+      "headingEmphasis": "confías"
+    }
   }
 }

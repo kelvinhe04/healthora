@@ -724,5 +724,123 @@
         "cancelFailed": "The order couldn't be cancelled"
       }
     }
+  },
+  "landing": {
+    "hero": {
+      "skinHealth": {
+        "pill": "Advanced dermatology",
+        "titlePrefix": "Radiant, healthy",
+        "titleEmphasis": "skin",
+        "sub": "Medical-grade dermocosmetics to protect and revitalize your face day after day."
+      },
+      "vitamins": {
+        "pill": "Peak immune defense",
+        "titlePrefix": "Vitality for your",
+        "titleEmphasis": "everyday",
+        "sub": "Boost your immune system and keep your energy up with our vitamin selection."
+      },
+      "babyCare": {
+        "pill": "For the littlest ones",
+        "titlePrefix": "Very gentle",
+        "titleEmphasis": "protection",
+        "sub": "Soft, hypoallergenic, pediatrician-tested formulas to care for your baby's skin."
+      },
+      "personalCare": {
+        "pill": "Hygiene routine",
+        "titlePrefix": "Feel good",
+        "titleEmphasis": "inside and out",
+        "sub": "Essential products for your everyday personal care and hygiene."
+      },
+      "wellnessSupplements": {
+        "pill": "Complete nutrition",
+        "titlePrefix": "Optimize your",
+        "titleEmphasis": "total wellness",
+        "sub": "High-quality nutritional supplements to cover your daily requirements."
+      },
+      "fitness": {
+        "pill": "Athletic performance",
+        "titlePrefix": "Reach your",
+        "titleEmphasis": "peak level",
+        "sub": "Power your workouts, recover your muscles, and push past your limits."
+      },
+      "medications": {
+        "pill": "Essential medicine cabinet",
+        "titlePrefix": "Fast, safe",
+        "titleEmphasis": "relief",
+        "sub": "Your trusted pharmacy with OTC medications for any ailment."
+      },
+      "moisturizers": {
+        "pill": "Deep hydration",
+        "titlePrefix": "An oasis for",
+        "titleEmphasis": "your skin",
+        "sub": "Formulas that lock in moisture for 24 hours, for silky, soft skin."
+      },
+      "fragrances": {
+        "pill": "Exclusive scents",
+        "titlePrefix": "Discover your",
+        "titleEmphasis": "personal signature",
+        "sub": "Designer perfumes with unforgettable notes that leave a lasting impression."
+      },
+      "makeup": {
+        "pill": "Express your beauty",
+        "titlePrefix": "Color and",
+        "titleEmphasis": "radiance",
+        "sub": "Trending cosmetics and foolproof classics to enhance your look."
+      }
+    },
+    "ctaBuyNow": "Shop now",
+    "ctaSeeBestsellers": "See best sellers",
+    "reviews": {
+      "happyCustomers": "{{amount}} happy customers",
+      "noReviewsYet": "No reviews yet",
+      "avgRatingLabel": "OVERALL REVIEW AVERAGE"
+    },
+    "categories": {
+      "kicker": "01 · Categories",
+      "headingPrefix": "Shop by",
+      "headingEmphasis": "need",
+      "seeAll": "See all categories"
+    },
+    "bestsellers": {
+      "kicker": "02 · Best sellers",
+      "headingPrefix": "Best selling",
+      "headingEmphasis": "this week",
+      "seeAll": "See all"
+    },
+    "cinematic": {
+      "kicker": "Our selection",
+      "titlePrefix": "The scent that",
+      "titleEmphasis": "defines you"
+    },
+    "byNeed": {
+      "kicker": "03 · By need",
+      "headingPrefix": "What are you",
+      "headingEmphasis": "looking for",
+      "headingSuffix": "?",
+      "explore": "Explore",
+      "items": {
+        "drySkin": "Dry skin",
+        "energyVitamins": "Energy & vitamins",
+        "babyCare": "Baby care",
+        "fitnessRecovery": "Fitness & recovery"
+      }
+    },
+    "trust": {
+      "payments": { "title": "Secure payments", "sub": "Stripe · PCI DSS · 3D Secure" },
+      "verified": { "title": "Verified products", "sub": "Licensed pharmacists" },
+      "shipping": { "title": "Fast shipping", "sub": "24–48h across the region" },
+      "support": { "title": "Customer support", "sub": "Mon to Sat · 8am–8pm" }
+    },
+    "featured": {
+      "kicker": "04 · New arrivals",
+      "headingPrefix": "Just",
+      "headingEmphasis": "arrived",
+      "seeAll": "See full catalog"
+    },
+    "brands": {
+      "kicker": "05 · Brands",
+      "headingPrefix": "Brands you",
+      "headingEmphasis": "trust"
+    }
   }
 }

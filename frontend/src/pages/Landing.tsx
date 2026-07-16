@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useMemo, createContext, useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 import { Parallax } from 'react-scroll-parallax';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -21,6 +22,7 @@ import { resolveBannerText } from '../lib/bannerText';
 import { getBannerTextColors } from '../lib/bannerColor';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { api } from '../lib/api';
+import { formatNumber } from '../lib/currency';
 import { NEEDS } from '../lib/needs';
 
 // Runs before paint on the client (so a scroll correction is never visible as a flash) while
@@ -284,67 +286,19 @@ function RevealSection({ children, style, delay = 0, ...props }: RevealSectionPr
   );
 }
 
+// Traducible via `landing.hero.<keySuffix>.*` en common.json (HU-084) - `id` se mantiene en
+// español porque es un valor funcional (filtra productos por categoría, ver `activeProducts`).
 const HERO_CONTENT = [
-  {
-    id: 'Salud de la piel',
-    pill: 'Dermatología avanzada',
-    title: <>Piel radiante y<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>saludable</span></>,
-    sub: 'Dermocosmética de grado médico para proteger y revitalizar tu rostro día tras día.',
-  },
-  {
-    id: 'Vitaminas',
-    pill: 'Defensas al máximo',
-    title: <>Vitalidad para tu<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>día a día</span></>,
-    sub: 'Refuerza tu sistema inmune y mantén tu energía con nuestra selección de vitaminas.',
-  },
-  {
-    id: 'Cuidado del bebé',
-    pill: 'Para los más pequeños',
-    title: <>Protección muy<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>delicada</span></>,
-    sub: 'Fórmulas suaves, hipoalergénicas y pediátricas para cuidar la piel de tu bebé.',
-  },
-  {
-    id: 'Cuidado personal',
-    pill: 'Rutina de higiene',
-    title: <>Siéntete bien<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>por dentro y fuera</span></>,
-    sub: 'Productos esenciales para tu cuidado e higiene personal de todos los días.',
-  },
-  {
-    id: 'Suplementos de Bienestar',
-    pill: 'Nutrición integral',
-    title: <>Optimiza tu<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>bienestar total</span></>,
-    sub: 'Complementos nutricionales de alta calidad para cubrir tus requerimientos diarios.',
-  },
-  {
-    id: 'Fitness',
-    pill: 'Rendimiento deportivo',
-    title: <>Alcanza tu<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>máximo nivel</span></>,
-    sub: 'Potencia tus entrenamientos, recupera músculos y supera tus límites.',
-  },
-  {
-    id: 'Medicamentos',
-    pill: 'Botiquín esencial',
-    title: <>Alivio rápido<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>y seguro</span></>,
-    sub: 'Tu farmacia de confianza con medicamentos OTC para cualquier malestar.',
-  },
-  {
-    id: 'Hidratantes',
-    pill: 'Humectación profunda',
-    title: <>Un oasis para<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>tu piel</span></>,
-    sub: 'Fórmulas que retienen la humedad durante 24 horas para una piel sedosa y suave.',
-  },
-  {
-    id: 'Fragancias',
-    pill: 'Aromas exclusivos',
-    title: <>Descubre tu<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>firma personal</span></>,
-    sub: 'Perfumes de diseñador con notas inolvidables que dejan huella.',
-  },
-  {
-    id: 'Maquillaje',
-    pill: 'Expresa tu belleza',
-    title: <>Color y<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>luminosidad</span></>,
-    sub: 'Cosméticos en tendencia y clásicos infalibles para realzar tu rostro.',
-  }
+  { id: 'Salud de la piel', keySuffix: 'skinHealth' },
+  { id: 'Vitaminas', keySuffix: 'vitamins' },
+  { id: 'Cuidado del bebé', keySuffix: 'babyCare' },
+  { id: 'Cuidado personal', keySuffix: 'personalCare' },
+  { id: 'Suplementos de Bienestar', keySuffix: 'wellnessSupplements' },
+  { id: 'Fitness', keySuffix: 'fitness' },
+  { id: 'Medicamentos', keySuffix: 'medications' },
+  { id: 'Hidratantes', keySuffix: 'moisturizers' },
+  { id: 'Fragancias', keySuffix: 'fragrances' },
+  { id: 'Maquillaje', keySuffix: 'makeup' },
 ];
 
 
@@ -375,6 +329,7 @@ function CategorySkeleton() {
 let landingInitialLoadDone = false;
 
 export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
+  const { t } = useTranslation();
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const isTablet = bp === 'tablet';
@@ -719,21 +674,21 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               <div>
                 <div key={`pill-${activeHeroIdx}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: isMobile ? 20 : 40, animation: 'fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
                   <span style={{ width: 6, height: 6, background: 'var(--lime)', borderRadius: 999, boxShadow: '0 0 10px rgba(210,230,60,0.5)' }} />
-                  {activeHero.pill}
+                  {t(`landing.hero.${activeHero.keySuffix}.pill`)}
                 </div>
                 <h1 key={`title-${activeHeroIdx}`} style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 48 : isTablet ? 64 : 86, lineHeight: 0.95, letterSpacing: '-0.035em', fontWeight: 400, margin: 0, color: 'oklch(0.985 0.008 85)', animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}>
-                  {activeHero.title}
+                  {t(`landing.hero.${activeHero.keySuffix}.titlePrefix`)}<br /><span style={{ fontStyle: 'italic', color: 'var(--lime)' }}>{t(`landing.hero.${activeHero.keySuffix}.titleEmphasis`)}</span>
                 </h1>
               </div>
             </Parallax>
             <Parallax speed={isMobile ? 0 : -6} style={{ pointerEvents: 'auto' }}>
               <div>
                 <p key={`sub-${activeHeroIdx}`} style={{ fontSize: isMobile ? 14 : 17, lineHeight: 1.5, maxWidth: 440, color: 'oklch(0.85 0.006 85)', opacity: 0, marginBottom: isMobile ? 20 : 32, fontFamily: '"Geist", sans-serif', animation: 'fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s forwards' }}>
-                  {activeHero.sub}
+                  {t(`landing.hero.${activeHero.keySuffix}.sub`)}
                 </p>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  <AnimatedButton variant="lime" size={isMobile ? 'md' : 'lg'} onClick={() => onNav('catalog', { category: activeHero.id })} className="hero-cta" style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />} text="Comprar ahora" />
-                  {!isMobile && <AnimatedButton variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'white', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(6px)' }} text="Ver best sellers" />}
+                  <AnimatedButton variant="lime" size={isMobile ? 'md' : 'lg'} onClick={() => onNav('catalog', { category: activeHero.id })} className="hero-cta" style={{ boxShadow: '0 14px 34px -20px rgba(0,0,0,0.45)' }} icon={<Icon name="arrow-right" size={14} />} text={t('landing.ctaBuyNow')} />
+                  {!isMobile && <AnimatedButton variant="outline" size="lg" onClick={() => scrollTo('bestsellers')} style={{ color: 'white', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(6px)' }} text={t('landing.ctaSeeBestsellers')} />}
                 </div>
               </div>
             </Parallax>
@@ -742,7 +697,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           {/* FLOATING & ABSOLUTE ELEMENTS */}
           {!isMobile && (
             <Parallax translateY={[-30, 30]} style={{ position: 'absolute', top: 40, right: 40, zIndex: 3 }}>
-              <div key={`cat-${activeHeroIdx}`} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', animation: 'fadeInUp 0.5s forwards' }}>{activeHero.id.toUpperCase()}</div>
+              <div key={`cat-${activeHeroIdx}`} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', animation: 'fadeInUp 0.5s forwards' }}>{t(`footer.categories.${activeHero.keySuffix}`).toUpperCase()}</div>
             </Parallax>
           )}
 
@@ -754,9 +709,9 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                 </div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.3, color: 'oklch(0.2 0.015 155)' }}>
-                    {reviewStats?.total ? displayTotal.toLocaleString('es-CO') + ' clientes felices' : 'Sin reseñas aún'}
+                    {reviewStats?.total ? t('landing.reviews.happyCustomers', { amount: formatNumber(displayTotal) }) : t('landing.reviews.noReviewsYet')}
                   </div>
-                  <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'oklch(0.5 0.015 155)', marginTop: 2 }}>PROMEDIO GLOBAL DE RESEÑAS</div>
+                  <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'oklch(0.5 0.015 155)', marginTop: 2 }}>{t('landing.reviews.avgRatingLabel')}</div>
                 </div>
               </div>
             </Parallax>
@@ -872,10 +827,10 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       <RevealSection id="categorias" style={{ padding: secPad }} delay={40}>
         <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'end', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: 12, marginBottom: 24 }}>
           <div>
-            <div style={headKicker}>01 · Categorías</div>
-            <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>Compra por <em style={{ color: 'var(--green)' }}>necesidad</em></h2>
+            <div style={headKicker}>{t('landing.categories.kicker')}</div>
+            <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>{t('landing.categories.headingPrefix')} <em style={{ color: 'var(--green)' }}>{t('landing.categories.headingEmphasis')}</em></h2>
           </div>
-          <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Ver todas las categorías" />
+          <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text={t('landing.categories.seeAll')} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', gap: isMobile ? 10 : 16 }}>
           {showCategoriesSkeleton
@@ -903,10 +858,10 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       <RevealSection id="bestsellers" style={{ padding: secPad }} delay={60}>
         <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'end', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: 12, marginBottom: 24 }}>
           <div>
-            <div style={headKicker}>02 · Más vendidos</div>
-            <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>Lo más vendido <em style={{ color: 'var(--green)' }}>esta semana</em></h2>
+            <div style={headKicker}>{t('landing.bestsellers.kicker')}</div>
+            <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>{t('landing.bestsellers.headingPrefix')} <em style={{ color: 'var(--green)' }}>{t('landing.bestsellers.headingEmphasis')}</em></h2>
           </div>
-          <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Ver todos" />
+          <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text={t('landing.bestsellers.seeAll')} />
         </div>
         <ProductRow products={bestSellers} onOpenProduct={onOpenProduct} onAdd={onAdd} sectionKey="bestsellers" loading={showProductsSkeleton} priorityCount={isMobile ? 2 : 4} />
       </RevealSection>
@@ -1020,9 +975,9 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           {/* Text Content */}
           <div className="cine-text" style={{ position: 'absolute', top: '5%', left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ textAlign: 'center', color: 'var(--ink)', padding: isMobile ? '0 20px' : '0 40px' }}>
-              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: isMobile ? 11 : 14, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: 16, opacity: 0.8 }}>Nuestra selección</div>
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: isMobile ? 11 : 14, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: 16, opacity: 0.8 }}>{t('landing.cinematic.kicker')}</div>
               <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 'clamp(32px, 8vw, 52px)' : 'clamp(64px, 8vw, 120px)', margin: 0, lineHeight: 0.9 }}>
-                El aroma que<br/><em style={{ color: 'var(--lime)', fontStyle: 'italic' }}>te define</em>
+                {t('landing.cinematic.titlePrefix')}<br/><em style={{ color: 'var(--lime)', fontStyle: 'italic' }}>{t('landing.cinematic.titleEmphasis')}</em>
               </h2>
             </div>
           </div>
@@ -1053,8 +1008,8 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       {/* BY NEED */}
       <RevealSection style={{ padding: secPad }} delay={100}>
         <div style={{ marginBottom: 24 }}>
-          <div style={headKicker}>03 · Por necesidad</div>
-          <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>¿Qué estás <em style={{ color: 'var(--green)' }}>buscando</em>?</h2>
+          <div style={headKicker}>{t('landing.byNeed.kicker')}</div>
+          <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>{t('landing.byNeed.headingPrefix')} <em style={{ color: 'var(--green)' }}>{t('landing.byNeed.headingEmphasis')}</em>{t('landing.byNeed.headingSuffix')}</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 10 : 16 }}>
           {showProductsSkeleton
@@ -1102,8 +1057,8 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                       />
                     </div>
                     <div>
-                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 26, letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 8 }}>{n.label}</div>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: '"Geist", sans-serif', opacity: 0.75 }}>Explorar <Icon name="arrow-right" size={12} /></div>
+                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 26, letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 8 }}>{t(`landing.byNeed.items.${n.i18nKey}`)}</div>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: '"Geist", sans-serif', opacity: 0.75 }}>{t('landing.byNeed.explore')} <Icon name="arrow-right" size={12} /></div>
                     </div>
                   </div>
                 </StaggerItem>
@@ -1115,13 +1070,18 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       {/* TRUST */}
       <RevealSection style={{ padding: secPad }} delay={120}>
         <div style={{ background: 'var(--cream-2)', borderRadius: isMobile ? 20 : 28, padding: isMobile ? '28px 20px' : isTablet ? '32px 28px' : '48px 40px', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : isTablet ? '1fr 1fr' : 'repeat(4, 1fr)', gap: isMobile ? 20 : 32, border: '1px solid var(--ink-06)' }}>
-          {[{ icon: 'shield', title: 'Pagos seguros', sub: 'Stripe · PCI DSS · 3D Secure' }, { icon: 'check', title: 'Productos verificados', sub: 'Farmacéuticos colegiados' }, { icon: 'truck', title: 'Envíos rápidos', sub: '24–48h en toda la región' }, { icon: 'headset', title: 'Atención al cliente', sub: 'Lun a sáb · 8am–8pm' }].map((t, i) => (
-            <StaggerItem key={t.title} index={i}>
+          {[
+            { icon: 'shield', key: 'payments' },
+            { icon: 'check', key: 'verified' },
+            { icon: 'truck', key: 'shipping' },
+            { icon: 'headset', key: 'support' },
+          ].map((item, i) => (
+            <StaggerItem key={item.key} index={i}>
               <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'center' : 'flex-start', textAlign: isMobile ? 'center' : 'left', gap: isMobile ? 10 : 14 }}>
-                <div style={{ width: isMobile ? 52 : 44, height: isMobile ? 52 : 44, borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={t.icon} size={isMobile ? 22 : 20} /></div>
+                <div style={{ width: isMobile ? 52 : 44, height: isMobile ? 52 : 44, borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={item.icon} size={isMobile ? 22 : 20} /></div>
                 <div>
-                  <div style={{ fontFamily: '"Geist", sans-serif', fontSize: isMobile ? 13 : 15, fontWeight: 600, marginBottom: 4 }}>{t.title}</div>
-                  <div style={{ fontSize: isMobile ? 11 : 12, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', lineHeight: 1.4 }}>{t.sub}</div>
+                  <div style={{ fontFamily: '"Geist", sans-serif', fontSize: isMobile ? 13 : 15, fontWeight: 600, marginBottom: 4 }}>{t(`landing.trust.${item.key}.title`)}</div>
+                  <div style={{ fontSize: isMobile ? 11 : 12, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', lineHeight: 1.4 }}>{t(`landing.trust.${item.key}.sub`)}</div>
                 </div>
               </div>
             </StaggerItem>
@@ -1133,10 +1093,10 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       <RevealSection id="nuevos" style={{ padding: secPad }} delay={130}>
         <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'end', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: 12, marginBottom: 24 }}>
           <div>
-            <div style={headKicker}>04 · Nuevos ingresos</div>
-            <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>Recién <em style={{ color: 'var(--green)' }}>llegados</em></h2>
+            <div style={headKicker}>{t('landing.featured.kicker')}</div>
+            <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>{t('landing.featured.headingPrefix')} <em style={{ color: 'var(--green)' }}>{t('landing.featured.headingEmphasis')}</em></h2>
           </div>
-          <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text="Ver catálogo completo" />
+          <AnimatedButton variant="outline" onClick={() => onNav('catalog')} icon={<Icon name="arrow-right" size={14} />} text={t('landing.featured.seeAll')} />
         </div>
         <ProductRow products={featured} onOpenProduct={onOpenProduct} onAdd={onAdd} sectionKey="nuevos" loading={showProductsSkeleton} />
       </RevealSection>
@@ -1144,8 +1104,8 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
       {/* BRANDS */}
       <RevealSection id="marcas" style={{ padding: isMobile ? '48px 0 0' : isTablet ? '64px 0 0' : '80px 0 0' }} delay={150}>
         <div style={{ padding: secPadNoH, marginBottom: 32 }}>
-          <div style={headKicker}>05 · Marcas</div>
-          <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>Las marcas en las que <em style={{ color: 'var(--green)' }}>confías</em></h2>
+          <div style={headKicker}>{t('landing.brands.kicker')}</div>
+          <h2 style={{ ...headTitle, fontSize: isMobile ? 36 : isTablet ? 44 : 56 }}>{t('landing.brands.headingPrefix')} <em style={{ color: 'var(--green)' }}>{t('landing.brands.headingEmphasis')}</em></h2>
         </div>
         <BrandsMarquee onNav={onNav} />
       </RevealSection>

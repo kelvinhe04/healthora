@@ -9,3 +9,10 @@ export function formatCurrency(amount: number, lng: string = i18n.language) {
   const locale = lng.startsWith('en') ? 'en-US' : 'es-PA';
   return new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD', currencyDisplay: 'narrowSymbol' }).format(amount);
 }
+
+/** Plain number with locale-aware group/decimal separators (e.g. review counts) - same locale
+ * resolution as formatCurrency, just without the currency formatting. */
+export function formatNumber(value: number, lng: string = i18n.language) {
+  const locale = lng.startsWith('en') ? 'en-US' : 'es-PA';
+  return new Intl.NumberFormat(locale).format(value);
+}
