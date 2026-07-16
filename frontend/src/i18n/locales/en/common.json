@@ -158,5 +158,42 @@
       "new": "New",
       "bestseller": "Bestseller"
     }
+  },
+  "catalog": {
+    "filters": {
+      "categoriesLabel": "Categories",
+      "all": "All",
+      "priceMaxLabel": "Max price · {{price}}",
+      "brandsLabel": "Brands",
+      "searchBrandsPlaceholder": "Search {{count}} brands",
+      "searchBrandAria": "Search brand",
+      "noBrandsMatch": "No brands match.",
+      "showLess": "Show less",
+      "showMore": "Show more ({{count}})",
+      "availabilityLabel": "Availability",
+      "inStock": "In stock",
+      "mobileTitle": "Filters"
+    },
+    "kicker": "Catalog · {{count}} products",
+    "headingAllPrefix": "The whole",
+    "headingAllEmphasis": "store",
+    "needFilterPrefix": "Filter:",
+    "searchFilterPrefix": "Search:",
+    "clear": "clear",
+    "sort": {
+      "featured": "Featured",
+      "rating": "Top rated",
+      "priceAsc": "Lowest price",
+      "priceDesc": "Highest price"
+    },
+    "showingRange": "Showing {{from}}–{{to}} of {{total}}",
+    "noResults": "No results with these filters.",
+    "previous": "Previous",
+    "next": "Next",
+    "related": {
+      "subtitle": "Catalog recommendations",
+      "titlePrefix": "You might also",
+      "titleEmphasis": "like"
+    }
   }
 }

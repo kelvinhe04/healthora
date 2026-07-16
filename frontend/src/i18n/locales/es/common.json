@@ -158,5 +158,42 @@
       "new": "Nuevo",
       "bestseller": "Más vendido"
     }
+  },
+  "catalog": {
+    "filters": {
+      "categoriesLabel": "Categorías",
+      "all": "Todos",
+      "priceMaxLabel": "Precio máximo · {{price}}",
+      "brandsLabel": "Marcas",
+      "searchBrandsPlaceholder": "Buscar entre {{count}} marcas",
+      "searchBrandAria": "Buscar marca",
+      "noBrandsMatch": "No hay marcas que coincidan.",
+      "showLess": "Ver menos",
+      "showMore": "Ver más ({{count}})",
+      "availabilityLabel": "Disponibilidad",
+      "inStock": "En stock",
+      "mobileTitle": "Filtros"
+    },
+    "kicker": "Catálogo · {{count}} productos",
+    "headingAllPrefix": "Toda la",
+    "headingAllEmphasis": "tienda",
+    "needFilterPrefix": "Filtro:",
+    "searchFilterPrefix": "Búsqueda:",
+    "clear": "limpiar",
+    "sort": {
+      "featured": "Destacados",
+      "rating": "Mejor valorados",
+      "priceAsc": "Menor precio",
+      "priceDesc": "Mayor precio"
+    },
+    "showingRange": "Mostrando {{from}}–{{to}} de {{total}}",
+    "noResults": "Sin resultados con estos filtros.",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "related": {
+      "subtitle": "Recomendaciones del catálogo",
+      "titlePrefix": "También te puede",
+      "titleEmphasis": "interesar"
+    }
   }
 }
