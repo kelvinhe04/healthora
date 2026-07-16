@@ -413,5 +413,96 @@
       "tracking": "Seguimiento"
     },
     "continueShopping": "Seguir comprando"
+  },
+  "wishlist": {
+    "kicker": "Guardados · {{count}}",
+    "headingPrefix": "Mi",
+    "headingEmphasis": "wishlist",
+    "clearList": "Limpiar lista",
+    "empty": "Aún no guardaste productos. Toca el corazón en cualquier tarjeta.",
+    "exploreCatalog": "Explorar catálogo"
+  },
+  "club": {
+    "yourPoints": "Tus puntos",
+    "earnRate_one": "Ganas {{count}} punto por cada {{amount}} en compras pagadas.",
+    "earnRate_other": "Ganas {{count}} puntos por cada {{amount}} en compras pagadas.",
+    "redeemNote": " Canjéalos en el checkout: {{rate}} puntos = {{amount}} de descuento.",
+    "earned": "Ganados",
+    "redeemed": "Canjeados",
+    "kicker": "Club Healthora",
+    "headingPrefix": "Unirte es",
+    "headingEmphasis": "gratis",
+    "headingSuffix": " y siempre lo será.",
+    "subtitle": "Forma parte del club y disfruta de beneficios exclusivos en cada compra.",
+    "benefits": {
+      "sample": {
+        "title": "Muestra premium",
+        "desc": "Recibe 1 muestra seleccionada en órdenes mayores a {{amount}}."
+      },
+      "discounts": {
+        "title": "Descuentos exclusivos",
+        "desc": "Accede a ofertas solo para miembros antes que nadie."
+      },
+      "shipping": {
+        "title": "Envío prioritario",
+        "desc": "Tus pedidos se procesan primero, sin costo extra."
+      }
+    },
+    "ctaTitle": "¿Listo para unirte?",
+    "ctaBody": "Crea tu cuenta o inicia sesión para empezar a acumular beneficios desde tu primera compra.",
+    "ctaButton": "Comenzar ahora"
+  },
+  "errorPage": {
+    "errorCode": "ERROR {{code}}",
+    "goHome": "Ir al inicio",
+    "viewCatalog": "Ver catálogo",
+    "retry": "Reintentar",
+    "notFound": {
+      "titlePrefix": "Página",
+      "titleEmphasis": "no encontrada",
+      "message": "La página que buscas no existe o fue movida. Revisa la URL o vuelve al inicio."
+    },
+    "routeError": {
+      "titlePrefix": "Algo salió",
+      "titleEmphasis": "mal",
+      "message": "Ocurrió un error inesperado al cargar esta página. Puedes reintentar o volver al inicio."
+    }
+  },
+  "compare": {
+    "backAria": "Volver al catálogo",
+    "back": "Volver",
+    "kicker_one": "Comparador · {{count}} producto",
+    "kicker_other": "Comparador · {{count}} productos",
+    "headingPrefix": "Comparar",
+    "headingEmphasis": "productos",
+    "clearComparison": "Limpiar comparación",
+    "empty": "Agrega hasta 4 productos desde el catálogo usando el botón de comparar.",
+    "goToCatalog": "Ir al catálogo",
+    "attribute": "Atributo",
+    "removeAria": "Quitar {{name}} de la comparación",
+    "rows": {
+      "brand": "Marca",
+      "category": "Categoría",
+      "price": "Precio",
+      "rating": "Rating",
+      "stock": "Stock",
+      "description": "Descripción"
+    },
+    "outOfStock": "Agotado",
+    "lowStock": "Solo quedan {{count}}",
+    "inStock": "En stock",
+    "addButton": "Agregar",
+    "outOfStockButton": "Sin stock"
+  },
+  "samplePicker": {
+    "backToCart": "Volver al carrito",
+    "kicker": "Club Healthora · Muestra gratis",
+    "headingPrefix": "Elige tu muestra",
+    "headingEmphasis": "gratis",
+    "subtitle": "Selecciona 1 producto. Se incluirá en tu orden sin costo adicional.",
+    "optionsAvailable_one": "{{count}} opción disponible",
+    "optionsAvailable_other": "{{count}} opciones disponibles",
+    "selectedKicker": "MUESTRA SELECCIONADA",
+    "confirmButton": "Confirmar y volver"
   }
 }

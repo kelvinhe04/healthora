@@ -1,7 +1,9 @@
 import { useRouter } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 import { ErrorPage } from '../../pages/ErrorPage';
 
 export function NotFoundView() {
+  const { t } = useTranslation();
   const router = useRouter();
 
   return (
@@ -9,10 +11,10 @@ export function NotFoundView() {
       code={404}
       title={
         <>
-          Página <em style={{ color: 'var(--coral)' }}>no encontrada</em>
+          {t('errorPage.notFound.titlePrefix')} <em style={{ color: 'var(--coral)' }}>{t('errorPage.notFound.titleEmphasis')}</em>
         </>
       }
-      message="La página que buscas no existe o fue movida. Revisa la URL o vuelve al inicio."
+      message={t('errorPage.notFound.message')}
       onHome={() => router.navigate({ to: '/' })}
       onCatalog={() => router.navigate({ to: '/catalog' })}
     />

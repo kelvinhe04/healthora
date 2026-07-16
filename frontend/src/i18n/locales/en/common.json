@@ -413,5 +413,96 @@
       "tracking": "Tracking"
     },
     "continueShopping": "Keep shopping"
+  },
+  "wishlist": {
+    "kicker": "Saved · {{count}}",
+    "headingPrefix": "My",
+    "headingEmphasis": "wishlist",
+    "clearList": "Clear list",
+    "empty": "You haven't saved any products yet. Tap the heart on any card.",
+    "exploreCatalog": "Explore catalog"
+  },
+  "club": {
+    "yourPoints": "Your points",
+    "earnRate_one": "Earn {{count}} point for every {{amount}} in paid purchases.",
+    "earnRate_other": "Earn {{count}} points for every {{amount}} in paid purchases.",
+    "redeemNote": " Redeem them at checkout: {{rate}} points = {{amount}} off.",
+    "earned": "Earned",
+    "redeemed": "Redeemed",
+    "kicker": "Healthora Club",
+    "headingPrefix": "Joining is",
+    "headingEmphasis": "free",
+    "headingSuffix": " and always will be.",
+    "subtitle": "Join the club and enjoy exclusive perks on every purchase.",
+    "benefits": {
+      "sample": {
+        "title": "Premium sample",
+        "desc": "Get 1 curated sample on orders over {{amount}}."
+      },
+      "discounts": {
+        "title": "Exclusive discounts",
+        "desc": "Access member-only deals before anyone else."
+      },
+      "shipping": {
+        "title": "Priority shipping",
+        "desc": "Your orders get processed first, at no extra cost."
+      }
+    },
+    "ctaTitle": "Ready to join?",
+    "ctaBody": "Create your account or sign in to start earning perks from your first purchase.",
+    "ctaButton": "Get started"
+  },
+  "errorPage": {
+    "errorCode": "ERROR {{code}}",
+    "goHome": "Go home",
+    "viewCatalog": "View catalog",
+    "retry": "Retry",
+    "notFound": {
+      "titlePrefix": "Page",
+      "titleEmphasis": "not found",
+      "message": "The page you're looking for doesn't exist or was moved. Check the URL or go back home."
+    },
+    "routeError": {
+      "titlePrefix": "Something went",
+      "titleEmphasis": "wrong",
+      "message": "An unexpected error occurred while loading this page. You can retry or go back home."
+    }
+  },
+  "compare": {
+    "backAria": "Back to catalog",
+    "back": "Back",
+    "kicker_one": "Comparison · {{count}} product",
+    "kicker_other": "Comparison · {{count}} products",
+    "headingPrefix": "Compare",
+    "headingEmphasis": "products",
+    "clearComparison": "Clear comparison",
+    "empty": "Add up to 4 products from the catalog using the compare button.",
+    "goToCatalog": "Go to catalog",
+    "attribute": "Attribute",
+    "removeAria": "Remove {{name}} from comparison",
+    "rows": {
+      "brand": "Brand",
+      "category": "Category",
+      "price": "Price",
+      "rating": "Rating",
+      "stock": "Stock",
+      "description": "Description"
+    },
+    "outOfStock": "Out of stock",
+    "lowStock": "Only {{count}} left",
+    "inStock": "In stock",
+    "addButton": "Add",
+    "outOfStockButton": "Out of stock"
+  },
+  "samplePicker": {
+    "backToCart": "Back to cart",
+    "kicker": "Healthora Club · Free sample",
+    "headingPrefix": "Choose your",
+    "headingEmphasis": "free sample",
+    "subtitle": "Select 1 product. It will be included in your order at no extra cost.",
+    "optionsAvailable_one": "{{count}} option available",
+    "optionsAvailable_other": "{{count}} options available",
+    "selectedKicker": "SELECTED SAMPLE",
+    "confirmButton": "Confirm and go back"
   }
 }

@@ -1,4 +1,5 @@
 ﻿import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { AnimatedButton } from "../components/shared/AnimatedButton";
 import { Icon } from "../components/shared/Icon";
 import { useBreakpoint } from "../hooks/useBreakpoint";
@@ -22,6 +23,7 @@ export function ErrorPage({
   onRetry,
   extra,
 }: ErrorPageProps) {
+  const { t } = useTranslation();
   const bp = useBreakpoint();
   const isMobile = bp === "mobile";
 
@@ -62,7 +64,7 @@ export function ErrorPage({
             marginBottom: 12,
           }}
         >
-          ERROR {code}
+          {t('errorPage.errorCode', { code })}
         </div>
 
         <h1
@@ -101,16 +103,16 @@ export function ErrorPage({
             flexWrap: "wrap",
           }}
         >
-          <AnimatedButton variant="primary" onClick={onHome} text="Ir al inicio" />
+          <AnimatedButton variant="primary" onClick={onHome} text={t('errorPage.goHome')} />
           {onCatalog && (
             <AnimatedButton
               variant="outline"
               onClick={onCatalog}
-              text="Ver catálogo"
+              text={t('errorPage.viewCatalog')}
             />
           )}
           {onRetry && (
-            <AnimatedButton variant="outline" onClick={onRetry} text="Reintentar" />
+            <AnimatedButton variant="outline" onClick={onRetry} text={t('errorPage.retry')} />
           )}
         </div>
       </div>
