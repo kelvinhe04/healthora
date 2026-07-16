@@ -123,6 +123,8 @@ export type AdminOrder = {
   shippingMethod?: "delivery" | "pickup";
   shippingLabel?: string;
   shippingEta?: string;
+  carrier?: string;
+  trackingNumber?: string;
   address?: OrderAddress;
   createdAt?: string;
   replacesOrderId?: string;

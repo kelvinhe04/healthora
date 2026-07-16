@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Stars } from './Stars';
@@ -10,17 +12,17 @@ import { useReviews } from '../../hooks/useReviews';
 import { api } from '../../lib/api';
 import type { Review } from '../../types';
 
-function timeAgo(iso: string): string {
+function timeAgo(t: TFunction, iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 60) return mins <= 1 ? 'Hace un momento' : `Hace ${mins} min`;
+  if (mins < 60) return mins <= 1 ? t('reviewSection.timeAgo.justNow') : t('reviewSection.timeAgo.minutes', { count: mins });
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `Hace ${hrs} h`;
+  if (hrs < 24) return t('reviewSection.timeAgo.hours', { count: hrs });
   const days = Math.floor(hrs / 24);
-  if (days < 30) return `Hace ${days} día${days > 1 ? 's' : ''}`;
+  if (days < 30) return t('reviewSection.timeAgo.days', { count: days });
   const months = Math.floor(days / 30);
-  if (months < 12) return `Hace ${months} mes${months > 1 ? 'es' : ''}`;
-  return `Hace ${Math.floor(months / 12)} año${Math.floor(months / 12) > 1 ? 's' : ''}`;
+  if (months < 12) return t('reviewSection.timeAgo.months', { count: months });
+  return t('reviewSection.timeAgo.years', { count: Math.floor(months / 12) });
 }
 
 function initials(name: string): string {
@@ -47,6 +49,7 @@ function avatarColor(name: string): string {
 }
 
 function HelpfulButton({ review, onSignInRequired }: { review: Review; onSignInRequired: () => void }) {
+  const { t } = useTranslation();
   const { isSignedIn, user } = useUser();
   const { getToken } = useAuth();
 
@@ -60,7 +63,7 @@ function HelpfulButton({ review, onSignInRequired }: { review: Review; onSignInR
   if (isOwn) return (
     <div style={{ display: 'flex', alignItems: 'center', lineHeight: 1, gap: 6, fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-40)' }}>
       <Icon name="thumbs-up" size={12} stroke="currentColor" />
-      {count > 0 ? `Útil · ${count}` : 'Útil · 0'}
+      {t('reviewSection.helpful.withCount', { count })}
     </div>
   );
 
@@ -104,7 +107,7 @@ function HelpfulButton({ review, onSignInRequired }: { review: Review; onSignInR
       onMouseLeave={(e) => { if (!voted) { e.currentTarget.style.borderColor = 'var(--ink-20)'; e.currentTarget.style.color = 'var(--ink-60)'; } }}
     >
       <Icon name="thumbs-up" size={12} stroke={voted ? 'var(--cream)' : 'currentColor'} />
-      {count > 0 ? `Útil · ${count}` : 'Útil'}
+      {count > 0 ? t('reviewSection.helpful.withCount', { count }) : t('reviewSection.helpful.label')}
     </button>
   );
 }
@@ -115,6 +118,7 @@ interface ReviewCardProps {
 }
 
 function ReviewCard({ review, onSignInRequired }: ReviewCardProps) {
+  const { t } = useTranslation();
   const bg = avatarColor(review.userName);
   return (
     <div
@@ -179,7 +183,7 @@ function ReviewCard({ review, onSignInRequired }: ReviewCardProps) {
               marginTop: 2,
             }}
           >
-            {timeAgo(review.createdAt)}
+            {timeAgo(t, review.createdAt)}
           </div>
         </div>
         <Stars value={review.rating} size={13} />
@@ -274,6 +278,7 @@ interface ReviewSectionProps {
 }
 
 export function ReviewSection({ productId }: ReviewSectionProps) {
+  const { t } = useTranslation();
   const { isSignedIn, user } = useUser();
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
@@ -318,7 +323,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
       body: string;
     }) => {
       const token = await getToken();
-      if (!token) throw new Error('Sin sesión activa');
+      if (!token) throw new Error(t('reviewSection.form.errors.noSession'));
       return api.reviews.create(data, token);
     },
     onSuccess: () => {
@@ -338,11 +343,11 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
 
   const handleSubmit = () => {
     if (!formRating) {
-      setFormError('Por favor selecciona una calificación');
+      setFormError(t('reviewSection.form.errors.ratingRequired'));
       return;
     }
     if (!formBody.trim()) {
-      setFormError('Por favor escribe tu reseña');
+      setFormError(t('reviewSection.form.errors.bodyRequired'));
       return;
     }
     setFormError('');
@@ -394,7 +399,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
               marginBottom: 10,
             }}
           >
-            Opiniones de compradores
+            {t('reviewSection.eyebrow')}
           </div>
           <h2
             style={{
@@ -406,7 +411,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
               fontWeight: 400,
             }}
           >
-            Reseñas de <em style={{ color: 'var(--green)' }}>clientes</em>
+            {t('reviewSection.heading')} <em style={{ color: 'var(--green)' }}>{t('reviewSection.headingEmphasis')}</em>
           </h2>
         </div>
 
@@ -440,7 +445,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
             }}
           >
             <Icon name="pencil" size={14} />
-            Escribir reseña
+            {t('reviewSection.writeReview')}
           </button>
         )}
       </div>
@@ -489,10 +494,10 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
               marginBottom: 28,
             }}
           >
-            {total} {total === 1 ? 'reseña' : 'reseñas'}
+            {t('reviewSection.reviewCount', { count: total })}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }} role="group" aria-label="Filtrar reseñas por estrellas">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }} role="group" aria-label={t('reviewSection.filterAria')}>
             {dist.map(({ star, count, pct }) => {
               const active = starFilter === star;
               return (
@@ -586,7 +591,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
               }}
             >
               <Icon name="check" size={16} stroke="oklch(0.45 0.15 145)" />
-              ¡Gracias por tu reseña! Ya aparece en la lista.
+              {t('reviewSection.successBanner')}
             </div>
           )}
 
@@ -619,7 +624,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                     color: 'var(--ink)',
                   }}
                 >
-                  Tu reseña
+                  {t('reviewSection.form.title')}
                 </p>
                 <button
                   onClick={() => {
@@ -651,7 +656,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                     marginBottom: 10,
                   }}
                 >
-                  Calificación *
+                  {t('reviewSection.form.ratingLabel')}
                 </div>
                 <StarPicker value={formRating} onChange={setFormRating} />
               </div>
@@ -667,13 +672,13 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                     marginBottom: 8,
                   }}
                 >
-                  Título (opcional)
+                  {t('reviewSection.form.titleLabel')}
                 </div>
                 <input
                   type="text"
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  placeholder="Resume tu experiencia en una frase"
+                  placeholder={t('reviewSection.form.titlePlaceholder')}
                   maxLength={120}
                   style={inputStyle}
                   onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--ink-60)')}
@@ -692,12 +697,12 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                     marginBottom: 8,
                   }}
                 >
-                  Tu reseña *
+                  {t('reviewSection.form.bodyLabel')}
                 </div>
                 <textarea
                   value={formBody}
                   onChange={(e) => setFormBody(e.target.value)}
-                  placeholder="¿Qué te pareció este producto? ¿Lo recomendarías?"
+                  placeholder={t('reviewSection.form.bodyPlaceholder')}
                   rows={4}
                   maxLength={1200}
                   style={{
@@ -748,7 +753,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                   onClick={handleSubmit}
                   disabled={mutation.isPending}
                   style={{ flex: 1, minWidth: 160 }}
-                  text={mutation.isPending ? 'Enviando…' : 'Publicar reseña'}
+                  text={mutation.isPending ? t('reviewSection.form.submitting') : t('reviewSection.form.submit')}
                 />
                 <AnimatedButton
                   variant="outline"
@@ -756,7 +761,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                     setShowForm(false);
                     setFormError('');
                   }}
-                  text="Cancelar"
+                  text={t('reviewSection.form.cancel')}
                 />
               </div>
             </div>
@@ -787,7 +792,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                     color: 'var(--ink)',
                   }}
                 >
-                  ¿Ya probaste este producto?
+                  {t('reviewSection.signInPrompt.title')}
                 </p>
                 <p
                   style={{
@@ -797,7 +802,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                     color: 'var(--ink-60)',
                   }}
                 >
-                  Inicia sesión para compartir tu experiencia con otros compradores.
+                  {t('reviewSection.signInPrompt.subtitle')}
                 </p>
               </div>
               <button
@@ -824,7 +829,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                   e.currentTarget.style.color = 'var(--ink)';
                 }}
               >
-                Iniciar sesión
+                {t('reviewSection.signInPrompt.cta')}
               </button>
             </div>
           )}
@@ -843,14 +848,14 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
               }}
             >
               <span>
-                Mostrando {visibleReviews.length} reseña{visibleReviews.length !== 1 ? 's' : ''} de {starFilter}★
+                {t('reviewSection.filterActive.showing', { count: visibleReviews.length, stars: starFilter })}
               </span>
               <button
                 type="button"
                 onClick={() => setStarFilter(0)}
                 style={{ border: 'none', background: 'none', color: 'var(--ink)', fontWeight: 600, cursor: 'pointer', padding: 0, fontFamily: 'inherit', fontSize: 'inherit' }}
               >
-                Ver todas
+                {t('reviewSection.filterActive.viewAll')}
               </button>
             </div>
           )}
@@ -890,7 +895,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                   color: 'var(--ink)',
                 }}
               >
-                Sé el primero en opinar
+                {t('reviewSection.empty.noneTitle')}
               </p>
               <p
                 style={{
@@ -900,7 +905,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                   color: 'var(--ink-60)',
                 }}
               >
-                Aún no hay reseñas para este producto.
+                {t('reviewSection.empty.noneSubtitle')}
               </p>
             </div>
           ) : visibleReviews.length === 0 ? (
@@ -920,7 +925,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                   color: 'var(--ink)',
                 }}
               >
-                Sin reseñas de {starFilter}★
+                {t('reviewSection.empty.filteredTitle', { stars: starFilter })}
               </p>
               <p
                 style={{
@@ -930,7 +935,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
                   color: 'var(--ink-60)',
                 }}
               >
-                Nadie calificó este producto con {starFilter} estrella{starFilter !== 1 ? 's' : ''} todavía.
+                {t('reviewSection.empty.filteredSubtitle', { count: starFilter, stars: starFilter })}
               </p>
             </div>
           ) : (

@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from 'react';
 import { ErrorPage } from '../pages/ErrorPage';
+import i18n from '../i18n';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -29,10 +30,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           code={500}
           title={
             <>
-              Algo salió <em style={{ color: 'var(--coral)' }}>mal</em>
+              {i18n.t('errorBoundary.titlePrefix')} <em style={{ color: 'var(--coral)' }}>{i18n.t('errorBoundary.titleEmphasis')}</em>
             </>
           }
-          message="Puedes reintentar o volver al inicio."
+          message={i18n.t('errorBoundary.message')}
           onHome={() => {
             window.location.href = '/';
           }}

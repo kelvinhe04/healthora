@@ -1,6 +1,221 @@
 {
   "common": {
-    "languageSwitcherAria": "Cambiar idioma"
+    "languageSwitcherAria": "Cambiar idioma",
+    "modalDialogAria": "Diálogo"
+  },
+  "topbar": {
+    "messages": [
+      "Envío gratis en compras mayores a $50",
+      "Muestra gratis en órdenes mayores a $200",
+      "Nuevos clientes: 15% con código BIENVENIDA",
+      "Entregas en 24–48h en toda la región",
+      "Productos verificados por farmacéuticos"
+    ]
+  },
+  "errorBoundary": {
+    "titlePrefix": "Algo salió",
+    "titleEmphasis": "mal",
+    "message": "Puedes reintentar o volver al inicio."
+  },
+  "ssoCallback": {
+    "processing": "Procesando inicio de sesión..."
+  },
+  "reviewSection": {
+    "timeAgo": {
+      "justNow": "Hace un momento",
+      "minutes": "Hace {{count}} min",
+      "hours": "Hace {{count}} h",
+      "days_one": "Hace {{count}} día",
+      "days_other": "Hace {{count}} días",
+      "months_one": "Hace {{count}} mes",
+      "months_other": "Hace {{count}} meses",
+      "years_one": "Hace {{count}} año",
+      "years_other": "Hace {{count}} años"
+    },
+    "helpful": {
+      "label": "Útil",
+      "withCount": "Útil · {{count}}"
+    },
+    "eyebrow": "Opiniones de compradores",
+    "heading": "Reseñas de",
+    "headingEmphasis": "clientes",
+    "writeReview": "Escribir reseña",
+    "reviewCount_one": "{{count}} reseña",
+    "reviewCount_other": "{{count}} reseñas",
+    "filterAria": "Filtrar reseñas por estrellas",
+    "successBanner": "¡Gracias por tu reseña! Ya aparece en la lista.",
+    "form": {
+      "title": "Tu reseña",
+      "ratingLabel": "Calificación *",
+      "titleLabel": "Título (opcional)",
+      "titlePlaceholder": "Resume tu experiencia en una frase",
+      "bodyLabel": "Tu reseña *",
+      "bodyPlaceholder": "¿Qué te pareció este producto? ¿Lo recomendarías?",
+      "submit": "Publicar reseña",
+      "submitting": "Enviando…",
+      "cancel": "Cancelar",
+      "errors": {
+        "ratingRequired": "Por favor selecciona una calificación",
+        "bodyRequired": "Por favor escribe tu reseña",
+        "noSession": "Sin sesión activa"
+      }
+    },
+    "signInPrompt": {
+      "title": "¿Ya probaste este producto?",
+      "subtitle": "Inicia sesión para compartir tu experiencia con otros compradores.",
+      "cta": "Iniciar sesión"
+    },
+    "filterActive": {
+      "showing_one": "Mostrando {{count}} reseña de {{stars}}★",
+      "showing_other": "Mostrando {{count}} reseñas de {{stars}}★",
+      "viewAll": "Ver todas"
+    },
+    "empty": {
+      "noneTitle": "Sé el primero en opinar",
+      "noneSubtitle": "Aún no hay reseñas para este producto.",
+      "filteredTitle": "Sin reseñas de {{stars}}★",
+      "filteredSubtitle_one": "Nadie calificó este producto con {{stars}} estrella todavía.",
+      "filteredSubtitle_other": "Nadie calificó este producto con {{stars}} estrellas todavía."
+    }
+  },
+  "recentlyViewedSection": {
+    "eyebrow": "Continúa explorando",
+    "heading": "Vistos",
+    "headingEmphasis": "recientemente"
+  },
+  "subscribeModal": {
+    "ariaLabel": "Suscribirse a reposición automática",
+    "closeAria": "Cerrar",
+    "heading": "Reposición",
+    "headingEmphasis": "automática",
+    "success": "¡Listo! Tu suscripción quedó activa.",
+    "intervalLabels": {
+      "d7": "Cada 7 días",
+      "d15": "Cada 15 días",
+      "d30": "Cada 30 días",
+      "d60": "Cada 60 días"
+    },
+    "existing": {
+      "message": "Ya tienes una reposición automática activa para {{product}}.",
+      "hint": "Puedes pausarla, cambiar su frecuencia o cancelarla desde tu perfil."
+    },
+    "intro": {
+      "pickup": "{{product}} — te cobramos y preparamos un pedido nuevo para que lo recojas en tienda cada cierto tiempo, sin que tengas que volver a comprarlo. Puedes pausar o cancelar cuando quieras desde tu perfil.",
+      "delivery": "{{product}} — te cobramos y te enviamos un pedido nuevo cada cierto tiempo, sin que tengas que volver a comprarlo. Puedes pausar o cancelar cuando quieras desde tu perfil."
+    },
+    "frequency": {
+      "label": "Frecuencia",
+      "custom": "Personalizado",
+      "customHint": "días (entre {{min}} y {{max}})"
+    },
+    "quantity": {
+      "label": "Cantidad por pedido",
+      "decreaseAria": "Disminuir cantidad",
+      "increaseAria": "Aumentar cantidad"
+    },
+    "delivery": {
+      "label": "Entrega"
+    },
+    "address": {
+      "savedLabel": "Dirección guardada",
+      "unnamed": "Dirección {{n}}",
+      "loading": "Cargando dirección…",
+      "edit": "Editar",
+      "useSaved": "Usar dirección guardada",
+      "form": {
+        "name": "Nombre",
+        "phone": "Teléfono",
+        "city": "Ciudad",
+        "address": "Dirección",
+        "postal": "Código postal"
+      }
+    },
+    "summary": {
+      "subtotal": "Subtotal",
+      "shipping": "Envío",
+      "free": "Gratis",
+      "tax": "ITBMS",
+      "total": "Total por pedido"
+    },
+    "payment": {
+      "label": "Método de pago",
+      "useNewCard": "Usar tarjeta nueva",
+      "submitLoading": "Procesando pago…",
+      "submitLabel": "Suscribirme · {{amount}} / {{method}}",
+      "methodPickup": "retiro",
+      "methodDelivery": "envío",
+      "stripeMissing": "Falta configurar VITE_STRIPE_PUBLISHABLE_KEY para procesar el pago."
+    },
+    "errors": {
+      "missingFields": "Completa nombre, teléfono y dirección para continuar.",
+      "notAuthenticated": "No autenticado",
+      "cardFormFailed": "No se pudo cargar el formulario de tarjeta",
+      "paymentFailed": "No se pudo procesar el pago",
+      "paymentNotConfirmed": "El pago no se pudo confirmar. Intenta de nuevo.",
+      "activationFailed": "Tu pago se procesó, pero no pudimos activar la suscripción. Refresca tu perfil en unos segundos o contáctanos si no aparece.",
+      "createFailed": "No se pudo crear la suscripción"
+    }
+  },
+  "signInModal": {
+    "closeAria": "Cerrar",
+    "left": {
+      "heading": "Tu salud,",
+      "headingEmphasis": "nuestro cuidado.",
+      "subtitle": "Accede a cientos de productos de bienestar y farmacia con envío rápido a tu puerta.",
+      "features": {
+        "freeShipping": "Envío gratis en pedidos +$50",
+        "certifiedProducts": "+{{count}} productos certificados",
+        "pharmacyAdvice": "Asesoría farmacéutica incluida"
+      }
+    },
+    "srHeading": {
+      "signIn": "Iniciar sesión en Healthora",
+      "signUp": "Crear cuenta en Healthora"
+    },
+    "tabs": {
+      "signIn": "Iniciar sesión",
+      "signUp": "Crear cuenta"
+    },
+    "oauth": {
+      "google": "Continuar con Google",
+      "microsoft": "Continuar con Microsoft",
+      "divider": "o con email"
+    },
+    "email": {
+      "label": "Correo electrónico",
+      "signUpCta": "Registrarme",
+      "submit": {
+        "loading": "Enviando código…",
+        "signIn": "Continuar con email",
+        "signUp": "Enviar código de acceso"
+      }
+    },
+    "otp": {
+      "label": "Verificación",
+      "heading": "Revisa tu",
+      "headingEmphasis": "email",
+      "infoBefore": "Enviamos un código de 6 dígitos a",
+      "infoAfter": "Revisa tu bandeja de entrada.",
+      "codeLabel": "Código de verificación",
+      "changeEmail": "← Cambiar email",
+      "submit": {
+        "loading": "Verificando…",
+        "signIn": "Ingresar",
+        "signUp": "Crear cuenta"
+      }
+    },
+    "terms": {
+      "prefix": "Al continuar aceptas nuestros",
+      "terms": "Términos",
+      "and": "y",
+      "privacy": "Privacidad"
+    },
+    "errors": {
+      "accountNotFound": "No encontramos esa cuenta. ¿Querés crear una?",
+      "sendCodeFailed": "Error al enviar el código",
+      "invalidCode": "Código incorrecto",
+      "oauthFailed": "No se pudo conectar con el proveedor"
+    }
   },
   "header": {
     "nav": {

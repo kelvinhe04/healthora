@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@clerk/clerk-react';
 import { useQuery } from '@tanstack/react-query';
 import { loadStripe } from '@stripe/stripe-js';
@@ -29,11 +30,11 @@ function roundMoney(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-const INTERVAL_LABELS: Record<SubscriptionIntervalDays, string> = {
-  7: 'Cada 7 días',
-  15: 'Cada 15 días',
-  30: 'Cada 30 días',
-  60: 'Cada 60 días',
+const INTERVAL_LABEL_KEYS: Record<SubscriptionIntervalDays, string> = {
+  7: 'd7',
+  15: 'd15',
+  30: 'd30',
+  60: 'd60',
 };
 
 const NEW_CARD_OPTION = 'new';
@@ -120,6 +121,7 @@ function SubscribePaymentStep({
   total: number;
   onSuccess: () => void;
 }) {
+  const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -140,7 +142,7 @@ function SubscribePaymentStep({
 
   const handleSubmit = async () => {
     if (!isAddressValid) {
-      setError('Completa nombre, teléfono y dirección para continuar.');
+      setError(t('subscribeModal.errors.missingFields'));
       return;
     }
     if (!stripe || !elements) return;
@@ -148,7 +150,7 @@ function SubscribePaymentStep({
     setError('');
     try {
       const token = await getToken();
-      if (!token) throw new Error('No autenticado');
+      if (!token) throw new Error(t('subscribeModal.errors.notAuthenticated'));
       const { clientSecret, subscriptionId } = await api.subscriptions.create(
         { productId, variantId, qty, intervalDays, address, shippingMethod },
         token,
@@ -158,16 +160,16 @@ function SubscribePaymentStep({
         ? await stripe.confirmCardPayment(clientSecret, { payment_method: activeSelection })
         : await (async () => {
             const cardElement = elements.getElement(CardElement);
-            if (!cardElement) throw new Error('No se pudo cargar el formulario de tarjeta');
+            if (!cardElement) throw new Error(t('subscribeModal.errors.cardFormFailed'));
             return stripe.confirmCardPayment(clientSecret, { payment_method: { card: cardElement } });
           })();
 
       if (confirmResult.error) {
-        setError(confirmResult.error.message || 'No se pudo procesar el pago');
+        setError(confirmResult.error.message || t('subscribeModal.errors.paymentFailed'));
         return;
       }
       if (confirmResult.paymentIntent?.status !== 'succeeded') {
-        setError('El pago no se pudo confirmar. Intenta de nuevo.');
+        setError(t('subscribeModal.errors.paymentNotConfirmed'));
         return;
       }
 
@@ -179,13 +181,13 @@ function SubscribePaymentStep({
         await api.subscriptions.confirm(subscriptionId, token);
       } catch (confirmError) {
         console.error('Failed to confirm subscription activation', confirmError);
-        setError('Tu pago se procesó, pero no pudimos activar la suscripción. Refresca tu perfil en unos segundos o contáctanos si no aparece.');
+        setError(t('subscribeModal.errors.activationFailed'));
         return;
       }
 
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo crear la suscripción');
+      setError(err instanceof Error ? err.message : t('subscribeModal.errors.createFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -194,7 +196,7 @@ function SubscribePaymentStep({
   return (
     <div>
       <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)', display: 'block', marginBottom: 8 }}>
-        Método de pago
+        {t('subscribeModal.payment.label')}
       </span>
 
       {savedCards.length > 0 && (
@@ -229,7 +231,7 @@ function SubscribePaymentStep({
           color: 'var(--ink)',
         }}
       >
-        <Icon name="plus" size={14} /> Usar tarjeta nueva
+        <Icon name="plus" size={14} /> {t('subscribeModal.payment.useNewCard')}
       </button>
 
       {activeSelection === NEW_CARD_OPTION && (
@@ -247,13 +249,14 @@ function SubscribePaymentStep({
         disabled={submitting || !stripe}
         loading={submitting}
         style={{ marginTop: 14 }}
-        text={submitting ? 'Procesando pago…' : `Suscribirme · $${total.toFixed(2)} / ${shippingMethod === 'pickup' ? 'retiro' : 'envío'}`}
+        text={submitting ? t('subscribeModal.payment.submitLoading') : t('subscribeModal.payment.submitLabel', { amount: `$${total.toFixed(2)}`, method: shippingMethod === 'pickup' ? t('subscribeModal.payment.methodPickup') : t('subscribeModal.payment.methodDelivery') })}
       />
     </div>
   );
 }
 
 export function SubscribeModal({ open, onClose, productId, variantId, productLabel, unitPrice, taxExempt, defaultQty }: SubscribeModalProps) {
+  const { t } = useTranslation();
   const bp = useBreakpoint();
   const isSmall = bp === 'mobile' || bp === 'tablet';
   const { getToken } = useAuth();
@@ -343,13 +346,13 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
   };
 
   return (
-    <ModalOverlay open={open} onClose={onClose} ariaLabel="Suscribirse a reposición automática">
+    <ModalOverlay open={open} onClose={onClose} ariaLabel={t('subscribeModal.ariaLabel')}>
       <div style={{ width: '100%', maxWidth: isSmall ? 460 : 800, maxHeight: '86vh', background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 24, display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '28px 28px 0', flexShrink: 0 }}>
           <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, letterSpacing: '-0.02em', margin: 0, color: 'var(--ink)', fontWeight: 400 }}>
-            Reposición <em style={{ color: 'var(--green)' }}>automática</em>
+            {t('subscribeModal.heading')} <em style={{ color: 'var(--green)' }}>{t('subscribeModal.headingEmphasis')}</em>
           </h2>
-          <button type="button" onClick={onClose} aria-label="Cerrar" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ink-60)' }}>
+          <button type="button" onClick={onClose} aria-label={t('subscribeModal.closeAria')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ink-60)' }}>
             <Icon name="x" size={18} />
           </button>
         </div>
@@ -360,7 +363,7 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
               <Icon name="check" size={22} />
             </div>
             <p style={{ margin: 0, fontSize: 14, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>
-              ¡Listo! Tu suscripción quedó activa.
+              {t('subscribeModal.success')}
             </p>
           </div>
         ) : hasExistingSubscription ? (
@@ -369,24 +372,26 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
               <Icon name="repeat" size={20} />
             </div>
             <p style={{ margin: 0, fontSize: 14, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>
-              Ya tienes una reposición automática activa para {productLabel}.
+              {t('subscribeModal.existing.message', { product: productLabel })}
             </p>
             <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>
-              Puedes pausarla, cambiar su frecuencia o cancelarla desde tu perfil.
+              {t('subscribeModal.existing.hint')}
             </p>
           </div>
         ) : (
           <>
             <div style={{ overflowY: 'auto', overflowX: 'hidden', padding: '4px 28px 28px', flex: '1 1 auto', minHeight: 0 }}>
               <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginBottom: 20 }}>
-                {productLabel} — te cobramos y {shippingMethod === 'pickup' ? 'preparamos un pedido nuevo para que lo recojas en tienda' : 'te enviamos un pedido nuevo'} cada cierto tiempo, sin que tengas que volver a comprarlo. Puedes pausar o cancelar cuando quieras desde tu perfil.
+                {shippingMethod === 'pickup'
+                  ? t('subscribeModal.intro.pickup', { product: productLabel })
+                  : t('subscribeModal.intro.delivery', { product: productLabel })}
               </p>
 
               <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1.15fr 1fr', gap: isSmall ? 24 : 28, alignItems: 'start' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div>
                     <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)', display: 'block', marginBottom: 8 }}>
-                      Frecuencia
+                      {t('subscribeModal.frequency.label')}
                     </span>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       {SUBSCRIPTION_INTERVAL_DAYS.map((days) => (
@@ -405,7 +410,7 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
                             cursor: 'pointer',
                           }}
                         >
-                          {INTERVAL_LABELS[days]}
+                          {t(`subscribeModal.intervalLabels.${INTERVAL_LABEL_KEYS[days]}`)}
                         </button>
                       ))}
                       <button
@@ -422,7 +427,7 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
                           cursor: 'pointer',
                         }}
                       >
-                        Personalizado
+                        {t('subscribeModal.frequency.custom')}
                       </button>
                     </div>
                     {customInterval && (
@@ -441,21 +446,21 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
                           }}
                           style={{ width: 70, padding: '8px 10px', border: '1px solid var(--ink-20)', borderRadius: 10, fontSize: 14, fontFamily: '"Geist", sans-serif', background: 'var(--cream)', color: 'var(--ink)', outline: 'none' }}
                         />
-                        <span style={{ fontSize: 13, color: 'var(--ink-60)' }}>días (entre {MIN_SUBSCRIPTION_INTERVAL_DAYS} y {MAX_SUBSCRIPTION_INTERVAL_DAYS})</span>
+                        <span style={{ fontSize: 13, color: 'var(--ink-60)' }}>{t('subscribeModal.frequency.customHint', { min: MIN_SUBSCRIPTION_INTERVAL_DAYS, max: MAX_SUBSCRIPTION_INTERVAL_DAYS })}</span>
                       </div>
                     )}
                   </div>
 
                   <div>
                     <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)', display: 'block', marginBottom: 8 }}>
-                      Cantidad por pedido
+                      {t('subscribeModal.quantity.label')}
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--ink-20)', borderRadius: 999, padding: 4, width: 'fit-content' }}>
-                      <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Disminuir cantidad" style={{ width: 32, height: 32, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label={t('subscribeModal.quantity.decreaseAria')} style={{ width: 32, height: 32, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Icon name="minus" size={13} />
                       </button>
                       <span style={{ width: 32, textAlign: 'center', fontFamily: '"Geist", sans-serif', fontSize: 14 }}>{qty}</span>
-                      <button type="button" onClick={() => setQty((q) => Math.min(10, q + 1))} aria-label="Aumentar cantidad" style={{ width: 32, height: 32, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <button type="button" onClick={() => setQty((q) => Math.min(10, q + 1))} aria-label={t('subscribeModal.quantity.increaseAria')} style={{ width: 32, height: 32, borderRadius: 999, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Icon name="plus" size={13} />
                       </button>
                     </div>
@@ -465,7 +470,7 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
 
                   <div>
                     <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)', display: 'block', marginBottom: 8 }}>
-                      Entrega
+                      {t('subscribeModal.delivery.label')}
                     </span>
                     <div style={{ display: 'flex', gap: 8 }}>
                       {SHIPPING_METHOD_OPTIONS.map((opt) => (
@@ -485,7 +490,7 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
                             cursor: 'pointer',
                           }}
                         >
-                          {opt.label}
+                          {t(`checkout.shipping.methods.${opt.value}`)}
                         </button>
                       ))}
                     </div>
@@ -494,7 +499,7 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
                   {!loadingAddress && shippingMethod === 'delivery' && savedAddresses.length > 1 && (
                     <div>
                       <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-60)', display: 'block', marginBottom: 8 }}>
-                        Dirección guardada
+                        {t('subscribeModal.address.savedLabel')}
                       </span>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                         {savedAddresses.map((savedAddress, index) => (
@@ -513,7 +518,7 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
                               fontFamily: '"Geist", sans-serif',
                             }}
                           >
-                            {savedAddress.label || `Dirección ${index + 1}`}
+                            {savedAddress.label || t('subscribeModal.address.unnamed', { n: index + 1 })}
                           </button>
                         ))}
                       </div>
@@ -521,7 +526,7 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
                   )}
 
                   {loadingAddress ? (
-                    <p style={{ fontSize: 12, color: 'var(--ink-60)' }}>Cargando dirección…</p>
+                    <p style={{ fontSize: 12, color: 'var(--ink-60)' }}>{t('subscribeModal.address.loading')}</p>
                   ) : showAddressSummary ? (
                     <div style={{ border: '1px solid var(--ink-06)', borderRadius: 12, padding: '12px 14px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                       <div style={{ fontSize: 13, color: 'var(--ink-80)', fontFamily: '"Geist", sans-serif', lineHeight: 1.5, minWidth: 0 }}>
@@ -535,7 +540,7 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
                         onClick={() => setManualEdit(true)}
                         style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ink-60)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontFamily: '"Geist", sans-serif', flexShrink: 0, padding: 0 }}
                       >
-                        <Icon name="pencil" size={12} /> Editar
+                        <Icon name="pencil" size={12} /> {t('subscribeModal.address.edit')}
                       </button>
                     </div>
                   ) : (
@@ -551,21 +556,21 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
                             }}
                             style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ink-60)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontFamily: '"Geist", sans-serif', padding: 0, marginBottom: 4 }}
                           >
-                            <Icon name="arrow-left" size={12} /> Usar dirección guardada
+                            <Icon name="arrow-left" size={12} /> {t('subscribeModal.address.useSaved')}
                           </button>
                         </div>
                       )}
                       <div style={{ gridColumn: '1 / -1' }}>
-                        <FormInput label="Nombre" value={address.name} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, name: v })); }} required />
+                        <FormInput label={t('subscribeModal.address.form.name')} value={address.name} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, name: v })); }} required />
                       </div>
-                      <FormInput label="Teléfono" value={address.phone} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, phone: v })); }} required />
+                      <FormInput label={t('subscribeModal.address.form.phone')} value={address.phone} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, phone: v })); }} required />
                       {shippingMethod === 'delivery' && (
                         <>
-                          <FormInput label="Ciudad" value={address.city} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, city: v })); }} required />
+                          <FormInput label={t('subscribeModal.address.form.city')} value={address.city} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, city: v })); }} required />
                           <div style={{ gridColumn: '1 / -1' }}>
-                            <FormInput label="Dirección" value={address.address} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, address: v })); }} required />
+                            <FormInput label={t('subscribeModal.address.form.address')} value={address.address} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, address: v })); }} required />
                           </div>
-                          <FormInput label="Código postal" value={address.postal} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, postal: v })); }} required />
+                          <FormInput label={t('subscribeModal.address.form.postal')} value={address.postal} onChange={(v) => { setSelectedAddressIndex(null); setAddress((a) => ({ ...a, postal: v })); }} required />
                         </>
                       )}
                     </div>
@@ -575,16 +580,16 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
                 <div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 14, fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Subtotal</span><span>${subtotal.toFixed(2)}</span>
+                      <span>{t('subscribeModal.summary.subtotal')}</span><span>${subtotal.toFixed(2)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Envío</span><span>{shipping === 0 ? 'Gratis' : `$${shipping.toFixed(2)}`}</span>
+                      <span>{t('subscribeModal.summary.shipping')}</span><span>{shipping === 0 ? t('subscribeModal.summary.free') : `$${shipping.toFixed(2)}`}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>ITBMS</span><span>${tax.toFixed(2)}</span>
+                      <span>{t('subscribeModal.summary.tax')}</span><span>${tax.toFixed(2)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ink)', fontWeight: 600, paddingTop: 4, borderTop: '1px solid var(--ink-06)' }}>
-                      <span>Total por pedido</span><span>${total.toFixed(2)}</span>
+                      <span>{t('subscribeModal.summary.total')}</span><span>${total.toFixed(2)}</span>
                     </div>
                   </div>
                   {stripePromise ? (
@@ -604,7 +609,7 @@ export function SubscribeModal({ open, onClose, productId, variantId, productLab
                     </Elements>
                   ) : (
                     <p style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>
-                      Falta configurar VITE_STRIPE_PUBLISHABLE_KEY para procesar el pago.
+                      {t('subscribeModal.payment.stripeMissing')}
                     </p>
                   )}
                 </div>

@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useClerk } from '@clerk/clerk-react';
 
 export function SSOCallbackPage({ onSuccess }: { onSuccess: () => void }) {
+  const { t } = useTranslation();
   const clerk = useClerk();
 
   useEffect(() => {
@@ -43,7 +45,7 @@ export function SSOCallbackPage({ onSuccess }: { onSuccess: () => void }) {
           fontSize: 16,
           color: 'var(--ink-60)',
         }}>
-          Procesando inicio de sesión...
+          {t('ssoCallback.processing')}
         </p>
       </div>
     </div>

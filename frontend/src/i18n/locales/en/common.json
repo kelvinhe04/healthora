@@ -1,6 +1,221 @@
 {
   "common": {
-    "languageSwitcherAria": "Change language"
+    "languageSwitcherAria": "Change language",
+    "modalDialogAria": "Dialog"
+  },
+  "topbar": {
+    "messages": [
+      "Free shipping on orders over $50",
+      "Free sample on orders over $200",
+      "New customers: 15% off with code BIENVENIDA",
+      "24–48h delivery across the region",
+      "Products verified by pharmacists"
+    ]
+  },
+  "errorBoundary": {
+    "titlePrefix": "Something went",
+    "titleEmphasis": "wrong",
+    "message": "You can retry or go back home."
+  },
+  "ssoCallback": {
+    "processing": "Signing you in..."
+  },
+  "reviewSection": {
+    "timeAgo": {
+      "justNow": "Just now",
+      "minutes": "{{count}} min ago",
+      "hours": "{{count}} h ago",
+      "days_one": "{{count}} day ago",
+      "days_other": "{{count}} days ago",
+      "months_one": "{{count}} month ago",
+      "months_other": "{{count}} months ago",
+      "years_one": "{{count}} year ago",
+      "years_other": "{{count}} years ago"
+    },
+    "helpful": {
+      "label": "Helpful",
+      "withCount": "Helpful · {{count}}"
+    },
+    "eyebrow": "Buyer feedback",
+    "heading": "Customer",
+    "headingEmphasis": "reviews",
+    "writeReview": "Write a review",
+    "reviewCount_one": "{{count}} review",
+    "reviewCount_other": "{{count}} reviews",
+    "filterAria": "Filter reviews by star rating",
+    "successBanner": "Thanks for your review! It's now listed below.",
+    "form": {
+      "title": "Your review",
+      "ratingLabel": "Rating *",
+      "titleLabel": "Title (optional)",
+      "titlePlaceholder": "Sum up your experience in a sentence",
+      "bodyLabel": "Your review *",
+      "bodyPlaceholder": "What did you think of this product? Would you recommend it?",
+      "submit": "Post review",
+      "submitting": "Sending…",
+      "cancel": "Cancel",
+      "errors": {
+        "ratingRequired": "Please select a rating",
+        "bodyRequired": "Please write your review",
+        "noSession": "No active session"
+      }
+    },
+    "signInPrompt": {
+      "title": "Already tried this product?",
+      "subtitle": "Sign in to share your experience with other shoppers.",
+      "cta": "Sign in"
+    },
+    "filterActive": {
+      "showing_one": "Showing {{count}} review of {{stars}}★",
+      "showing_other": "Showing {{count}} reviews of {{stars}}★",
+      "viewAll": "View all"
+    },
+    "empty": {
+      "noneTitle": "Be the first to review",
+      "noneSubtitle": "There are no reviews for this product yet.",
+      "filteredTitle": "No {{stars}}★ reviews",
+      "filteredSubtitle_one": "Nobody rated this product {{stars}} star yet.",
+      "filteredSubtitle_other": "Nobody rated this product {{stars}} stars yet."
+    }
+  },
+  "recentlyViewedSection": {
+    "eyebrow": "Keep exploring",
+    "heading": "Recently",
+    "headingEmphasis": "viewed"
+  },
+  "subscribeModal": {
+    "ariaLabel": "Subscribe to auto-replenish",
+    "closeAria": "Close",
+    "heading": "Auto",
+    "headingEmphasis": "replenish",
+    "success": "All set! Your subscription is now active.",
+    "intervalLabels": {
+      "d7": "Every 7 days",
+      "d15": "Every 15 days",
+      "d30": "Every 30 days",
+      "d60": "Every 60 days"
+    },
+    "existing": {
+      "message": "You already have an active auto-replenish for {{product}}.",
+      "hint": "You can pause it, change its frequency, or cancel it from your profile."
+    },
+    "intro": {
+      "pickup": "{{product}} — we'll charge you and prepare a new order for pickup in store every so often, so you never have to reorder it yourself. You can pause or cancel anytime from your profile.",
+      "delivery": "{{product}} — we'll charge you and ship a new order every so often, so you never have to reorder it yourself. You can pause or cancel anytime from your profile."
+    },
+    "frequency": {
+      "label": "Frequency",
+      "custom": "Custom",
+      "customHint": "days (between {{min}} and {{max}})"
+    },
+    "quantity": {
+      "label": "Quantity per order",
+      "decreaseAria": "Decrease quantity",
+      "increaseAria": "Increase quantity"
+    },
+    "delivery": {
+      "label": "Delivery"
+    },
+    "address": {
+      "savedLabel": "Saved address",
+      "unnamed": "Address {{n}}",
+      "loading": "Loading address…",
+      "edit": "Edit",
+      "useSaved": "Use saved address",
+      "form": {
+        "name": "Name",
+        "phone": "Phone",
+        "city": "City",
+        "address": "Address",
+        "postal": "Postal code"
+      }
+    },
+    "summary": {
+      "subtotal": "Subtotal",
+      "shipping": "Shipping",
+      "free": "Free",
+      "tax": "ITBMS",
+      "total": "Total per order"
+    },
+    "payment": {
+      "label": "Payment method",
+      "useNewCard": "Use a new card",
+      "submitLoading": "Processing payment…",
+      "submitLabel": "Subscribe · {{amount}} / {{method}}",
+      "methodPickup": "pickup",
+      "methodDelivery": "delivery",
+      "stripeMissing": "VITE_STRIPE_PUBLISHABLE_KEY needs to be configured to process the payment."
+    },
+    "errors": {
+      "missingFields": "Fill in name, phone and address to continue.",
+      "notAuthenticated": "Not authenticated",
+      "cardFormFailed": "Couldn't load the card form",
+      "paymentFailed": "Couldn't process the payment",
+      "paymentNotConfirmed": "The payment couldn't be confirmed. Please try again.",
+      "activationFailed": "Your payment went through, but we couldn't activate the subscription. Refresh your profile in a few seconds or contact us if it doesn't show up.",
+      "createFailed": "Couldn't create the subscription"
+    }
+  },
+  "signInModal": {
+    "closeAria": "Close",
+    "left": {
+      "heading": "Your health,",
+      "headingEmphasis": "our care.",
+      "subtitle": "Access hundreds of wellness and pharmacy products with fast delivery to your door.",
+      "features": {
+        "freeShipping": "Free shipping on orders +$50",
+        "certifiedProducts": "+{{count}} certified products",
+        "pharmacyAdvice": "Pharmacy guidance included"
+      }
+    },
+    "srHeading": {
+      "signIn": "Sign in to Healthora",
+      "signUp": "Create a Healthora account"
+    },
+    "tabs": {
+      "signIn": "Sign in",
+      "signUp": "Create account"
+    },
+    "oauth": {
+      "google": "Continue with Google",
+      "microsoft": "Continue with Microsoft",
+      "divider": "or with email"
+    },
+    "email": {
+      "label": "Email address",
+      "signUpCta": "Sign up",
+      "submit": {
+        "loading": "Sending code…",
+        "signIn": "Continue with email",
+        "signUp": "Send access code"
+      }
+    },
+    "otp": {
+      "label": "Verification",
+      "heading": "Check your",
+      "headingEmphasis": "email",
+      "infoBefore": "We sent a 6-digit code to",
+      "infoAfter": "Check your inbox.",
+      "codeLabel": "Verification code",
+      "changeEmail": "← Change email",
+      "submit": {
+        "loading": "Verifying…",
+        "signIn": "Sign in",
+        "signUp": "Create account"
+      }
+    },
+    "terms": {
+      "prefix": "By continuing you agree to our",
+      "terms": "Terms",
+      "and": "and",
+      "privacy": "Privacy"
+    },
+    "errors": {
+      "accountNotFound": "We couldn't find that account. Want to create one?",
+      "sendCodeFailed": "Failed to send the code",
+      "invalidCode": "Invalid code",
+      "oauthFailed": "Couldn't connect to the provider"
+    }
   },
   "header": {
     "nav": {

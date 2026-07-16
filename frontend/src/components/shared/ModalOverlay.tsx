@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const FOCUSABLE =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -23,10 +24,12 @@ export function ModalOverlay({
   overlayColor = 'rgba(17, 24, 20, 0.40)',
   backdropFilter,
   absolute = false,
-  ariaLabel = 'Diálogo',
+  ariaLabel,
   ariaLabelledBy,
   children,
 }: ModalOverlayProps) {
+  const { t } = useTranslation();
+  const resolvedAriaLabel = ariaLabel ?? t('common.modalDialogAria');
   const [visible, setVisible] = useState(open);
   const [closing, setClosing] = useState(false);
   const frozenChildren = useRef<ReactNode>(children);
@@ -123,7 +126,7 @@ export function ModalOverlay({
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label={ariaLabelledBy ? undefined : ariaLabel}
+        aria-label={ariaLabelledBy ? undefined : resolvedAriaLabel}
         aria-labelledby={ariaLabelledBy}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}

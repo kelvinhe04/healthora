@@ -1,18 +1,12 @@
+import { useTranslation } from 'react-i18next';
 import { useThemeStore } from '../../store/themeStore';
 
-const msgs = [
-  'Envío gratis en compras mayores a $50',
-  'Muestra gratis en órdenes mayores a $200',
-  'Nuevos clientes: 15% con código BIENVENIDA',
-  'Entregas en 24–48h en toda la región',
-  'Productos verificados por farmacéuticos',
-];
-
-const marqueeMsgs = Array.from({ length: 3 }, () => msgs).flat();
-
 export function Topbar() {
+  const { t } = useTranslation();
   const theme = useThemeStore((s) => s.theme);
   const isDark = theme === 'dark';
+  const msgs = t('topbar.messages', { returnObjects: true }) as string[];
+  const marqueeMsgs = Array.from({ length: 3 }, () => msgs).flat();
   return (
     <div style={{ background: 'var(--ink)', color: 'var(--cream)', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 0', overflow: 'hidden', position: 'relative' }}>
       <style>{`
