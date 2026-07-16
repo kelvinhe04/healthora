@@ -307,7 +307,6 @@ export type Banner = {
    * flotando sobre el banner, y de donde sale ctaHref. */
   categoryId?: string | null;
   backgroundColor?: string;
-  active: boolean;
   startDate?: string | null;
   endDate?: string | null;
   createdAt?: string;

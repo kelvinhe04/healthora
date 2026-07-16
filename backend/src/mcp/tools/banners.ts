@@ -22,7 +22,6 @@ export function registerBannerTools(server: McpServer) {
         description: optionalTextField(400),
         ctaText: textField(60),
         backgroundColor: optionalTextField(40),
-        active: z.coerce.boolean().optional(),
         startDate: z.string().nullable().optional(),
         endDate: z.string().nullable().optional(),
         categoryId: optionalTextField(120).describe('Obligatorio para slot "promo" (id de Category existente); ignorado para "club".'),

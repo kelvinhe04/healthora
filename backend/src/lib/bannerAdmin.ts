@@ -10,7 +10,6 @@ export type UpdateBannerInput = {
   description?: string;
   ctaText: string;
   backgroundColor?: string;
-  active?: boolean;
   startDate?: Date | null;
   endDate?: Date | null;
   /** Obligatorio para el slot 'promo', ignorado para 'club' - ver buildCtaHref. */

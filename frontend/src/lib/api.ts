@@ -66,7 +66,6 @@ type BannerPayload = {
   description?: string;
   ctaText: string;
   backgroundColor?: string;
-  active?: boolean;
   startDate?: string | null;
   endDate?: string | null;
   /** Obligatorio al guardar el slot 'promo'; se ignora para 'club'. */

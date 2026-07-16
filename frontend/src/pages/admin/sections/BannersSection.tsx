@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, PageHeader, StatusPill } from '../../../components/admin';
+import { Card, PageHeader } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { api } from '../../../lib/api';
@@ -16,7 +16,6 @@ type BannerForm = {
   ctaText: string;
   backgroundColor: string;
   categoryId: string;
-  active: boolean;
   startDate: string;
   endDate: string;
 };
@@ -45,7 +44,6 @@ const emptyForm = (): BannerForm => ({
   ctaText: '',
   backgroundColor: COLOR_PRESETS[0].value,
   categoryId: '',
-  active: true,
   startDate: '',
   endDate: '',
 });
@@ -123,9 +121,6 @@ function BannerPreviewCard({ banner, label, onEdit }: { banner?: Banner; label: 
           <div style={{ fontSize: 11, color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
           <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{banner?.title || 'Sin configurar'}</div>
         </div>
-        {banner && (
-          <StatusPill tone={banner.active ? 'success' : 'neutral'}>{banner.active ? 'Activo' : 'Inactivo'}</StatusPill>
-        )}
       </div>
       <div style={{ marginTop: 16 }}>
         <AnimatedButton variant="secondary" onClick={onEdit} text="Editar" />
@@ -170,7 +165,6 @@ export function BannersSection() {
           ctaText: form.ctaText.trim(),
           backgroundColor: form.backgroundColor,
           categoryId: editingSlot === 'promo' ? form.categoryId : undefined,
-          active: form.active,
           startDate: form.startDate ? new Date(form.startDate).toISOString() : null,
           endDate: form.endDate ? new Date(form.endDate).toISOString() : null,
         },
@@ -195,7 +189,6 @@ export function BannersSection() {
       ctaText: banner?.ctaText || '',
       backgroundColor: banner?.backgroundColor || COLOR_PRESETS[0].value,
       categoryId: banner?.categoryId || '',
-      active: banner?.active ?? true,
       startDate: banner?.startDate ? banner.startDate.slice(0, 10) : '',
       endDate: banner?.endDate ? banner.endDate.slice(0, 10) : '',
     });
@@ -265,11 +258,6 @@ export function BannersSection() {
               )}
             </label>
 
-            <label style={{ display: 'block', gridColumn: '1 / -1' }}>
-              <span style={labelStyle}>Palabra a resaltar (opcional, debe aparecer en el título)</span>
-              <input value={form.highlightWord} onChange={(e) => setForm((f) => ({ ...f, highlightWord: e.target.value }))} placeholder="Ej. gratis" style={inputStyle} />
-            </label>
-
             {editingSlot === 'promo' && (
               <label style={{ display: 'block', gridColumn: '1 / -1' }}>
                 <span style={labelStyle}>Categoría (define las 2 fotos del banner y a dónde lleva el botón)</span>
@@ -285,11 +273,6 @@ export function BannersSection() {
             <label style={{ display: 'block', gridColumn: '1 / -1' }}>
               <span style={labelStyle}>Descripción</span>
               <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} spellCheck={false} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} />
-            </label>
-
-            <label style={{ display: 'block', gridColumn: '1 / -1' }}>
-              <span style={labelStyle}>Texto del botón (CTA)</span>
-              <input value={form.ctaText} onChange={(e) => setForm((f) => ({ ...f, ctaText: e.target.value }))} spellCheck={false} style={inputStyle} />
             </label>
 
             {editingSlot === 'promo' && (
@@ -315,11 +298,6 @@ export function BannersSection() {
             <label style={{ display: 'block' }}>
               <span style={labelStyle}>Vigente hasta{editingSlot === 'promo' ? '' : ' (opcional)'}</span>
               <input type="date" value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} style={inputStyle} />
-            </label>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1 / -1' }}>
-              <input type="checkbox" checked={form.active} onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))} />
-              <span style={{ fontSize: 13 }}>Banner activo en el landing</span>
             </label>
           </div>
 

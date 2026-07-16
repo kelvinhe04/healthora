@@ -20,7 +20,6 @@ const BannerSchema = new Schema(
      * se muestran flotando sobre el banner (ver Landing.tsx) y que arma `ctaHref` solo. */
     categoryId: { type: String, default: null },
     backgroundColor: { type: String, default: '#e4f248' },
-    active: { type: Boolean, default: true },
     startDate: { type: Date, default: null },
     endDate: { type: Date, default: null },
   },

@@ -16,7 +16,6 @@ const bannerPayloadSchema = z.object({
   description: optionalTextField(400),
   ctaText: textField(60),
   backgroundColor: optionalTextField(40),
-  active: z.coerce.boolean().optional(),
   startDate: z.coerce.date().nullable().optional(),
   endDate: z.coerce.date().nullable().optional(),
   categoryId: optionalTextField(120),
