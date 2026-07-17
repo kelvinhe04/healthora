@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { clerkAuth } from '../middleware/clerkAuth';
 import type { AppEnv } from '../types/hono';
+import { Coupon } from '../db/models/Coupon';
 import { Product } from '../db/models/Product';
 import { buildPromotionLineItems, validatePromotionForCart } from '../lib/promotions';
 import { cartItemSchema, optionalTextField, parseJson } from '../lib/validation';
@@ -17,6 +18,18 @@ function roundMoney(value: number): number {
 
 export const promotionsRouter = new Hono<AppEnv>()
   .use('*', clerkAuth)
+  .get('/active', async (c) => {
+    const now = new Date();
+    const coupons = await Coupon.find({
+      active: true,
+      $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }],
+      $expr: { $or: [{ $eq: ['$maxUses', null] }, { $lt: ['$usesCount', '$maxUses'] }] },
+    })
+      .select('code label discountType percentOff amountOff eligibleCategories expiresAt firstPurchaseOnly')
+      .sort({ createdAt: -1 })
+      .lean();
+    return c.json(coupons);
+  })
   .post('/validate', async (c) => {
     const parsed = await parseJson(c, validateSchema);
     if (!parsed.success) return parsed.response;

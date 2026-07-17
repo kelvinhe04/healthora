@@ -103,8 +103,6 @@ function roundMoney(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-const SUGGESTED_PROMO_CODES = ['BIENVENIDA', 'PIEL25'];
-
 type ValidatedPromo = {
   code: string;
   label: string;
@@ -327,6 +325,13 @@ export function Checkout({ items, onBack }: CheckoutProps) {
   });
   const loyaltyBalance = loyaltyQuery.data?.balance ?? 0;
   const loyaltyPointValueCents = loyaltyQuery.data?.pointValueCents ?? 0;
+
+  const activeCouponsQuery = useQuery({
+    queryKey: ['active-coupons'],
+    queryFn: async () => api.promotions.active((await getEffectiveToken())!),
+    enabled: isSignedIn,
+  });
+  const suggestedPromoCodes = activeCouponsQuery.data?.map((coupon) => coupon.code) ?? [];
 
   const isAddressValid = address.name.trim() && address.phone.trim()
     && (shippingMethod === 'pickup' || (address.address.trim() && address.city.trim() && address.postal.trim()));
@@ -708,16 +713,18 @@ export function Checkout({ items, onBack }: CheckoutProps) {
                 <AnimatedButton type="submit" disabled={processing || promoValidating} variant="primary" size="sm" text={promoValidating ? t('checkout.summary.validating') : t('checkout.summary.apply')} />
               )}
             </form>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-              {SUGGESTED_PROMO_CODES.map((code) => {
-                const isActive = appliedPromo?.code === code;
-                return (
-                  <button key={code} type="button" onClick={() => void handleApplyPromo(code)} disabled={processing || promoValidating} style={{ border: isActive ? '1px solid var(--lime)' : '1px solid var(--ink-12)', background: isActive ? 'var(--lime)' : 'var(--cream)', color: isActive ? 'oklch(0.2 0.03 155)' : 'var(--ink)', borderRadius: 999, padding: '6px 9px', cursor: processing || promoValidating ? 'not-allowed' : 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>
-                    {code}
-                  </button>
-                );
-              })}
-            </div>
+            {suggestedPromoCodes.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                {suggestedPromoCodes.map((code) => {
+                  const isActive = appliedPromo?.code === code;
+                  return (
+                    <button key={code} type="button" onClick={() => void handleApplyPromo(code)} disabled={processing || promoValidating} style={{ border: isActive ? '1px solid var(--lime)' : '1px solid var(--ink-12)', background: isActive ? 'var(--lime)' : 'var(--cream)', color: isActive ? 'oklch(0.2 0.03 155)' : 'var(--ink)', borderRadius: 999, padding: '6px 9px', cursor: processing || promoValidating ? 'not-allowed' : 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>
+                      {code}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {appliedPromo && (
               <div aria-live="polite" style={{ marginTop: 10, padding: 10, borderRadius: 12, background: 'color-mix(in oklab, var(--green) 9%, white)', border: '1px solid color-mix(in oklab, var(--green) 18%, white)', color: 'var(--green)', fontSize: 12, fontFamily: '"Geist", sans-serif', lineHeight: 1.4 }}>
                 {t('checkout.summary.savings', { label: appliedPromo.label, amount: formatCurrency(discountAmount) })}

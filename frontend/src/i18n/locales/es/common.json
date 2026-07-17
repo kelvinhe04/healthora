@@ -1311,10 +1311,12 @@
           "discount": "Descuento",
           "categories": "Categorías",
           "uses": "Usos",
+          "expires": "Vence",
           "status": "Estado",
           "actions": "Acciones"
         },
         "allCategories": "Todas",
+        "noExpiry": "Sin vencimiento",
         "statusActive": "Activo",
         "statusInactive": "Inactivo",
         "deactivate": "Desactivar",
