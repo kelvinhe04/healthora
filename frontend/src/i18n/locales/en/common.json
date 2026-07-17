@@ -1319,10 +1319,13 @@
         "statusInactive": "Inactive",
         "deactivate": "Deactivate",
         "activate": "Activate",
+        "editButton": "Edit",
+        "deleteButton": "Delete",
         "empty": "No coupons created yet."
       },
       "modal": {
         "title": "New coupon",
+        "editTitle": "Edit coupon",
         "codePlaceholder": "Code (e.g. SAVE10)",
         "labelPlaceholder": "Visible label",
         "discountTypePercent": "Percentage",
@@ -1331,10 +1334,18 @@
         "amountPlaceholder": "Amount",
         "maxUsesPlaceholder": "Max uses (optional)",
         "firstPurchaseOnly": "First purchase only",
+        "activeLabel": "Coupon active",
         "eligibleCategoriesLabel": "Eligible categories (empty = all)",
         "cancel": "Cancel",
         "create": "Create coupon",
+        "save": "Save",
         "saving": "Saving…"
+      },
+      "deleteModal": {
+        "title": "Delete coupon",
+        "body": "Delete coupon \"{{code}}\" permanently? This action cannot be undone.",
+        "confirm": "Delete",
+        "deleting": "Deleting…"
       }
     },
     "reports": {

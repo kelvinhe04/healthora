@@ -1319,10 +1319,13 @@
         "statusInactive": "Inactivo",
         "deactivate": "Desactivar",
         "activate": "Activar",
+        "editButton": "Editar",
+        "deleteButton": "Eliminar",
         "empty": "No hay cupones creados todavía."
       },
       "modal": {
         "title": "Nuevo cupón",
+        "editTitle": "Editar cupón",
         "codePlaceholder": "Código (ej. SAVE10)",
         "labelPlaceholder": "Etiqueta visible",
         "discountTypePercent": "Porcentaje",
@@ -1331,10 +1334,18 @@
         "amountPlaceholder": "Monto",
         "maxUsesPlaceholder": "Máximo de usos (opcional)",
         "firstPurchaseOnly": "Solo primera compra",
+        "activeLabel": "Cupón activo",
         "eligibleCategoriesLabel": "Categorías elegibles (vacío = todas)",
         "cancel": "Cancelar",
         "create": "Crear cupón",
+        "save": "Guardar",
         "saving": "Guardando…"
+      },
+      "deleteModal": {
+        "title": "Eliminar cupón",
+        "body": "¿Eliminar el cupón \"{{code}}\" permanentemente? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "deleting": "Eliminando…"
       }
     },
     "reports": {
