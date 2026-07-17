@@ -575,12 +575,28 @@ export const api = {
         request<Coupon>("/admin/coupons", { method: "POST", body: JSON.stringify(data) }, token),
       update: (
         code: string,
-        data: { label?: string; active?: boolean; expiresAt?: string | null; maxUses?: number | null },
+        data: {
+          label?: string;
+          discountType?: "percent" | "fixed";
+          percentOff?: number;
+          amountOff?: number;
+          eligibleCategories?: string[];
+          active?: boolean;
+          expiresAt?: string | null;
+          maxUses?: number | null;
+          firstPurchaseOnly?: boolean;
+        },
         token: string,
       ) =>
         request<Coupon>(
           `/admin/coupons/${encodeURIComponent(code)}`,
           { method: "PATCH", body: JSON.stringify(data) },
+          token,
+        ),
+      remove: (code: string, token: string) =>
+        request<{ ok: boolean; code: string }>(
+          `/admin/coupons/${encodeURIComponent(code)}`,
+          { method: "DELETE" },
           token,
         ),
     },
