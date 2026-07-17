@@ -24,7 +24,6 @@ export function LanguageSwitcher({ buttonStyle }: { buttonStyle?: CSSProperties 
         ...buttonStyle,
         fontSize: 12,
         fontFamily: '"JetBrains Mono", monospace',
-        fontWeight: 600,
         letterSpacing: '0.04em',
         minWidth: 30,
         justifyContent: 'center',
