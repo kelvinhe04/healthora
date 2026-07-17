@@ -18,6 +18,7 @@ import { api } from '../../../lib/api';
 import type { Category, Coupon } from '../../../types';
 import { useAdminToken } from '../hooks/useAdminToken';
 import { formatCurrency } from '../../../lib/currency';
+import { formatPanamaShortDate } from '../../../lib/dates';
 import { translatedCategoryLabel } from '../../../lib/categoryLabels';
 
 type CouponForm = {
@@ -181,6 +182,7 @@ export function CouponsSection() {
               <th style={th}>{t('admin.coupons.table.columns.discount')}</th>
               <th style={th}>{t('admin.coupons.table.columns.categories')}</th>
               <th style={th}>{t('admin.coupons.table.columns.uses')}</th>
+              <th style={th}>{t('admin.coupons.table.columns.expires')}</th>
               <th style={th}>{t('admin.coupons.table.columns.status')}</th>
               <th style={th}>{t('admin.coupons.table.columns.actions')}</th>
             </tr>
@@ -203,6 +205,9 @@ export function CouponsSection() {
                 <td style={td}>
                   {coupon.usesCount ?? 0}
                   {coupon.maxUses ? ` / ${coupon.maxUses}` : ''}
+                </td>
+                <td style={{ ...td, color: coupon.expiresAt && new Date(coupon.expiresAt) < new Date() ? 'var(--red)' : undefined }}>
+                  {coupon.expiresAt ? formatPanamaShortDate(coupon.expiresAt) : t('admin.coupons.table.noExpiry')}
                 </td>
                 <td style={td}>
                   <StatusPill
@@ -239,7 +244,7 @@ export function CouponsSection() {
             ))}
             {!isLoading && coupons.length === 0 && (
               <tr>
-                <td style={{ ...td, padding: 24, textAlign: 'center', color: 'var(--ink-60)' }} colSpan={7}>
+                <td style={{ ...td, padding: 24, textAlign: 'center', color: 'var(--ink-60)' }} colSpan={8}>
                   {t('admin.coupons.table.empty')}
                 </td>
               </tr>

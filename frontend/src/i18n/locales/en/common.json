@@ -1316,10 +1316,12 @@
           "discount": "Discount",
           "categories": "Categories",
           "uses": "Uses",
+          "expires": "Expires",
           "status": "Status",
           "actions": "Actions"
         },
         "allCategories": "All",
+        "noExpiry": "No expiration",
         "statusActive": "Active",
         "statusInactive": "Inactive",
         "deactivate": "Deactivate",

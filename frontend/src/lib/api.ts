@@ -292,6 +292,15 @@ export const api = {
       request<ProductSubscription>(`/subscriptions/${id}`, { method: "DELETE" }, token),
   },
   promotions: {
+    active: (token: string) =>
+      request<
+        Array<
+          Pick<
+            Coupon,
+            'code' | 'label' | 'discountType' | 'percentOff' | 'amountOff' | 'eligibleCategories' | 'expiresAt' | 'firstPurchaseOnly'
+          >
+        >
+      >("/promotions/active", undefined, token),
     validate: (
       body: {
         code: string;
