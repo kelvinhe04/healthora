@@ -1091,6 +1091,11 @@
     "mobileTopBar": {
       "title": "Admin"
     },
+    "shared": {
+      "colorPicker": {
+        "custom": "Custom"
+      }
+    },
     "sidebar": {
       "panelLabel": "ADMIN PANEL",
       "nav": {
@@ -1496,8 +1501,8 @@
         "idPlaceholder": "E.g. Vitamins",
         "labelLabel": "Visible name",
         "subLabel": "Subtitle",
-        "colorLabel": "Color (CSS)",
-        "renameIdLabel": "Rename ID (reassigns products)",
+        "colorLabel": "Color",
+        "idEditHint": "Changing the ID reassigns all of this category's products to the new ID.",
         "activeCheckboxLabel": "Category active in the store",
         "reassignSectionLabel": "Reassign all products to another category",
         "reassignPlaceholder": "Select a destination…",
@@ -1506,6 +1511,14 @@
         "cancel": "Cancel",
         "saving": "Saving…",
         "save": "Save"
+      },
+      "colorPresets": {
+        "amber": "Amber",
+        "blue": "Blue",
+        "green": "Green",
+        "coral": "Coral",
+        "lime": "Lime",
+        "pink": "Pink"
       }
     },
     "variantTypes": {
