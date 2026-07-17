@@ -331,7 +331,10 @@ export function Checkout({ items, onBack }: CheckoutProps) {
     queryFn: async () => api.promotions.active((await getEffectiveToken())!),
     enabled: isSignedIn,
   });
-  const suggestedPromoCodes = activeCouponsQuery.data?.map((coupon) => coupon.code) ?? [];
+  const cartCategories = new Set(items.map((it) => it.product.category));
+  const suggestedPromoCodes = (activeCouponsQuery.data ?? [])
+    .filter((coupon) => !coupon.eligibleCategories?.length || coupon.eligibleCategories.some((c) => cartCategories.has(c)))
+    .map((coupon) => coupon.code);
 
   const isAddressValid = address.name.trim() && address.phone.trim()
     && (shippingMethod === 'pickup' || (address.address.trim() && address.city.trim() && address.postal.trim()));
