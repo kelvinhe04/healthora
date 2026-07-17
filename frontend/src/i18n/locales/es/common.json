@@ -1491,7 +1491,8 @@
         },
         "statusActive": "Activa",
         "statusInactive": "Inactiva",
-        "editButton": "Editar"
+        "editButton": "Editar",
+        "deleteButton": "Eliminar"
       },
       "noCategorySelectedError": "Categoría no seleccionada",
       "modal": {
@@ -1519,6 +1520,13 @@
         "coral": "Coral",
         "lime": "Lima",
         "pink": "Rosa"
+      },
+      "deleteModal": {
+        "title": "Eliminar categoría",
+        "body": "¿Eliminar la categoría \"{{label}}\" permanentemente? Esta acción no se puede deshacer.",
+        "hasProductsWarning": "Esta categoría tiene {{count}} producto(s). Elige a dónde reasignarlos antes de eliminarla.",
+        "confirm": "Eliminar",
+        "deleting": "Eliminando…"
       }
     },
     "variantTypes": {

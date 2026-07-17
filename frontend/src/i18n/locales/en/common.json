@@ -1491,7 +1491,8 @@
         },
         "statusActive": "Active",
         "statusInactive": "Inactive",
-        "editButton": "Edit"
+        "editButton": "Edit",
+        "deleteButton": "Delete"
       },
       "noCategorySelectedError": "No category selected",
       "modal": {
@@ -1519,6 +1520,13 @@
         "coral": "Coral",
         "lime": "Lime",
         "pink": "Pink"
+      },
+      "deleteModal": {
+        "title": "Delete category",
+        "body": "Delete category \"{{label}}\" permanently? This action cannot be undone.",
+        "hasProductsWarning": "This category has {{count}} product(s). Choose where to reassign them before deleting it.",
+        "confirm": "Delete",
+        "deleting": "Deleting…"
       }
     },
     "variantTypes": {

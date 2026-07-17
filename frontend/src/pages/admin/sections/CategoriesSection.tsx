@@ -53,6 +53,9 @@ export function CategoriesSection() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<CategoryForm>(emptyForm);
   const [error, setError] = useState('');
+  const [confirmDeleteCategory, setConfirmDeleteCategory] = useState<Category | null>(null);
+  const [deleteReassignTo, setDeleteReassignTo] = useState('');
+  const [deleteError, setDeleteError] = useState('');
 
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ['admin-categories'],
@@ -113,6 +116,20 @@ export function CategoriesSection() {
     onError: (e: Error) => setError(e.message),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async ({ id, reassignTo }: { id: string; reassignTo?: string }) => {
+      const token = await getAdminToken();
+      return api.admin.categories.remove(id, token, reassignTo || undefined);
+    },
+    onSuccess: () => {
+      invalidate();
+      setConfirmDeleteCategory(null);
+      setDeleteReassignTo('');
+      setDeleteError('');
+    },
+    onError: (e: Error) => setDeleteError(e.message),
+  });
+
   const sorted = useMemo(
     () => [...categories].sort((a, b) => a.label.localeCompare(b.label, 'es')),
     [categories],
@@ -137,6 +154,12 @@ export function CategoriesSection() {
     });
     setError('');
     setModal('edit');
+  };
+
+  const openDelete = (cat: Category) => {
+    setDeleteError('');
+    setDeleteReassignTo('');
+    setConfirmDeleteCategory(cat);
   };
 
   return (
@@ -208,20 +231,37 @@ export function CategoriesSection() {
                     </span>
                   </td>
                   <td style={td}>
-                    <button
-                      type="button"
-                      onClick={() => openEdit(cat)}
-                      style={{
-                        border: '1px solid var(--ink-06)',
-                        background: 'var(--cream)',
-                        borderRadius: 999,
-                        padding: '6px 12px',
-                        cursor: 'pointer',
-                        fontSize: 12,
-                      }}
-                    >
-                      {t('admin.categories.table.editButton')}
-                    </button>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => openEdit(cat)}
+                        style={{
+                          border: '1px solid var(--ink-06)',
+                          background: 'var(--cream)',
+                          borderRadius: 999,
+                          padding: '6px 12px',
+                          cursor: 'pointer',
+                          fontSize: 12,
+                        }}
+                      >
+                        {t('admin.categories.table.editButton')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openDelete(cat)}
+                        style={{
+                          border: '1px solid var(--ink-06)',
+                          background: 'var(--cream)',
+                          borderRadius: 999,
+                          padding: '6px 12px',
+                          cursor: 'pointer',
+                          fontSize: 12,
+                          color: 'var(--red)',
+                        }}
+                      >
+                        {t('admin.categories.table.deleteButton')}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -342,6 +382,50 @@ export function CategoriesSection() {
               disabled={saveMutation.isPending || !form.label.trim() || !form.id.trim()}
               onClick={() => saveMutation.mutate()}
               text={saveMutation.isPending ? t('admin.categories.modal.saving') : t('admin.categories.modal.save')}
+            />
+          </div>
+        </div>
+      </ModalOverlay>
+
+      <ModalOverlay open={!!confirmDeleteCategory} onClose={() => setConfirmDeleteCategory(null)} zIndex={130}>
+        <div style={{ width: '100%', maxWidth: 420, background: 'var(--cream)', borderRadius: 20, padding: 24 }}>
+          <h3 style={{ margin: '0 0 12px', fontFamily: '"Instrument Serif", serif', fontSize: 24 }}>
+            {t('admin.categories.deleteModal.title')}
+          </h3>
+          <p style={{ fontSize: 14, color: 'var(--ink-60)', margin: '0 0 16px' }}>
+            {t('admin.categories.deleteModal.body', { label: confirmDeleteCategory?.label })}
+          </p>
+          {!!confirmDeleteCategory?.productCount && (
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 13, color: 'var(--coral)', margin: '0 0 8px' }}>
+                {t('admin.categories.deleteModal.hasProductsWarning', { count: confirmDeleteCategory.productCount })}
+              </p>
+              <Select
+                value={deleteReassignTo}
+                onChange={(e) => setDeleteReassignTo(e.target.value)}
+              >
+                <option value="">{t('admin.categories.modal.reassignPlaceholder')}</option>
+                {sorted
+                  .filter((c) => c.id !== confirmDeleteCategory?.id)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.label}
+                    </option>
+                  ))}
+              </Select>
+            </div>
+          )}
+          {deleteError && <p style={{ color: 'var(--red)', fontSize: 13 }}>{deleteError}</p>}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+            <AnimatedButton variant="secondary" onClick={() => setConfirmDeleteCategory(null)} text={t('admin.categories.modal.cancel')} />
+            <AnimatedButton
+              variant="primary"
+              disabled={
+                deleteMutation.isPending ||
+                (!!confirmDeleteCategory?.productCount && !deleteReassignTo)
+              }
+              onClick={() => confirmDeleteCategory && deleteMutation.mutate({ id: confirmDeleteCategory.id, reassignTo: deleteReassignTo })}
+              text={deleteMutation.isPending ? t('admin.categories.deleteModal.deleting') : t('admin.categories.deleteModal.confirm')}
             />
           </div>
         </div>
