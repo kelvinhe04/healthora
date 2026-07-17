@@ -9,7 +9,7 @@ import { useGSAP } from '@gsap/react';
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 
 gsap.registerPlugin(ScrollTrigger);
-import type { Product, Category, ProductVariant } from '../types';
+import type { Product, Category, ProductVariant, Banner } from '../types';
 import { ProductRow } from '../components/shared/ProductRow';
 import { RecentlyViewedSection } from '../components/shared/RecentlyViewedSection';
 import { ProductImage } from '../components/shared/ProductImage';
@@ -24,6 +24,7 @@ import { useBreakpoint } from '../hooks/useBreakpoint';
 import { api } from '../lib/api';
 import { formatNumber } from '../lib/currency';
 import { NEEDS } from '../lib/needs';
+import { CATEGORY_I18N_KEY } from '../lib/categoryLabels';
 
 // Runs before paint on the client (so a scroll correction is never visible as a flash) while
 // safely degrading to useEffect during SSR, where layout effects don't run.
@@ -132,6 +133,25 @@ function BannerTitle({ title, highlightWord }: { title: string; highlightWord?: 
       {title.slice(idx + (highlightWord as string).length)}
     </>
   );
+}
+
+type BannerTextField = 'kicker' | 'title' | 'highlightWord' | 'description' | 'ctaText';
+
+/** Picks the English sibling field (`titleEn`, `descriptionEn`, ...) when active and non-empty,
+ * falling back to the Spanish field otherwise (HU-084) - the admin can translate a banner
+ * gradually field by field without ever showing blank text in either language. */
+function bannerField(banner: Banner | null | undefined, field: BannerTextField, isEn: boolean): string {
+  if (!banner) return '';
+  if (isEn) {
+    switch (field) {
+      case 'kicker': if (banner.kickerEn) return banner.kickerEn; break;
+      case 'title': if (banner.titleEn) return banner.titleEn; break;
+      case 'highlightWord': if (banner.highlightWordEn) return banner.highlightWordEn; break;
+      case 'description': if (banner.descriptionEn) return banner.descriptionEn; break;
+      case 'ctaText': if (banner.ctaTextEn) return banner.ctaTextEn; break;
+    }
+  }
+  return banner[field] ?? '';
 }
 
 function BrandsMarquee({ onNav }: { onNav: (view: View, filter?: Record<string, string>) => void }) {
@@ -301,7 +321,6 @@ const HERO_CONTENT = [
   { id: 'Maquillaje', keySuffix: 'makeup' },
 ];
 
-
 function CategorySkeleton() {
   return (
     <div
@@ -329,7 +348,8 @@ function CategorySkeleton() {
 let landingInitialLoadDone = false;
 
 export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const isTablet = bp === 'tablet';
@@ -346,7 +366,9 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   // {categoria}/{fechaDesde}/{fechaHasta} en el texto del banner (issue #265 feedback) se resuelven
   // acá contra la categoría/fechas reales, así nunca quedan desactualizados como el texto
   // hardcodeado original.
-  const primaryCategoryLabel = categories.find((c) => c.id === primaryBanner?.categoryId)?.label;
+  const primaryCategoryRaw = categories.find((c) => c.id === primaryBanner?.categoryId)?.label;
+  const primaryCategoryKey = primaryCategoryRaw ? CATEGORY_I18N_KEY[primaryCategoryRaw] : undefined;
+  const primaryCategoryLabel = primaryCategoryKey ? t(`footer.categories.${primaryCategoryKey}`) : primaryCategoryRaw;
   const resolvePrimaryText = (text: string) =>
     resolveBannerText(text, { categoryLabel: primaryCategoryLabel, startDate: primaryBanner?.startDate, endDate: primaryBanner?.endDate });
   const resolveSecondaryText = (text: string) =>
@@ -837,19 +859,22 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             ? Array.from({ length: isMobile ? 4 : 6 }).map((_, i) => (
                 <CategorySkeleton key={i} />
               ))
-            : categories.slice(0, isMobile ? 4 : 6).map((cat: Category, i) => (
+            : categories.slice(0, isMobile ? 4 : 6).map((cat: Category, i) => {
+                const catKey = CATEGORY_I18N_KEY[cat.label];
+                return (
                 <StaggerItem key={cat.id} index={i}>
                   <div onClick={() => onNav('catalog', { category: cat.id })} className="category-card" style={{ background: cat.color, borderRadius: isMobile ? 16 : 20, padding: isMobile ? 18 : 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: isMobile ? 140 : 180, cursor: 'pointer', transition: 'transform 200ms' }}
                     onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-3px)')}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
                     <div style={{ width: 34, height: 34, borderRadius: 999, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="leaf" size={16} /></div>
                     <div className="cat-text">
-                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 18 : 24, letterSpacing: '-0.02em', lineHeight: 1.05 }}>{cat.label}</div>
-                      <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.6, marginTop: 6 }}>{cat.sub}</div>
+                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 18 : 24, letterSpacing: '-0.02em', lineHeight: 1.05 }}>{catKey ? t(`footer.categories.${catKey}`) : cat.label}</div>
+                      <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.6, marginTop: 6 }}>{catKey ? t(`landing.categories.subtitles.${catKey}`) : cat.sub}</div>
                     </div>
                   </div>
                 </StaggerItem>
-              ))
+                );
+              })
           }
         </div>
       </RevealSection>
@@ -877,14 +902,14 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             {primaryBanner && (
               <div className="promo-banner" style={{ background: primaryBanner.backgroundColor || 'var(--lime)', borderRadius: isSmall ? 20 : 28, padding: isMobile ? 28 : isTablet ? 36 : 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: isMobile ? 280 : 360, position: 'relative', overflow: 'hidden' }}>
                 <div style={{ maxWidth: 420 }}>
-                  {primaryBanner.kicker && <div style={{ ...headKicker, color: primaryTextColors.body }}>{primaryBanner.kicker}</div>}
+                  {bannerField(primaryBanner, 'kicker', isEn) && <div style={{ ...headKicker, color: primaryTextColors.body }}>{bannerField(primaryBanner, 'kicker', isEn)}</div>}
                   <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 36 : isTablet ? 44 : 56, letterSpacing: '-0.03em', lineHeight: 0.98, margin: '12px 0 16px', color: primaryTextColors.title }}>
-                    <BannerTitle title={resolvePrimaryText(primaryBanner.title)} highlightWord={primaryBanner.highlightWord} />
+                    <BannerTitle title={resolvePrimaryText(bannerField(primaryBanner, 'title', isEn))} highlightWord={bannerField(primaryBanner, 'highlightWord', isEn)} />
                   </h3>
-                  {primaryBanner.description && (
-                    <p style={{ fontSize: isMobile ? 13 : 15, lineHeight: 1.5, color: primaryTextColors.body, marginBottom: 24, maxWidth: 380 }}>{resolvePrimaryText(primaryBanner.description)}</p>
+                  {bannerField(primaryBanner, 'description', isEn) && (
+                    <p style={{ fontSize: isMobile ? 13 : 15, lineHeight: 1.5, color: primaryTextColors.body, marginBottom: 24, maxWidth: 380 }}>{resolvePrimaryText(bannerField(primaryBanner, 'description', isEn))}</p>
                   )}
-                  <AnimatedButton variant="primary" onClick={() => handleBannerCta(primaryBanner.ctaHref)} icon={<Icon name="arrow-right" size={14} />} text={resolvePrimaryText(primaryBanner.ctaText)} />
+                  <AnimatedButton variant="primary" onClick={() => handleBannerCta(primaryBanner.ctaHref)} icon={<Icon name="arrow-right" size={14} />} text={resolvePrimaryText(bannerField(primaryBanner, 'ctaText', isEn))} />
                 </div>
                 {!isMobile && (
                   <div style={{ position: 'absolute', right: -15, bottom: 60, display: 'flex', gap: 16, zIndex: 10, alignItems: 'flex-end', transform: isTablet ? 'scale(0.8)' : 'none', transformOrigin: 'bottom right' }}>
@@ -949,15 +974,15 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
             {secondaryBanner && (
               <div style={{ background: secondaryBanner.backgroundColor || 'var(--cream-2)', borderRadius: isSmall ? 20 : 28, padding: isMobile ? 24 : 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: isMobile ? 220 : 360 }}>
                 <div>
-                  {secondaryBanner.kicker && <div style={{ ...headKicker, color: secondaryTextColors.body }}>{secondaryBanner.kicker}</div>}
+                  {bannerField(secondaryBanner, 'kicker', isEn) && <div style={{ ...headKicker, color: secondaryTextColors.body }}>{bannerField(secondaryBanner, 'kicker', isEn)}</div>}
                   <h3 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 26 : 36, letterSpacing: '-0.02em', lineHeight: 1, margin: '12px 0 16px', color: secondaryTextColors.title }}>
-                    <BannerTitle title={resolveSecondaryText(secondaryBanner.title)} highlightWord={secondaryBanner.highlightWord} />
+                    <BannerTitle title={resolveSecondaryText(bannerField(secondaryBanner, 'title', isEn))} highlightWord={bannerField(secondaryBanner, 'highlightWord', isEn)} />
                   </h3>
-                  {secondaryBanner.description && (
-                    <p style={{ fontSize: 14, lineHeight: 1.5, color: secondaryTextColors.body, marginBottom: 20 }}>{resolveSecondaryText(secondaryBanner.description)}</p>
+                  {bannerField(secondaryBanner, 'description', isEn) && (
+                    <p style={{ fontSize: 14, lineHeight: 1.5, color: secondaryTextColors.body, marginBottom: 20 }}>{resolveSecondaryText(bannerField(secondaryBanner, 'description', isEn))}</p>
                   )}
                 </div>
-                <AnimatedButton variant="primary" full onClick={() => handleBannerCta(secondaryBanner.ctaHref)} text={resolveSecondaryText(secondaryBanner.ctaText)} />
+                <AnimatedButton variant="primary" full onClick={() => handleBannerCta(secondaryBanner.ctaHref)} text={resolveSecondaryText(bannerField(secondaryBanner, 'ctaText', isEn))} />
               </div>
             )}
           </div>

@@ -13,7 +13,7 @@ export function registerBannerTools(server: McpServer) {
     {
       title: 'Editar uno de los 2 banners del landing',
       description:
-        'Edita el banner "promo" (25% OFF, requiere categoryId - de ahí sale el link y las 2 fotos de producto) o "club" (Club Healthora) del landing. No crea banners nuevos: son exactamente esos 2 slots fijos. Equivalente a la sección Banners del admin (issue #265).',
+        'Edita el banner "promo" (25% OFF, requiere categoryId - de ahí sale el link y las 2 fotos de producto) o "club" (Club Healthora) del landing. No crea banners nuevos: son exactamente esos 2 slots fijos. Los campos *En son la versión en inglés (opcionales - si se dejan vacíos, el frontend usa el texto en español como respaldo). Equivalente a la sección Banners del admin (issue #265, HU-084).',
       inputSchema: {
         slot: bannerSlotSchema,
         kicker: optionalTextField(120),
@@ -21,6 +21,11 @@ export function registerBannerTools(server: McpServer) {
         highlightWord: optionalTextField(60),
         description: optionalTextField(400),
         ctaText: textField(60),
+        kickerEn: optionalTextField(120),
+        titleEn: optionalTextField(160),
+        highlightWordEn: optionalTextField(60),
+        descriptionEn: optionalTextField(400),
+        ctaTextEn: optionalTextField(60),
         backgroundColor: optionalTextField(40),
         startDate: z.string().nullable().optional(),
         endDate: z.string().nullable().optional(),

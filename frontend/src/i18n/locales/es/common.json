@@ -1031,7 +1031,19 @@
       "kicker": "01 · Categorías",
       "headingPrefix": "Compra por",
       "headingEmphasis": "necesidad",
-      "seeAll": "Ver todas las categorías"
+      "seeAll": "Ver todas las categorías",
+      "subtitles": {
+        "vitamins": "Nutrición diaria",
+        "medications": "Botiquín de casa",
+        "personalCare": "Rutina esencial",
+        "babyCare": "Delicado y seguro",
+        "skinHealth": "Rutina avanzada",
+        "fitness": "Energía y recuperación",
+        "fragrances": "Aromas limpios",
+        "moisturizers": "Barrera reforzada",
+        "makeup": "Toque natural",
+        "wellnessSupplements": "Bienestar diario"
+      }
     },
     "bestsellers": {
       "kicker": "02 · Más vendidos",
@@ -1392,6 +1404,10 @@
       "sub": "Edita los 2 banners de la sección Ofertas del landing sin necesitar deploy.",
       "modal": {
         "editTitlePrefix": "Editar banner",
+        "langTab": {
+          "es": "Español",
+          "en": "English"
+        },
         "kickerLabel": "Kicker (etiqueta pequeña)",
         "titleLabel": "Título",
         "titleHintPrefix": "Usa",
@@ -1400,6 +1416,7 @@
         "categoryLabel": "Categoría (define las 2 fotos del banner y a dónde lleva el botón)",
         "categoryPlaceholder": "Seleccionar categoría…",
         "descriptionLabel": "Descripción",
+        "ctaTextLabel": "Texto del botón",
         "previewLabel": "Vista previa (con la categoría y fecha elegidas)",
         "startDateLabel": "Vigente desde",
         "endDateLabel": "Vigente hasta",

@@ -322,6 +322,13 @@ export type Banner = {
   highlightWord?: string;
   description?: string;
   ctaText: string;
+  /** Contraparte en ingles de kicker/title/highlightWord/description/ctaText (HU-084) - opcional,
+   * el frontend cae de vuelta al campo en espanol si esta vacia. */
+  kickerEn?: string;
+  titleEn?: string;
+  highlightWordEn?: string;
+  descriptionEn?: string;
+  ctaTextEn?: string;
   /** Calculado por el backend (no editable) - ver buildCtaHref en bannerAdmin.ts. */
   ctaHref: string;
   /** Solo aplica al slot 'promo': categoria cuyos primeros 2 productos con foto se muestran

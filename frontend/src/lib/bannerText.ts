@@ -8,9 +8,10 @@ import { formatPanamaDate } from './dates';
 export function resolveBannerText(
   text: string,
   params: { categoryLabel?: string | null; startDate?: string | null; endDate?: string | null },
+  locale?: string,
 ) {
   const formatDate = (value?: string | null) =>
-    value ? formatPanamaDate(value, { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    value ? formatPanamaDate(value, { day: 'numeric', month: 'long', year: 'numeric' }, locale) : '';
 
   return text
     .replaceAll('{categoria}', params.categoryLabel ?? '')

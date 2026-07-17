@@ -9,6 +9,11 @@ export type UpdateBannerInput = {
   highlightWord?: string;
   description?: string;
   ctaText: string;
+  kickerEn?: string;
+  titleEn?: string;
+  highlightWordEn?: string;
+  descriptionEn?: string;
+  ctaTextEn?: string;
   backgroundColor?: string;
   startDate?: Date | null;
   endDate?: Date | null;

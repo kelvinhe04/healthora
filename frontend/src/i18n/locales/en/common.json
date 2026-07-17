@@ -1031,7 +1031,19 @@
       "kicker": "01 · Categories",
       "headingPrefix": "Shop by",
       "headingEmphasis": "need",
-      "seeAll": "See all categories"
+      "seeAll": "See all categories",
+      "subtitles": {
+        "vitamins": "Daily nutrition",
+        "medications": "Home medicine cabinet",
+        "personalCare": "Essential routine",
+        "babyCare": "Gentle and safe",
+        "skinHealth": "Advanced routine",
+        "fitness": "Energy & recovery",
+        "fragrances": "Clean scents",
+        "moisturizers": "Reinforced barrier",
+        "makeup": "Natural touch",
+        "wellnessSupplements": "Everyday wellness"
+      }
     },
     "bestsellers": {
       "kicker": "02 · Best sellers",
@@ -1392,6 +1404,10 @@
       "sub": "Edit the landing page's 2 Deals-section banners without needing a deploy.",
       "modal": {
         "editTitlePrefix": "Edit banner",
+        "langTab": {
+          "es": "Español",
+          "en": "English"
+        },
         "kickerLabel": "Kicker (small tag)",
         "titleLabel": "Title",
         "titleHintPrefix": "Use",
@@ -1400,6 +1416,7 @@
         "categoryLabel": "Category (sets the banner's 2 photos and where the button links to)",
         "categoryPlaceholder": "Select a category…",
         "descriptionLabel": "Description",
+        "ctaTextLabel": "Button text",
         "previewLabel": "Preview (with the chosen category and date)",
         "startDateLabel": "Valid from",
         "endDateLabel": "Valid until",
