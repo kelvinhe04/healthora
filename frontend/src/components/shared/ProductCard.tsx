@@ -285,9 +285,9 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
             <span style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>{t('productCard.noReviews')}</span>
           )}
         </div>
-        {purchasesLabel && (
-          <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginBottom: 8 }}>{t('productCard.purchasesLastMonth', { count: purchasesLabel })}</div>
-        )}
+        <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginBottom: 8, minHeight: 14 }}>
+          {purchasesLabel && t('productCard.purchasesLastMonth', { count: purchasesLabel })}
+        </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
           <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 22, color: 'var(--ink)' }}>{formatCurrency(effectivePrice)}</span>
           {effectivePriceBefore && <span style={{ fontSize: 13, color: 'var(--ink-40)', textDecoration: 'line-through' }}>{formatCurrency(effectivePriceBefore)}</span>}
