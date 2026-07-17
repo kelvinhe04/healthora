@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next';
+
 /** Landing's "Por necesidad" cards — each links straight to the one category it represents (via
  * `category`), so the catalog's sidebar highlights and filters correctly. `id`/`label` stay as the
  * raw Spanish value (React key / CATEGORY_TO_NEED lookup value); `i18nKey` is the display-only
@@ -8,6 +10,15 @@ export const NEEDS = [
   { id: 'Cuidado del bebé', label: 'Cuidado del bebé', i18nKey: 'babyCare', tone: 'ring', category: 'Cuidado del bebé' },
   { id: 'Fitness y recuperación', label: 'Fitness y recuperación', i18nKey: 'fitnessRecovery', tone: 'solid', category: 'Fitness' },
 ] as const;
+
+const NEED_I18N_KEY: Record<string, string> = Object.fromEntries(NEEDS.map((n) => [n.id, n.i18nKey]));
+
+/** Translates a "necesidad" raw (Spanish) id for display - same fallback shape as
+ * translatedCategoryLabel in lib/categoryLabels.ts. */
+export function translatedNeedLabel(t: TFunction, rawNeed: string): string {
+  const key = NEED_I18N_KEY[rawNeed];
+  return key ? t(`landing.byNeed.items.${key}`) : rawNeed;
+}
 
 /** Derives a product's "necesidad" from its category, instead of asking the admin to pick one by
  * hand (which drifted out of sync with reality — see git history). Categories with no natural

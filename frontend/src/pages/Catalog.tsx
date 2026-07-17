@@ -14,6 +14,8 @@ import { useBreakpoint } from "../hooks/useBreakpoint";
 import { RelatedProductsSection } from "../components/shared/RelatedProductsSection";
 import { getCatalogRecommendations } from "../lib/relatedProducts";
 import { formatCurrency } from "../lib/currency";
+import { translatedCategoryLabel } from "../lib/categoryLabels";
+import { translatedNeedLabel } from "../lib/needs";
 
 interface CatalogProps {
   initialFilter?: {
@@ -322,7 +324,7 @@ export function Catalog({
                 if (cat !== c) e.currentTarget.style.background = "transparent";
               }}
             >
-              <span>{c === ALL_CATEGORIES ? t("catalog.filters.all") : c}</span>
+              <span>{c === ALL_CATEGORIES ? t("catalog.filters.all") : translatedCategoryLabel(t, c)}</span>
               <span
                 style={{
                   fontSize: 11,
@@ -579,12 +581,12 @@ export function Catalog({
               {t("catalog.headingAllPrefix")} <em style={{ color: "var(--green)" }}>{t("catalog.headingAllEmphasis")}</em>
             </>
           ) : (
-            <>{cat}</>
+            <>{translatedCategoryLabel(t, cat)}</>
           )}
         </h1>
         {need && (
           <div style={{ marginTop: 12, fontSize: 14, color: "var(--ink-60)" }}>
-            {t("catalog.needFilterPrefix")} {need} ·{" "}
+            {t("catalog.needFilterPrefix")} {translatedNeedLabel(t, need)} ·{" "}
             <a
               onClick={() => {
                 setNeed(null);

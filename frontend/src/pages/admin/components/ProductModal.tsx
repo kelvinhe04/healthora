@@ -13,6 +13,7 @@ import { ImageDropZone } from './ImageDropZone';
 import { ProductVariantsMatrixEditor } from './ProductVariantsMatrixEditor';
 import { slugify } from '../utils';
 import { cellKey, getVariantTab } from '../variantMatrix';
+import { translatedCategoryLabel } from '../../../lib/categoryLabels';
 
 export function ProductModal({
   open,
@@ -421,7 +422,7 @@ export function ProductModal({
                 <option value="">{t('admin.products.categoryDiscountModal.categoryPlaceholder')}</option>
                 {categories.map((c) => (
                   <option key={c} value={c}>
-                    {c}
+                    {translatedCategoryLabel(t, c)}
                   </option>
                 ))}
               </Select>

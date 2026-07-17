@@ -24,7 +24,7 @@ import { useBreakpoint } from '../hooks/useBreakpoint';
 import { api } from '../lib/api';
 import { formatNumber } from '../lib/currency';
 import { NEEDS } from '../lib/needs';
-import { CATEGORY_I18N_KEY } from '../lib/categoryLabels';
+import { CATEGORY_I18N_KEY, translatedCategoryLabel } from '../lib/categoryLabels';
 
 // Runs before paint on the client (so a scroll correction is never visible as a flash) while
 // safely degrading to useEffect during SSR, where layout effects don't run.
@@ -367,8 +367,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   // acá contra la categoría/fechas reales, así nunca quedan desactualizados como el texto
   // hardcodeado original.
   const primaryCategoryRaw = categories.find((c) => c.id === primaryBanner?.categoryId)?.label;
-  const primaryCategoryKey = primaryCategoryRaw ? CATEGORY_I18N_KEY[primaryCategoryRaw] : undefined;
-  const primaryCategoryLabel = primaryCategoryKey ? t(`footer.categories.${primaryCategoryKey}`) : primaryCategoryRaw;
+  const primaryCategoryLabel = translatedCategoryLabel(t, primaryCategoryRaw);
   const resolvePrimaryText = (text: string) =>
     resolveBannerText(text, { categoryLabel: primaryCategoryLabel, startDate: primaryBanner?.startDate, endDate: primaryBanner?.endDate });
   const resolveSecondaryText = (text: string) =>
@@ -868,7 +867,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                     onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
                     <div style={{ width: 34, height: 34, borderRadius: 999, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="leaf" size={16} /></div>
                     <div className="cat-text">
-                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 18 : 24, letterSpacing: '-0.02em', lineHeight: 1.05 }}>{catKey ? t(`footer.categories.${catKey}`) : cat.label}</div>
+                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 18 : 24, letterSpacing: '-0.02em', lineHeight: 1.05 }}>{translatedCategoryLabel(t, cat.label)}</div>
                       <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.6, marginTop: 6 }}>{catKey ? t(`landing.categories.subtitles.${catKey}`) : cat.sub}</div>
                     </div>
                   </div>

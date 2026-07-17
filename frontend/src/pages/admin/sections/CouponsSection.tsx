@@ -18,6 +18,7 @@ import { api } from '../../../lib/api';
 import type { Category, Coupon } from '../../../types';
 import { useAdminToken } from '../hooks/useAdminToken';
 import { formatCurrency } from '../../../lib/currency';
+import { translatedCategoryLabel } from '../../../lib/categoryLabels';
 
 type CouponForm = {
   code: string;
@@ -229,7 +230,7 @@ export function CouponsSection() {
                       fontSize: 12,
                     }}
                   >
-                    {category}
+                    {translatedCategoryLabel(t, category)}
                   </button>
                 ))}
               </div>

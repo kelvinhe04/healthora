@@ -7,7 +7,7 @@ import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { Select } from '../../../components/shared/Select';
 import { api } from '../../../lib/api';
 import { resolveBannerText } from '../../../lib/bannerText';
-import { CATEGORY_I18N_KEY } from '../../../lib/categoryLabels';
+import { translatedCategoryLabel } from '../../../lib/categoryLabels';
 import type { Banner, BannerSlot } from '../../../types';
 import { useAdminToken } from '../hooks/useAdminToken';
 
@@ -250,11 +250,8 @@ export function BannersSection() {
   // whichever language the tab is showing, and resolveBannerText's explicit locale arg does the
   // same for the {fechaDesde}/{fechaHasta} tokens.
   const previewCategoryRaw = categories.find((c) => c.id === form.categoryId)?.label;
-  const previewCategoryKey = previewCategoryRaw ? CATEGORY_I18N_KEY[previewCategoryRaw] : undefined;
   const previewLocale = formLang === 'en' ? 'en-US' : 'es-PA';
-  const previewCategoryLabel = previewCategoryKey
-    ? i18n.getFixedT(formLang)(`footer.categories.${previewCategoryKey}`)
-    : previewCategoryRaw;
+  const previewCategoryLabel = translatedCategoryLabel(i18n.getFixedT(formLang), previewCategoryRaw);
   const previewParams = { categoryLabel: previewCategoryLabel, startDate: form.startDate || null, endDate: form.endDate || null };
   const resolvedPreview = formLang === 'en'
     ? {
@@ -357,7 +354,7 @@ export function BannersSection() {
                 <Select value={form.categoryId} onChange={(e) => handleCategoryChange(e.target.value)} wrapperStyle={{ marginTop: 6 }}>
                   <option value="">{t('admin.banners.modal.categoryPlaceholder')}</option>
                   {categoryOptions.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.label}</option>
+                    <option key={cat.id} value={cat.id}>{translatedCategoryLabel(t, cat.label)}</option>
                   ))}
                 </Select>
               </label>

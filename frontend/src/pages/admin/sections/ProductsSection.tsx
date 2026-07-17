@@ -31,6 +31,7 @@ import type { ProductSortKey } from '../hooks/useAdminPanel';
 import { getTotalStock, getEffectivePrice, getEffectivePriceBefore } from '../../../lib/productVariants';
 import { api } from '../../../lib/api';
 import { formatCurrency } from '../../../lib/currency';
+import { translatedCategoryLabel } from '../../../lib/categoryLabels';
 import { effectiveLowStockThreshold } from '../types';
 import type { Product } from '../../../types';
 
@@ -254,7 +255,7 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
                     }}
                   >
                     <span style={{ width: 5, height: 5, borderRadius: 999, background: selected ? 'var(--cream)' : 'var(--green)' }} />
-                    {c}
+                    {translatedCategoryLabel(t, c)}
                   </button>
                 );
               })}
@@ -265,7 +266,7 @@ function CategoryDiscountModal({ open, onClose, categories, products }: { open: 
           <label style={modalFieldLabel}>{t('admin.products.categoryDiscountModal.categoryLabel')}</label>
           <Select value={category} onChange={(e) => { setCategory(e.target.value); setMessage(''); }}>
             <option value="">{t('admin.products.categoryDiscountModal.categoryPlaceholder')}</option>
-            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+            {categories.map((c) => <option key={c} value={c}>{translatedCategoryLabel(t, c)}</option>)}
           </Select>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
@@ -563,7 +564,7 @@ export function ProductsSection() {
                         transition: "all 120ms",
                       }}
                     >
-                      <span>{cat === 'Todos' ? t('catalog.filters.all') : cat}</span>
+                      <span>{cat === 'Todos' ? t('catalog.filters.all') : translatedCategoryLabel(t, cat)}</span>
                       <span
                         style={{
                           fontSize: 10,
