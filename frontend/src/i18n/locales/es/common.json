@@ -1091,6 +1091,11 @@
     "mobileTopBar": {
       "title": "Admin"
     },
+    "shared": {
+      "colorPicker": {
+        "custom": "Personalizado"
+      }
+    },
     "sidebar": {
       "panelLabel": "ADMIN PANEL",
       "nav": {
@@ -1497,7 +1502,8 @@
         },
         "statusActive": "Activa",
         "statusInactive": "Inactiva",
-        "editButton": "Editar"
+        "editButton": "Editar",
+        "deleteButton": "Eliminar"
       },
       "noCategorySelectedError": "Categoría no seleccionada",
       "modal": {
@@ -1507,8 +1513,8 @@
         "idPlaceholder": "Ej. Vitaminas",
         "labelLabel": "Nombre visible",
         "subLabel": "Subtítulo",
-        "colorLabel": "Color (CSS)",
-        "renameIdLabel": "Renombrar ID (reasigna productos)",
+        "colorLabel": "Color",
+        "idEditHint": "Cambiar el ID reasigna todos los productos de esta categoría al nuevo ID.",
         "activeCheckboxLabel": "Categoría activa en la tienda",
         "reassignSectionLabel": "Reasignar todos los productos a otra categoría",
         "reassignPlaceholder": "Seleccionar destino…",
@@ -1517,6 +1523,21 @@
         "cancel": "Cancelar",
         "saving": "Guardando…",
         "save": "Guardar"
+      },
+      "colorPresets": {
+        "amber": "Ámbar",
+        "blue": "Azul",
+        "green": "Verde",
+        "coral": "Coral",
+        "lime": "Lima",
+        "pink": "Rosa"
+      },
+      "deleteModal": {
+        "title": "Eliminar categoría",
+        "body": "¿Eliminar la categoría \"{{label}}\" permanentemente? Esta acción no se puede deshacer.",
+        "hasProductsWarning": "Esta categoría tiene {{count}} producto(s). Elige a dónde reasignarlos antes de eliminarla.",
+        "confirm": "Eliminar",
+        "deleting": "Eliminando…"
       }
     },
     "variantTypes": {

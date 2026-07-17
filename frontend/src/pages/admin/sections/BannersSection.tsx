@@ -5,6 +5,7 @@ import { Card, PageHeader } from '../../../components/admin';
 import { AnimatedButton } from '../../../components/shared/AnimatedButton';
 import { ModalOverlay } from '../../../components/shared/ModalOverlay';
 import { Select } from '../../../components/shared/Select';
+import { ColorPicker } from '../../../components/shared/ColorPicker';
 import { api } from '../../../lib/api';
 import { resolveBannerText } from '../../../lib/bannerText';
 import { translatedCategoryLabel } from '../../../lib/categoryLabels';
@@ -71,59 +72,6 @@ const emptyForm = (): BannerForm => ({
 
 const inputStyle = { width: '100%', marginTop: 6, padding: '10px 12px', borderRadius: 12, border: '1px solid var(--ink-06)', boxSizing: 'border-box' as const };
 const labelStyle = { fontSize: 12, color: 'var(--ink-60)' };
-
-function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const { t } = useTranslation();
-  const isCustom = !COLOR_PRESETS.some((p) => p.value === value);
-  const hexValue = /^#[0-9a-f]{6}$/i.test(value) ? value : '#e4f248';
-
-  return (
-    <div>
-      <span style={labelStyle}>{t('admin.banners.colorPicker.backgroundColorLabel')}</span>
-      <div style={{ display: 'flex', gap: 8, marginTop: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-        {COLOR_PRESETS.map((preset) => (
-          <button
-            key={preset.value}
-            type="button"
-            title={t(`admin.banners.colorPresets.${preset.labelKey}`)}
-            onClick={() => onChange(preset.value)}
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 999,
-              background: preset.value,
-              border: value === preset.value ? '2px solid var(--ink)' : '1px solid var(--ink-12)',
-              cursor: 'pointer',
-              padding: 0,
-            }}
-          />
-        ))}
-        <button
-          type="button"
-          title={t('admin.banners.colorPresets.custom')}
-          onClick={() => onChange(hexValue)}
-          style={{
-            width: 30,
-            height: 30,
-            borderRadius: 999,
-            background: 'conic-gradient(red, yellow, lime, cyan, blue, magenta, red)',
-            border: isCustom ? '2px solid var(--ink)' : '1px solid var(--ink-12)',
-            cursor: 'pointer',
-            padding: 0,
-          }}
-        />
-        {isCustom && (
-          <input
-            type="color"
-            value={hexValue}
-            onChange={(e) => onChange(e.target.value)}
-            style={{ width: 40, height: 30, padding: 0, border: '1px solid var(--ink-12)', borderRadius: 8, cursor: 'pointer' }}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
 
 function BannerPreviewCard({ banner, label, onEdit }: { banner?: Banner; label: string; onEdit: () => void }) {
   const { t } = useTranslation();
@@ -396,7 +344,15 @@ export function BannersSection() {
             )}
 
             <div style={{ gridColumn: '1 / -1' }}>
-              <ColorPicker value={form.backgroundColor} onChange={(v) => setForm((f) => ({ ...f, backgroundColor: v }))} />
+              <ColorPicker
+                value={form.backgroundColor}
+                onChange={(v) => setForm((f) => ({ ...f, backgroundColor: v }))}
+                label={t('admin.banners.colorPicker.backgroundColorLabel')}
+                presets={COLOR_PRESETS.map((preset) => ({
+                  label: t(`admin.banners.colorPresets.${preset.labelKey}`),
+                  value: preset.value,
+                }))}
+              />
             </div>
 
             <label style={{ display: 'block' }}>

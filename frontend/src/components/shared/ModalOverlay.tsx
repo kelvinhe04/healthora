@@ -35,6 +35,8 @@ export function ModalOverlay({
   const frozenChildren = useRef<ReactNode>(children);
   const panelRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   if (open && !closing) frozenChildren.current = children;
 
@@ -60,7 +62,7 @@ export function ModalOverlay({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== 'Tab' || !panelRef.current) return;
@@ -101,7 +103,11 @@ export function ModalOverlay({
       window.clearTimeout(focusTimer);
       previousFocusRef.current?.focus?.({ preventScroll: true });
     };
-  }, [open, onClose]);
+    // `onClose` deliberately excluded: consumers pass a fresh arrow function on every render
+    // (e.g. `onClose={() => setOpen(false)}`), and including it here would re-run this effect -
+    // and its steal-focus-to-the-first-field setTimeout - on every keystroke inside the modal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!visible) return null;
 
