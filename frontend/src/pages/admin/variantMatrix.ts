@@ -5,12 +5,15 @@ import { slugify } from './utils';
 /** Any variant type that can play the "primary" role in a primary x size matrix (everything but size). */
 export type PrimaryVariantType = Exclude<ProductVariant['type'], 'size'>;
 
-export const PRIMARY_TYPE_LABELS: Record<PrimaryVariantType, { singular: string; plural: string }> = {
-  flavor: { singular: 'Sabor', plural: 'Sabores' },
-  scent: { singular: 'Aroma', plural: 'Aromas' },
-  color: { singular: 'Color', plural: 'Colores' },
-  weight: { singular: 'Peso', plural: 'Pesos' },
-  count: { singular: 'Conteo', plural: 'Conteos' },
+// Key suffix shared by `admin.variantTypes.*` (singular) and `admin.variantTypesPlural.*` (plural)
+// - a module-level const can't call t(), so ProductVariantsMatrixEditor resolves both forms at
+// the call site (HU-084).
+export const PRIMARY_TYPE_LABEL_KEYS: Record<PrimaryVariantType, string> = {
+  flavor: 'flavor',
+  scent: 'scent',
+  color: 'color',
+  weight: 'weight',
+  count: 'count',
 };
 
 /** Which of the three "tipo de producto" pills is effectively active, derived from the form state

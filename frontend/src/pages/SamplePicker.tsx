@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import type { SampleOption } from '../types';
 import { api } from '../lib/api';
 import { useCartStore } from '../store/cartStore';
@@ -8,6 +9,7 @@ import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 import { ProductCardSkeleton } from '../components/shared/ProductCard';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import { formatCurrency } from '../lib/currency';
 
 interface SamplePickerProps {
   onBack: () => void;
@@ -36,6 +38,7 @@ function seededShuffleKey(id: string, seed: string): number {
 const optionKey = (option: Pick<SampleOption, 'productId' | 'variantId'>) => `${option.productId}:${option.variantId ?? ''}`;
 
 export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
+  const { t } = useTranslation();
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const isTablet = bp === 'tablet';
@@ -71,21 +74,21 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
         onClick={onBack}
         style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--ink-60)', fontSize: 13, marginBottom: 32, fontFamily: '"Geist", sans-serif' }}
       >
-        <Icon name="arrow-left" size={14} /> Volver al carrito
+        <Icon name="arrow-left" size={14} /> {t('samplePicker.backToCart')}
       </button>
 
       <div style={{ marginBottom: 36 }}>
         <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--green)', marginBottom: 10 }}>
-          Club Healthora · Muestra gratis
+          {t('samplePicker.kicker')}
         </div>
         <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 40 : 56, letterSpacing: '-0.035em', lineHeight: 1, margin: '0 0 12px', color: 'var(--ink)', fontWeight: 400 }}>
-          Elige tu muestra <em style={{ color: 'var(--green)' }}>gratis</em>
+          {t('samplePicker.headingPrefix')} <em style={{ color: 'var(--green)' }}>{t('samplePicker.headingEmphasis')}</em>
         </h1>
         <p style={{ fontSize: 15, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', margin: 0 }}>
-          Selecciona 1 producto. Se incluirá en tu orden sin costo adicional.
+          {t('samplePicker.subtitle')}
           {!isLoading && options.length > 0 && (
             <span style={{ marginLeft: 8, color: 'var(--ink-40)', fontSize: 13 }}>
-              {options.length} opciones disponibles
+              {t('samplePicker.optionsAvailable', { count: options.length })}
             </span>
           )}
         </p>
@@ -166,7 +169,7 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
         transition: 'transform 280ms cubic-bezier(.2,.8,.2,1)',
       }}>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--green)', letterSpacing: '0.08em', marginBottom: 2 }}>MUESTRA SELECCIONADA</div>
+          <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--green)', letterSpacing: '0.08em', marginBottom: 2 }}>{t('samplePicker.selectedKicker')}</div>
           <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 500, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {freeSample?.product.name}{freeSample?.label ? ` · ${freeSample.label}` : ''}
           </div>
@@ -174,7 +177,7 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
         <AnimatedButton
           variant="primary"
           onClick={onConfirm}
-          text="Confirmar y volver"
+          text={t('samplePicker.confirmButton')}
           icon={<Icon name="arrow-right" size={14} />}
         />
       </div>
@@ -245,7 +248,7 @@ function SampleCard({ option, selected, onSelect }: SampleCardProps) {
           {option.label && <span style={{ color: 'var(--ink-60)', fontWeight: 400 }}> · {option.label}</span>}
         </div>
         <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20, color: selected ? 'var(--green)' : 'var(--ink)' }}>
-          ${option.price.toFixed(2)}
+          {formatCurrency(option.price)}
         </div>
       </div>
     </div>

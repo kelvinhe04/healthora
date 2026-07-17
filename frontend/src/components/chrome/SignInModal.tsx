@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSignIn, useSignUp, useClerk } from '@clerk/clerk-react';
 import { AnimatedButton } from '../shared/AnimatedButton';
 import { Icon } from '../shared/Icon';
@@ -80,11 +81,13 @@ function OAuthButton({ onClick, children }: { onClick: () => void; children: Rea
 }
 
 export function SignInModal({ open, onClose }: SignInModalProps) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>('sign-in');
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
+  const [accountNotFound, setAccountNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const { data: productsData } = useQuery({ queryKey: ['products', 'count'], queryFn: () => api.products.count(), staleTime: 1000 * 60 * 10 });
@@ -99,6 +102,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
     setEmail('');
     setOtp('');
     setError('');
+    setAccountNotFound(false);
   };
 
   const handleClose = () => {
@@ -117,6 +121,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
     if (!signInLoaded || !signUpLoaded) return;
     setLoading(true);
     setError('');
+    setAccountNotFound(false);
     try {
       if (mode === 'sign-in') {
         await signIn.create({ identifier: email, strategy: 'email_code' });
@@ -128,9 +133,10 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
     } catch (err: any) {
       const clerkErr = err?.errors?.[0];
       if (mode === 'sign-in' && clerkErr?.code === 'form_identifier_not_found') {
-        setError('No encontramos esa cuenta. ¿Querés crear una?');
+        setError(t('signInModal.errors.accountNotFound'));
+        setAccountNotFound(true);
       } else {
-        setError(clerkErr?.longMessage ?? clerkErr?.message ?? 'Error al enviar el código');
+        setError(clerkErr?.longMessage ?? clerkErr?.message ?? t('signInModal.errors.sendCodeFailed'));
       }
     } finally {
       setLoading(false);
@@ -158,7 +164,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
         }
       }
     } catch (err: any) {
-      setError(err?.errors?.[0]?.longMessage ?? err?.errors?.[0]?.message ?? 'Código incorrecto');
+      setError(err?.errors?.[0]?.longMessage ?? err?.errors?.[0]?.message ?? t('signInModal.errors.invalidCode'));
     } finally {
       setLoading(false);
     }
@@ -176,7 +182,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
         redirectUrlComplete: `${window.location.origin}`,
       });
     } catch (err: any) {
-      setError(err?.errors?.[0]?.longMessage ?? err?.errors?.[0]?.message ?? 'No se pudo conectar con el proveedor');
+      setError(err?.errors?.[0]?.longMessage ?? err?.errors?.[0]?.message ?? t('signInModal.errors.oauthFailed'));
     }
   };
 
@@ -214,15 +220,19 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
               <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 26, color: 'var(--lime)', letterSpacing: '-0.02em' }}>Healthora</span>
             </div>
             <h2 style={{ fontFamily: '"Instrument Serif", serif', fontSize: 36, lineHeight: 1.06, letterSpacing: '-0.03em', color: 'var(--lime)', margin: '0 0 14px', fontWeight: 400 }}>
-              Tu salud,<br /><em>nuestro cuidado.</em>
+              {t('signInModal.left.heading')}<br /><em>{t('signInModal.left.headingEmphasis')}</em>
             </h2>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(255,255,255,0.6)', fontFamily: '"Geist", sans-serif', margin: 0, maxWidth: 240 }}>
-              Accede a cientos de productos de bienestar y farmacia con envío rápido a tu puerta.
+              {t('signInModal.left.subtitle')}
             </p>
           </div>
 
           <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 13 }}>
-            {['Envío gratis en pedidos +$50', `+${productsData?.count || 200} productos certificados`, 'Asesoría farmacéutica incluida'].map((text) => (
+            {[
+              t('signInModal.left.features.freeShipping'),
+              t('signInModal.left.features.certifiedProducts', { count: productsData?.count || 200 }),
+              t('signInModal.left.features.pharmacyAdvice'),
+            ].map((text) => (
               <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'rgba(255,255,255,0.72)' }}>
                 <span style={{ width: 6, height: 6, borderRadius: 999, background: 'var(--lime)', flexShrink: 0, display: 'block' }} />
                 {text}
@@ -238,7 +248,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
             <button
               onClick={handleClose}
-              aria-label="Cerrar"
+              aria-label={t('signInModal.closeAria')}
               style={{ background: 'transparent', border: '1px solid var(--ink-12)', cursor: 'pointer', width: 34, height: 34, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-60)' }}
             >
               <Icon name="x" size={16} />
@@ -250,22 +260,22 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
             <>
               <div style={{ marginBottom: 24 }}>
                 <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 8 }}>
-                  Verificación
+                  {t('signInModal.otp.label')}
                 </div>
                 <h2 id="signin-modal-otp-title" style={{ fontFamily: '"Instrument Serif", serif', fontSize: 32, lineHeight: 1, letterSpacing: '-0.03em', margin: 0, fontWeight: 400 }}>
-                  Revisa tu <em style={{ color: 'var(--green)' }}>email</em>
+                  {t('signInModal.otp.heading')} <em style={{ color: 'var(--green)' }}>{t('signInModal.otp.headingEmphasis')}</em>
                 </h2>
               </div>
 
               <form onSubmit={handleOtpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16, flex: 1 }}>
                 <div style={{ padding: '14px 16px', borderRadius: 14, background: 'color-mix(in oklab, var(--green) 7%, white)', border: '1px solid color-mix(in oklab, var(--green) 22%, white)' }}>
                   <p style={{ fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink-80)', lineHeight: 1.55, margin: 0 }}>
-                    Enviamos un código de 6 dígitos a <strong>{email}</strong>. Revisa tu bandeja de entrada.
+                    {t('signInModal.otp.infoBefore')} <strong>{email}</strong>. {t('signInModal.otp.infoAfter')}
                   </p>
                 </div>
 
                 <label>
-                  <span style={labelStyle}>Código de verificación</span>
+                  <span style={labelStyle}>{t('signInModal.otp.codeLabel')}</span>
                   <input
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -279,14 +289,14 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
 
                 {error && <p role="alert" style={{ fontSize: 13, color: 'var(--coral)', fontFamily: '"Geist", sans-serif', margin: 0 }}>{error}</p>}
 
-                <AnimatedButton variant="green" full type="submit" disabled={loading} text={loading ? 'Verificando…' : (mode === 'sign-in' ? 'Ingresar' : 'Crear cuenta')} />
+                <AnimatedButton variant="green" full type="submit" disabled={loading} text={loading ? t('signInModal.otp.submit.loading') : (mode === 'sign-in' ? t('signInModal.otp.submit.signIn') : t('signInModal.otp.submit.signUp'))} />
 
                 <button
                   type="button"
                   onClick={() => { setStep('email'); setOtp(''); setError(''); }}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', fontSize: 13, padding: 0, textAlign: 'center' }}
                 >
-                  ← Cambiar email
+                  {t('signInModal.otp.changeEmail')}
                 </button>
               </form>
             </>
@@ -294,7 +304,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
             /* ── Email step ── */
             <>
               <h2 id="signin-modal-title" className="sr-only">
-                {mode === 'sign-in' ? 'Iniciar sesión en Healthora' : 'Crear cuenta en Healthora'}
+                {mode === 'sign-in' ? t('signInModal.srHeading.signIn') : t('signInModal.srHeading.signUp')}
               </h2>
               {/* Mode tabs */}
               <div style={{ display: 'flex', gap: 4, padding: 4, background: 'var(--ink-06)', borderRadius: 14, marginBottom: 24 }}>
@@ -302,37 +312,37 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
                   onClick={() => switchMode('sign-in')}
                   style={{ ...tabBase, background: mode === 'sign-in' ? 'var(--cream)' : 'transparent', color: mode === 'sign-in' ? 'var(--ink)' : 'var(--ink-60)', boxShadow: mode === 'sign-in' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none' }}
                 >
-                  Iniciar sesión
+                  {t('signInModal.tabs.signIn')}
                 </button>
                 <button
                   onClick={() => switchMode('sign-up')}
                   style={{ ...tabBase, background: mode === 'sign-up' ? 'var(--cream)' : 'transparent', color: mode === 'sign-up' ? 'var(--ink)' : 'var(--ink-60)', boxShadow: mode === 'sign-up' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none' }}
                 >
-                  Crear cuenta
+                  {t('signInModal.tabs.signUp')}
                 </button>
               </div>
 
               {/* OAuth */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
                 <OAuthButton onClick={() => handleOAuth('oauth_google')}>
-                  <GoogleIcon /> Continuar con Google
+                  <GoogleIcon /> {t('signInModal.oauth.google')}
                 </OAuthButton>
                 <OAuthButton onClick={() => handleOAuth('oauth_microsoft')}>
-                  <MicrosoftIcon /> Continuar con Microsoft
+                  <MicrosoftIcon /> {t('signInModal.oauth.microsoft')}
                 </OAuthButton>
               </div>
 
               {/* Divider */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                 <div style={{ flex: 1, height: 1, background: 'var(--ink-12)' }} />
-                <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-40)' }}>o con email</span>
+                <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-40)' }}>{t('signInModal.oauth.divider')}</span>
                 <div style={{ flex: 1, height: 1, background: 'var(--ink-12)' }} />
               </div>
 
               {/* Email form */}
               <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
                 <label>
-                  <span style={labelStyle}>Correo electrónico</span>
+                  <span style={labelStyle}>{t('signInModal.email.label')}</span>
                   <input
                     type="email"
                     value={email}
@@ -348,26 +358,26 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
                 {error && (
                   <p role="alert" style={{ fontSize: 13, color: 'var(--coral)', fontFamily: '"Geist", sans-serif', margin: 0, lineHeight: 1.45 }}>
                     {error}{' '}
-                    {mode === 'sign-in' && error.includes('crear') && (
+                    {mode === 'sign-in' && accountNotFound && (
                       <button
                         type="button"
                         onClick={() => switchMode('sign-up')}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--green)', fontFamily: '"Geist", sans-serif', fontSize: 13, fontWeight: 600, padding: 0, textDecoration: 'underline' }}
                       >
-                        Registrarme
+                        {t('signInModal.email.signUpCta')}
                       </button>
                     )}
                   </p>
                 )}
 
-                <AnimatedButton variant="green" full type="submit" disabled={loading} style={{ marginTop: 4 }} text={loading ? 'Enviando código…' : (mode === 'sign-in' ? 'Continuar con email' : 'Enviar código de acceso')} />
+                <AnimatedButton variant="green" full type="submit" disabled={loading} style={{ marginTop: 4 }} text={loading ? t('signInModal.email.submit.loading') : (mode === 'sign-in' ? t('signInModal.email.submit.signIn') : t('signInModal.email.submit.signUp'))} />
               </form>
 
               <p style={{ marginTop: 20, textAlign: 'center', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-40)', lineHeight: 1.5, margin: '20px 0 0' }}>
-                Al continuar aceptas nuestros{' '}
-                <span style={{ color: 'var(--ink-60)', textDecoration: 'underline', cursor: 'pointer' }}>Términos</span>
-                {' '}y{' '}
-                <span style={{ color: 'var(--ink-60)', textDecoration: 'underline', cursor: 'pointer' }}>Privacidad</span>.
+                {t('signInModal.terms.prefix')}{' '}
+                <span style={{ color: 'var(--ink-60)', textDecoration: 'underline', cursor: 'pointer' }}>{t('signInModal.terms.terms')}</span>
+                {' '}{t('signInModal.terms.and')}{' '}
+                <span style={{ color: 'var(--ink-60)', textDecoration: 'underline', cursor: 'pointer' }}>{t('signInModal.terms.privacy')}</span>.
               </p>
             </>
           )}

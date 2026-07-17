@@ -15,6 +15,14 @@ const BannerSchema = new Schema(
     highlightWord: { type: String, default: '' },
     description: { type: String, default: '' },
     ctaText: { type: String, required: true },
+    /** Contraparte en ingles de kicker/title/highlightWord/description/ctaText (HU-084). Opcional
+     * y por defecto vacia: el frontend usa el campo en espanol como fallback si el admin todavia
+     * no tradujo el banner - nunca se muestra un banner vacio por falta de version en ingles. */
+    kickerEn: { type: String, default: '' },
+    titleEn: { type: String, default: '' },
+    highlightWordEn: { type: String, default: '' },
+    descriptionEn: { type: String, default: '' },
+    ctaTextEn: { type: String, default: '' },
     ctaHref: { type: String, required: true },
     /** Solo aplica al slot 'promo': categoria (Category.id) cuyos primeros 2 productos con foto
      * se muestran flotando sobre el banner (ver Landing.tsx) y que arma `ctaHref` solo. */

@@ -1,8 +1,10 @@
 import type { CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DateInputDDMMYYYY, iconBtnAd } from '../../../components/admin';
 import { Icon } from '../../../components/shared/Icon';
 import { Checkbox } from '../../../components/shared/Checkbox';
 import { Select } from '../../../components/shared/Select';
+import { formatCurrency } from '../../../lib/currency';
 import { emptyVariantRow, type VariantFormRow } from '../types';
 import {
   cellKey,
@@ -10,7 +12,7 @@ import {
   emptyPrimaryRow,
   emptySizeRow,
   getVariantTab,
-  PRIMARY_TYPE_LABELS,
+  PRIMARY_TYPE_LABEL_KEYS,
   type MatrixCell,
   type MatrixPrimaryRow,
   type MatrixSizeRow,
@@ -91,6 +93,7 @@ export function ProductVariantsMatrixEditor({
   onMatrixChange: (matrix: MatrixState) => void;
   folder: string;
 }) {
+  const { t } = useTranslation();
   const updatePrimary = (key: string, patch: Partial<MatrixPrimaryRow>) => {
     onMatrixChange({
       ...matrix,
@@ -146,15 +149,17 @@ export function ProductVariantsMatrixEditor({
     });
   };
 
-  const primaryLabels = PRIMARY_TYPE_LABELS[matrix.primaryType];
+  const primaryTypeKey = PRIMARY_TYPE_LABEL_KEYS[matrix.primaryType];
+  const primarySingular = t(`admin.variantTypes.${primaryTypeKey}`);
+  const primaryPlural = t(`admin.variantTypesPlural.${primaryTypeKey}`);
   const onlyOneCombo = matrix.primary.length === 1 && matrix.sizes.length === 1;
 
   const activeTab = getVariantTab(mode, simple.length);
 
   const tabHint: Record<'none' | 'simple' | 'matrix', string> = {
-    none: 'El producto usa un solo precio y stock (los campos de arriba). No hay opciones para elegir.',
-    simple: 'Una lista de opciones de un solo tipo (ej. solo tamaño, o solo color) — cada una con su propio precio y stock.',
-    matrix: 'Dos dimensiones combinadas (ej. sabor + tamaño): cada combinación puede tener su propio precio, stock, imágenes y "precio antes" (descuento). El descuento por categoría también aplica aquí, por combinación.',
+    none: t('admin.variantsMatrixEditor.tabHints.none'),
+    simple: t('admin.variantsMatrixEditor.tabHints.simple'),
+    matrix: t('admin.variantsMatrixEditor.tabHints.matrix'),
   };
 
   return (
@@ -168,7 +173,7 @@ export function ProductVariantsMatrixEditor({
             if (simple.length > 0) onSimpleChange([]);
           }}
         >
-          Sin variante
+          {t('admin.variantsMatrixEditor.tabs.none')}
         </button>
         <button
           type="button"
@@ -178,10 +183,10 @@ export function ProductVariantsMatrixEditor({
             if (simple.length === 0) onSimpleChange([emptyVariantRow()]);
           }}
         >
-          Variante simple
+          {t('admin.variantsMatrixEditor.tabs.simple')}
         </button>
         <button type="button" style={tabS(activeTab === 'matrix')} onClick={() => onModeChange('matrix')}>
-          Variante × Tamaño
+          {t('admin.variantsMatrixEditor.tabs.matrix')}
         </button>
       </div>
       <div style={{ fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)', marginBottom: 16, maxWidth: 520 }}>
@@ -193,24 +198,24 @@ export function ProductVariantsMatrixEditor({
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <label style={labelS}>Tipo de variante</label>
+            <label style={labelS}>{t('admin.productVariantsEditor.typeLabel')}</label>
             <Select
               wrapperStyle={{ width: 160 }}
               value={matrix.primaryType}
               onChange={(e) => onMatrixChange({ ...matrix, primaryType: e.target.value as PrimaryVariantType })}
             >
-              <option value="flavor">Sabor</option>
-              <option value="scent">Aroma</option>
-              <option value="color">Color</option>
-              <option value="weight">Peso</option>
-              <option value="count">Conteo</option>
+              <option value="flavor">{t('admin.variantTypes.flavor')}</option>
+              <option value="scent">{t('admin.variantTypes.scent')}</option>
+              <option value="color">{t('admin.variantTypes.color')}</option>
+              <option value="weight">{t('admin.variantTypes.weight')}</option>
+              <option value="count">{t('admin.variantTypes.count')}</option>
             </Select>
           </div>
 
           <div>
-            <div style={sectionTitleS}>{primaryLabels.plural}</div>
+            <div style={sectionTitleS}>{primaryPlural}</div>
             <div style={{ fontSize: 11, fontFamily: '"Geist", sans-serif', color: 'var(--ink-40)', marginBottom: 8, maxWidth: 520 }}>
-              Solo el nombre — el precio, stock e imágenes de cada combinación se ajustan más abajo, en "Combinaciones".
+              {t('admin.variantsMatrixEditor.primarySection.hint')}
             </div>
             <div
               style={{
@@ -221,8 +226,8 @@ export function ProductVariantsMatrixEditor({
                 marginBottom: 4,
               }}
             >
-              <span style={columnLabelS}>Nombre</span>
-              {matrix.primaryType === 'color' && <span style={columnLabelS}>Color</span>}
+              <span style={columnLabelS}>{t('admin.variantsMatrixEditor.nameColumn')}</span>
+              {matrix.primaryType === 'color' && <span style={columnLabelS}>{t('admin.variantTypes.color')}</span>}
               <span />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -255,7 +260,7 @@ export function ProductVariantsMatrixEditor({
                     >
                       <input
                         style={inputS}
-                        placeholder={`ej. ${primaryLabels.singular === 'Color' ? 'Rojo' : 'Chocolate'}`}
+                        placeholder={t(`admin.productVariantsEditor.labelPlaceholders.${primaryTypeKey}`)}
                         value={p.label}
                         onChange={(e) => updatePrimary(p.key, { label: e.target.value })}
                       />
@@ -263,7 +268,7 @@ export function ProductVariantsMatrixEditor({
                         <input
                           style={{ ...inputS, padding: '6px 8px', width: 44 }}
                           type="color"
-                          title="Color (hex)"
+                          title={t('admin.productVariantsEditor.colorHexLabel')}
                           value={/^#[0-9a-fA-F]{6}$/.test(p.color) ? p.color : '#cccccc'}
                           onChange={(e) => updatePrimary(p.key, { color: e.target.value })}
                         />
@@ -272,7 +277,7 @@ export function ProductVariantsMatrixEditor({
                         type="button"
                         onClick={() => removePrimary(p.key)}
                         style={{ ...iconBtnAd, color: 'var(--coral)' }}
-                        title={`Eliminar ${primaryLabels.singular.toLowerCase()}`}
+                        title={t('admin.variantsMatrixEditor.primarySection.removeTitle', { type: primarySingular.toLowerCase() })}
                       >
                         <Icon name="trash" size={14} />
                       </button>
@@ -280,7 +285,7 @@ export function ProductVariantsMatrixEditor({
                     {hasComboDiscount && (
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                         <div>
-                          <label style={columnLabelS}>Vigente desde (opcional)</label>
+                          <label style={columnLabelS}>{t('admin.variantsMatrixEditor.validFromOptional')}</label>
                           <DateInputDDMMYYYY
                             style={inputS}
                             value={p.discountStartsAt}
@@ -288,7 +293,7 @@ export function ProductVariantsMatrixEditor({
                           />
                         </div>
                         <div>
-                          <label style={columnLabelS}>Vigente hasta (opcional)</label>
+                          <label style={columnLabelS}>{t('admin.variantsMatrixEditor.validUntilOptional')}</label>
                           <DateInputDDMMYYYY
                             style={inputS}
                             value={p.discountEndsAt}
@@ -306,12 +311,12 @@ export function ProductVariantsMatrixEditor({
               onClick={() => onMatrixChange({ ...matrix, primary: [...matrix.primary, emptyPrimaryRow()] })}
               style={{ fontSize: 12, color: 'var(--green)', cursor: 'pointer', padding: '10px 0 0', textAlign: 'left', background: 'transparent', border: 'none' }}
             >
-              + Agregar {primaryLabels.singular.toLowerCase()}
+              {t('admin.variantsMatrixEditor.primarySection.addButton', { type: primarySingular.toLowerCase() })}
             </button>
           </div>
 
           <div>
-            <div style={sectionTitleS}>Tamaños</div>
+            <div style={sectionTitleS}>{t('admin.variantsMatrixEditor.sizesSection.title')}</div>
             <div
               style={{
                 display: 'grid',
@@ -321,9 +326,9 @@ export function ProductVariantsMatrixEditor({
                 marginBottom: 4,
               }}
             >
-              <span style={columnLabelS}>Nombre</span>
-              <span style={columnLabelS}>Precio base <span style={{ color: '#e53e3e' }}>*</span></span>
-              <span style={columnLabelS}>Stock <span style={{ color: '#e53e3e' }}>*</span></span>
+              <span style={columnLabelS}>{t('admin.variantsMatrixEditor.nameColumn')}</span>
+              <span style={columnLabelS}>{t('admin.variantsMatrixEditor.sizesSection.basePriceColumn')} <span style={{ color: '#e53e3e' }}>*</span></span>
+              <span style={columnLabelS}>{t('admin.productVariantsEditor.stockLabel')} <span style={{ color: '#e53e3e' }}>*</span></span>
               <span />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -343,21 +348,21 @@ export function ProductVariantsMatrixEditor({
                 >
                   <input
                     style={inputS}
-                    placeholder="ej. 5 lb"
+                    placeholder={t('admin.variantsMatrixEditor.sizesSection.namePlaceholder')}
                     value={s.label}
                     onChange={(e) => updateSize(s.key, { label: e.target.value })}
                   />
                   <input
                     style={inputS}
                     type="number"
-                    placeholder="Precio"
+                    placeholder={t('admin.variantsMatrixEditor.sizesSection.pricePlaceholder')}
                     value={s.price}
                     onChange={(e) => updateSize(s.key, { price: e.target.value })}
                   />
                   <input
                     style={inputS}
                     type="number"
-                    placeholder="Stock"
+                    placeholder={t('admin.variantsMatrixEditor.sizesSection.stockPlaceholder')}
                     value={s.stock}
                     onChange={(e) => updateSize(s.key, { stock: e.target.value })}
                   />
@@ -365,7 +370,7 @@ export function ProductVariantsMatrixEditor({
                     type="button"
                     onClick={() => removeSize(s.key)}
                     style={{ ...iconBtnAd, color: 'var(--coral)' }}
-                    title="Eliminar tamaño"
+                    title={t('admin.variantsMatrixEditor.sizesSection.removeTitle')}
                   >
                     <Icon name="trash" size={14} />
                   </button>
@@ -377,13 +382,13 @@ export function ProductVariantsMatrixEditor({
               onClick={() => onMatrixChange({ ...matrix, sizes: [...matrix.sizes, emptySizeRow()] })}
               style={{ fontSize: 12, color: 'var(--green)', cursor: 'pointer', padding: '10px 0 0', textAlign: 'left', background: 'transparent', border: 'none' }}
             >
-              + Agregar tamaño
+              {t('admin.variantsMatrixEditor.sizesSection.addButton')}
             </button>
           </div>
 
           {matrix.primary.length > 0 && matrix.sizes.length > 0 && (
             <div>
-              <div style={sectionTitleS}>Combinaciones</div>
+              <div style={sectionTitleS}>{t('admin.variantsMatrixEditor.combinationsSection.title')}</div>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ borderCollapse: 'collapse', width: '100%', tableLayout: 'fixed' }}>
                   <colgroup>
@@ -394,10 +399,10 @@ export function ProductVariantsMatrixEditor({
                   </colgroup>
                   <thead>
                     <tr>
-                      <th style={{ textAlign: 'left', padding: 8, fontSize: 11, color: 'var(--ink-60)' }}>{primaryLabels.singular} \ Tamaño</th>
+                      <th style={{ textAlign: 'left', padding: 8, fontSize: 11, color: 'var(--ink-60)' }}>{t('admin.variantsMatrixEditor.combinationsSection.headerSeparator', { primary: primarySingular })}</th>
                       {matrix.sizes.map((s) => (
                         <th key={s.key} style={{ padding: 8, fontSize: 11, color: 'var(--ink-60)' }}>
-                          {s.label || '(sin nombre)'}
+                          {s.label || t('admin.variantsMatrixEditor.combinationsSection.unnamed')}
                         </th>
                       ))}
                     </tr>
@@ -405,7 +410,7 @@ export function ProductVariantsMatrixEditor({
                   <tbody>
                     {matrix.primary.map((p) => (
                       <tr key={p.key}>
-                        <td style={{ padding: 8, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{p.label || '(sin nombre)'}</td>
+                        <td style={{ padding: 8, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{p.label || t('admin.variantsMatrixEditor.combinationsSection.unnamed')}</td>
                         {matrix.sizes.map((s) => {
                           const cell = matrix.cells[cellKey(p.key, s.key)];
                           const active = Boolean(cell?.active);
@@ -424,15 +429,15 @@ export function ProductVariantsMatrixEditor({
                                   onChange={() => toggleCell(p.key, s.key)}
                                   style={{ width: 15, height: 15, minWidth: 15 }}
                                 />
-                                <span style={{ fontSize: 11, color: 'var(--ink-60)' }}>Activo</span>
+                                <span style={{ fontSize: 11, color: 'var(--ink-60)' }}>{t('admin.variantsMatrixEditor.combinationsSection.activeLabel')}</span>
                               </label>
                               {active && (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                   <input
                                     style={{ ...inputS, fontSize: 11 }}
                                     type="number"
-                                    placeholder={`Precio (default: $${((parseFloat(p.price) || 0) + (parseFloat(s.price) || 0)).toFixed(2)})`}
-                                    title="Solo si esta combinación necesita un precio distinto al default"
+                                    placeholder={t('admin.variantsMatrixEditor.combinationsSection.pricePlaceholder', { amount: formatCurrency((parseFloat(p.price) || 0) + (parseFloat(s.price) || 0)) })}
+                                    title={t('admin.variantsMatrixEditor.combinationsSection.priceTitle')}
                                     value={cell?.price ?? ''}
                                     onChange={(e) => updateCell(p.key, s.key, { price: e.target.value })}
                                   />
@@ -441,24 +446,24 @@ export function ProductVariantsMatrixEditor({
                                     type="number"
                                     min={0}
                                     step={0.01}
-                                    placeholder="Precio antes (sin descuento)"
-                                    title="Precio tachado para esta combinación - deja vacío para no mostrar descuento"
+                                    placeholder={t('admin.variantsMatrixEditor.combinationsSection.priceBeforePlaceholder')}
+                                    title={t('admin.variantsMatrixEditor.combinationsSection.priceBeforeTitle')}
                                     value={cell?.priceBefore ?? ''}
                                     onChange={(e) => updateCell(p.key, s.key, { priceBefore: e.target.value })}
                                   />
                                   <input
                                     style={{ ...inputS, fontSize: 11 }}
                                     type="number"
-                                    placeholder={`Stock (default: ${s.stock})`}
+                                    placeholder={t('admin.variantsMatrixEditor.combinationsSection.stockPlaceholder', { amount: s.stock })}
                                     value={cell?.stock ?? ''}
                                     onChange={(e) => updateCell(p.key, s.key, { stock: e.target.value })}
                                   />
                                   <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-40)' }}>
-                                    Imágenes {effectiveImages.length === 0 && <span style={{ color: '#e53e3e' }}>*</span>}
+                                    {t('admin.variantsMatrixEditor.combinationsSection.imagesLabel')} {effectiveImages.length === 0 && <span style={{ color: '#e53e3e' }}>*</span>}
                                   </span>
                                   {imagesInherited && (
                                     <div style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"Geist", sans-serif' }}>
-                                      Parten de "{p.label.trim() || primaryLabels.singular}" — agrega o quita libremente, solo afecta esta combinación.
+                                      {t('admin.variantsMatrixEditor.combinationsSection.imagesInheritedHint', { label: p.label.trim() || primarySingular })}
                                     </div>
                                   )}
                                   <MiniImagePicker
@@ -469,12 +474,12 @@ export function ProductVariantsMatrixEditor({
                                   {isDefaultCombo && (
                                     <div style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"Geist", sans-serif' }}>
                                       {effectiveImages.length > 1
-                                        ? 'La 2ª imagen se usa para el efecto hover de la card en el catálogo.'
-                                        : 'Si agregas una 2ª imagen aquí, se usará para el efecto hover de la card en el catálogo.'}
+                                        ? t('admin.productVariantsEditor.hoverHintMultiple')
+                                        : t('admin.productVariantsEditor.hoverHintSingle')}
                                     </div>
                                   )}
                                   {!onlyOneCombo && (
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }} title="Combo predeterminado">
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }} title={t('admin.variantsMatrixEditor.combinationsSection.defaultComboTitle')}>
                                       <input
                                         type="radio"
                                         name="default-combo"
@@ -482,7 +487,7 @@ export function ProductVariantsMatrixEditor({
                                         onChange={() => setDefaultCombo(p.key, s.key)}
                                         style={{ width: 14, height: 14, accentColor: 'var(--green)', cursor: 'pointer' }}
                                       />
-                                      <span style={{ fontSize: 10, color: 'var(--ink-60)' }}>Default</span>
+                                      <span style={{ fontSize: 10, color: 'var(--ink-60)' }}>{t('admin.variantsMatrixEditor.combinationsSection.defaultLabel')}</span>
                                     </label>
                                   )}
                                 </div>

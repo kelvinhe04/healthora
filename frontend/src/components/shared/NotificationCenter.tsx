@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useNotificationLink } from '../../hooks/useNotificationLink';
 import { notificationPresentation, relativeTime } from '../../lib/notificationPresentation';
@@ -19,6 +20,7 @@ interface NotificationCenterProps {
 /** Bell trigger + dropdown panel: the persistent notification center (HU-061). Reads from the
  * shared inbox cache that the WebSocket also feeds, so it updates in real time and after a reload. */
 export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'right' }: NotificationCenterProps) {
+  const { t } = useTranslation();
   const { notifications, unread, markRead, markAllRead, dismiss, clearAll } = useNotifications();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -66,7 +68,7 @@ export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'r
       <button
         onClick={() => setOpen((v) => !v)}
         style={{ ...buttonStyle, position: 'relative' }}
-        aria-label={unread > 0 ? `Notificaciones (${unread} sin leer)` : 'Notificaciones'}
+        aria-label={unread > 0 ? t('notifications.bellAriaUnread', { count: unread }) : t('notifications.bellAria')}
         aria-haspopup="true"
         aria-expanded={open}
       >
@@ -99,7 +101,7 @@ export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'r
       {open && panelRect && (
         <div
           role="dialog"
-          aria-label="Centro de notificaciones"
+          aria-label={t('notifications.panelAria')}
           style={{
             position: 'fixed',
             top: panelRect.top,
@@ -126,7 +128,7 @@ export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'r
             }}
           >
             <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20, color: 'var(--ink)' }}>
-              Notificaciones
+              {t('notifications.bellAria')}
             </span>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               {unread > 0 && (
@@ -134,7 +136,7 @@ export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'r
                   onClick={() => markAllRead()}
                   style={headerActionStyle('var(--green)')}
                 >
-                  Marcar leídas
+                  {t('notifications.markAllRead')}
                 </button>
               )}
               {notifications.length > 0 && (
@@ -142,7 +144,7 @@ export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'r
                   onClick={() => clearAll()}
                   style={headerActionStyle('var(--ink-40)')}
                 >
-                  Borrar todas
+                  {t('notifications.clearAll')}
                 </button>
               )}
             </div>
@@ -161,7 +163,7 @@ export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'r
                 <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}>
                   <Icon name="bell" size={28} stroke="var(--ink-20)" />
                 </div>
-                No tienes notificaciones todavía.
+                {t('notifications.empty')}
               </div>
             ) : (
               notifications.map((notification) => (
@@ -187,7 +189,7 @@ export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'r
                 textAlign: 'center',
               }}
             >
-              Las notificaciones se eliminan automáticamente después de 60 días
+              {t('notifications.autoDeleteNote')}
             </div>
           )}
         </div>
@@ -220,6 +222,7 @@ function NotificationRow({
   onDismiss: () => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const go = useNotificationLink();
   const { icon, accent } = notificationPresentation(notification.type, notification.data);
 
@@ -290,7 +293,7 @@ function NotificationRow({
           </div>
           <div style={{ fontSize: 12, color: 'var(--ink-60)', lineHeight: 1.35 }}>{notification.body}</div>
           <div style={{ fontSize: 11, color: 'var(--ink-40)', marginTop: 4, fontFamily: '"JetBrains Mono", monospace' }}>
-            {relativeTime(notification.createdAt)}
+            {relativeTime(t, notification.createdAt)}
           </div>
         </div>
         {!notification.read && (
@@ -311,7 +314,7 @@ function NotificationRow({
           e.stopPropagation();
           onDismiss();
         }}
-        aria-label="Borrar notificación"
+        aria-label={t('notifications.dismissAria')}
         style={{
           flexShrink: 0,
           alignSelf: 'stretch',

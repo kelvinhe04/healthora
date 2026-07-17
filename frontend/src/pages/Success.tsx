@@ -1,4 +1,5 @@
 import { useAuth } from '@clerk/clerk-react';
+import { useTranslation } from 'react-i18next';
 import { AnimatedButton } from '../components/shared/AnimatedButton';
 import { Icon } from '../components/shared/Icon';
 import { useOrderByPaymentIntent, useOrderBySession } from '../hooks/useOrders';
@@ -7,10 +8,12 @@ import { api } from '../lib/api';
 import { useEffect, useRef } from 'react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { trackCheckoutCompleted } from '../lib/analyticsEvents';
+import { formatCurrency } from '../lib/currency';
 
 interface SuccessProps { onBack: () => void; sessionId: string; paymentIntentId?: string; }
 
 export function Success({ onBack, sessionId, paymentIntentId = '' }: SuccessProps) {
+  const { t } = useTranslation();
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const { getToken, isSignedIn } = useAuth();
@@ -54,12 +57,12 @@ export function Success({ onBack, sessionId, paymentIntentId = '' }: SuccessProp
       <div style={{ padding: isMobile ? '40px 16px 0' : '60px 40px 0', display: 'flex', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center', maxWidth: 480 }}>
           <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, color: 'var(--ink)', marginBottom: 12 }}>
-            Tu pago se procesó, pero aún estamos confirmando tu orden.
+            {t('success.error.title')}
           </div>
           <p style={{ color: 'var(--ink-60)', fontSize: 15, marginBottom: 24 }}>
-            Puede tardar unos minutos en aparecer. Revisa "Mis pedidos" más tarde o contáctanos si no aparece.
+            {t('success.error.body')}
           </p>
-          <AnimatedButton variant="primary" onClick={onBack} text="Seguir comprando" />
+          <AnimatedButton variant="primary" onClick={onBack} text={t('success.continueShopping')} />
         </div>
       </div>
     );
@@ -69,7 +72,7 @@ export function Success({ onBack, sessionId, paymentIntentId = '' }: SuccessProp
     return (
       <div style={{ padding: isMobile ? '40px 16px 0' : '60px 40px 0', display: 'flex', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center', color: 'var(--ink-60)', fontFamily: '"Instrument Serif", serif', fontSize: 28 }}>
-          Confirmando tu orden…
+          {t('success.confirming')}
         </div>
       </div>
     );
@@ -82,16 +85,23 @@ export function Success({ onBack, sessionId, paymentIntentId = '' }: SuccessProp
           <Icon name="check" size={36} />
         </div>
         <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'var(--green)', letterSpacing: '0.12em', marginBottom: 12 }}>
-          ORDEN #{order._id.slice(-8).toUpperCase()} · {order.paymentStatus === 'paid' ? 'PAGADA' : 'CONFIRMADA'}
+          {t('success.orderLabel', {
+            id: order._id.slice(-8).toUpperCase(),
+            status: order.paymentStatus === 'paid' ? t('success.status.paid') : t('success.status.confirmed'),
+          })}
         </div>
         <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 48 : 76, letterSpacing: '-0.035em', lineHeight: 0.95, margin: '0 0 20px', color: 'var(--ink)', fontWeight: 400 }}>
-          ¡Gracias por tu <em style={{ color: 'var(--green)' }}>compra</em>!
+          {t('success.headingPrefix')} <em style={{ color: 'var(--green)' }}>{t('success.headingEmphasis')}</em>!
         </h1>
         <p style={{ fontSize: 17, lineHeight: 1.55, color: 'var(--ink-80)', marginBottom: 32 }}>
-          Hemos recibido tu pago de <strong>${order.total.toFixed(2)}</strong>. Te enviamos la confirmación por email y te avisaremos cuando tu pedido esté en camino.
+          {t('success.receivedPrefix')} <strong>{formatCurrency(order.total)}</strong>{t('success.receivedSuffix')}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 12, textAlign: 'left', background: 'var(--cream-2)', padding: 24, borderRadius: 20, border: '1px solid var(--ink-06)', marginBottom: 32 }}>
-          {[{ k: 'Estado', v: 'Pagada' }, { k: 'Envío estimado', v: '24 – 48h' }, { k: 'Seguimiento', v: order.customerEmail }].map((r) => (
+          {[
+            { k: t('success.details.status'), v: t('success.details.statusValue') },
+            { k: t('success.details.estimatedShipping'), v: t('success.details.estimatedShippingValue') },
+            { k: t('success.details.tracking'), v: order.customerEmail },
+          ].map((r) => (
             <div key={r.k}>
               <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 4 }}>{r.k}</div>
               <div style={{ fontSize: 14, fontFamily: '"Geist", sans-serif', fontWeight: 500 }}>{r.v}</div>
@@ -99,7 +109,7 @@ export function Success({ onBack, sessionId, paymentIntentId = '' }: SuccessProp
           ))}
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-          <AnimatedButton variant="primary" onClick={onBack} text="Seguir comprando" />
+          <AnimatedButton variant="primary" onClick={onBack} text={t('success.continueShopping')} />
         </div>
       </div>
     </div>

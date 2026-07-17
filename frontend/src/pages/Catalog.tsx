@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { Product } from "../types";
 import {
   ProductCard,
@@ -12,6 +13,9 @@ import { useCategories } from "../hooks/useCategories";
 import { useBreakpoint } from "../hooks/useBreakpoint";
 import { RelatedProductsSection } from "../components/shared/RelatedProductsSection";
 import { getCatalogRecommendations } from "../lib/relatedProducts";
+import { formatCurrency } from "../lib/currency";
+import { translatedCategoryLabel } from "../lib/categoryLabels";
+import { translatedNeedLabel } from "../lib/needs";
 
 interface CatalogProps {
   initialFilter?: {
@@ -43,6 +47,9 @@ const filterLabel: CSSProperties = {
   marginBottom: 12,
 };
 const ITEMS_PER_PAGE = 12;
+// Frontend-only sentinel for "no category filter" - never sent to the backend/onNav, and never
+// translated (only its displayed label is, via catalog.filters.all).
+const ALL_CATEGORIES = "Todos";
 
 // Deterministic per-id hash (xmur3-style) → a stable pseudo-random key. Used to give the
 // "Destacados" view a shuffled-looking-but-fixed order: same on every reload, on every
@@ -67,12 +74,13 @@ export function Catalog({
   onOpenProduct,
   onAdd,
 }: CatalogProps) {
+  const { t } = useTranslation();
   const bp = useBreakpoint();
   const isMobile = bp === "mobile";
   const isTablet = bp === "tablet";
   const isSmall = isMobile || isTablet;
   const [filterOpen, setFilterOpen] = useState(false);
-  const [cat, setCat] = useState(initialFilter?.category || "Todos");
+  const [cat, setCat] = useState(initialFilter?.category || ALL_CATEGORIES);
   const [need, setNeed] = useState(
     initialFilter?.need || (null as string | null),
   );
@@ -133,7 +141,7 @@ export function Catalog({
   const showSkeleton = productsLoading || isMounting;
 
   useEffect(() => {
-    setCat(initialFilter?.category || "Todos");
+    setCat(initialFilter?.category || ALL_CATEGORIES);
     setNeed(initialFilter?.need || null);
     setSearch(initialFilter?.search || "");
     setBrands(
@@ -155,7 +163,7 @@ export function Catalog({
 
   function changePage(newPage: number) {
     onFilterChange?.({
-      category: cat !== "Todos" ? cat : undefined,
+      category: cat !== ALL_CATEGORIES ? cat : undefined,
       need: need || undefined,
       search: search.trim() || undefined,
       brands: brands.length ? brands : undefined,
@@ -191,9 +199,9 @@ export function Catalog({
     : filteredBrands.slice(0, 8);
 
   const filtered = useMemo(() => {
-    const useShuffle = cat === "Todos" && sort === "featured" && !searchTerm;
+    const useShuffle = cat === ALL_CATEGORIES && sort === "featured" && !searchTerm;
     let list = useShuffle ? shuffledAll.slice() : catalogProducts.slice();
-    if (cat !== "Todos") list = list.filter((p) => p.category === cat);
+    if (cat !== ALL_CATEGORIES) list = list.filter((p) => p.category === cat);
     if (need) list = list.filter((p) => p.need === need);
     list = list.filter((p) => p.price <= priceMax);
     if (brands.length) list = list.filter((p) => brands.includes(p.brand));
@@ -222,7 +230,7 @@ export function Catalog({
   );
 
   const recommendations = useMemo(
-    () => getCatalogRecommendations(allProducts, { category: cat !== "Todos" ? cat : undefined, need: need ?? undefined }, 4),
+    () => getCatalogRecommendations(allProducts, { category: cat !== ALL_CATEGORIES ? cat : undefined, need: need ?? undefined }, 4),
     [allProducts, cat, need],
   );
 
@@ -246,7 +254,7 @@ export function Catalog({
         ? currentBrands.filter((x) => x !== b)
         : [...currentBrands, b];
       onFilterChange?.({
-        category: cat !== "Todos" ? cat : undefined,
+        category: cat !== ALL_CATEGORIES ? cat : undefined,
         need: need || undefined,
         search: search.trim() || undefined,
         brands: nextBrands.length ? nextBrands : undefined,
@@ -280,15 +288,15 @@ export function Catalog({
       }}
     >
       <div style={{ marginBottom: 32 }}>
-        <div style={filterLabel}>Categorías</div>
+        <div style={filterLabel}>{t("catalog.filters.categoriesLabel")}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {["Todos", ...categories.map((c) => c.id)].map((c) => (
+          {[ALL_CATEGORIES, ...categories.map((c) => c.id)].map((c) => (
             <label
               key={c}
               onClick={() => {
                 setCat(c);
                 syncFilter({
-                  category: c !== "Todos" ? c : undefined,
+                  category: c !== ALL_CATEGORIES ? c : undefined,
                   need: need || undefined,
                   search: search.trim() || undefined,
                 });
@@ -316,7 +324,7 @@ export function Catalog({
                 if (cat !== c) e.currentTarget.style.background = "transparent";
               }}
             >
-              <span>{c}</span>
+              <span>{c === ALL_CATEGORIES ? t("catalog.filters.all") : translatedCategoryLabel(t, c)}</span>
               <span
                 style={{
                   fontSize: 11,
@@ -324,7 +332,7 @@ export function Catalog({
                   fontFamily: '"JetBrains Mono", monospace',
                 }}
               >
-                {c === "Todos"
+                {c === ALL_CATEGORIES
                   ? productsForBrands.length
                   : productsForBrands.filter((p) => p.category === c).length}
               </span>
@@ -333,7 +341,7 @@ export function Catalog({
         </div>
       </div>
       <div style={{ marginBottom: 32 }}>
-        <div style={filterLabel}>Precio máximo · ${priceMax}</div>
+        <div style={filterLabel}>{t("catalog.filters.priceMaxLabel", { price: formatCurrency(priceMax) })}</div>
         <input
           type="range"
           min={5}
@@ -352,12 +360,12 @@ export function Catalog({
             marginTop: 4,
           }}
         >
-          <span>$5</span>
-          <span>$1000</span>
+          <span>{formatCurrency(5)}</span>
+          <span>{formatCurrency(1000)}</span>
         </div>
       </div>
       <div style={{ marginBottom: 32 }}>
-        <div style={filterLabel}>Marcas</div>
+        <div style={filterLabel}>{t("catalog.filters.brandsLabel")}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div
             style={{
@@ -373,8 +381,8 @@ export function Catalog({
             <input
               value={brandSearch}
               onChange={(e) => setBrandSearch(e.target.value)}
-              placeholder={`Buscar entre ${allBrands.length} marcas`}
-              aria-label="Buscar marca"
+              placeholder={t("catalog.filters.searchBrandsPlaceholder", { count: allBrands.length })}
+              aria-label={t("catalog.filters.searchBrandAria")}
               style={{
                 width: "100%",
                 border: "none",
@@ -474,7 +482,7 @@ export function Catalog({
                 fontFamily: '"Geist", sans-serif',
               }}
             >
-              No hay marcas que coincidan.
+              {t("catalog.filters.noBrandsMatch")}
             </div>
           )}
           {filteredBrands.length > 8 && (
@@ -494,14 +502,14 @@ export function Catalog({
               }}
             >
               {showAllBrands
-                ? "Ver menos"
-                : `Ver más (${filteredBrands.length - 8})`}
+                ? t("catalog.filters.showLess")
+                : t("catalog.filters.showMore", { count: filteredBrands.length - 8 })}
             </button>
           )}
         </div>
       </div>
       <div style={{ marginBottom: 32 }}>
-        <div style={filterLabel}>Disponibilidad</div>
+        <div style={filterLabel}>{t("catalog.filters.availabilityLabel")}</div>
         <label
           style={{
             display: "flex",
@@ -516,7 +524,7 @@ export function Catalog({
             checked={inStock}
             onChange={(e) => setInStock(e.target.checked)}
           />{" "}
-          En stock
+          {t("catalog.filters.inStock")}
         </label>
       </div>
     </div>
@@ -555,7 +563,7 @@ export function Catalog({
             marginBottom: 10,
           }}
         >
-          Catálogo · {filtered.length} productos
+          {t("catalog.kicker", { count: filtered.length })}
         </div>
         <h1
           style={{
@@ -568,45 +576,45 @@ export function Catalog({
             fontWeight: 400,
           }}
         >
-          {cat === "Todos" ? (
+          {cat === ALL_CATEGORIES ? (
             <>
-              Toda la <em style={{ color: "var(--green)" }}>tienda</em>
+              {t("catalog.headingAllPrefix")} <em style={{ color: "var(--green)" }}>{t("catalog.headingAllEmphasis")}</em>
             </>
           ) : (
-            <>{cat}</>
+            <>{translatedCategoryLabel(t, cat)}</>
           )}
         </h1>
         {need && (
           <div style={{ marginTop: 12, fontSize: 14, color: "var(--ink-60)" }}>
-            Filtro: {need} ·{" "}
+            {t("catalog.needFilterPrefix")} {translatedNeedLabel(t, need)} ·{" "}
             <a
               onClick={() => {
                 setNeed(null);
                 syncFilter({
-                  category: cat !== "Todos" ? cat : undefined,
+                  category: cat !== ALL_CATEGORIES ? cat : undefined,
                   search: search.trim() || undefined,
                 });
               }}
               style={{ color: "var(--green)", cursor: "pointer" }}
             >
-              limpiar
+              {t("catalog.clear")}
             </a>
           </div>
         )}
         {search && (
           <div style={{ marginTop: 12, fontSize: 14, color: "var(--ink-60)" }}>
-            Búsqueda: "{search}" ·{" "}
+            {t("catalog.searchFilterPrefix")} "{search}" ·{" "}
             <a
               onClick={() => {
                 setSearch("");
                 syncFilter({
-                  category: cat !== "Todos" ? cat : undefined,
+                  category: cat !== ALL_CATEGORIES ? cat : undefined,
                   need: need || undefined,
                 });
               }}
               style={{ color: "var(--green)", cursor: "pointer" }}
             >
-              limpiar
+              {t("catalog.clear")}
             </a>
           </div>
         )}
@@ -652,7 +660,7 @@ export function Catalog({
                   letterSpacing: "-0.02em",
                 }}
               >
-                Filtros
+                {t("catalog.filters.mobileTitle")}
               </span>
               <button
                 onClick={() => setFilterOpen(false)}
@@ -736,7 +744,7 @@ export function Catalog({
                     flexShrink: 0,
                   }}
                 >
-                  <Icon name="menu" size={14} /> Filtros
+                  <Icon name="menu" size={14} /> {t("catalog.filters.mobileTitle")}
                 </button>
               )}
               {!isSmall &&
@@ -769,11 +777,11 @@ export function Catalog({
                       fontFamily: '"JetBrains Mono", monospace',
                     }}
                   >
-                    Mostrando{" "}
-                    {(currentPage - 1) * ITEMS_PER_PAGE +
-                      (filtered.length ? 1 : 0)}
-                    –{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)}{" "}
-                    de {filtered.length}
+                    {t("catalog.showingRange", {
+                      from: (currentPage - 1) * ITEMS_PER_PAGE + (filtered.length ? 1 : 0),
+                      to: Math.min(currentPage * ITEMS_PER_PAGE, filtered.length),
+                      total: filtered.length,
+                    })}
                   </span>
                 ))}
             </div>
@@ -796,12 +804,12 @@ export function Catalog({
                 }}
               >
                 {sort === "featured"
-                  ? "Destacados"
+                  ? t("catalog.sort.featured")
                   : sort === "rating"
-                    ? "Mejor valorados"
+                    ? t("catalog.sort.rating")
                     : sort === "priceAsc"
-                      ? "Menor precio"
-                      : "Mayor precio"}
+                      ? t("catalog.sort.priceAsc")
+                      : t("catalog.sort.priceDesc")}
                 <Icon name="chevron-down" size={14} />
               </button>
 
@@ -830,10 +838,10 @@ export function Catalog({
                     }}
                   >
                     {[
-                      { value: "featured", label: "Destacados" },
-                      { value: "rating", label: "Mejor valorados" },
-                      { value: "priceAsc", label: "Menor precio" },
-                      { value: "priceDesc", label: "Mayor precio" },
+                      { value: "featured", label: t("catalog.sort.featured") },
+                      { value: "rating", label: t("catalog.sort.rating") },
+                      { value: "priceAsc", label: t("catalog.sort.priceAsc") },
+                      { value: "priceDesc", label: t("catalog.sort.priceDesc") },
                     ].map((o) => (
                       <button
                         key={o.value}
@@ -905,7 +913,7 @@ export function Catalog({
                 fontSize: isMobile ? 22 : 28,
               }}
             >
-              Sin resultados con estos filtros.
+              {t("catalog.noResults")}
             </div>
           ) : (
             <div
@@ -958,7 +966,7 @@ export function Catalog({
                   fontSize: 13,
                 }}
               >
-                <Icon name="arrow-left" size={14} /> Anterior
+                <Icon name="arrow-left" size={14} /> {t("catalog.previous")}
               </button>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {pageNumbers.map((value, index) => {
@@ -1030,7 +1038,7 @@ export function Catalog({
                   fontSize: 13,
                 }}
               >
-                Siguiente <Icon name="arrow-right" size={14} />
+                {t("catalog.next")} <Icon name="arrow-right" size={14} />
               </button>
             </div>
           )}
@@ -1038,8 +1046,8 @@ export function Catalog({
       </div>
 
       <RelatedProductsSection
-        subtitle="Recomendaciones del catálogo"
-        title={<>También te puede <em style={{ color: 'var(--green)' }}>interesar</em></>}
+        subtitle={t("catalog.related.subtitle")}
+        title={<>{t("catalog.related.titlePrefix")} <em style={{ color: 'var(--green)' }}>{t("catalog.related.titleEmphasis")}</em></>}
         products={recommendations}
         onOpenProduct={onOpenProduct}
         onAdd={onAdd}

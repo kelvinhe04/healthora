@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth, useClerk, useUser } from '@clerk/clerk-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { loadStripe } from '@stripe/stripe-js';
@@ -10,6 +11,7 @@ import { StripeCardInput } from '../components/shared/StripeCardInput';
 import { Checkbox } from '../components/shared/Checkbox';
 import { api } from '../lib/api';
 import { formatPanamaMedium } from '../lib/dates';
+import { formatCurrency } from '../lib/currency';
 import type { NotificationPreferences, ProductSubscription, SubscriptionStatus } from '../types';
 
 interface ProfileProps {
@@ -20,12 +22,6 @@ const sectionCard = { background: 'var(--cream-2)', borderRadius: 20, padding: 2
 const sectionLabel = { fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase' as const, letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 4 };
 const sectionTitle = { fontFamily: '"Instrument Serif", serif', fontSize: 24, letterSpacing: '-0.02em', margin: '0 0 18px', color: 'var(--ink)', fontWeight: 400 };
 
-const STATUS_LABELS: Record<SubscriptionStatus, string> = {
-  active: 'Activa',
-  paused: 'Pausada',
-  canceled: 'Cancelada',
-};
-
 const STATUS_COLORS: Record<SubscriptionStatus, { bg: string; fg: string }> = {
   active: { bg: 'oklch(0.92 0.1 140)', fg: 'oklch(0.4 0.1 140)' },
   paused: { bg: 'oklch(0.93 0.08 90)', fg: 'oklch(0.45 0.1 90)' },
@@ -33,6 +29,7 @@ const STATUS_COLORS: Record<SubscriptionStatus, { bg: string; fg: string }> = {
 };
 
 function SubscriptionsSection() {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
@@ -50,7 +47,7 @@ function SubscriptionsSection() {
   const pauseMut = useMutation({
     mutationFn: async (id: string) => {
       const token = await getToken();
-      if (!token) throw new Error('No autenticado');
+      if (!token) throw new Error(t('profile.errors.notAuthenticated'));
       return api.subscriptions.pause(id, token);
     },
     onSuccess: invalidate,
@@ -58,7 +55,7 @@ function SubscriptionsSection() {
   const resumeMut = useMutation({
     mutationFn: async (id: string) => {
       const token = await getToken();
-      if (!token) throw new Error('No autenticado');
+      if (!token) throw new Error(t('profile.errors.notAuthenticated'));
       return api.subscriptions.resume(id, token);
     },
     onSuccess: invalidate,
@@ -66,7 +63,7 @@ function SubscriptionsSection() {
   const cancelMut = useMutation({
     mutationFn: async (id: string) => {
       const token = await getToken();
-      if (!token) throw new Error('No autenticado');
+      if (!token) throw new Error(t('profile.errors.notAuthenticated'));
       return api.subscriptions.cancel(id, token);
     },
     onSuccess: invalidate,
@@ -77,12 +74,12 @@ function SubscriptionsSection() {
 
   return (
     <section style={sectionCard}>
-      <h2 style={sectionTitle}>Mis suscripciones</h2>
+      <h2 style={sectionTitle}>{t('profile.subscriptions.title')}</h2>
       {subscriptionsQuery.isLoading ? (
-        <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Cargando…</p>
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>{t('profile.subscriptions.loading')}</p>
       ) : subscriptions.length === 0 ? (
         <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>
-          No tienes reposiciones automáticas activas. Puedes suscribirte desde la ficha de cualquier producto.
+          {t('profile.subscriptions.empty')}
         </p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -96,16 +93,16 @@ function SubscriptionsSection() {
                       {sub.productName}{sub.variantLabel ? ` · ${sub.variantLabel}` : ''}
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', marginTop: 4 }}>
-                      Cada {sub.intervalDays} días · ${sub.total.toFixed(2)} por envío
+                      {t('profile.subscriptions.frequency', { days: sub.intervalDays, amount: formatCurrency(sub.total) })}
                     </div>
                   </div>
                   <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: 11, fontFamily: '"JetBrains Mono", monospace', background: colors.bg, color: colors.fg, whiteSpace: 'nowrap' }}>
-                    {STATUS_LABELS[sub.status]}
+                    {t(`profile.subscriptions.status.${sub.status}`)}
                   </span>
                 </div>
                 {sub.status !== 'canceled' && sub.nextBillingDate && (
                   <p style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', margin: '0 0 10px' }}>
-                    Próximo envío: {formatPanamaMedium(sub.nextBillingDate)}
+                    {t('profile.subscriptions.nextShipment', { date: formatPanamaMedium(sub.nextBillingDate) })}
                   </p>
                 )}
                 {sub.status !== 'canceled' && (
@@ -116,7 +113,7 @@ function SubscriptionsSection() {
                         size="sm"
                         disabled={isMutating}
                         onClick={() => pauseMut.mutate(sub._id)}
-                        text="Pausar"
+                        text={t('profile.subscriptions.pause')}
                       />
                     ) : (
                       <AnimatedButton
@@ -124,7 +121,7 @@ function SubscriptionsSection() {
                         size="sm"
                         disabled={isMutating}
                         onClick={() => resumeMut.mutate(sub._id)}
-                        text="Reanudar"
+                        text={t('profile.subscriptions.resume')}
                       />
                     )}
                     <AnimatedButton
@@ -132,7 +129,7 @@ function SubscriptionsSection() {
                       size="sm"
                       disabled={isMutating}
                       onClick={() => cancelMut.mutate(sub._id)}
-                      text="Cancelar"
+                      text={t('profile.subscriptions.cancel')}
                     />
                   </div>
                 )}
@@ -150,6 +147,7 @@ const stripePromise = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
   : null;
 
 function AddCardForm({ onSaved, onCancel }: { onSaved: () => void; onCancel: () => void }) {
+  const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
   const { getToken } = useAuth();
@@ -163,22 +161,22 @@ function AddCardForm({ onSaved, onCancel }: { onSaved: () => void; onCancel: () 
     setError('');
     try {
       const token = await getToken();
-      if (!token) throw new Error('No autenticado');
+      if (!token) throw new Error(t('profile.errors.notAuthenticated'));
       const { clientSecret } = await api.account.paymentMethods.createSetupIntent(token);
       const cardElement = elements.getElement(CardElement);
-      if (!cardElement) throw new Error('No se pudo cargar el formulario de tarjeta');
+      if (!cardElement) throw new Error(t('profile.errors.cardFormFailed'));
 
       const result = await stripe.confirmCardSetup(clientSecret, {
         payment_method: { card: cardElement, allow_redisplay: 'always' },
       });
 
       if (result.error) {
-        setError(result.error.message || 'No se pudo guardar la tarjeta');
+        setError(result.error.message || t('profile.errors.cardSaveFailed'));
         return;
       }
       onSaved();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo guardar la tarjeta');
+      setError(err instanceof Error ? err.message : t('profile.errors.cardSaveFailed'));
     } finally {
       setSaving(false);
     }
@@ -196,15 +194,16 @@ function AddCardForm({ onSaved, onCancel }: { onSaved: () => void; onCancel: () 
           variant="primary"
           size="sm"
           disabled={!stripe || saving}
-          text={saving ? 'Guardando…' : 'Guardar tarjeta'}
+          text={saving ? t('profile.addCard.saving') : t('profile.addCard.saveCard')}
         />
-        <AnimatedButton type="button" variant="ghost" size="sm" onClick={onCancel} text="Cancelar" />
+        <AnimatedButton type="button" variant="ghost" size="sm" onClick={onCancel} text={t('profile.addCard.cancel')} />
       </div>
     </form>
   );
 }
 
 function PaymentMethodsSection() {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [showAddForm, setShowAddForm] = useState(false);
@@ -221,7 +220,7 @@ function PaymentMethodsSection() {
   const deleteMut = useMutation({
     mutationFn: async (id: string) => {
       const token = await getToken();
-      if (!token) throw new Error('No autenticado');
+      if (!token) throw new Error(t('profile.errors.notAuthenticated'));
       return api.account.paymentMethods.remove(id, token);
     },
     onSuccess: () => {
@@ -232,7 +231,7 @@ function PaymentMethodsSection() {
   const setDefaultMut = useMutation({
     mutationFn: async (id: string) => {
       const token = await getToken();
-      if (!token) throw new Error('No autenticado');
+      if (!token) throw new Error(t('profile.errors.notAuthenticated'));
       return api.account.paymentMethods.setDefault(id, token);
     },
     onSuccess: () => {
@@ -244,12 +243,12 @@ function PaymentMethodsSection() {
 
   return (
     <section style={sectionCard}>
-      <h2 style={sectionTitle}>Métodos de pago</h2>
+      <h2 style={sectionTitle}>{t('profile.paymentMethods.title')}</h2>
       {methodsQuery.isLoading ? (
-        <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Cargando…</p>
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>{t('profile.paymentMethods.loading')}</p>
       ) : methods.length === 0 ? (
         <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginBottom: 14 }}>
-          No tienes tarjetas guardadas todavía.
+          {t('profile.paymentMethods.empty')}
         </p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
@@ -275,7 +274,7 @@ function PaymentMethodsSection() {
                 </span>
                 {m.isDefault && (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--green)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
-                    <Icon name="star" size={12} /> PRINCIPAL
+                    <Icon name="star" size={12} /> {t('profile.paymentMethods.default')}
                   </span>
                 )}
               </div>
@@ -285,7 +284,7 @@ function PaymentMethodsSection() {
                     type="button"
                     onClick={() => setDefaultMut.mutate(m.id)}
                     disabled={setDefaultMut.isPending}
-                    aria-label={`Marcar tarjeta terminada en ${m.last4} como principal`}
+                    aria-label={t('profile.paymentMethods.setDefaultAria', { last4: m.last4 })}
                     style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ink-60)', display: 'flex', padding: 6 }}
                   >
                     <Icon name="star" size={16} />
@@ -295,7 +294,7 @@ function PaymentMethodsSection() {
                   type="button"
                   onClick={() => deleteMut.mutate(m.id)}
                   disabled={deleteMut.isPending}
-                  aria-label={`Eliminar tarjeta terminada en ${m.last4}`}
+                  aria-label={t('profile.paymentMethods.deleteAria', { last4: m.last4 })}
                   style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ink-60)', display: 'flex', padding: 6 }}
                 >
                   <Icon name="trash" size={16} />
@@ -319,7 +318,7 @@ function PaymentMethodsSection() {
           </Elements>
         ) : (
           <p style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>
-            Falta configurar VITE_STRIPE_PUBLISHABLE_KEY para agregar tarjetas.
+            {t('profile.paymentMethods.stripeMissing')}
           </p>
         )
       ) : (
@@ -328,11 +327,11 @@ function PaymentMethodsSection() {
           size="sm"
           onClick={() => setShowAddForm(true)}
           icon={<Icon name="plus" size={14} />}
-          text="Agregar tarjeta"
+          text={t('profile.paymentMethods.addCard')}
         />
       )}
       <p style={{ marginTop: 14, fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', lineHeight: 1.5 }}>
-        Tus tarjetas se guardan de forma segura en Stripe — Healthora nunca almacena el número completo. Podrás elegir una tarjeta guardada al pagar en el checkout.
+        {t('profile.paymentMethods.securityNote')}
       </p>
     </section>
   );
@@ -345,6 +344,7 @@ const NOTIFICATION_PREFERENCES_DEFAULTS: NotificationPreferences = {
 };
 
 function NotificationPreferencesSection() {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
@@ -355,7 +355,7 @@ function NotificationPreferencesSection() {
     queryKey,
     queryFn: async () => {
       const token = await getToken();
-      if (!token) throw new Error('No autenticado');
+      if (!token) throw new Error(t('profile.errors.notAuthenticated'));
       return api.account.notificationPreferences.get(token);
     },
   });
@@ -363,7 +363,7 @@ function NotificationPreferencesSection() {
   const updateMut = useMutation({
     mutationFn: async (next: NotificationPreferences) => {
       const token = await getToken();
-      if (!token) throw new Error('No autenticado');
+      if (!token) throw new Error(t('profile.errors.notAuthenticated'));
       return api.account.notificationPreferences.update(next, token);
     },
     // Optimista: el checkbox tiene que reflejar el click al instante, no recien cuando vuelve la
@@ -378,7 +378,7 @@ function NotificationPreferencesSection() {
     },
     onError: (err, _next, context) => {
       if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
-      setError(err instanceof Error ? err.message : 'No se pudo guardar el cambio.');
+      setError(err instanceof Error ? err.message : t('profile.errors.prefsSaveFailed'));
     },
     onSuccess: (data) => queryClient.setQueryData(queryKey, data),
   });
@@ -389,11 +389,11 @@ function NotificationPreferencesSection() {
 
   return (
     <section style={sectionCard}>
-      <h2 style={sectionTitle}>Preferencias de notificación</h2>
+      <h2 style={sectionTitle}>{t('profile.notifications.title')}</h2>
       {prefsQuery.isLoading ? (
-        <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Cargando…</p>
+        <p style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>{t('profile.notifications.loading')}</p>
       ) : prefsQuery.isError ? (
-        <p style={{ fontSize: 13, color: 'var(--coral)', fontFamily: '"Geist", sans-serif' }}>No se pudieron cargar tus preferencias. Recarga la página.</p>
+        <p style={{ fontSize: 13, color: 'var(--coral)', fontFamily: '"Geist", sans-serif' }}>{t('profile.notifications.loadError')}</p>
       ) : (
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
@@ -405,8 +405,8 @@ function NotificationPreferencesSection() {
                 style={{ marginTop: 3 }}
               />
               <span>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>Actualizaciones de pedidos y devoluciones</div>
-                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Cuando tu pedido cambia de estado (enviado, entregado) o hay novedades en una devolución.</div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>{t('profile.notifications.orderUpdates.title')}</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>{t('profile.notifications.orderUpdates.desc')}</div>
               </span>
             </label>
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: prefs.unsubscribedAll ? 'not-allowed' : 'pointer', opacity: prefs.unsubscribedAll ? 0.5 : 1 }}>
@@ -417,8 +417,8 @@ function NotificationPreferencesSection() {
                 style={{ marginTop: 3 }}
               />
               <span>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>Recordatorios y promociones</div>
-                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>Avisos de recompra y ofertas.</div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>{t('profile.notifications.promotions.title')}</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>{t('profile.notifications.promotions.desc')}</div>
               </span>
             </label>
           </div>
@@ -431,8 +431,8 @@ function NotificationPreferencesSection() {
                 style={{ marginTop: 3 }}
               />
               <span>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--coral)', fontFamily: '"Geist", sans-serif' }}>Darme de baja de todos los correos</div>
-                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>No recibirás ningún correo de las categorías de arriba. La confirmación de tu compra siempre llega, sin importar esta opción.</div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--coral)', fontFamily: '"Geist", sans-serif' }}>{t('profile.notifications.unsubscribeAll.title')}</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>{t('profile.notifications.unsubscribeAll.desc')}</div>
               </span>
             </label>
           </div>
@@ -444,6 +444,7 @@ function NotificationPreferencesSection() {
 }
 
 export function Profile({ onBack }: ProfileProps) {
+  const { t } = useTranslation();
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const isSmall = isMobile || bp === 'tablet';
@@ -452,32 +453,32 @@ export function Profile({ onBack }: ProfileProps) {
 
   return (
     <div style={{ padding: isMobile ? '20px 16px 60px' : '24px 40px 80px', maxWidth: 960, margin: '0 auto' }}>
-      <button type="button" onClick={onBack} aria-label="Volver a la tienda" style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--ink-60)', fontSize: 13, marginBottom: 24, fontFamily: '"Geist", sans-serif' }}>
-        <Icon name="arrow-left" size={14} /> Volver a la tienda
+      <button type="button" onClick={onBack} aria-label={t('profile.backToStore')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--ink-60)', fontSize: 13, marginBottom: 24, fontFamily: '"Geist", sans-serif' }}>
+        <Icon name="arrow-left" size={14} /> {t('profile.backToStore')}
       </button>
 
       <div style={{ marginBottom: 32 }}>
-        <div style={{ ...sectionLabel, marginBottom: 10 }}>Mi cuenta</div>
+        <div style={{ ...sectionLabel, marginBottom: 10 }}>{t('profile.kicker')}</div>
         <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 40 : 52, letterSpacing: '-0.035em', lineHeight: 1, margin: 0, color: 'var(--ink)', fontWeight: 400 }}>
-          Tu <em style={{ color: 'var(--green)' }}>perfil</em>
+          {t('profile.headingPrefix')} <em style={{ color: 'var(--green)' }}>{t('profile.headingEmphasis')}</em>
         </h1>
       </div>
 
       <section style={{ ...sectionCard, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           {user?.imageUrl ? (
-            <img src={user.imageUrl} alt={user.fullName || 'Perfil'} style={{ width: 48, height: 48, borderRadius: 999, objectFit: 'cover' }} />
+            <img src={user.imageUrl} alt={user.fullName || t('profile.defaultUserAlt')} style={{ width: 48, height: 48, borderRadius: 999, objectFit: 'cover' }} />
           ) : (
             <div style={{ width: 48, height: 48, borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontFamily: '"Instrument Serif", serif' }}>
               {user?.firstName?.[0] || user?.primaryEmailAddress?.emailAddress?.[0]?.toUpperCase() || 'U'}
             </div>
           )}
           <div>
-            <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>{user?.fullName || 'Sin nombre'}</div>
+            <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', fontFamily: '"Geist", sans-serif' }}>{user?.fullName || t('profile.noName')}</div>
             <div style={{ fontSize: 12, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>{user?.primaryEmailAddress?.emailAddress}</div>
           </div>
         </div>
-        <AnimatedButton variant="primary" size="sm" onClick={() => openUserProfile()} icon={<Icon name="pencil" size={14} />} text="Editar nombre y foto" />
+        <AnimatedButton variant="primary" size="sm" onClick={() => openUserProfile()} icon={<Icon name="pencil" size={14} />} text={t('profile.editNameAndPhoto')} />
       </section>
 
       <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1fr 1fr', gap: 16, alignItems: 'start' }}>

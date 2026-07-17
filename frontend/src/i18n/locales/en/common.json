@@ -1,0 +1,2111 @@
+{
+  "common": {
+    "languageSwitcherAria": "Change language",
+    "modalDialogAria": "Dialog"
+  },
+  "topbar": {
+    "messages": [
+      "Free shipping on orders over $50",
+      "Free sample on orders over $200",
+      "New customers: 15% off with code BIENVENIDA",
+      "24–48h delivery across the region",
+      "Products verified by pharmacists"
+    ]
+  },
+  "errorBoundary": {
+    "titlePrefix": "Something went",
+    "titleEmphasis": "wrong",
+    "message": "You can retry or go back home."
+  },
+  "ssoCallback": {
+    "processing": "Signing you in..."
+  },
+  "reviewSection": {
+    "timeAgo": {
+      "justNow": "Just now",
+      "minutes": "{{count}} min ago",
+      "hours": "{{count}} h ago",
+      "days_one": "{{count}} day ago",
+      "days_other": "{{count}} days ago",
+      "months_one": "{{count}} month ago",
+      "months_other": "{{count}} months ago",
+      "years_one": "{{count}} year ago",
+      "years_other": "{{count}} years ago"
+    },
+    "helpful": {
+      "label": "Helpful",
+      "withCount": "Helpful · {{count}}"
+    },
+    "eyebrow": "Buyer feedback",
+    "heading": "Customer",
+    "headingEmphasis": "reviews",
+    "writeReview": "Write a review",
+    "reviewCount_one": "{{count}} review",
+    "reviewCount_other": "{{count}} reviews",
+    "filterAria": "Filter reviews by star rating",
+    "successBanner": "Thanks for your review! It's now listed below.",
+    "form": {
+      "title": "Your review",
+      "ratingLabel": "Rating *",
+      "titleLabel": "Title (optional)",
+      "titlePlaceholder": "Sum up your experience in a sentence",
+      "bodyLabel": "Your review *",
+      "bodyPlaceholder": "What did you think of this product? Would you recommend it?",
+      "submit": "Post review",
+      "submitting": "Sending…",
+      "cancel": "Cancel",
+      "errors": {
+        "ratingRequired": "Please select a rating",
+        "bodyRequired": "Please write your review",
+        "noSession": "No active session"
+      }
+    },
+    "signInPrompt": {
+      "title": "Already tried this product?",
+      "subtitle": "Sign in to share your experience with other shoppers.",
+      "cta": "Sign in"
+    },
+    "filterActive": {
+      "showing_one": "Showing {{count}} review of {{stars}}★",
+      "showing_other": "Showing {{count}} reviews of {{stars}}★",
+      "viewAll": "View all"
+    },
+    "empty": {
+      "noneTitle": "Be the first to review",
+      "noneSubtitle": "There are no reviews for this product yet.",
+      "filteredTitle": "No {{stars}}★ reviews",
+      "filteredSubtitle_one": "Nobody rated this product {{stars}} star yet.",
+      "filteredSubtitle_other": "Nobody rated this product {{stars}} stars yet."
+    }
+  },
+  "recentlyViewedSection": {
+    "eyebrow": "Keep exploring",
+    "heading": "Recently",
+    "headingEmphasis": "viewed"
+  },
+  "subscribeModal": {
+    "ariaLabel": "Subscribe to auto-replenish",
+    "closeAria": "Close",
+    "heading": "Auto",
+    "headingEmphasis": "replenish",
+    "success": "All set! Your subscription is now active.",
+    "intervalLabels": {
+      "d7": "Every 7 days",
+      "d15": "Every 15 days",
+      "d30": "Every 30 days",
+      "d60": "Every 60 days"
+    },
+    "existing": {
+      "message": "You already have an active auto-replenish for {{product}}.",
+      "hint": "You can pause it, change its frequency, or cancel it from your profile."
+    },
+    "intro": {
+      "pickup": "{{product}} — we'll charge you and prepare a new order for pickup in store every so often, so you never have to reorder it yourself. You can pause or cancel anytime from your profile.",
+      "delivery": "{{product}} — we'll charge you and ship a new order every so often, so you never have to reorder it yourself. You can pause or cancel anytime from your profile."
+    },
+    "frequency": {
+      "label": "Frequency",
+      "custom": "Custom",
+      "customHint": "days (between {{min}} and {{max}})"
+    },
+    "quantity": {
+      "label": "Quantity per order",
+      "decreaseAria": "Decrease quantity",
+      "increaseAria": "Increase quantity"
+    },
+    "delivery": {
+      "label": "Delivery"
+    },
+    "address": {
+      "savedLabel": "Saved address",
+      "unnamed": "Address {{n}}",
+      "loading": "Loading address…",
+      "edit": "Edit",
+      "useSaved": "Use saved address",
+      "form": {
+        "name": "Name",
+        "phone": "Phone",
+        "city": "City",
+        "address": "Address",
+        "postal": "Postal code"
+      }
+    },
+    "summary": {
+      "subtotal": "Subtotal",
+      "shipping": "Shipping",
+      "free": "Free",
+      "tax": "ITBMS",
+      "total": "Total per order"
+    },
+    "payment": {
+      "label": "Payment method",
+      "useNewCard": "Use a new card",
+      "submitLoading": "Processing payment…",
+      "submitLabel": "Subscribe · {{amount}} / {{method}}",
+      "methodPickup": "pickup",
+      "methodDelivery": "delivery",
+      "stripeMissing": "VITE_STRIPE_PUBLISHABLE_KEY needs to be configured to process the payment."
+    },
+    "errors": {
+      "missingFields": "Fill in name, phone and address to continue.",
+      "notAuthenticated": "Not authenticated",
+      "cardFormFailed": "Couldn't load the card form",
+      "paymentFailed": "Couldn't process the payment",
+      "paymentNotConfirmed": "The payment couldn't be confirmed. Please try again.",
+      "activationFailed": "Your payment went through, but we couldn't activate the subscription. Refresh your profile in a few seconds or contact us if it doesn't show up.",
+      "createFailed": "Couldn't create the subscription"
+    }
+  },
+  "signInModal": {
+    "closeAria": "Close",
+    "left": {
+      "heading": "Your health,",
+      "headingEmphasis": "our care.",
+      "subtitle": "Access hundreds of wellness and pharmacy products with fast delivery to your door.",
+      "features": {
+        "freeShipping": "Free shipping on orders +$50",
+        "certifiedProducts": "+{{count}} certified products",
+        "pharmacyAdvice": "Pharmacy guidance included"
+      }
+    },
+    "srHeading": {
+      "signIn": "Sign in to Healthora",
+      "signUp": "Create a Healthora account"
+    },
+    "tabs": {
+      "signIn": "Sign in",
+      "signUp": "Create account"
+    },
+    "oauth": {
+      "google": "Continue with Google",
+      "microsoft": "Continue with Microsoft",
+      "divider": "or with email"
+    },
+    "email": {
+      "label": "Email address",
+      "signUpCta": "Sign up",
+      "submit": {
+        "loading": "Sending code…",
+        "signIn": "Continue with email",
+        "signUp": "Send access code"
+      }
+    },
+    "otp": {
+      "label": "Verification",
+      "heading": "Check your",
+      "headingEmphasis": "email",
+      "infoBefore": "We sent a 6-digit code to",
+      "infoAfter": "Check your inbox.",
+      "codeLabel": "Verification code",
+      "changeEmail": "← Change email",
+      "submit": {
+        "loading": "Verifying…",
+        "signIn": "Sign in",
+        "signUp": "Create account"
+      }
+    },
+    "terms": {
+      "prefix": "By continuing you agree to our",
+      "terms": "Terms",
+      "and": "and",
+      "privacy": "Privacy"
+    },
+    "errors": {
+      "accountNotFound": "We couldn't find that account. Want to create one?",
+      "sendCodeFailed": "Failed to send the code",
+      "invalidCode": "Invalid code",
+      "oauthFailed": "Couldn't connect to the provider"
+    }
+  },
+  "header": {
+    "nav": {
+      "categories": "Categories",
+      "bestsellers": "Bestsellers",
+      "recentlyViewed": "Recently viewed",
+      "deals": "Deals",
+      "newArrivals": "New arrivals",
+      "brands": "Brands"
+    },
+    "search": {
+      "placeholderWide": "Search vitamins, skin care, brands...",
+      "placeholderNarrow": "Search products...",
+      "ariaLabel": "Search products",
+      "ariaClear": "Clear search",
+      "ariaSubmit": "Search"
+    },
+    "account": {
+      "aria": "Account",
+      "profileAlt": "Profile",
+      "myOrders": "My orders",
+      "club": "Healthora Club",
+      "myProfile": "My profile",
+      "shippingAddresses": "Shipping addresses",
+      "adminPanel": "Admin panel",
+      "signOut": "Sign out"
+    },
+    "theme": {
+      "toLight": "Turn on light mode",
+      "toDark": "Turn on dark mode"
+    },
+    "wishlistAria": "Wishlist",
+    "compareAria": "Compare products",
+    "cartAria": "Cart",
+    "menuAria": "Menu",
+    "closeMenuAria": "Close menu",
+    "signOutModal": {
+      "title": "Sign out?",
+      "body": "Your cart and preferences will be kept for the next time you sign in.",
+      "cancel": "Cancel",
+      "confirm": "Sign out"
+    },
+    "addresses": {
+      "account": "Account",
+      "headingPrefix": "Shipping",
+      "headingEmphasis": "addresses",
+      "intro": "Save several addresses and set one as default to autofill checkout.",
+      "loading": "Loading addresses…",
+      "empty": "You don't have any saved addresses yet.",
+      "unnamed": "Address {{n}}",
+      "principal": "Default",
+      "editAria": "Edit address",
+      "deleteAria": "Delete address",
+      "useAsPrimary": "Set as default",
+      "newAddress": "New address",
+      "editAddress": "Edit address",
+      "closeAria": "Close",
+      "form": {
+        "label": "Label",
+        "labelPlaceholder": "Home, office, mom…",
+        "name": "Name",
+        "namePlaceholder": "Full name",
+        "phone": "Phone",
+        "phonePlaceholder": "6123-4567",
+        "city": "City",
+        "cityPlaceholder": "City",
+        "address": "Address",
+        "addressPlaceholder": "Street, number, apt",
+        "postal": "Postal code",
+        "postalPlaceholder": "10001"
+      },
+      "addButton": "Add address",
+      "updateButton": "Update address",
+      "saveAllButton": "Save addresses",
+      "savingButton": "Saving…",
+      "confirmDeleteKicker": "Confirmation",
+      "confirmDeleteHeadingPrefix": "Delete",
+      "confirmDeleteHeadingEmphasis": "address",
+      "confirmDeleteBody": "{{target}} will be deleted from your account.",
+      "thisAddress": "This address",
+      "cancel": "Cancel",
+      "confirmDeleteButton": "Yes, delete",
+      "savedKicker": "Addresses saved",
+      "savedHeadingPrefix": "Changes",
+      "savedHeadingEmphasis": "saved",
+      "savedBody": "Your shipping addresses were updated successfully.",
+      "understood": "Got it"
+    },
+    "errors": {
+      "needSignIn": "You need to sign in",
+      "loadAddressesFailed": "We couldn't load your addresses",
+      "saveAddressesFailed": "We couldn't save your addresses",
+      "deleteAddressFailed": "We couldn't delete the address",
+      "fillRequiredFields": "Fill in name, phone, address, city and postal code."
+    }
+  },
+  "footer": {
+    "ariaLabel": "Footer",
+    "description": "Your online pharmacy for health, personal care, beauty and wellness.",
+    "columns": {
+      "shop": "Shop",
+      "help": "Help",
+      "legal": "Legal"
+    },
+    "categories": {
+      "vitamins": "Vitamins",
+      "medications": "Medications",
+      "personalCare": "Personal care",
+      "babyCare": "Baby care",
+      "skinHealth": "Skin health",
+      "fitness": "Fitness",
+      "fragrances": "Fragrances",
+      "moisturizers": "Moisturizers",
+      "makeup": "Makeup",
+      "wellnessSupplements": "Wellness supplements"
+    },
+    "help": {
+      "contact": "Contact",
+      "faq": "FAQ",
+      "shipping": "Shipping",
+      "returns": "Returns",
+      "orderStatus": "Order status"
+    },
+    "legal": {
+      "terms": "Terms and conditions",
+      "privacy": "Privacy policy",
+      "medications": "Medication policy",
+      "cookies": "Cookies"
+    },
+    "newsletter": {
+      "title": "Newsletter",
+      "body": "Get deals, launches and wellness tips.",
+      "placeholder": "you@email.com",
+      "submitting": "Sending...",
+      "submit": "Subscribe",
+      "errorEmpty": "Enter your email to subscribe.",
+      "success": "We sent you a confirmation email.",
+      "errorGeneric": "We couldn't complete the subscription."
+    },
+    "copyright": "© 2026 Healthora · Digital pharmacy",
+    "payments": "Secure payments · Visa · Mastercard · Amex · Stripe"
+  },
+  "productCard": {
+    "outOfStock": "Out of stock",
+    "lowStock": "Only {{count}} left",
+    "compareMax": "Maximum of 4 products",
+    "removeFromCompareAria": "Remove from comparison",
+    "addToCompareAria": "Add to comparison",
+    "removeFromWishlistAria": "Remove from wishlist",
+    "addToWishlistAria": "Add to wishlist",
+    "addToCartAria": "Add to cart",
+    "noReviews": "NO REVIEWS",
+    "purchasesLastMonth": "{{count}} bought last month",
+    "tags": {
+      "new": "New",
+      "bestseller": "Bestseller"
+    }
+  },
+  "catalog": {
+    "filters": {
+      "categoriesLabel": "Categories",
+      "all": "All",
+      "priceMaxLabel": "Max price · {{price}}",
+      "brandsLabel": "Brands",
+      "searchBrandsPlaceholder": "Search {{count}} brands",
+      "searchBrandAria": "Search brand",
+      "noBrandsMatch": "No brands match.",
+      "showLess": "Show less",
+      "showMore": "Show more ({{count}})",
+      "availabilityLabel": "Availability",
+      "inStock": "In stock",
+      "mobileTitle": "Filters"
+    },
+    "kicker": "Catalog · {{count}} products",
+    "headingAllPrefix": "The whole",
+    "headingAllEmphasis": "store",
+    "needFilterPrefix": "Filter:",
+    "searchFilterPrefix": "Search:",
+    "clear": "clear",
+    "sort": {
+      "featured": "Featured",
+      "rating": "Top rated",
+      "priceAsc": "Lowest price",
+      "priceDesc": "Highest price"
+    },
+    "showingRange": "Showing {{from}}–{{to}} of {{total}}",
+    "noResults": "No results with these filters.",
+    "previous": "Previous",
+    "next": "Next",
+    "related": {
+      "subtitle": "Catalog recommendations",
+      "titlePrefix": "You might also",
+      "titleEmphasis": "like"
+    }
+  },
+  "cart": {
+    "title": "Your cart",
+    "itemCount_one": "{{count}} ITEM",
+    "itemCount_other": "{{count}} ITEMS",
+    "closeAria": "Close cart",
+    "emptyTitle": "Your cart is empty",
+    "emptyBody": "Add products to your cart to start your purchase.",
+    "exploreProducts": "Explore products",
+    "clearCart": "Clear cart",
+    "reduceQtyAria": "Decrease quantity of {{name}}",
+    "qtyAria": "Quantity: {{qty}}",
+    "increaseQtyAria": "Increase quantity of {{name}}",
+    "removeAria": "Remove",
+    "variantEditor": {
+      "changeFlavorAria": "Change flavor",
+      "changeSizeAria": "Change size",
+      "changeVariantAria": "Change variant",
+      "outOfStockSuffix": " (out of stock)",
+      "change": "CHANGE",
+      "close": "CLOSE"
+    },
+    "club": {
+      "title": "Healthora Club",
+      "addMorePrefix": "Add",
+      "addMoreSuffix": "more to get 1 free sample",
+      "freeSampleKicker": "✦ Healthora Club · Free sample",
+      "chooseFreeSamplePrefix": "Choose",
+      "chooseFreeSampleBold": "1 free sample",
+      "chooseButton": "CHOOSE →"
+    },
+    "summary": {
+      "subtotal": "Subtotal",
+      "freeSample": "Free sample",
+      "shipping": "Shipping",
+      "free": "FREE",
+      "tax": "ITBMS",
+      "total": "Total"
+    },
+    "checkoutButton": "Go to checkout",
+    "securePayment": "SECURE PAYMENT WITH STRIPE",
+    "confirmClear": {
+      "kicker": "Confirmation",
+      "headingPrefix": "Clear",
+      "headingEmphasis": "cart",
+      "body": "All products will be removed from your cart. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Yes, clear everything"
+    }
+  },
+  "productDetail": {
+    "variantTypes": {
+      "size": "SIZE",
+      "color": "COLOR",
+      "weight": "WEIGHT",
+      "count": "PACK",
+      "flavor": "FLAVOR",
+      "scent": "SCENT"
+    },
+    "zoomAria": "Enlarged view of {{name}}",
+    "closeZoomAria": "Close enlarged view",
+    "store": "STORE",
+    "thumbnailsAria": "Product thumbnails",
+    "imageAltFallback": "Image {{n}}",
+    "reviewsCount_one": "{{count}} review",
+    "reviewsCount_other": "{{count}} reviews",
+    "noReviewsYet": "NO REVIEWS YET",
+    "outOfStock": "OUT OF STOCK",
+    "lowStock": "ONLY {{count}} LEFT",
+    "inStock": "IN STOCK",
+    "outOfStockSuffix": ", out of stock",
+    "colorAria": "Color {{label}}",
+    "noStockOption": " · Out of stock",
+    "savings": "SAVE {{amount}}",
+    "decreaseQtyAria": "Decrease quantity",
+    "increaseQtyAria": "Increase quantity",
+    "outOfStockButton": "Out of stock",
+    "addedToCart": "✓ Added to cart",
+    "addToCart": "Add to cart · {{price}}",
+    "buyNow": "Buy now with one click",
+    "subscribe": "Subscribe to auto-replenishment",
+    "trust": {
+      "freeShipping": "Free shipping on orders over {{amount}}",
+      "securePayment": "Secure payment with Stripe · 3D Secure",
+      "verified": "Products verified by pharmacists"
+    },
+    "tabs": {
+      "benefits": "Benefits",
+      "usage": "How to use",
+      "ingredients": "Ingredients",
+      "nutrition": "Nutrition facts",
+      "certs": "Certifications",
+      "interactions": "Compatibility",
+      "faq": "FAQ",
+      "shade": "Shade & skin tone",
+      "application": "Technique",
+      "formula": "Formula",
+      "skintypes": "Skin types",
+      "warnings": "Warnings"
+    },
+    "related": {
+      "subtitle": "You might also like",
+      "titlePrefix": "Related",
+      "titleEmphasis": "products"
+    }
+  },
+  "checkout": {
+    "backToStore": "Back to store",
+    "stepIndicator": "Checkout · Step {{step}} of 3",
+    "headingPrefix": "Complete your",
+    "headingEmphasis": "purchase",
+    "progressAria": "Checkout progress",
+    "shipping": {
+      "methods": {
+        "delivery": "Home delivery",
+        "pickup": "Store pickup"
+      },
+      "eta": {
+        "delivery": "24h - 48h",
+        "pickup": "Ready in 24h"
+      },
+      "free": "FREE"
+    },
+    "steps": {
+      "auth": {
+        "title": "Sign in",
+        "authenticated": "✓ SIGNED IN",
+        "continueWithGoogle": "Continue with Google",
+        "continueWithMicrosoft": "Continue with Microsoft",
+        "otpEmail": "Get an OTP code by email",
+        "protectedByClerk": "AUTHENTICATION PROTECTED BY CLERK",
+        "activeSession": "ACTIVE SESSION",
+        "defaultUserAlt": "User"
+      },
+      "address": {
+        "titleShipping": "Shipping address",
+        "titlePickup": "Your details",
+        "deliveryLabel": "Delivery",
+        "unnamed": "Address {{n}}",
+        "form": {
+          "fullName": "Full name",
+          "fullNamePlaceholder": "Maria Gomez",
+          "phone": "Phone",
+          "phonePlaceholder": "6123-4567",
+          "address": "Address",
+          "addressPlaceholder": "Street, number, apt",
+          "city": "City",
+          "cityPlaceholder": "City",
+          "postal": "Postal code",
+          "postalPlaceholder": "10001"
+        },
+        "requiredFieldsError": "Please fill in all required fields",
+        "continueToPayment": "Continue to payment"
+      },
+      "payment": {
+        "title": "Payment method",
+        "securePayment": "SECURE PAYMENT",
+        "useNewCard": "Use a new card",
+        "processingAria": "Processing payment",
+        "processingButton": "Processing payment…",
+        "payButton": "Pay {{amount}}",
+        "stripeMissing": "VITE_STRIPE_PUBLISHABLE_KEY needs to be configured to process payments."
+      }
+    },
+    "errors": {
+      "sessionUnavailable": "Session not available",
+      "cardFormFailed": "The card form couldn't be loaded",
+      "paymentFailed": "The payment couldn't be processed",
+      "paymentNotConfirmed": "The payment couldn't be confirmed. Try again.",
+      "paymentGeneric": "Error processing the payment",
+      "promoEmpty": "Enter a discount code.",
+      "promoNeedsSignIn": "Sign in to apply a coupon.",
+      "promoGeneric": "The coupon couldn't be validated."
+    },
+    "summary": {
+      "title": "Order summary",
+      "freeSampleBadge": "FREE SAMPLE · HEALTHORA CLUB",
+      "promoCodeLabel": "Discount code",
+      "promoPlaceholder": "BIENVENIDA",
+      "remove": "Remove",
+      "validating": "Validating…",
+      "apply": "Apply",
+      "savings": "{{label}}: you save {{amount}}.",
+      "welcomeCodeNote": " Only valid on your first paid purchase.",
+      "useLoyaltyPoints": "Use my {{points}} Healthora Club points",
+      "subtotal": "Subtotal",
+      "discountLabel": "Discount {{code}}",
+      "loyaltyPoints": "Healthora Club points",
+      "freeSample": "Free sample",
+      "shippingLabel": "Shipping ({{eta}})",
+      "tax": "ITBMS",
+      "total": "Total",
+      "securedByStripe": "Payment securely processed by Stripe"
+    }
+  },
+  "success": {
+    "error": {
+      "title": "Your payment was processed, but we're still confirming your order.",
+      "body": "It may take a few minutes to show up. Check \"My orders\" later or contact us if it doesn't appear."
+    },
+    "confirming": "Confirming your order…",
+    "orderLabel": "ORDER #{{id}} · {{status}}",
+    "status": {
+      "paid": "PAID",
+      "confirmed": "CONFIRMED"
+    },
+    "headingPrefix": "Thank you for your",
+    "headingEmphasis": "purchase",
+    "receivedPrefix": "We received your payment of",
+    "receivedSuffix": ". We sent you the confirmation by email and will let you know when your order is on its way.",
+    "details": {
+      "status": "Status",
+      "statusValue": "Paid",
+      "estimatedShipping": "Estimated shipping",
+      "estimatedShippingValue": "24 – 48h",
+      "tracking": "Tracking"
+    },
+    "continueShopping": "Keep shopping"
+  },
+  "wishlist": {
+    "kicker": "Saved · {{count}}",
+    "headingPrefix": "My",
+    "headingEmphasis": "wishlist",
+    "clearList": "Clear list",
+    "empty": "You haven't saved any products yet. Tap the heart on any card.",
+    "exploreCatalog": "Explore catalog"
+  },
+  "club": {
+    "yourPoints": "Your points",
+    "earnRate_one": "Earn {{count}} point for every {{amount}} in paid purchases.",
+    "earnRate_other": "Earn {{count}} points for every {{amount}} in paid purchases.",
+    "redeemNote": " Redeem them at checkout: {{rate}} points = {{amount}} off.",
+    "earned": "Earned",
+    "redeemed": "Redeemed",
+    "kicker": "Healthora Club",
+    "headingPrefix": "Joining is",
+    "headingEmphasis": "free",
+    "headingSuffix": " and always will be.",
+    "subtitle": "Join the club and enjoy exclusive perks on every purchase.",
+    "benefits": {
+      "sample": {
+        "title": "Premium sample",
+        "desc": "Get 1 curated sample on orders over {{amount}}."
+      },
+      "discounts": {
+        "title": "Exclusive discounts",
+        "desc": "Access member-only deals before anyone else."
+      },
+      "shipping": {
+        "title": "Priority shipping",
+        "desc": "Your orders get processed first, at no extra cost."
+      }
+    },
+    "ctaTitle": "Ready to join?",
+    "ctaBody": "Create your account or sign in to start earning perks from your first purchase.",
+    "ctaButton": "Get started"
+  },
+  "errorPage": {
+    "errorCode": "ERROR {{code}}",
+    "goHome": "Go home",
+    "viewCatalog": "View catalog",
+    "retry": "Retry",
+    "notFound": {
+      "titlePrefix": "Page",
+      "titleEmphasis": "not found",
+      "message": "The page you're looking for doesn't exist or was moved. Check the URL or go back home."
+    },
+    "routeError": {
+      "titlePrefix": "Something went",
+      "titleEmphasis": "wrong",
+      "message": "An unexpected error occurred while loading this page. You can retry or go back home."
+    }
+  },
+  "compare": {
+    "backAria": "Back to catalog",
+    "back": "Back",
+    "kicker_one": "Comparison · {{count}} product",
+    "kicker_other": "Comparison · {{count}} products",
+    "headingPrefix": "Compare",
+    "headingEmphasis": "products",
+    "clearComparison": "Clear comparison",
+    "empty": "Add up to 4 products from the catalog using the compare button.",
+    "goToCatalog": "Go to catalog",
+    "attribute": "Attribute",
+    "removeAria": "Remove {{name}} from comparison",
+    "rows": {
+      "brand": "Brand",
+      "category": "Category",
+      "price": "Price",
+      "rating": "Rating",
+      "stock": "Stock",
+      "description": "Description"
+    },
+    "outOfStock": "Out of stock",
+    "lowStock": "Only {{count}} left",
+    "inStock": "In stock",
+    "addButton": "Add",
+    "outOfStockButton": "Out of stock"
+  },
+  "samplePicker": {
+    "backToCart": "Back to cart",
+    "kicker": "Healthora Club · Free sample",
+    "headingPrefix": "Choose your",
+    "headingEmphasis": "free sample",
+    "subtitle": "Select 1 product. It will be included in your order at no extra cost.",
+    "optionsAvailable_one": "{{count}} option available",
+    "optionsAvailable_other": "{{count}} options available",
+    "selectedKicker": "SELECTED SAMPLE",
+    "confirmButton": "Confirm and go back"
+  },
+  "profile": {
+    "backToStore": "Back to store",
+    "kicker": "My account",
+    "headingPrefix": "Your",
+    "headingEmphasis": "profile",
+    "defaultUserAlt": "Profile",
+    "noName": "No name",
+    "editNameAndPhoto": "Edit name and photo",
+    "errors": {
+      "notAuthenticated": "Not authenticated",
+      "cardSaveFailed": "The card couldn't be saved",
+      "cardFormFailed": "The card form couldn't be loaded",
+      "prefsSaveFailed": "The change couldn't be saved.",
+      "prefsLoadFailed": "We couldn't load your preferences. Reload the page."
+    },
+    "subscriptions": {
+      "title": "My subscriptions",
+      "loading": "Loading…",
+      "empty": "You don't have any active auto-replenishments. You can subscribe from any product's page.",
+      "frequency": "Every {{days}} days · {{amount}} per shipment",
+      "status": {
+        "active": "Active",
+        "paused": "Paused",
+        "canceled": "Canceled"
+      },
+      "nextShipment": "Next shipment: {{date}}",
+      "pause": "Pause",
+      "resume": "Resume",
+      "cancel": "Cancel"
+    },
+    "addCard": {
+      "saving": "Saving…",
+      "saveCard": "Save card",
+      "cancel": "Cancel"
+    },
+    "paymentMethods": {
+      "title": "Payment methods",
+      "loading": "Loading…",
+      "empty": "You don't have any saved cards yet.",
+      "default": "DEFAULT",
+      "setDefaultAria": "Set card ending in {{last4}} as default",
+      "deleteAria": "Delete card ending in {{last4}}",
+      "stripeMissing": "VITE_STRIPE_PUBLISHABLE_KEY needs to be configured to add cards.",
+      "addCard": "Add card",
+      "securityNote": "Your cards are securely stored in Stripe — Healthora never stores the full card number. You'll be able to pick a saved card at checkout."
+    },
+    "notifications": {
+      "title": "Notification preferences",
+      "loading": "Loading…",
+      "loadError": "We couldn't load your preferences. Reload the page.",
+      "orderUpdates": {
+        "title": "Order and return updates",
+        "desc": "When your order changes status (shipped, delivered) or there's news on a return."
+      },
+      "promotions": {
+        "title": "Reminders and promotions",
+        "desc": "Reorder reminders and deals."
+      },
+      "unsubscribeAll": {
+        "title": "Unsubscribe from all emails",
+        "desc": "You won't receive any emails from the categories above. Your purchase confirmation always arrives, regardless of this setting."
+      }
+    }
+  },
+  "orders": {
+    "backAria": "Back to catalog",
+    "back": "Back",
+    "kicker": "Account",
+    "headingPrefix": "My",
+    "headingEmphasis": "orders",
+    "orderCount_one": "{{count}} order",
+    "orderCount_other": "{{count}} orders",
+    "empty": {
+      "title": "No orders yet",
+      "body": "Once you make a purchase, it will show up here with all the details."
+    },
+    "card": {
+      "dateAndItems_one": "{{date}} · {{count}} item",
+      "dateAndItems_other": "{{date}} · {{count}} items",
+      "replacementSuffix": " · Replacement"
+    },
+    "status": {
+      "pendingPayment": "Pending payment",
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded",
+      "readyForPickup": "Ready for pickup",
+      "pickedUp": "Picked up"
+    },
+    "timeline": {
+      "cancelledBadge": "Cancelled"
+    },
+    "returns": {
+      "status": {
+        "requested": "Requested",
+        "approved": "Approved",
+        "inTransit": "In transit",
+        "inReview": "In review",
+        "refundPending": "Refund pending",
+        "refunded": "Refunded",
+        "replaced": "Replacement on its way",
+        "rejected": "Rejected"
+      },
+      "replacedInStore": "Replacement in store",
+      "badgeLabel": "Return {{label}}",
+      "flowNote": {
+        "storeDropoff": "This order was picked up in store, so the return is also in store: first you send the request and have to wait for us to approve it - only then can you bring the product, not before. That same day we check it in the store: if it doesn't match what was reported, we return it to you on the spot; if everything checks out, we process your refund (or replacement, depending on what you requested).",
+        "courier": "First you send the request and have to wait for us to approve it. Once approved, a courier will pick up the product at your order's address - don't send it on your own before that. When it arrives at our warehouse we check it: if it doesn't match what was reported, we'll send it back to that same address; if everything checks out, we process your refund (or replacement, depending on what you requested)."
+      },
+      "messages": {
+        "refunded": "Refund of {{amount}} processed.",
+        "refundPending": "We're processing your refund.",
+        "replacedStorePickup": "We confirmed you received the wrong product. We created a new order at no extra cost for the correct product - it's ready, you can pick it up in store whenever you like.",
+        "replacedShipping": "We confirmed you received the wrong product. We created a new order at no extra cost for the correct product - check its progress below.",
+        "inTransit": "We logged that your product is on its way back to our warehouse.",
+        "inReview": "We received your product and are reviewing it before continuing.",
+        "approvedStoreDropoff": "You can bring the product to our store whenever you like, within the return window.",
+        "approvedCourierPickup": "A courier will pick up the product at your order's address.",
+        "rejectedReturnedStorePickup": "We checked the product and it doesn't match what was reported, so we couldn't approve the return. You can now pick it up at the store.",
+        "rejectedReturnedShipped": "We checked the product and it doesn't match what was reported, so we couldn't approve the return. We're sending it back to your order's address.",
+        "rejectedAfterReviewPending": "We checked the product we received and it doesn't match what was reported in your request, so we couldn't approve the return. Contact us if you have questions.",
+        "rejectedBeforeReview": "We couldn't approve your return request. Contact us if you have questions."
+      },
+      "requestedPrefix": "You requested:",
+      "requestedReplacement": "to have the correct product resent",
+      "requestedRefund": "refund",
+      "viewReplacementOrder": "View replacement order #{{id}} →",
+      "requestButton": "Request return",
+      "errors": {
+        "submitFailed": "The request couldn't be sent"
+      },
+      "form": {
+        "reasonCategoryLabel": "Reason type",
+        "selectPlaceholder": "Select an option…",
+        "reasons": {
+          "damaged": "Arrived damaged",
+          "wrongItem": "I received a different product",
+          "defective": "Doesn't work / defective",
+          "changedMind": "I no longer need it",
+          "other": "Other"
+        },
+        "detailsLabel": "Tell us more details",
+        "detailsPlaceholder": "Tell us what happened…",
+        "preferenceLabel": "What would you prefer?",
+        "refundOption": "Refund",
+        "replacementOption": "Have the correct product sent to me",
+        "photosLabel": "Evidence photos (1 to {{max}})",
+        "photoAlt": "Evidence {{n}}",
+        "removePhotoAria": "Remove photo",
+        "missingPrefix": "Still needed: {{items}}.",
+        "missingReasonCategory": "the reason type",
+        "missingDetails": "the details",
+        "missingPhoto": "at least 1 evidence photo",
+        "submitting": "Sending…",
+        "submit": "Send request",
+        "cancel": "Cancel"
+      }
+    },
+    "detail": {
+      "orderNumber": "ORDER #{{id}}",
+      "replacementBadge": "Replacement for order #{{id}} · at no cost →",
+      "tracking": {
+        "label": "Tracking No.",
+        "defaultCarrier": "Courier"
+      },
+      "productsLabel": "Products",
+      "variantLabel": "Variant · {{label}}",
+      "freeSampleBadge": "FREE SAMPLE · HEALTHORA CLUB",
+      "replacementNoCostBadge": "REPLACEMENT · NO COST",
+      "unitBreakdown": "{{qty}} units · {{price}} each",
+      "free": "FREE",
+      "reorderButton": "Buy again",
+      "reorderingButton": "Adding to cart…",
+      "reorderNoneAvailable": "No products from this order are available right now.",
+      "reorderSuccess_one": "{{count}} product added to cart.",
+      "reorderSuccess_other": "{{count}} products added to cart.",
+      "breakdownLabel": "Order breakdown",
+      "subtotalProducts": "Products subtotal",
+      "discountLabel": "Discount {{code}}",
+      "shippingWithLabel": "Shipping ({{label}})",
+      "shipping": "Shipping",
+      "tax": "ITBMS",
+      "freeLowercase": "Free",
+      "total": "Total",
+      "contactInfo": "Contact details",
+      "deliveryAddress": "Delivery address",
+      "edit": "Edit",
+      "addressForm": {
+        "name": "Name",
+        "namePlaceholder": "Full name",
+        "phone": "Phone",
+        "phonePlaceholder": "6123-4567",
+        "city": "City",
+        "cityPlaceholder": "City",
+        "postal": "Postal code",
+        "postalPlaceholder": "10001",
+        "address": "Address",
+        "addressPlaceholder": "Street, number, apt",
+        "saving": "Saving…",
+        "saveChanges": "Save changes",
+        "cancel": "Cancel",
+        "requiredFieldsError": "Fill in all required fields."
+      },
+      "cancelConfirm": {
+        "title": "Confirm cancellation?",
+        "body": "This action cannot be undone. The order will be permanently cancelled.",
+        "cancelling": "Cancelling…",
+        "confirmButton": "Yes, cancel order",
+        "abortButton": "No, keep it"
+      },
+      "cancelOrderButton": "Cancel order",
+      "errors": {
+        "addressUpdateFailed": "The address couldn't be updated",
+        "cancelFailed": "The order couldn't be cancelled"
+      }
+    }
+  },
+  "notifications": {
+    "bellAria": "Notifications",
+    "bellAriaUnread": "Notifications ({{count}} unread)",
+    "panelAria": "Notification center",
+    "markAllRead": "Mark read",
+    "clearAll": "Clear all",
+    "empty": "You don't have any notifications yet.",
+    "autoDeleteNote": "Notifications are automatically deleted after 60 days",
+    "dismissAria": "Dismiss notification",
+    "toastDismissAria": "Dismiss",
+    "relativeTime": {
+      "now": "now",
+      "minutesAgo": "{{count}} min ago",
+      "hoursAgo": "{{count}} h ago",
+      "daysAgo": "{{count}} d ago"
+    }
+  },
+  "landing": {
+    "hero": {
+      "skinHealth": {
+        "pill": "Advanced dermatology",
+        "titlePrefix": "Radiant, healthy",
+        "titleEmphasis": "skin",
+        "sub": "Medical-grade dermocosmetics to protect and revitalize your face day after day."
+      },
+      "vitamins": {
+        "pill": "Peak immune defense",
+        "titlePrefix": "Vitality for your",
+        "titleEmphasis": "everyday",
+        "sub": "Boost your immune system and keep your energy up with our vitamin selection."
+      },
+      "babyCare": {
+        "pill": "For the littlest ones",
+        "titlePrefix": "Very gentle",
+        "titleEmphasis": "protection",
+        "sub": "Soft, hypoallergenic, pediatrician-tested formulas to care for your baby's skin."
+      },
+      "personalCare": {
+        "pill": "Hygiene routine",
+        "titlePrefix": "Feel good",
+        "titleEmphasis": "inside and out",
+        "sub": "Essential products for your everyday personal care and hygiene."
+      },
+      "wellnessSupplements": {
+        "pill": "Complete nutrition",
+        "titlePrefix": "Optimize your",
+        "titleEmphasis": "total wellness",
+        "sub": "High-quality nutritional supplements to cover your daily requirements."
+      },
+      "fitness": {
+        "pill": "Athletic performance",
+        "titlePrefix": "Reach your",
+        "titleEmphasis": "peak level",
+        "sub": "Power your workouts, recover your muscles, and push past your limits."
+      },
+      "medications": {
+        "pill": "Essential medicine cabinet",
+        "titlePrefix": "Fast, safe",
+        "titleEmphasis": "relief",
+        "sub": "Your trusted pharmacy with OTC medications for any ailment."
+      },
+      "moisturizers": {
+        "pill": "Deep hydration",
+        "titlePrefix": "An oasis for",
+        "titleEmphasis": "your skin",
+        "sub": "Formulas that lock in moisture for 24 hours, for silky, soft skin."
+      },
+      "fragrances": {
+        "pill": "Exclusive scents",
+        "titlePrefix": "Discover your",
+        "titleEmphasis": "personal signature",
+        "sub": "Designer perfumes with unforgettable notes that leave a lasting impression."
+      },
+      "makeup": {
+        "pill": "Express your beauty",
+        "titlePrefix": "Color and",
+        "titleEmphasis": "radiance",
+        "sub": "Trending cosmetics and foolproof classics to enhance your look."
+      }
+    },
+    "ctaBuyNow": "Shop now",
+    "ctaSeeBestsellers": "See best sellers",
+    "reviews": {
+      "happyCustomers": "{{amount}} happy customers",
+      "noReviewsYet": "No reviews yet",
+      "avgRatingLabel": "OVERALL REVIEW AVERAGE"
+    },
+    "categories": {
+      "kicker": "01 · Categories",
+      "headingPrefix": "Shop by",
+      "headingEmphasis": "need",
+      "seeAll": "See all categories",
+      "subtitles": {
+        "vitamins": "Daily nutrition",
+        "medications": "Home medicine cabinet",
+        "personalCare": "Essential routine",
+        "babyCare": "Gentle and safe",
+        "skinHealth": "Advanced routine",
+        "fitness": "Energy & recovery",
+        "fragrances": "Clean scents",
+        "moisturizers": "Reinforced barrier",
+        "makeup": "Natural touch",
+        "wellnessSupplements": "Everyday wellness"
+      }
+    },
+    "bestsellers": {
+      "kicker": "02 · Best sellers",
+      "headingPrefix": "Best selling",
+      "headingEmphasis": "this week",
+      "seeAll": "See all"
+    },
+    "cinematic": {
+      "kicker": "Our selection",
+      "titlePrefix": "The scent that",
+      "titleEmphasis": "defines you"
+    },
+    "byNeed": {
+      "kicker": "03 · By need",
+      "headingPrefix": "What are you",
+      "headingEmphasis": "looking for",
+      "headingSuffix": "?",
+      "explore": "Explore",
+      "items": {
+        "drySkin": "Dry skin",
+        "energyVitamins": "Energy & vitamins",
+        "babyCare": "Baby care",
+        "fitnessRecovery": "Fitness & recovery"
+      }
+    },
+    "trust": {
+      "payments": { "title": "Secure payments", "sub": "Stripe · PCI DSS · 3D Secure" },
+      "verified": { "title": "Verified products", "sub": "Licensed pharmacists" },
+      "shipping": { "title": "Fast shipping", "sub": "24–48h across the region" },
+      "support": { "title": "Customer support", "sub": "Mon to Sat · 8am–8pm" }
+    },
+    "featured": {
+      "kicker": "04 · New arrivals",
+      "headingPrefix": "Just",
+      "headingEmphasis": "arrived",
+      "seeAll": "See full catalog"
+    },
+    "brands": {
+      "kicker": "05 · Brands",
+      "headingPrefix": "Brands you",
+      "headingEmphasis": "trust"
+    }
+  },
+  "admin": {
+    "mobileTopBar": {
+      "title": "Admin"
+    },
+    "sidebar": {
+      "panelLabel": "ADMIN PANEL",
+      "nav": {
+        "dashboard": "Dashboard",
+        "orders": "Orders",
+        "products": "Products",
+        "categories": "Categories",
+        "coupons": "Coupons",
+        "banners": "Banners",
+        "users": "Customers",
+        "returns": "Returns",
+        "reviews": "Reviews",
+        "sales": "Sales",
+        "earnings": "Earnings",
+        "reports": "Cohorts",
+        "audit": "Audit log",
+        "repurchase": "Repurchase",
+        "analytics": "Analytics"
+      },
+      "toLightMode": "Switch to light mode",
+      "toDarkMode": "Switch to dark mode",
+      "lightMode": "Light mode",
+      "darkMode": "Dark mode",
+      "goToStore": "View store",
+      "defaultName": "Admin",
+      "defaultEmail": "ADMIN@HEALTHORA",
+      "openMenuAria": "Open admin menu"
+    },
+    "charts": {
+      "noData": "No data",
+      "dailyOrders": "Daily orders",
+      "revenueByCategory": "Revenue by category",
+      "date": "Date",
+      "category": "Category",
+      "orders": "Orders",
+      "revenue": "Revenue"
+    },
+    "table": {
+      "sortByAria": "Sort by {{label}}",
+      "clearSortAria": "Clear sort",
+      "sortLabel": "Sort: {{label}}"
+    },
+    "donut": {
+      "totalMonth": "TOTAL THIS MONTH"
+    },
+    "productSuccessModal": {
+      "understood": "Got it"
+    },
+    "pagination": {
+      "previousAria": "Previous page",
+      "nextAria": "Next page"
+    },
+    "formattedTextarea": {
+      "defaultBoldText": "text",
+      "boldTitle": "Bold (**text**)",
+      "helpPrefix": "Select text and use",
+      "helpSuffix": "for bold, or start a line with \"- \" for a list."
+    },
+    "imageUpload": {
+      "uploadTitle": "Upload image",
+      "uploadError": "Couldn't upload the image",
+      "uploading": "UPLOADING…",
+      "change": "change",
+      "dragOrClick": "DRAG OR CLICK"
+    },
+    "accessGate": {
+      "kicker": "Internal access",
+      "titlePrefix": "Admin",
+      "titleEmphasis": "panel",
+      "signedOutBody": "You need to sign in with an authorized admin account to continue.",
+      "signInButton": "Sign in as admin",
+      "backToStore": "Back to the store",
+      "validating": "Validating admin access…",
+      "deniedTitlePrefix": "Access",
+      "deniedTitleEmphasis": "denied",
+      "deniedBody": "Your account doesn't have admin permissions."
+    },
+    "repurchase": {
+      "kicker_one": "{{count}} reminder sent",
+      "kicker_other": "{{count}} reminders sent",
+      "titlePrefix": "Repurchase",
+      "titleEmphasis": "reminders",
+      "sub": "Free emails sent before a customer runs out of a product they've already bought (HU-102).",
+      "scanButton": "Run now",
+      "scanning": "Scanning…",
+      "lastScan": {
+        "prefix": "Last manual scan:",
+        "cyclesEvaluated_one": "{{count}} purchase cycle evaluated",
+        "cyclesEvaluated_other": "{{count}} purchase cycles evaluated",
+        "remindersSent_one": "{{count}} new reminder sent",
+        "remindersSent_other": "{{count}} new reminders sent"
+      },
+      "table": {
+        "title": "Sent",
+        "sub": "A customer/product pair only appears once per purchase cycle (won't repeat until they buy again)",
+        "columns": {
+          "product": "Product",
+          "customer": "Customer",
+          "lastPurchase": "Last purchase",
+          "estimatedRunOut": "Estimated run-out",
+          "sentAt": "Sent"
+        },
+        "empty": "No reminders sent yet."
+      }
+    },
+    "earnings": {
+      "kicker": "Earnings",
+      "titlePrefix": "The",
+      "titleEmphasis": "earnings",
+      "sub": "Gross, net, and monthly trend overview for the store.",
+      "kpi": {
+        "grossRevenue": "Gross revenue",
+        "tax": "Tax",
+        "netProfit": "Net profit",
+        "stripeFees": "Stripe fees",
+        "stripeFeesSub": "estimated 2.9%"
+      },
+      "monthly": {
+        "title": "Monthly breakdown",
+        "sub": "Revenue and orders by month",
+        "columns": {
+          "month": "Month"
+        }
+      }
+    },
+    "productAnalytics": {
+      "titlePrefix": "Product",
+      "titleEmphasis": "analytics",
+      "sub": "Checkout funnel and cart abandonment, based on real user behavior.",
+      "periodAria": "Analytics period",
+      "period": {
+        "last7": "Last 7 days",
+        "last30": "Last 30 days",
+        "last90": "Last 90 days"
+      },
+      "notConfigured": {
+        "prefix": "PostHog isn't configured for queries",
+        "body": "The funnel and cart abandonment show as zero until you configure them — see"
+      },
+      "eventLabels": {
+        "checkoutStarted": "Checkout started",
+        "checkoutCompleted": "Checkout completed",
+        "addedToCart": "Added to cart"
+      },
+      "kpi": {
+        "conversion": "Conversion",
+        "cartAbandonment": "Cart abandonment"
+      },
+      "table": {
+        "title": "Recent key events",
+        "sub": "Latest funnel events captured by PostHog",
+        "columns": {
+          "event": "Event",
+          "userSession": "User/session",
+          "date": "Date"
+        },
+        "empty": "No events for this period."
+      }
+    },
+    "auditLogs": {
+      "kicker_one": "{{count}} record",
+      "kicker_other": "{{count}} records",
+      "titlePrefix": "Admin",
+      "titleEmphasis": "audit log",
+      "sub": "Append-only log of admin actions: who, what, and when (HU-051).",
+      "filters": {
+        "searchPlaceholder": "Search by admin email…",
+        "actorEmailAria": "Filter by actor email",
+        "actionAria": "Filter by action",
+        "allActions": "All actions",
+        "fromAria": "From",
+        "toAria": "To"
+      },
+      "table": {
+        "columns": {
+          "date": "Date",
+          "actor": "Actor",
+          "action": "Action",
+          "resource": "Resource"
+        },
+        "empty": "No records for these filters."
+      },
+      "actionLabels": {
+        "adminAccess": "Panel access",
+        "adminAccessDenied": "Access denied",
+        "authLogin": "Signed in",
+        "userRoleChanged": "User role changed",
+        "productsCreate": "Product created",
+        "productsUpdate": "Product updated",
+        "productsDelete": "Product deleted",
+        "categoriesCreate": "Category created",
+        "categoriesUpdate": "Category updated",
+        "categoriesDelete": "Category deleted",
+        "ordersCreate": "Order created",
+        "ordersUpdate": "Order updated",
+        "ordersDelete": "Order deleted",
+        "reviewsCreate": "Review created / author banned",
+        "reviewsUpdate": "Review moderated",
+        "reviewsDelete": "Review deleted / ban lifted",
+        "returnsCreate": "Return created",
+        "returnsUpdate": "Return updated",
+        "returnsDelete": "Return deleted",
+        "uploadsCreate": "Image uploaded",
+        "uploadsUpdate": "Image updated",
+        "uploadsDelete": "Image deleted"
+      }
+    },
+    "coupons": {
+      "kicker": "Promotions",
+      "titlePrefix": "Coupon",
+      "titleEmphasis": "management",
+      "sub": "Create and manage discount codes for checkout.",
+      "newButton": "+ New coupon",
+      "table": {
+        "columns": {
+          "code": "Code",
+          "label": "Label",
+          "discount": "Discount",
+          "categories": "Categories",
+          "uses": "Uses",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "allCategories": "All",
+        "statusActive": "Active",
+        "statusInactive": "Inactive",
+        "deactivate": "Deactivate",
+        "activate": "Activate",
+        "empty": "No coupons created yet."
+      },
+      "modal": {
+        "title": "New coupon",
+        "codePlaceholder": "Code (e.g. SAVE10)",
+        "labelPlaceholder": "Visible label",
+        "discountTypePercent": "Percentage",
+        "discountTypeFixed": "Fixed amount",
+        "percentPlaceholder": "Percentage",
+        "amountPlaceholder": "Amount",
+        "maxUsesPlaceholder": "Max uses (optional)",
+        "firstPurchaseOnly": "First purchase only",
+        "eligibleCategoriesLabel": "Eligible categories (empty = all)",
+        "cancel": "Cancel",
+        "create": "Create coupon",
+        "saving": "Saving…"
+      }
+    },
+    "reports": {
+      "kicker": "Advanced reports",
+      "titlePrefix": "Cohorts and",
+      "titleEmphasis": "LTV",
+      "sub": "Customer retention by first-purchase month, and lifetime value (LTV) accumulated per cohort.",
+      "filters": {
+        "from": "From",
+        "to": "To"
+      },
+      "kpi": {
+        "customersWithPurchase": "Customers with a purchase",
+        "customersWithPurchaseSub": "paid at least once",
+        "ordersPerCustomer": "Orders / customer",
+        "ordersPerCustomerSub": "historical average",
+        "avgLtv": "Average LTV",
+        "avgLtvSub": "revenue per customer"
+      },
+      "monthColumn": "Month {{n}}",
+      "table": {
+        "columns": {
+          "cohort": "Cohort",
+          "customers": "Customers"
+        }
+      },
+      "retention": {
+        "title": "Retention by cohort",
+        "sub": "% of the cohort that came back to buy, by month elapsed since their first purchase",
+        "empty": "Not enough paid orders yet to build cohorts in this range."
+      },
+      "ltv": {
+        "title": "Cumulative LTV per customer",
+        "sub": "Cumulative revenue per initial cohort customer, month by month",
+        "empty": "Not enough paid orders yet to calculate LTV in this range."
+      },
+      "modal": {
+        "cohortTitle": "Cohort {{month}}",
+        "sub": "Customers whose first purchase was this month, and which months after that they came back to buy.",
+        "columns": {
+          "customer": "Customer",
+          "firstPurchase": "First purchase"
+        },
+        "empty": "No customers for this cohort."
+      }
+    },
+    "banners": {
+      "colorPresets": {
+        "lime": "Lime",
+        "green": "Green",
+        "coral": "Coral",
+        "cream": "Cream",
+        "custom": "Custom"
+      },
+      "colorPicker": {
+        "backgroundColorLabel": "Background color"
+      },
+      "preview": {
+        "notConfigured": "Not configured",
+        "editButton": "Edit",
+        "promoLabel": "Featured promotion",
+        "clubLabel": "Club Healthora"
+      },
+      "noSlotSelectedError": "No banner selected",
+      "titlePrefix": "Banner",
+      "titleEmphasis": "management",
+      "sub": "Edit the landing page's 2 Deals-section banners without needing a deploy.",
+      "modal": {
+        "editTitlePrefix": "Edit banner",
+        "langTab": {
+          "es": "Español",
+          "en": "English"
+        },
+        "kickerLabel": "Kicker (small tag)",
+        "titleLabel": "Title",
+        "titleHintPrefix": "Use",
+        "titleHintJoiner": "and",
+        "titleHintSuffix": "wherever you want them to update themselves when the category or valid dates change.",
+        "categoryLabel": "Category (sets the banner's 2 photos and where the button links to)",
+        "categoryPlaceholder": "Select a category…",
+        "descriptionLabel": "Description",
+        "ctaTextLabel": "Button text",
+        "previewLabel": "Preview (with the chosen category and date)",
+        "startDateLabel": "Valid from",
+        "endDateLabel": "Valid until",
+        "optionalSuffix": " (optional)",
+        "cancel": "Cancel",
+        "saving": "Saving…",
+        "save": "Save"
+      }
+    },
+    "dashboard": {
+      "kicker": "Admin panel",
+      "titleWord": "Dashboard",
+      "sub": "Live overview of sales, orders, users, and inventory.",
+      "kpi": {
+        "revenueMonth": "Revenue this month",
+        "revenueMonthSub": "vs previous month",
+        "ordersMonth": "Orders this month",
+        "ordersMonthSub": "paid or in progress",
+        "customers": "Customers",
+        "customersSub": "registered customers",
+        "lowStock": "Low stock",
+        "lowStockSub": "products with 5 units or fewer"
+      },
+      "revenueChart": {
+        "title": "Revenue · last 30 days",
+        "sub": "Daily revenue, in USD"
+      },
+      "recentOrders": {
+        "title": "Recent orders",
+        "sub": "Last 5 orders in the store",
+        "columns": {
+          "order": "Order",
+          "customer": "Customer",
+          "total": "Total",
+          "payment": "Payment"
+        },
+        "defaultCustomerName": "Customer",
+        "empty": "No recent orders."
+      },
+      "paymentStatus": {
+        "paid": "Paid",
+        "cancelled": "Cancelled",
+        "refunded": "Refunded",
+        "pending": "Pending"
+      },
+      "lowStockCard": {
+        "title": "Critical inventory",
+        "sub": "Products that need restocking",
+        "unitsBadge": "{{count}} units",
+        "empty": "No products with critical stock levels."
+      }
+    },
+    "categories": {
+      "kicker_one": "Catalog · {{count}} category",
+      "kicker_other": "Catalog · {{count}} categories",
+      "titlePrefix": "Category",
+      "titleEmphasis": "management",
+      "sub": "Create, edit, deactivate, and reassign products between categories without touching the seed.",
+      "newButton": "New category",
+      "table": {
+        "columns": {
+          "category": "Category",
+          "id": "ID",
+          "products": "Products",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "statusActive": "Active",
+        "statusInactive": "Inactive",
+        "editButton": "Edit"
+      },
+      "noCategorySelectedError": "No category selected",
+      "modal": {
+        "createTitle": "New category",
+        "editTitle": "Edit category",
+        "idLabel": "ID (internal slug)",
+        "idPlaceholder": "E.g. Vitamins",
+        "labelLabel": "Visible name",
+        "subLabel": "Subtitle",
+        "colorLabel": "Color (CSS)",
+        "renameIdLabel": "Rename ID (reassigns products)",
+        "activeCheckboxLabel": "Category active in the store",
+        "reassignSectionLabel": "Reassign all products to another category",
+        "reassignPlaceholder": "Select a destination…",
+        "moving": "Moving…",
+        "reassign": "Reassign",
+        "cancel": "Cancel",
+        "saving": "Saving…",
+        "save": "Save"
+      }
+    },
+    "variantTypes": {
+      "flavor": "Flavor",
+      "scent": "Scent",
+      "size": "Size",
+      "color": "Color",
+      "weight": "Weight",
+      "count": "Count"
+    },
+    "variantTypesPlural": {
+      "flavor": "Flavors",
+      "scent": "Scents",
+      "color": "Colors",
+      "weight": "Weights",
+      "count": "Counts"
+    },
+    "products": {
+      "variantSummary": {
+        "combinations_one": "{{count}} combination",
+        "combinations_other": "{{count}} combinations",
+        "variants_one": "{{count}} variant",
+        "variants_other": "{{count}} variants"
+      },
+      "defaultProductName": "The product",
+      "sessionExpiredError": "Session expired",
+      "titlePrefix": "Product",
+      "titleEmphasis": "management",
+      "kicker_one": "Catalog · {{count}} product",
+      "kicker_other": "Catalog · {{count}} products",
+      "sub": "Add, edit, delete, and filter the full catalog.",
+      "refreshing": "Refreshing…",
+      "refreshCatalog": "Refresh catalog",
+      "categoryDiscountButton": "Category discount",
+      "clubHealthoraButton": "Club Healthora",
+      "addProductButton": "+ Add product",
+      "searchPlaceholder": "Search by name or brand…",
+      "filters": {
+        "statusActive": "Active",
+        "statusInactive": "Inactive"
+      },
+      "selectedInView_one": "{{count}} selected in this view",
+      "selectedInView_other": "{{count}} selected in this view",
+      "selectHint": "Select multiple products for bulk deletion.",
+      "clearSelection": "Clear selection",
+      "deleteSelected": "Delete selected",
+      "deleteSelectedDescription_one": "{{count}} selected product from this view will be deleted.",
+      "deleteSelectedDescription_other": "{{count}} selected products from this view will be deleted.",
+      "deleteAllButton": "Delete all",
+      "table": {
+        "columns": {
+          "product": "Product",
+          "category": "Category",
+          "price": "Price",
+          "stock": "Stock",
+          "rating": "Rating",
+          "status": "Status"
+        },
+        "selectVisibleAria": "Select visible products",
+        "selectProductAria": "Select {{name}}",
+        "noReviews": "NO REVIEWS",
+        "lowStockBadge": "Low",
+        "lowStockTitle": "Low stock (threshold: {{threshold}})",
+        "editTitle": "Edit product",
+        "deleteTitle": "Delete product",
+        "empty": "No products for the selected filters."
+      },
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "confirmDelete": "Yes, delete",
+      "confirmKicker": "Confirmation",
+      "deleteModal": {
+        "titlePrefix": "Delete",
+        "titleEmphasis": "product",
+        "body": "This action will delete the product from the catalog. It can't be undone."
+      },
+      "deleteAllModal": {
+        "dangerKicker": "Danger",
+        "title": "Delete the entire catalog",
+        "bodyPrefix": "Are you sure you want to delete",
+        "bodyStrong": "all products",
+        "bodySuffix": "from the catalog? This action can't be undone.",
+        "confirmAll": "Yes, delete everything"
+      },
+      "deleteUserModal": {
+        "titlePrefix": "Delete",
+        "titleEmphasis": "user",
+        "body": "Delete {{name}}? This will delete their local account. The user will still exist in Clerk."
+      },
+      "sampleSettingsModal": {
+        "freeSampleTitle": "Free sample",
+        "freeSampleBody": "A product (or one of its variants/combinations) automatically qualifies for the free sample if its price is at or below this cap. A product with \"Always include\"/\"Always exclude\" set in its own editor ignores this cap.",
+        "maxPriceLabel": "Max price (USD)",
+        "loyaltyTitle": "Loyalty points (HU-060)",
+        "loyaltyBody": "The customer earns points for every $1 paid on an order, and can redeem them for a discount at checkout.",
+        "pointsPerDollarLabel": "Points per $1",
+        "pointValueLabel": "Value of 1 point (¢)",
+        "updated": "Settings updated.",
+        "close": "Close",
+        "saving": "Saving…",
+        "save": "Save"
+      },
+      "categoryDiscountModal": {
+        "title": "Category discount",
+        "activeDiscountLabel": "With active discount",
+        "categoryLabel": "Category",
+        "categoryPlaceholder": "Select a category…",
+        "typeLabel": "Type",
+        "typePercent": "Percentage (%)",
+        "typeFixed": "Fixed amount ($)",
+        "valueLabel": "Value",
+        "invalidRange": "\"Valid until\" can't be earlier than \"Valid from\".",
+        "genericError": "Couldn't complete the action.",
+        "applySuccess_one": "{{updated}} of {{total}} product updated.",
+        "applySuccess_other": "{{updated}} of {{total}} products updated.",
+        "removeSuccess_one": "Discount removed from {{count}} product.",
+        "removeSuccess_other": "Discount removed from {{count}} products.",
+        "removing": "Removing…",
+        "removeButton": "Remove discount",
+        "applying": "Applying…",
+        "applyButton": "Apply discount"
+      },
+      "successModal": {
+        "updated": {
+          "kicker": "Product updated",
+          "title": "Changes",
+          "emphasis": "saved",
+          "message": "{{name}} was updated successfully."
+        },
+        "created": {
+          "kicker": "Product created",
+          "title": "Added to the",
+          "emphasis": "catalog",
+          "message": "{{name}} is now available in the store."
+        },
+        "deleted": {
+          "kicker": "Product deleted",
+          "title": "Product",
+          "emphasis": "deleted",
+          "message": "The product was deleted from the catalog successfully."
+        },
+        "bulkDeleted": {
+          "kicker": "Products deleted",
+          "title_one": "{{count}} product",
+          "title_other": "{{count}} products",
+          "emphasis_one": "deleted",
+          "emphasis_other": "deleted",
+          "message": "The products were deleted from the catalog successfully."
+        },
+        "allDeleted": {
+          "kicker": "Catalog deleted",
+          "title": "{{count}} products",
+          "emphasis": "deleted",
+          "message": "The entire product catalog has been deleted successfully."
+        }
+      }
+    },
+    "orders": {
+      "titlePrefix": "Order",
+      "titleEmphasis": "management",
+      "sub": "Change statuses and monitor the order's full cycle.",
+      "exportCsv": "Export CSV",
+      "searchPlaceholder": "Search by ID, customer, email, or product…",
+      "filters": {
+        "statusLabel": "Status",
+        "shippingLabel": "Shipping",
+        "paymentLabel": "Payment"
+      },
+      "resultsCount_one": "{{count}} result of {{total}}",
+      "resultsCount_other": "{{count}} results of {{total}}",
+      "ordersCount_one": "{{count}} order",
+      "ordersCount_other": "{{count}} orders",
+      "table": {
+        "columns": {
+          "order": "Order",
+          "customerAddress": "Customer / Address",
+          "shipping": "Shipping",
+          "products": "Products",
+          "total": "Total",
+          "payment": "Payment",
+          "status": "Status",
+          "dateTime": "Date & time"
+        }
+      },
+      "sortLabels": {
+        "total": "Total",
+        "date": "Date"
+      },
+      "replacementBadge": "REPLACEMENT · #{{id}}",
+      "replacementBadgeTitle": "Free replacement for a return on order #{{id}}",
+      "subscriptionBadge": "AUTO REPURCHASE",
+      "subscriptionBadgeTitle": "This order was automatically generated from an automatic repurchase (subscription)",
+      "carrier": {
+        "healthoraCourier": "Healthora Courier"
+      },
+      "noCourier": "No courier",
+      "itemsCount_one": "{{count}} product",
+      "itemsCount_other": "{{count}} products",
+      "saveButton": "Save",
+      "confirmModal": {
+        "kicker": "Confirm status",
+        "titlePrefix": "Update",
+        "titleEmphasis": "order",
+        "bodyPrefix": "You're about to change order #{{orderNumber}} from",
+        "bodyMiddle": "to",
+        "bodySuffix": ". The customer {{customerName}} will receive an update email.",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "saveChange": "Save change"
+      }
+    },
+    "variantsMatrixEditor": {
+      "tabs": {
+        "none": "No variant",
+        "simple": "Simple variant",
+        "matrix": "Variant × Size"
+      },
+      "tabHints": {
+        "none": "The product uses a single price and stock (the fields above). There are no options to pick from.",
+        "simple": "A list of options of a single type (e.g. only size, or only color) — each with its own price and stock.",
+        "matrix": "Two combined dimensions (e.g. flavor + size): each combination can have its own price, stock, images, and \"price before\" (discount). The category discount also applies here, per combination."
+      },
+      "nameColumn": "Name",
+      "validFromOptional": "Valid from (optional)",
+      "validUntilOptional": "Valid until (optional)",
+      "primarySection": {
+        "hint": "Just the name — each combination's price, stock, and images are set further down, in \"Combinations\".",
+        "removeTitle": "Remove {{type}}",
+        "addButton": "+ Add {{type}}"
+      },
+      "sizesSection": {
+        "title": "Sizes",
+        "basePriceColumn": "Base price",
+        "namePlaceholder": "e.g. 5 lb",
+        "pricePlaceholder": "Price",
+        "stockPlaceholder": "Stock",
+        "removeTitle": "Remove size",
+        "addButton": "+ Add size"
+      },
+      "combinationsSection": {
+        "title": "Combinations",
+        "headerSeparator": "{{primary}} \\ Size",
+        "unnamed": "(unnamed)",
+        "activeLabel": "Active",
+        "pricePlaceholder": "Price (default: {{amount}})",
+        "priceTitle": "Only if this combination needs a different price than the default",
+        "priceBeforePlaceholder": "Price before (no discount)",
+        "priceBeforeTitle": "Struck-through price for this combination - leave empty to show no discount",
+        "stockPlaceholder": "Stock (default: {{amount}})",
+        "imagesLabel": "Images",
+        "imagesInheritedHint": "Starting from \"{{label}}\" — add or remove freely, it only affects this combination.",
+        "defaultComboTitle": "Default combo",
+        "defaultLabel": "Default"
+      }
+    },
+    "shippingMethod": {
+      "all": "All",
+      "delivery": "Home delivery",
+      "pickup": "Store pickup"
+    },
+    "paymentBucket": {
+      "all": "All",
+      "paid": "Paid",
+      "pending": "Pending",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded",
+      "returnPending": "Return in progress",
+      "replaced": "Replacement",
+      "noCharge": "No charge"
+    },
+    "fulfillmentStatus": {
+      "all": "All",
+      "pending": "Pending",
+      "processing": "Preparing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "pickedUp": "Picked up",
+      "cancelled": "Cancelled",
+      "readyForPickup": "Ready for pickup"
+    },
+    "productVariantsEditor": {
+      "typeLabel": "Variant type",
+      "productVariantsLabel": "Product variants",
+      "noVariants": "No variants — the product uses the global price and stock.",
+      "rowLabelField": "Label",
+      "priceLabel": "Price ($)",
+      "stockLabel": "Stock",
+      "colorHexLabel": "Color (hex)",
+      "removeVariantTitle": "Remove variant",
+      "priceBeforeLabel": "Price before ($)",
+      "priceBeforePlaceholder": "No discount",
+      "validFromLabel": "Valid from",
+      "validUntilLabel": "Valid until",
+      "imagesLabel": "Images (1 minimum, 4 maximum)",
+      "hoverHintMultiple": "The 2nd image is used for the card's hover effect in the catalog.",
+      "hoverHintSingle": "If you add a 2nd image here, it'll be used for the card's hover effect in the catalog.",
+      "defaultRadioTitle": "Use this variant's image as the product's cover in the catalog",
+      "defaultRadioLabel": "Default (cover image)",
+      "addVariantButton": "+ Add variant",
+      "labelPlaceholders": {
+        "flavor": "e.g. Chocolate",
+        "scent": "e.g. Lavender",
+        "size": "e.g. 500 ml",
+        "count": "e.g. Pack of 2",
+        "color": "e.g. Red",
+        "weight": "e.g. 500 g"
+      }
+    },
+    "reviews": {
+      "kicker": "Moderation",
+      "titlePrefix": "Customer",
+      "titleEmphasis": "reviews",
+      "sub": "Approve, hide, or delete reviews to keep product pages' content appropriate and trustworthy.",
+      "bannedUsersButton": "Banned users",
+      "bansModal": {
+        "description": "They can't leave new reviews on the given product. The ban is per product, it doesn't affect the rest of the catalog.",
+        "empty": "No banned users right now.",
+        "removeBan": "Remove ban"
+      },
+      "status": {
+        "all": "All",
+        "pending": "Pending",
+        "published": "Published",
+        "hidden": "Hidden"
+      },
+      "allRatings": "All",
+      "filters": {
+        "starsAria": "Filter by stars",
+        "statusAria": "Filter by status"
+      },
+      "searchPlaceholder": "Product, text, or author...",
+      "searchAria": "Search reviews by product, text, or author",
+      "resultsCount_one": "{{count}} result",
+      "resultsCount_other": "{{count}} results",
+      "reviewsCount_one": "{{count}} review",
+      "reviewsCount_other": "{{count}} reviews",
+      "table": {
+        "columns": {
+          "review": "Review",
+          "product": "Product",
+          "status": "Status",
+          "date": "Date",
+          "actions": "Actions"
+        },
+        "empty": "No reviews for this filter."
+      },
+      "actions": {
+        "approveTitle": "Approve / publish",
+        "hideTitle": "Hide",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "ban": "Ban",
+        "deleteTitle": "Delete",
+        "banTitle": "Ban this product's author (deletes the review and prevents them from commenting here again)"
+      }
+    },
+    "users": {
+      "kicker_one": "Customers · {{count}} account",
+      "kicker_other": "Customers · {{count}} accounts",
+      "titlePrefix": "Customer",
+      "titleEmphasis": "management",
+      "sub": "List of the e-commerce's end customers.",
+      "searchPlaceholder": "Search by name or email…",
+      "resultsCount_one": "{{count}} result of {{total}}",
+      "resultsCount_other": "{{count}} results of {{total}}",
+      "customersCount_one": "{{count}} customer",
+      "customersCount_other": "{{count}} customers",
+      "roleFilterLabel": "Role",
+      "role": {
+        "all": "All",
+        "customer": "Customer",
+        "admin": "Admin",
+        "owner": "Owner"
+      },
+      "table": {
+        "columns": {
+          "user": "User",
+          "role": "Role",
+          "orders": "Orders",
+          "spend": "Total spend",
+          "registered": "Registered"
+        },
+        "defaultAvatarAlt": "Avatar",
+        "noName": "No name"
+      },
+      "saving": "Saving…",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "removeAdmin": "Remove admin",
+      "makeAdmin": "Make admin",
+      "roleChangeError": "Couldn't change the role."
+    },
+    "sales": {
+      "titlePrefix": "Sales",
+      "titleEmphasis": "analysis",
+      "sub": "Daily trend, best-selling products and categories.",
+      "kpi": {
+        "totalOrders": "Total orders",
+        "totalOrdersSub": "paid in total",
+        "totalRevenue": "Total revenue",
+        "totalRevenueSub": "all orders",
+        "avgOrderValue": "Average per order",
+        "avgOrderValueSub": "per order",
+        "totalUnits": "Units sold",
+        "totalUnitsSub": "total products"
+      },
+      "dailyOrders": {
+        "title": "Orders per day",
+        "sub": "Daily orders · last 30 days"
+      },
+      "revenueByCategory": {
+        "title": "Revenue by category",
+        "sub": "Revenue by category"
+      },
+      "topProducts": {
+        "title": "Top revenue products",
+        "sub": "Based on paid orders",
+        "columns": {
+          "product": "Product",
+          "brand": "Brand",
+          "category": "Category",
+          "units": "Units",
+          "revenue": "Revenue"
+        }
+      },
+      "topCategories": {
+        "title": "Best categories",
+        "sub": "By units sold"
+      },
+      "topBrands": {
+        "title": "Best brands",
+        "sub": "By units sold"
+      },
+      "topVariants": {
+        "title": "Top selling variants",
+        "sub": "Flavor/color x size combos with the most units sold",
+        "empty": "No data on sold variants."
+      },
+      "noData": "No data.",
+      "unitsAbbrev": "{{count}} units"
+    },
+    "returns": {
+      "kicker": "Returns and refunds",
+      "titlePrefix": "Customer",
+      "titleEmphasis": "returns",
+      "sub": "Approve, mark in transit, confirm the review, and process what the customer requested (refund via Stripe or reshipping the correct product).",
+      "searchPlaceholder": "Search by customer, email, or order…",
+      "filters": {
+        "allStatus": "All",
+        "methodLabel": "Method",
+        "allMethods": "All"
+      },
+      "method": {
+        "courierPickup": "Courier picks up",
+        "storeDropoff": "Customer brings to store"
+      },
+      "resolution": {
+        "refund": "Prefers: refund",
+        "replacement": "Prefers: resend of the correct product"
+      },
+      "reasonCategory": {
+        "wrongItem": "Different product than ordered"
+      },
+      "table": {
+        "title": "Return requests",
+        "requestsCount_one": "{{count}} request",
+        "requestsCount_other": "{{count}} requests",
+        "columns": {
+          "customer": "Customer",
+          "reasonItems": "Reason / items",
+          "amount": "Amount",
+          "method": "Method",
+          "location": "Location",
+          "status": "Status",
+          "action": "Action"
+        },
+        "photoTitle": "View evidence photo {{n}}",
+        "photoAlt": "Evidence {{n}} from {{name}}",
+        "defaultCustomerNameLower": "customer",
+        "replacementOrderBadge": "REPLACEMENT ORDER #{{id}}",
+        "replacementOrderTitle": "View that order in Orders - it still needs to be prepared and shipped.",
+        "notMatchingBadge": "Doesn't match what was reported",
+        "notMatchingTitle": "The product had already physically come back and didn't match what was reported in the request.",
+        "readyForPickup": "Ready for pickup",
+        "returnedToCustomer": "Returned",
+        "returnedOn": "on {{date}}",
+        "empty": "No requests for this filter."
+      },
+      "nextAction": {
+        "approve": "Approve",
+        "markInTransit": "Mark in transit",
+        "markInReview": "In review"
+      },
+      "resolve": {
+        "prepareCorrectProduct": "Prepare correct product",
+        "resendCorrectProduct": "Resend correct product",
+        "refund": "Refund"
+      },
+      "reject": "Reject",
+      "markReadyForPickup": "Mark ready for pickup",
+      "markSentBack": "Mark sent back",
+      "rejectModal": {
+        "kicker": "Confirm rejection",
+        "titlePrefix": "Reject",
+        "titleEmphasis": "return",
+        "fromReviewBodyPrefix": "You're about to reject the return from",
+        "fromReviewBodySuffix": "for order #{{orderId}} because the received product doesn't match what was reported. The customer will get an email and a notification - this action can't be undone. Remember to separately coordinate returning the physical product to the customer.",
+        "defaultBodyPrefix": "You're about to reject the return request from",
+        "defaultBodySuffix": "for order #{{orderId}}. The customer will get an email and a notification - this action can't be undone.",
+        "cancel": "Cancel",
+        "rejecting": "Rejecting...",
+        "confirmReject": "Yes, reject"
+      }
+    },
+    "productModal": {
+      "validation": {
+        "nameRequired": "The name is required.",
+        "brandRequired": "The brand is required.",
+        "categoryRequired": "The category is required.",
+        "shortRequired": "The short description is required.",
+        "priceMustBePositive": "The price must be greater than 0.",
+        "stockMustBePositive": "Stock must be greater than 0.",
+        "variantNeedsLabel": "Every variant needs a label.",
+        "variantNeedsPrice": "\"{{label}}\" needs a price greater than 0.",
+        "variantNeedsStock": "\"{{label}}\" needs stock greater than 0.",
+        "variantNeedsImage": "\"{{label}}\" needs at least 1 image.",
+        "matrixNeedsPrimary": "Add at least one flavor/variant.",
+        "matrixNeedsSize": "Add at least one size.",
+        "primaryNeedsLabel": "Every flavor needs a label.",
+        "sizeNeedsLabel": "Every size needs a label.",
+        "sizeNeedsPrice": "\"{{label}}\" needs a base price greater than 0.",
+        "sizeNeedsStock": "\"{{label}}\" needs a base stock greater than 0.",
+        "comboNeedsImage": "\"{{primary}} × {{size}}\" needs at least 1 image (or add images to \"{{primary}}\" so they apply to all its sizes).",
+        "image1Required": "Image 1 is required.",
+        "variantDateRange": "\"{{label}}\": \"Valid until\" can't be earlier than \"Valid from\".",
+        "extraTabIncomplete": "Every custom tab needs a title and content (or remove it)."
+      },
+      "kickerNew": "New product",
+      "kickerEdit": "Edit product",
+      "addTitlePrefix": "Add",
+      "addTitleEmphasis": "product",
+      "editFallbackTitle": "Edit",
+      "activeToggleAria": "Active product (visible in the store)",
+      "basicInfo": {
+        "sectionTitle": "Basic information",
+        "nameLabel": "Name",
+        "namePlaceholder": "Product name",
+        "brandLabel": "Brand",
+        "brandPlaceholder": "Brand name",
+        "categoryLabel": "Category",
+        "shortLabel": "Short description",
+        "shortPlaceholder": "Brief product description…",
+        "lowStockLabel": "Low stock threshold",
+        "lowStockPlaceholder": "Global ({{count}})",
+        "sampleEligibleLabel": "Free sample (Club Healthora)",
+        "sampleAuto": "Automatic (based on price cap)",
+        "sampleInclude": "Always include",
+        "sampleExclude": "Always exclude"
+      },
+      "productType": {
+        "sectionTitle": "Product type",
+        "hint": "Does the product have a single price/stock, or does it vary by option (e.g. flavor, size, color)? This determines which fields you see below."
+      },
+      "pricingInventory": {
+        "sectionTitle": "Price · Inventory",
+        "priceLabel": "Price ($)",
+        "stockLabel": "Stock"
+      },
+      "images": {
+        "sectionTitle": "Product images",
+        "image1Label": "Image 1 · main",
+        "image2Label": "Image 2 (optional)",
+        "image3Label": "Image 3 (optional)",
+        "image4Label": "Image 4 (optional)"
+      },
+      "details": {
+        "sectionTitle": "Product details (optional)",
+        "benefitsLabel": "Benefits (optional)",
+        "benefitsHint": "(one per line)",
+        "benefitsPlaceholder": "Optional: boosts the immune system\nIncreases energy\nReduces stress",
+        "usageLabel": "How to use (optional)",
+        "usagePlaceholder": "Optional: take 1 capsule daily with water…",
+        "ingredientsLabel": "Ingredients (optional)",
+        "ingredientsPlaceholder": "Optional: vitamin C 500mg, Zinc 10mg…",
+        "warningsLabel": "Warnings (optional)",
+        "warningsPlaceholder": "Optional: keep out of reach of children…"
+      },
+      "extraTabs": {
+        "sectionTitle": "Custom tabs",
+        "titleLabel": "Title",
+        "titlePlaceholder": "e.g. Formula",
+        "contentLabel": "Content",
+        "contentPlaceholder": "Tab content…",
+        "removeTitle": "Remove tab",
+        "addButton": "+ Add tab"
+      },
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "addProduct": "Add product",
+      "saveChanges": "Save changes"
+    }
+  }
+}

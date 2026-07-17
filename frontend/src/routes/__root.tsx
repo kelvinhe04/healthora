@@ -7,6 +7,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { NotificationsRealtime } from '../components/shared/NotificationsRealtime';
 import { NotificationToaster } from '../components/shared/NotificationToaster';
 import { subscribeToProductChanges } from '../lib/crossTabSync';
+import i18n from '../i18n';
 import appCss from '../index.css?url';
 
 const queryClient = new QueryClient({
@@ -23,6 +24,22 @@ function CrossTabProductSync() {
       }),
     [],
   );
+  return null;
+}
+
+/** HU-084: the prerendered shell always ships `<html lang="es">` (no request-time language to key
+ * off of in SPA mode), so once i18next resolves the real language client-side (saved choice or
+ * browser detection) this syncs the `lang` attribute to match - matters for a11y/SEO, not for the
+ * translated text itself (react-i18next re-renders that on its own via useTranslation). */
+function LanguageDocumentSync() {
+  useEffect(() => {
+    const apply = () => {
+      document.documentElement.lang = i18n.language.startsWith('en') ? 'en' : 'es';
+    };
+    apply();
+    i18n.on('languageChanged', apply);
+    return () => i18n.off('languageChanged', apply);
+  }, []);
   return null;
 }
 
@@ -53,6 +70,7 @@ function RootComponent() {
       <ClerkProvider publishableKey={clerkPk} afterSignOutUrl="/">
         <QueryClientProvider client={queryClient}>
           <CrossTabProductSync />
+          <LanguageDocumentSync />
           <NotificationsRealtime />
           <ParallaxProvider>
             <ErrorBoundary>

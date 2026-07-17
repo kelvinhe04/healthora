@@ -151,15 +151,17 @@ function sumVariantStock(variants: ProductVariant[], mode: ProductForm['variants
 /** How many purchasable options a product has, for admin list display. A sabor×tamaño matrix
  * stores one row per sabor plus one row per tamaño (e.g. 5 + 3 = 8 `variants` entries) - that's
  * not the number a shopper picks from, so for matrix products this counts active combo cells
- * instead of dimension rows. */
-export function variantSummary(product: Product): { count: number; label: string } | null {
+ * instead of dimension rows. `kind` (not a translated label - a component picks the i18n key
+ * with it, via `t('admin.products.variantSummary.' + kind, { count })`, HU-084) tells the caller
+ * which noun to pluralize. */
+export function variantSummary(product: Product): { count: number; kind: 'combinations' | 'variants' } | null {
   if (!product.variants?.length) return null;
   if (hasTwoDimensions(product.variants)) {
     const count = Object.keys(decomposeToMatrix(product.variants).cells).length;
-    return { count, label: count === 1 ? 'combinación' : 'combinaciones' };
+    return { count, kind: 'combinations' };
   }
   const count = product.variants.length;
-  return { count, label: count === 1 ? 'variante' : 'variantes' };
+  return { count, kind: 'variants' };
 }
 
 export function formToPayload(f: ProductForm): Partial<Product> {

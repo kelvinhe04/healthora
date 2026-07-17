@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DateInputDDMMYYYY, iconBtnAd } from '../../../components/admin';
 import { Icon } from '../../../components/shared/Icon';
 import { Select } from '../../../components/shared/Select';
@@ -28,17 +29,6 @@ const labelS: CSSProperties = {
   display: 'block',
 };
 
-/** Etiqueta placeholder por tipo, para que el ejemplo tenga sentido con la variante elegida
- * (ej. "Chocolate" para Sabor, no "60 tabletas" cuando el tipo es Color). */
-const LABEL_PLACEHOLDER: Record<VariantFormRow['type'], string> = {
-  flavor: 'ej. Chocolate',
-  scent: 'ej. Lavanda',
-  size: 'ej. 500 ml',
-  count: 'ej. Pack de 2',
-  color: 'ej. Rojo',
-  weight: 'ej. 500 g',
-};
-
 export function ProductVariantsEditor({
   variants,
   onChange,
@@ -48,6 +38,7 @@ export function ProductVariantsEditor({
   onChange: (variants: VariantFormRow[]) => void;
   folder?: string;
 }) {
+  const { t } = useTranslation();
   const type = variants[0]?.type ?? 'flavor';
 
   const setType = (nextType: VariantFormRow['type']) =>
@@ -69,7 +60,7 @@ export function ProductVariantsEditor({
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <label style={labelS}>Tipo de variante</label>
+        <label style={labelS}>{t('admin.productVariantsEditor.typeLabel')}</label>
         <Select
           wrapperStyle={{ width: 160 }}
           value={type}
@@ -77,7 +68,7 @@ export function ProductVariantsEditor({
         >
           {VARIANT_TYPE_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
-              {opt.label}
+              {t(`admin.variantTypes.${opt.labelKey}`)}
             </option>
           ))}
         </Select>
@@ -92,7 +83,7 @@ export function ProductVariantsEditor({
           marginBottom: 12,
         }}
       >
-        Variantes del producto
+        {t('admin.productVariantsEditor.productVariantsLabel')}
       </div>
       {variants.length === 0 ? (
         <div
@@ -103,7 +94,7 @@ export function ProductVariantsEditor({
             padding: '12px 0',
           }}
         >
-          Sin variantes — el producto usa precio y stock global.
+          {t('admin.productVariantsEditor.noVariants')}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -130,16 +121,16 @@ export function ProductVariantsEditor({
                 }}
               >
               <div>
-                <label style={labelS}>Etiqueta</label>
+                <label style={labelS}>{t('admin.productVariantsEditor.rowLabelField')}</label>
                 <input
                   style={inputS}
                   value={row.label}
                   onChange={(e) => updateRow(idx, { label: e.target.value })}
-                  placeholder={LABEL_PLACEHOLDER[row.type]}
+                  placeholder={t(`admin.productVariantsEditor.labelPlaceholders.${row.type}`)}
                 />
               </div>
               <div>
-                <label style={labelS}>Precio ($) <span style={{ color: '#e53e3e' }}>*</span></label>
+                <label style={labelS}>{t('admin.productVariantsEditor.priceLabel')} <span style={{ color: '#e53e3e' }}>*</span></label>
                 <input
                   style={inputS}
                   type="number"
@@ -150,7 +141,7 @@ export function ProductVariantsEditor({
                 />
               </div>
               <div>
-                <label style={labelS}>Stock <span style={{ color: '#e53e3e' }}>*</span></label>
+                <label style={labelS}>{t('admin.productVariantsEditor.stockLabel')} <span style={{ color: '#e53e3e' }}>*</span></label>
                 <input
                   style={inputS}
                   type="number"
@@ -161,7 +152,7 @@ export function ProductVariantsEditor({
               </div>
               {row.type === 'color' && (
                 <div>
-                  <label style={labelS}>Color (hex)</label>
+                  <label style={labelS}>{t('admin.productVariantsEditor.colorHexLabel')}</label>
                   <input
                     style={{ ...inputS, padding: '6px 8px' }}
                     type="color"
@@ -174,7 +165,7 @@ export function ProductVariantsEditor({
                 type="button"
                 onClick={() => removeRow(idx)}
                 style={{ ...iconBtnAd, color: 'var(--coral)', marginBottom: 6 }}
-                title="Eliminar variante"
+                title={t('admin.productVariantsEditor.removeVariantTitle')}
               >
                 <Icon name="trash" size={14} />
               </button>
@@ -187,7 +178,7 @@ export function ProductVariantsEditor({
                 }}
               >
                 <div>
-                  <label style={labelS}>Precio antes ($)</label>
+                  <label style={labelS}>{t('admin.productVariantsEditor.priceBeforeLabel')}</label>
                   <input
                     style={inputS}
                     type="number"
@@ -195,11 +186,11 @@ export function ProductVariantsEditor({
                     step={0.01}
                     value={row.priceBefore}
                     onChange={(e) => updateRow(idx, { priceBefore: e.target.value })}
-                    placeholder="Sin descuento"
+                    placeholder={t('admin.productVariantsEditor.priceBeforePlaceholder')}
                   />
                 </div>
                 <div>
-                  <label style={labelS}>Vigente desde</label>
+                  <label style={labelS}>{t('admin.productVariantsEditor.validFromLabel')}</label>
                   <DateInputDDMMYYYY
                     style={inputS}
                     value={row.discountStartsAt}
@@ -208,7 +199,7 @@ export function ProductVariantsEditor({
                   />
                 </div>
                 <div>
-                  <label style={labelS}>Vigente hasta</label>
+                  <label style={labelS}>{t('admin.productVariantsEditor.validUntilLabel')}</label>
                   <DateInputDDMMYYYY
                     style={inputS}
                     value={row.discountEndsAt}
@@ -218,7 +209,7 @@ export function ProductVariantsEditor({
                 </div>
               </div>
               <div>
-                <label style={labelS}>Imágenes (mínimo 1, máximo 4) <span style={{ color: '#e53e3e' }}>*</span></label>
+                <label style={labelS}>{t('admin.productVariantsEditor.imagesLabel')} <span style={{ color: '#e53e3e' }}>*</span></label>
                 <MiniImagePicker
                   images={row.images}
                   onChange={(images) => updateRow(idx, { images })}
@@ -227,14 +218,14 @@ export function ProductVariantsEditor({
                 {row.isDefault && (
                   <div style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"Geist", sans-serif', marginTop: 4 }}>
                     {row.images.length > 1
-                      ? 'La 2ª imagen se usa para el efecto hover de la card en el catálogo.'
-                      : 'Si agregas una 2ª imagen aquí, se usará para el efecto hover de la card en el catálogo.'}
+                      ? t('admin.productVariantsEditor.hoverHintMultiple')
+                      : t('admin.productVariantsEditor.hoverHintSingle')}
                   </div>
                 )}
               </div>
               <label
                 style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', width: 'fit-content' }}
-                title="Usa la imagen de esta variante como portada del producto en el catálogo"
+                title={t('admin.productVariantsEditor.defaultRadioTitle')}
               >
                 <input
                   type="radio"
@@ -244,7 +235,7 @@ export function ProductVariantsEditor({
                   style={{ width: 14, height: 14, accentColor: 'var(--green)', cursor: 'pointer' }}
                 />
                 <span style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>
-                  Default (imagen de portada)
+                  {t('admin.productVariantsEditor.defaultRadioLabel')}
                 </span>
               </label>
             </div>
@@ -264,7 +255,7 @@ export function ProductVariantsEditor({
           border: 'none',
         }}
       >
-        + Agregar variante
+        {t('admin.productVariantsEditor.addVariantButton')}
       </button>
     </div>
   );

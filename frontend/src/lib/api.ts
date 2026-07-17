@@ -67,6 +67,11 @@ type BannerPayload = {
   highlightWord?: string;
   description?: string;
   ctaText: string;
+  kickerEn?: string;
+  titleEn?: string;
+  highlightWordEn?: string;
+  descriptionEn?: string;
+  ctaTextEn?: string;
   backgroundColor?: string;
   startDate?: string | null;
   endDate?: string | null;

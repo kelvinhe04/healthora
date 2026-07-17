@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnimatedButton } from '../shared/AnimatedButton';
 import { motion, type Variants } from 'framer-motion';
 import { api } from '../../lib/api';
@@ -8,13 +9,24 @@ interface FooterProps {
   onNav?: (view: 'catalog', filter?: { category?: string }) => void;
 }
 
-const allCategories = ['Vitaminas', 'Medicamentos', 'Cuidado personal', 'Cuidado del bebé', 'Salud de la piel', 'Fitness', 'Fragancias', 'Hidratantes', 'Maquillaje', 'Suplementos de Bienestar'];
+// Value passed to onNav({ category }) must stay the exact Spanish label the catalog/backend
+// filter matches against (see Landing.tsx's HERO_CONTENT / categories.id) - only the on-screen
+// label is translated, via the paired i18n key.
+const CATEGORY_ITEMS = [
+  { value: 'Vitaminas', i18nKey: 'vitamins' },
+  { value: 'Medicamentos', i18nKey: 'medications' },
+  { value: 'Cuidado personal', i18nKey: 'personalCare' },
+  { value: 'Cuidado del bebé', i18nKey: 'babyCare' },
+  { value: 'Salud de la piel', i18nKey: 'skinHealth' },
+  { value: 'Fitness', i18nKey: 'fitness' },
+  { value: 'Fragancias', i18nKey: 'fragrances' },
+  { value: 'Hidratantes', i18nKey: 'moisturizers' },
+  { value: 'Maquillaje', i18nKey: 'makeup' },
+  { value: 'Suplementos de Bienestar', i18nKey: 'wellnessSupplements' },
+] as const;
 
-const cols = [
-  { title: 'Comprar', items: allCategories, isCategory: true },
-  { title: 'Ayuda', items: ['Contacto', 'Preguntas frecuentes', 'Envíos', 'Devoluciones', 'Estado de mi orden'], isCategory: false },
-  { title: 'Legal', items: ['Términos y condiciones', 'Política de privacidad', 'Política de medicamentos', 'Cookies'], isCategory: false },
-];
+const HELP_ITEMS = ['contact', 'faq', 'shipping', 'returns', 'orderStatus'] as const;
+const LEGAL_ITEMS = ['terms', 'privacy', 'medications', 'cookies'] as const;
 
 const socials = [
   { label: 'Instagram', id: 'instagram' },
@@ -190,11 +202,25 @@ function RevealButton({ delay, isAnimating, children }: { delay: number; isAnima
   return <AnimatedItem delay={delay} isAnimating={isAnimating} variants={buttonVariants}>{children}</AnimatedItem>;
 }
 
-function formatCategoryName(category: string): string {
-  return category;
-}
-
 export function Footer({ onNav }: FooterProps) {
+  const { t } = useTranslation();
+  const cols = [
+    {
+      title: t('footer.columns.shop'),
+      items: CATEGORY_ITEMS.map((c) => ({ key: c.value, label: t(`footer.categories.${c.i18nKey}`), value: c.value })),
+      isCategory: true,
+    },
+    {
+      title: t('footer.columns.help'),
+      items: HELP_ITEMS.map((key) => ({ key, label: t(`footer.help.${key}`), value: undefined })),
+      isCategory: false,
+    },
+    {
+      title: t('footer.columns.legal'),
+      items: LEGAL_ITEMS.map((key) => ({ key, label: t(`footer.legal.${key}`), value: undefined })),
+      isCategory: false,
+    },
+  ];
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
@@ -256,7 +282,7 @@ export function Footer({ onNav }: FooterProps) {
 
     if (!trimmedEmail) {
       setStatus('error');
-      setMessage('Ingresa tu correo para suscribirte.');
+      setMessage(t('footer.newsletter.errorEmpty'));
       return;
     }
 
@@ -266,19 +292,19 @@ export function Footer({ onNav }: FooterProps) {
     try {
       await api.newsletter.subscribe(trimmedEmail);
       setStatus('success');
-      setMessage('Te enviamos un correo de confirmación.');
+      setMessage(t('footer.newsletter.success'));
       setEmail('');
     } catch (error) {
       setStatus('error');
-      setMessage(error instanceof Error ? error.message : 'No pudimos completar la suscripción.');
+      setMessage(error instanceof Error ? error.message : t('footer.newsletter.errorGeneric'));
     }
   };
 
   const healthora = 'Healthora'.split('');
-  const description = 'Tu farmacia online para salud, cuidado personal, belleza y bienestar.';
+  const description = t('footer.description');
 
   return (
-    <footer ref={footerRef} role="contentinfo" aria-label="Pie de página" style={{ background: 'var(--green)', color: 'var(--cream)', padding: isMobile ? '48px 24px 24px' : '64px 40px 32px', borderRadius: isMobile ? '24px 24px 0 0' : '32px 32px 0 0', marginTop: isMobile ? 40 : 80, overflow: 'hidden' }}>
+    <footer ref={footerRef} role="contentinfo" aria-label={t('footer.ariaLabel')} style={{ background: 'var(--green)', color: 'var(--cream)', padding: isMobile ? '48px 24px 24px' : '64px 40px 32px', borderRadius: isMobile ? '24px 24px 0 0' : '32px 32px 0 0', marginTop: isMobile ? 40 : 80, overflow: 'hidden' }}>
       <style>{`
         .newsletter-input::placeholder { color: color-mix(in srgb, var(--cream) 50%, transparent); }
         .newsletter-input { border-radius: 999px; }
@@ -365,15 +391,14 @@ export function Footer({ onNav }: FooterProps) {
             </motion.div>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
               {col.items.map((item, itemIndex) => (
-                <AnimatedLink 
-                  key={item} 
+                <AnimatedLink
+                  key={item.key}
                   delay={0.55 + colIndex * 0.05 + itemIndex * 0.025}
                   isAnimating={isAnimating}
-                  onClick={() => col.isCategory && onNav?.('catalog', { category: formatCategoryName(item) })}
-                  
+                  onClick={() => col.isCategory && item.value && onNav?.('catalog', { category: item.value })}
                   style={{ cursor: col.isCategory ? 'pointer' : 'default' }}
                 >
-                  {col.isCategory ? formatCategoryName(item) : item}
+                  {item.label}
                 </AnimatedLink>
               ))}
             </ul>
@@ -387,7 +412,7 @@ export function Footer({ onNav }: FooterProps) {
             transition={{ delay: 0.75 }}
             style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.6, marginBottom: 20 }}
           >
-            Newsletter
+            {t('footer.newsletter.title')}
           </motion.div>
           <motion.p
             variants={wordVariants}
@@ -396,7 +421,7 @@ export function Footer({ onNav }: FooterProps) {
             transition={{ delay: 0.8 }}
             style={{ fontSize: 14, lineHeight: 1.55, opacity: 0.88, marginBottom: 18, fontFamily: '"Geist", sans-serif' }}
           >
-            Recibe ofertas, lanzamientos y consejos de bienestar.
+            {t('footer.newsletter.body')}
           </motion.p>
           <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: 'rgba(0,0,0,0.22)', borderRadius: 999, padding: 4, alignItems: 'center', overflow: 'hidden', gap: 4, width: 'fit-content', border: '1px solid rgba(255,255,255,0.1)' }}>
             <AnimatedInput delay={0.85} isAnimating={isAnimating} style={{ width: 160, minWidth: 0 }}>
@@ -411,7 +436,7 @@ export function Footer({ onNav }: FooterProps) {
                     setMessage('');
                   }
                 }}
-                placeholder="tu@email.com"
+                placeholder={t('footer.newsletter.placeholder')}
                 autoComplete="email"
                 disabled={status === 'loading'}
                 style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--cream)', WebkitTextFillColor: 'var(--cream)', caretColor: 'var(--cream)', padding: '10px 12px', fontSize: 13, fontFamily: '"Geist", sans-serif', opacity: status === 'loading' ? 0.7 : 1 }}
@@ -424,7 +449,7 @@ export function Footer({ onNav }: FooterProps) {
                 size="sm"
                 disabled={status === 'loading'}
                 style={{ color: 'oklch(0.2 0.015 155)' }}
-                text={status === 'loading' ? 'Enviando...' : 'Suscribirme'}
+                text={status === 'loading' ? t('footer.newsletter.submitting') : t('footer.newsletter.submit')}
               />
             </RevealButton>
           </form>
@@ -442,8 +467,8 @@ export function Footer({ onNav }: FooterProps) {
         variants={bottomVariants}
         style={{ borderTop: '1px solid rgba(0,0,0,0.12)', paddingTop: 24, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 0, justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.55 }}
       >
-        <span>© 2026 Healthora · Farmacia digital</span>
-        <span>Pagos seguros · Visa · Mastercard · Amex · Stripe</span>
+        <span>{t('footer.copyright')}</span>
+        <span>{t('footer.payments')}</span>
       </motion.div>
     </footer>
   );

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   KpiCard,
@@ -12,8 +13,10 @@ import {
 } from '../../../components/admin';
 import { ProductImage } from '../../../components/shared/ProductImage';
 import { useAdminPanelContext } from '../AdminPanelContext';
+import { formatCurrency } from '../../../lib/currency';
 
 export function DashboardSection() {
+  const { t } = useTranslation();
   const {
   dashboard,
   isMobile,
@@ -27,13 +30,13 @@ export function DashboardSection() {
           <>
             <PageHeader
               loading={!dashboard}
-              kicker="Panel de administración"
+              kicker={t('admin.dashboard.kicker')}
               title={
                 <>
-                  Dashboard <em style={{ color: "var(--green)" }}>Healthora</em>
+                  {t('admin.dashboard.titleWord')} <em style={{ color: "var(--green)" }}>Healthora</em>
                 </>
               }
-              sub="Resumen en vivo de ventas, órdenes, usuarios e inventario."
+              sub={t('admin.dashboard.sub')}
             />
             <div
               style={{
@@ -45,35 +48,35 @@ export function DashboardSection() {
             >
               <KpiCard
                 mode="dark"
-                label="Ingresos mes"
+                label={t('admin.dashboard.kpi.revenueMonth')}
                 value={
                   dashboard
-                    ? `$${dashboard.kpis.revenue.toLocaleString()}`
+                    ? formatCurrency(dashboard.kpis.revenue)
                     : "—"
                 }
                 delta={dashboard?.kpis.revenueDelta}
-                sub="vs mes anterior"
+                sub={t('admin.dashboard.kpi.revenueMonthSub')}
                 loading={!dashboard}
                 animKey="revenue"
               />
               <KpiCard
-                label="Órdenes mes"
+                label={t('admin.dashboard.kpi.ordersMonth')}
                 value={dashboard?.kpis.monthOrders ?? "—"}
-                sub="pagadas o en curso"
+                sub={t('admin.dashboard.kpi.ordersMonthSub')}
                 loading={!dashboard}
                 animKey="orders"
               />
               <KpiCard
-                label="Clientes"
+                label={t('admin.dashboard.kpi.customers')}
                 value={customers.length ?? "—"}
-                sub="clientes registrados"
+                sub={t('admin.dashboard.kpi.customersSub')}
                 loading={!dashboard}
                 animKey="users"
               />
               <KpiCard
-                label="Existencias bajas"
+                label={t('admin.dashboard.kpi.lowStock')}
                 value={dashboard?.kpis.lowStock ?? "—"}
-                sub="productos con 5 unidades o menos"
+                sub={t('admin.dashboard.kpi.lowStockSub')}
                 loading={!dashboard}
                 animKey="lowstock"
               />
@@ -81,8 +84,8 @@ export function DashboardSection() {
 
             {/* Revenue chart card */}
             <Card
-              title="Ingresos · últimos 30 días"
-              sub="Ingresos diarios, en USD"
+              title={t('admin.dashboard.revenueChart.title')}
+              sub={t('admin.dashboard.revenueChart.sub')}
               loading={!dashboard}
               skeletonContent={<Skeleton height={240} borderRadius={8} />}
             >
@@ -103,8 +106,8 @@ export function DashboardSection() {
             >
               {/* Recent orders */}
               <Card
-                title="Pedidos recientes"
-                sub="Últimas 5 órdenes del ecommerce"
+                title={t('admin.dashboard.recentOrders.title')}
+                sub={t('admin.dashboard.recentOrders.sub')}
                 loading={dashboard === undefined}
                 skeletonContent={
                   <div
@@ -147,10 +150,10 @@ export function DashboardSection() {
                   <table style={{ ...tableStyle, minWidth: 420 }}>
                     <thead>
                       <tr>
-                        <th style={th}>Orden</th>
-                        <th style={th}>Cliente</th>
-                        <th style={th}>Total</th>
-                        <th style={th}>Pago</th>
+                        <th style={th}>{t('admin.dashboard.recentOrders.columns.order')}</th>
+                        <th style={th}>{t('admin.dashboard.recentOrders.columns.customer')}</th>
+                        <th style={th}>{t('admin.dashboard.recentOrders.columns.total')}</th>
+                        <th style={th}>{t('admin.dashboard.recentOrders.columns.payment')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -170,7 +173,7 @@ export function DashboardSection() {
                                 fontWeight: 500,
                               }}
                             >
-                              {order.customerName || "Cliente"}
+                              {order.customerName || t('admin.dashboard.recentOrders.defaultCustomerName')}
                             </div>
                             <div
                               style={{
@@ -188,7 +191,7 @@ export function DashboardSection() {
                               fontSize: 18,
                             }}
                           >
-                            ${(order.total || 0).toFixed(2)}
+                            {formatCurrency(order.total || 0)}
                           </td>
                           <td style={td}>
                             <StatusPill
@@ -200,6 +203,15 @@ export function DashboardSection() {
                                     : order.paymentStatus === "refunded"
                                       ? "Reembolsado"
                                       : "Pendiente"
+                              }
+                              label={
+                                order.paymentStatus === "paid"
+                                  ? t('admin.dashboard.paymentStatus.paid')
+                                  : order.paymentStatus === "cancelled"
+                                    ? t('admin.dashboard.paymentStatus.cancelled')
+                                    : order.paymentStatus === "refunded"
+                                      ? t('admin.dashboard.paymentStatus.refunded')
+                                      : t('admin.dashboard.paymentStatus.pending')
                               }
                             />
                           </td>
@@ -215,15 +227,15 @@ export function DashboardSection() {
                       color: "var(--ink-60)",
                     }}
                   >
-                    No hay pedidos recientes.
+                    {t('admin.dashboard.recentOrders.empty')}
                   </div>
                 )}
               </Card>
 
               {/* Low stock */}
               <Card
-                title="Inventario crítico"
-                sub="Productos que requieren reposición"
+                title={t('admin.dashboard.lowStockCard.title')}
+                sub={t('admin.dashboard.lowStockCard.sub')}
                 loading={dashboard === undefined}
                 skeletonContent={
                   <div
@@ -306,7 +318,7 @@ export function DashboardSection() {
                             {cell.variantLabel ?? cell.product.brand}
                           </div>
                         </div>
-                        <StatusPill status={`${cell.stock} uds`} />
+                        <StatusPill status={t('admin.dashboard.lowStockCard.unitsBadge', { count: cell.stock })} />
                       </div>
                     ))}
                   </div>
@@ -317,7 +329,7 @@ export function DashboardSection() {
                       color: "var(--ink-60)",
                     }}
                   >
-                    No hay productos con existencias críticas.
+                    {t('admin.dashboard.lowStockCard.empty')}
                   </div>
                 )}
               </Card>

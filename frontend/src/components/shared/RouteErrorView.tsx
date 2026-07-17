@@ -1,7 +1,9 @@
 import { useRouter, type ErrorComponentProps } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 import { ErrorPage } from '../../pages/ErrorPage';
 
 export function RouteErrorView({ error }: ErrorComponentProps) {
+  const { t } = useTranslation();
   const router = useRouter();
 
   console.error('[RouteError]', error);
@@ -11,10 +13,10 @@ export function RouteErrorView({ error }: ErrorComponentProps) {
       code={500}
       title={
         <>
-          Algo salió <em style={{ color: 'var(--coral)' }}>mal</em>
+          {t('errorPage.routeError.titlePrefix')} <em style={{ color: 'var(--coral)' }}>{t('errorPage.routeError.titleEmphasis')}</em>
         </>
       }
-      message="Ocurrió un error inesperado al cargar esta página. Puedes reintentar o volver al inicio."
+      message={t('errorPage.routeError.message')}
       onHome={() => router.navigate({ to: '/' })}
       onRetry={() => router.invalidate()}
     />

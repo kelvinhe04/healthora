@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { Sidebar } from '../../components/admin';
 import { Icon } from '../../components/shared/Icon';
 import { AnimatedButton } from '../../components/shared/AnimatedButton';
 import { ModalOverlay } from '../../components/shared/ModalOverlay';
 import { SkipToContent } from '../../components/shared/SkipToContent';
 import { NotificationCenter } from '../../components/shared/NotificationCenter';
+import { LanguageSwitcher } from '../../components/shared/LanguageSwitcher';
 import type { AdminAccess } from './types';
 import { AdminPanelProvider, useAdminPanelContext } from './AdminPanelContext';
 import { AuditLogsSection } from './sections/AuditLogsSection';
@@ -29,6 +31,7 @@ function AdminPanelLayout({
   access: AdminAccess;
   onGoToStore: () => void;
 }) {
+  const { t } = useTranslation();
   const {
     page,
     setPage,
@@ -58,14 +61,17 @@ function AdminPanelLayout({
         <div style={{ position: "sticky", top: 0, zIndex: 50, background: "var(--cream)", borderBottom: "1px solid var(--ink-06)", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 26, height: 26, borderRadius: 999, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--lime)", fontFamily: '"Instrument Serif", serif', fontSize: 16 }}>h</div>
-            <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20, letterSpacing: "-0.02em" }}>Admin</span>
+            <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20, letterSpacing: "-0.02em" }}>{t('admin.mobileTopBar.title')}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <LanguageSwitcher
+              buttonStyle={{ background: "transparent", border: "1px solid var(--ink-06)", borderRadius: 999, padding: "6px 8px", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--ink)" }}
+            />
             <NotificationCenter
               buttonStyle={{ background: "transparent", border: "1px solid var(--ink-06)", borderRadius: 999, padding: 7, cursor: "pointer", display: "flex", alignItems: "center", color: "var(--ink)" }}
               iconSize={16}
             />
-            <button type="button" onClick={() => setSidebarOpen(true)} aria-label="Abrir menú de administración" aria-expanded={sidebarOpen} style={{ background: "transparent", border: "1px solid var(--ink-06)", borderRadius: 999, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--ink)" }}>
+            <button type="button" onClick={() => setSidebarOpen(true)} aria-label={t('admin.sidebar.openMenuAria')} aria-expanded={sidebarOpen} style={{ background: "transparent", border: "1px solid var(--ink-06)", borderRadius: 999, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--ink)" }}>
               <Icon name="menu" size={18} />
             </button>
           </div>
@@ -227,7 +233,7 @@ function AdminPanelLayout({
               background: "var(--cream-2)",
             }}
           >
-            <AnimatedButton variant="primary" onClick={() => setProductSuccess(null)} text="Entendido" />
+            <AnimatedButton variant="primary" onClick={() => setProductSuccess(null)} text={t('admin.productSuccessModal.understood')} />
           </div>
         </div>
       </ModalOverlay>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ADMIN_PAGE_SIZE } from '../utils';
 
 export function PaginationControls({
@@ -15,6 +16,7 @@ export function PaginationControls({
   end: number;
   onPageChange: (page: number) => void;
 }) {
+  const { t } = useTranslation();
   if (totalItems <= ADMIN_PAGE_SIZE) return null;
 
   return (
@@ -31,14 +33,14 @@ export function PaginationControls({
       }}
     >
       <span>
-        Mostrando {start}-{end} de {totalItems}
+        {t('catalog.showingRange', { from: start, to: end, total: totalItems })}
       </span>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <button
           type="button"
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          aria-label="Página anterior"
+          aria-label={t('admin.pagination.previousAria')}
           style={{
             padding: "7px 12px",
             borderRadius: 999,
@@ -49,7 +51,7 @@ export function PaginationControls({
             opacity: page <= 1 ? 0.42 : 1,
           }}
         >
-          Anterior
+          {t('catalog.previous')}
         </button>
         <span
           style={{
@@ -63,7 +65,7 @@ export function PaginationControls({
           type="button"
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          aria-label="Página siguiente"
+          aria-label={t('admin.pagination.nextAria')}
           style={{
             padding: "7px 12px",
             borderRadius: 999,
@@ -74,7 +76,7 @@ export function PaginationControls({
             opacity: page >= totalPages ? 0.42 : 1,
           }}
         >
-          Siguiente
+          {t('catalog.next')}
         </button>
       </div>
     </div>

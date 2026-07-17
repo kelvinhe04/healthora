@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Product, ProductVariant } from '../../types';
 import { ProductImage } from './ProductImage';
 import { Stars } from './Stars';
@@ -12,6 +13,14 @@ import { useWishlistStore } from '../../store/wishlistStore';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { isLowStock } from '../../lib/stock';
 import { formatPurchasesLastMonth } from '../../lib/purchases';
+import { formatCurrency } from '../../lib/currency';
+
+// product.tag values coming from the backend stay in Spanish (they're compared elsewhere for
+// styling/filtering, e.g. `product.tag === 'Nuevo'`) - only the on-screen badge text is translated.
+const TAG_I18N_KEY: Record<string, string> = {
+  Nuevo: 'productCard.tags.new',
+  'Más vendido': 'productCard.tags.bestseller',
+};
 
 // ─── Shared shimmer helper ────────────────────────────────────────────────────
 function ShimmerBox({ style }: { style?: CSSProperties }) {
@@ -89,6 +98,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick, onAdd, priority = false, showCompare = true, showWishlist = true, sectionKey = 'card' }: ProductCardProps) {
+  const { t } = useTranslation();
   const domId = `product-card-${sectionKey}-${product.id}`;
   const [hover, setHover] = useState(false);
   const [compareHint, setCompareHint] = useState('');
@@ -165,14 +175,14 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
         {/* Badges */}
         <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
           {product.stock === 0 ? (
-            <span style={{ background: dark ? 'oklch(0.10 0.012 155)' : 'var(--ink)', color: dark ? 'oklch(0.96 0.006 85)' : 'var(--cream)', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Agotado</span>
+            <span style={{ background: dark ? 'oklch(0.10 0.012 155)' : 'var(--ink)', color: dark ? 'oklch(0.96 0.006 85)' : 'var(--cream)', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{t('productCard.outOfStock')}</span>
           ) : (
             <>
               {product.tag && (
-                <span style={{ background: product.tag === 'Nuevo' ? 'var(--lime)' : 'oklch(0.18 0.03 155)', color: product.tag === 'Nuevo' ? 'oklch(0.18 0.03 155)' : 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{product.tag}</span>
+                <span style={{ background: product.tag === 'Nuevo' ? 'var(--lime)' : 'oklch(0.18 0.03 155)', color: product.tag === 'Nuevo' ? 'oklch(0.18 0.03 155)' : 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{TAG_I18N_KEY[product.tag] ? t(TAG_I18N_KEY[product.tag]) : product.tag}</span>
               )}
               {isLowStock(product.stock) && (
-                <span style={{ background: 'var(--coral)', color: 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Solo quedan {product.stock}</span>
+                <span style={{ background: 'var(--coral)', color: 'white', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', padding: '4px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{t('productCard.lowStock', { count: product.stock })}</span>
               )}
             </>
           )}
@@ -189,11 +199,11 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
               e.stopPropagation();
               const result = toggleCompare(product.id);
               if (result === 'full') {
-                setCompareHint('Máximo 4 productos');
+                setCompareHint(t('productCard.compareMax'));
                 window.setTimeout(() => setCompareHint(''), 1800);
               }
             }}
-            aria-label={isCompared ? 'Quitar de comparación' : 'Agregar a comparación'}
+            aria-label={isCompared ? t('productCard.removeFromCompareAria') : t('productCard.addToCompareAria')}
             aria-pressed={isCompared}
             style={{
               position: 'absolute',
@@ -224,7 +234,7 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
               e.stopPropagation();
               toggleWishlist(product.id);
             }}
-            aria-label={isWishlisted ? 'Quitar de wishlist' : 'Agregar a wishlist'}
+            aria-label={isWishlisted ? t('productCard.removeFromWishlistAria') : t('productCard.addToWishlistAria')}
             aria-pressed={isWishlisted}
             style={{
               position: 'absolute',
@@ -253,7 +263,7 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
           <button
             onClick={(e) => { e.stopPropagation(); onAdd(product, 1, pickDefaultCartVariant(product)); }}
             style={{ position: 'absolute', bottom: 12, right: 12, width: 40, height: 40, borderRadius: 999, background: 'oklch(0.18 0.03 155)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: hover ? 'scale(1.1) rotate(180deg)' : 'scale(0.85) rotate(0deg)', opacity: hover ? 1 : 0.8, transition: 'all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: hover ? '0 8px 20px rgba(0,0,0,0.15)' : 'none', zIndex: 2 }}
-            aria-label="Agregar al carrito"
+            aria-label={t('productCard.addToCartAria')}
           >
             <Icon name="plus" size={16} />
           </button>
@@ -272,15 +282,15 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
               <span style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace' }}>{liveRating} · {liveCount}</span>
             </>
           ) : (
-            <span style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>SIN RESEÑAS</span>
+            <span style={{ fontSize: 10, color: 'var(--ink-40)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>{t('productCard.noReviews')}</span>
           )}
         </div>
         {purchasesLabel && (
-          <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginBottom: 8 }}>{purchasesLabel} compraron el último mes</div>
+          <div style={{ fontSize: 11, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginBottom: 8 }}>{t('productCard.purchasesLastMonth', { count: purchasesLabel })}</div>
         )}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-          <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 22, color: 'var(--ink)' }}>${effectivePrice.toFixed(2)}</span>
-          {effectivePriceBefore && <span style={{ fontSize: 13, color: 'var(--ink-40)', textDecoration: 'line-through' }}>${effectivePriceBefore.toFixed(2)}</span>}
+          <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 22, color: 'var(--ink)' }}>{formatCurrency(effectivePrice)}</span>
+          {effectivePriceBefore && <span style={{ fontSize: 13, color: 'var(--ink-40)', textDecoration: 'line-through' }}>{formatCurrency(effectivePriceBefore)}</span>}
         </div>
       </div>
     </div>

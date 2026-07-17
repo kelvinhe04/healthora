@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useClerk, useUser } from '@clerk/clerk-react';
+import { useTranslation } from 'react-i18next';
 import { AnimatedButton } from '../../components/shared/AnimatedButton';
 import { Icon } from '../../components/shared/Icon';
 import { api } from '../../lib/api';
@@ -7,6 +8,7 @@ import { AdminPanel } from './AdminPanel';
 import { useAdminToken } from './hooks/useAdminToken';
 
 export function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
+  const { t } = useTranslation();
   const getAdminToken = useAdminToken();
   const { isSignedIn } = useUser();
   const { openSignIn } = useClerk();
@@ -48,7 +50,7 @@ export function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
               marginBottom: 12,
             }}
           >
-            Acceso interno
+            {t('admin.accessGate.kicker')}
           </div>
           <h1
             style={{
@@ -60,7 +62,7 @@ export function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
               fontWeight: 400,
             }}
           >
-            Panel de <em style={{ color: "var(--green)" }}>administración</em>
+            {t('admin.accessGate.titlePrefix')} <em style={{ color: "var(--green)" }}>{t('admin.accessGate.titleEmphasis')}</em>
           </h1>
           <p
             style={{
@@ -70,12 +72,11 @@ export function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
               color: "var(--ink-60)",
             }}
           >
-            Debes iniciar sesión con una cuenta autorizada como admin para
-            continuar.
+            {t('admin.accessGate.signedOutBody')}
           </p>
           <div style={{ display: "flex", gap: 10, marginTop: 24, flexWrap: "wrap" }}>
-            <AnimatedButton variant="primary" onClick={() => openSignIn({ redirectUrl: `${window.location.origin}?view=admin` })} text="Iniciar sesión como admin" />
-            <AnimatedButton variant="outline" onClick={onGoToStore} text="Volver a la tienda" />
+            <AnimatedButton variant="primary" onClick={() => openSignIn({ redirectUrl: `${window.location.origin}?view=admin` })} text={t('admin.accessGate.signInButton')} />
+            <AnimatedButton variant="outline" onClick={onGoToStore} text={t('admin.accessGate.backToStore')} />
           </div>
         </div>
       </main>
@@ -92,7 +93,7 @@ export function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
           background: "var(--cream-2)",
         }}
       >
-        Validando acceso admin…
+        {t('admin.accessGate.validating')}
       </main>
     );
   }
@@ -143,7 +144,7 @@ export function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
               fontWeight: 400,
             }}
           >
-            Acceso <em style={{ color: "var(--coral)" }}>denegado</em>
+            {t('admin.accessGate.deniedTitlePrefix')} <em style={{ color: "var(--coral)" }}>{t('admin.accessGate.deniedTitleEmphasis')}</em>
           </h1>
           <p
             style={{
@@ -153,10 +154,10 @@ export function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
               color: "var(--ink-60)",
             }}
           >
-            Tu cuenta no tiene permisos de administrador.
+            {t('admin.accessGate.deniedBody')}
           </p>
           <div style={{ marginTop: 24 }}>
-            <AnimatedButton variant="outline" onClick={onGoToStore} text="Volver a la tienda" />
+            <AnimatedButton variant="outline" onClick={onGoToStore} text={t('admin.accessGate.backToStore')} />
           </div>
         </div>
       </main>

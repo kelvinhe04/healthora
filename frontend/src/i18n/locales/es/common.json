@@ -1,0 +1,2111 @@
+{
+  "common": {
+    "languageSwitcherAria": "Cambiar idioma",
+    "modalDialogAria": "Diálogo"
+  },
+  "topbar": {
+    "messages": [
+      "Envío gratis en compras mayores a $50",
+      "Muestra gratis en órdenes mayores a $200",
+      "Nuevos clientes: 15% con código BIENVENIDA",
+      "Entregas en 24–48h en toda la región",
+      "Productos verificados por farmacéuticos"
+    ]
+  },
+  "errorBoundary": {
+    "titlePrefix": "Algo salió",
+    "titleEmphasis": "mal",
+    "message": "Puedes reintentar o volver al inicio."
+  },
+  "ssoCallback": {
+    "processing": "Procesando inicio de sesión..."
+  },
+  "reviewSection": {
+    "timeAgo": {
+      "justNow": "Hace un momento",
+      "minutes": "Hace {{count}} min",
+      "hours": "Hace {{count}} h",
+      "days_one": "Hace {{count}} día",
+      "days_other": "Hace {{count}} días",
+      "months_one": "Hace {{count}} mes",
+      "months_other": "Hace {{count}} meses",
+      "years_one": "Hace {{count}} año",
+      "years_other": "Hace {{count}} años"
+    },
+    "helpful": {
+      "label": "Útil",
+      "withCount": "Útil · {{count}}"
+    },
+    "eyebrow": "Opiniones de compradores",
+    "heading": "Reseñas de",
+    "headingEmphasis": "clientes",
+    "writeReview": "Escribir reseña",
+    "reviewCount_one": "{{count}} reseña",
+    "reviewCount_other": "{{count}} reseñas",
+    "filterAria": "Filtrar reseñas por estrellas",
+    "successBanner": "¡Gracias por tu reseña! Ya aparece en la lista.",
+    "form": {
+      "title": "Tu reseña",
+      "ratingLabel": "Calificación *",
+      "titleLabel": "Título (opcional)",
+      "titlePlaceholder": "Resume tu experiencia en una frase",
+      "bodyLabel": "Tu reseña *",
+      "bodyPlaceholder": "¿Qué te pareció este producto? ¿Lo recomendarías?",
+      "submit": "Publicar reseña",
+      "submitting": "Enviando…",
+      "cancel": "Cancelar",
+      "errors": {
+        "ratingRequired": "Por favor selecciona una calificación",
+        "bodyRequired": "Por favor escribe tu reseña",
+        "noSession": "Sin sesión activa"
+      }
+    },
+    "signInPrompt": {
+      "title": "¿Ya probaste este producto?",
+      "subtitle": "Inicia sesión para compartir tu experiencia con otros compradores.",
+      "cta": "Iniciar sesión"
+    },
+    "filterActive": {
+      "showing_one": "Mostrando {{count}} reseña de {{stars}}★",
+      "showing_other": "Mostrando {{count}} reseñas de {{stars}}★",
+      "viewAll": "Ver todas"
+    },
+    "empty": {
+      "noneTitle": "Sé el primero en opinar",
+      "noneSubtitle": "Aún no hay reseñas para este producto.",
+      "filteredTitle": "Sin reseñas de {{stars}}★",
+      "filteredSubtitle_one": "Nadie calificó este producto con {{stars}} estrella todavía.",
+      "filteredSubtitle_other": "Nadie calificó este producto con {{stars}} estrellas todavía."
+    }
+  },
+  "recentlyViewedSection": {
+    "eyebrow": "Continúa explorando",
+    "heading": "Vistos",
+    "headingEmphasis": "recientemente"
+  },
+  "subscribeModal": {
+    "ariaLabel": "Suscribirse a reposición automática",
+    "closeAria": "Cerrar",
+    "heading": "Reposición",
+    "headingEmphasis": "automática",
+    "success": "¡Listo! Tu suscripción quedó activa.",
+    "intervalLabels": {
+      "d7": "Cada 7 días",
+      "d15": "Cada 15 días",
+      "d30": "Cada 30 días",
+      "d60": "Cada 60 días"
+    },
+    "existing": {
+      "message": "Ya tienes una reposición automática activa para {{product}}.",
+      "hint": "Puedes pausarla, cambiar su frecuencia o cancelarla desde tu perfil."
+    },
+    "intro": {
+      "pickup": "{{product}} — te cobramos y preparamos un pedido nuevo para que lo recojas en tienda cada cierto tiempo, sin que tengas que volver a comprarlo. Puedes pausar o cancelar cuando quieras desde tu perfil.",
+      "delivery": "{{product}} — te cobramos y te enviamos un pedido nuevo cada cierto tiempo, sin que tengas que volver a comprarlo. Puedes pausar o cancelar cuando quieras desde tu perfil."
+    },
+    "frequency": {
+      "label": "Frecuencia",
+      "custom": "Personalizado",
+      "customHint": "días (entre {{min}} y {{max}})"
+    },
+    "quantity": {
+      "label": "Cantidad por pedido",
+      "decreaseAria": "Disminuir cantidad",
+      "increaseAria": "Aumentar cantidad"
+    },
+    "delivery": {
+      "label": "Entrega"
+    },
+    "address": {
+      "savedLabel": "Dirección guardada",
+      "unnamed": "Dirección {{n}}",
+      "loading": "Cargando dirección…",
+      "edit": "Editar",
+      "useSaved": "Usar dirección guardada",
+      "form": {
+        "name": "Nombre",
+        "phone": "Teléfono",
+        "city": "Ciudad",
+        "address": "Dirección",
+        "postal": "Código postal"
+      }
+    },
+    "summary": {
+      "subtotal": "Subtotal",
+      "shipping": "Envío",
+      "free": "Gratis",
+      "tax": "ITBMS",
+      "total": "Total por pedido"
+    },
+    "payment": {
+      "label": "Método de pago",
+      "useNewCard": "Usar tarjeta nueva",
+      "submitLoading": "Procesando pago…",
+      "submitLabel": "Suscribirme · {{amount}} / {{method}}",
+      "methodPickup": "retiro",
+      "methodDelivery": "envío",
+      "stripeMissing": "Falta configurar VITE_STRIPE_PUBLISHABLE_KEY para procesar el pago."
+    },
+    "errors": {
+      "missingFields": "Completa nombre, teléfono y dirección para continuar.",
+      "notAuthenticated": "No autenticado",
+      "cardFormFailed": "No se pudo cargar el formulario de tarjeta",
+      "paymentFailed": "No se pudo procesar el pago",
+      "paymentNotConfirmed": "El pago no se pudo confirmar. Intenta de nuevo.",
+      "activationFailed": "Tu pago se procesó, pero no pudimos activar la suscripción. Refresca tu perfil en unos segundos o contáctanos si no aparece.",
+      "createFailed": "No se pudo crear la suscripción"
+    }
+  },
+  "signInModal": {
+    "closeAria": "Cerrar",
+    "left": {
+      "heading": "Tu salud,",
+      "headingEmphasis": "nuestro cuidado.",
+      "subtitle": "Accede a cientos de productos de bienestar y farmacia con envío rápido a tu puerta.",
+      "features": {
+        "freeShipping": "Envío gratis en pedidos +$50",
+        "certifiedProducts": "+{{count}} productos certificados",
+        "pharmacyAdvice": "Asesoría farmacéutica incluida"
+      }
+    },
+    "srHeading": {
+      "signIn": "Iniciar sesión en Healthora",
+      "signUp": "Crear cuenta en Healthora"
+    },
+    "tabs": {
+      "signIn": "Iniciar sesión",
+      "signUp": "Crear cuenta"
+    },
+    "oauth": {
+      "google": "Continuar con Google",
+      "microsoft": "Continuar con Microsoft",
+      "divider": "o con email"
+    },
+    "email": {
+      "label": "Correo electrónico",
+      "signUpCta": "Registrarme",
+      "submit": {
+        "loading": "Enviando código…",
+        "signIn": "Continuar con email",
+        "signUp": "Enviar código de acceso"
+      }
+    },
+    "otp": {
+      "label": "Verificación",
+      "heading": "Revisa tu",
+      "headingEmphasis": "email",
+      "infoBefore": "Enviamos un código de 6 dígitos a",
+      "infoAfter": "Revisa tu bandeja de entrada.",
+      "codeLabel": "Código de verificación",
+      "changeEmail": "← Cambiar email",
+      "submit": {
+        "loading": "Verificando…",
+        "signIn": "Ingresar",
+        "signUp": "Crear cuenta"
+      }
+    },
+    "terms": {
+      "prefix": "Al continuar aceptas nuestros",
+      "terms": "Términos",
+      "and": "y",
+      "privacy": "Privacidad"
+    },
+    "errors": {
+      "accountNotFound": "No encontramos esa cuenta. ¿Querés crear una?",
+      "sendCodeFailed": "Error al enviar el código",
+      "invalidCode": "Código incorrecto",
+      "oauthFailed": "No se pudo conectar con el proveedor"
+    }
+  },
+  "header": {
+    "nav": {
+      "categories": "Categorías",
+      "bestsellers": "Más vendidos",
+      "recentlyViewed": "Vistos recientemente",
+      "deals": "Ofertas",
+      "newArrivals": "Recién llegados",
+      "brands": "Marcas"
+    },
+    "search": {
+      "placeholderWide": "Buscar vitaminas, cuidado de piel, marcas...",
+      "placeholderNarrow": "Buscar productos...",
+      "ariaLabel": "Buscar productos",
+      "ariaClear": "Limpiar búsqueda",
+      "ariaSubmit": "Buscar"
+    },
+    "account": {
+      "aria": "Cuenta",
+      "profileAlt": "Perfil",
+      "myOrders": "Mis pedidos",
+      "club": "Club Healthora",
+      "myProfile": "Mi perfil",
+      "shippingAddresses": "Direcciones de envío",
+      "adminPanel": "Panel admin",
+      "signOut": "Cerrar sesión"
+    },
+    "theme": {
+      "toLight": "Activar modo claro",
+      "toDark": "Activar modo oscuro"
+    },
+    "wishlistAria": "Lista de deseos",
+    "compareAria": "Comparar productos",
+    "cartAria": "Carrito",
+    "menuAria": "Menú",
+    "closeMenuAria": "Cerrar menú",
+    "signOutModal": {
+      "title": "¿Cerrar sesión?",
+      "body": "Tu carrito y preferencias se conservarán para la próxima vez que entres.",
+      "cancel": "Cancelar",
+      "confirm": "Cerrar sesión"
+    },
+    "addresses": {
+      "account": "Cuenta",
+      "headingPrefix": "Direcciones de",
+      "headingEmphasis": "envío",
+      "intro": "Guarda varias direcciones y usa una como principal para autollenar el checkout.",
+      "loading": "Cargando direcciones…",
+      "empty": "Aún no tienes direcciones guardadas.",
+      "unnamed": "Dirección {{n}}",
+      "principal": "Principal",
+      "editAria": "Editar dirección",
+      "deleteAria": "Eliminar dirección",
+      "useAsPrimary": "Usar como principal",
+      "newAddress": "Nueva dirección",
+      "editAddress": "Editar dirección",
+      "closeAria": "Cerrar",
+      "form": {
+        "label": "Etiqueta",
+        "labelPlaceholder": "Casa, oficina, mamá…",
+        "name": "Nombre",
+        "namePlaceholder": "Nombre completo",
+        "phone": "Teléfono",
+        "phonePlaceholder": "6123-4567",
+        "city": "Ciudad",
+        "cityPlaceholder": "Ciudad",
+        "address": "Dirección",
+        "addressPlaceholder": "Calle, número, apto",
+        "postal": "Código postal",
+        "postalPlaceholder": "10001"
+      },
+      "addButton": "Agregar dirección",
+      "updateButton": "Actualizar dirección",
+      "saveAllButton": "Guardar direcciones",
+      "savingButton": "Guardando…",
+      "confirmDeleteKicker": "Confirmación",
+      "confirmDeleteHeadingPrefix": "Eliminar",
+      "confirmDeleteHeadingEmphasis": "dirección",
+      "confirmDeleteBody": "Se eliminará {{target}} de tu cuenta.",
+      "thisAddress": "esta dirección",
+      "cancel": "Cancelar",
+      "confirmDeleteButton": "Sí, eliminar",
+      "savedKicker": "Direcciones guardadas",
+      "savedHeadingPrefix": "Cambios",
+      "savedHeadingEmphasis": "guardados",
+      "savedBody": "Tus direcciones de envío se actualizaron correctamente.",
+      "understood": "Entendido"
+    },
+    "errors": {
+      "needSignIn": "Necesitas iniciar sesión",
+      "loadAddressesFailed": "No se pudieron cargar las direcciones",
+      "saveAddressesFailed": "No se pudieron guardar las direcciones",
+      "deleteAddressFailed": "No se pudo eliminar la dirección",
+      "fillRequiredFields": "Completa nombre, teléfono, dirección, ciudad y código postal."
+    }
+  },
+  "footer": {
+    "ariaLabel": "Pie de página",
+    "description": "Tu farmacia online para salud, cuidado personal, belleza y bienestar.",
+    "columns": {
+      "shop": "Comprar",
+      "help": "Ayuda",
+      "legal": "Legal"
+    },
+    "categories": {
+      "vitamins": "Vitaminas",
+      "medications": "Medicamentos",
+      "personalCare": "Cuidado personal",
+      "babyCare": "Cuidado del bebé",
+      "skinHealth": "Salud de la piel",
+      "fitness": "Fitness",
+      "fragrances": "Fragancias",
+      "moisturizers": "Hidratantes",
+      "makeup": "Maquillaje",
+      "wellnessSupplements": "Suplementos de Bienestar"
+    },
+    "help": {
+      "contact": "Contacto",
+      "faq": "Preguntas frecuentes",
+      "shipping": "Envíos",
+      "returns": "Devoluciones",
+      "orderStatus": "Estado de mi orden"
+    },
+    "legal": {
+      "terms": "Términos y condiciones",
+      "privacy": "Política de privacidad",
+      "medications": "Política de medicamentos",
+      "cookies": "Cookies"
+    },
+    "newsletter": {
+      "title": "Newsletter",
+      "body": "Recibe ofertas, lanzamientos y consejos de bienestar.",
+      "placeholder": "tu@email.com",
+      "submitting": "Enviando...",
+      "submit": "Suscribirme",
+      "errorEmpty": "Ingresa tu correo para suscribirte.",
+      "success": "Te enviamos un correo de confirmación.",
+      "errorGeneric": "No pudimos completar la suscripción."
+    },
+    "copyright": "© 2026 Healthora · Farmacia digital",
+    "payments": "Pagos seguros · Visa · Mastercard · Amex · Stripe"
+  },
+  "productCard": {
+    "outOfStock": "Agotado",
+    "lowStock": "Solo quedan {{count}}",
+    "compareMax": "Máximo 4 productos",
+    "removeFromCompareAria": "Quitar de comparación",
+    "addToCompareAria": "Agregar a comparación",
+    "removeFromWishlistAria": "Quitar de wishlist",
+    "addToWishlistAria": "Agregar a wishlist",
+    "addToCartAria": "Agregar al carrito",
+    "noReviews": "SIN RESEÑAS",
+    "purchasesLastMonth": "{{count}} compraron el último mes",
+    "tags": {
+      "new": "Nuevo",
+      "bestseller": "Más vendido"
+    }
+  },
+  "catalog": {
+    "filters": {
+      "categoriesLabel": "Categorías",
+      "all": "Todos",
+      "priceMaxLabel": "Precio máximo · {{price}}",
+      "brandsLabel": "Marcas",
+      "searchBrandsPlaceholder": "Buscar entre {{count}} marcas",
+      "searchBrandAria": "Buscar marca",
+      "noBrandsMatch": "No hay marcas que coincidan.",
+      "showLess": "Ver menos",
+      "showMore": "Ver más ({{count}})",
+      "availabilityLabel": "Disponibilidad",
+      "inStock": "En stock",
+      "mobileTitle": "Filtros"
+    },
+    "kicker": "Catálogo · {{count}} productos",
+    "headingAllPrefix": "Toda la",
+    "headingAllEmphasis": "tienda",
+    "needFilterPrefix": "Filtro:",
+    "searchFilterPrefix": "Búsqueda:",
+    "clear": "limpiar",
+    "sort": {
+      "featured": "Destacados",
+      "rating": "Mejor valorados",
+      "priceAsc": "Menor precio",
+      "priceDesc": "Mayor precio"
+    },
+    "showingRange": "Mostrando {{from}}–{{to}} de {{total}}",
+    "noResults": "Sin resultados con estos filtros.",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "related": {
+      "subtitle": "Recomendaciones del catálogo",
+      "titlePrefix": "También te puede",
+      "titleEmphasis": "interesar"
+    }
+  },
+  "cart": {
+    "title": "Tu carrito",
+    "itemCount_one": "{{count}} ARTÍCULO",
+    "itemCount_other": "{{count}} ARTÍCULOS",
+    "closeAria": "Cerrar carrito",
+    "emptyTitle": "Tu carrito está vacío",
+    "emptyBody": "Agrega productos al carrito para empezar tu compra.",
+    "exploreProducts": "Explorar productos",
+    "clearCart": "Vaciar carrito",
+    "reduceQtyAria": "Reducir cantidad de {{name}}",
+    "qtyAria": "Cantidad: {{qty}}",
+    "increaseQtyAria": "Aumentar cantidad de {{name}}",
+    "removeAria": "Eliminar",
+    "variantEditor": {
+      "changeFlavorAria": "Cambiar sabor",
+      "changeSizeAria": "Cambiar tamaño",
+      "changeVariantAria": "Cambiar variante",
+      "outOfStockSuffix": " (agotado)",
+      "change": "CAMBIAR",
+      "close": "CERRAR"
+    },
+    "club": {
+      "title": "Club Healthora",
+      "addMorePrefix": "Agrega",
+      "addMoreSuffix": "más para recibir 1 muestra gratis",
+      "freeSampleKicker": "✦ Club Healthora · Muestra gratis",
+      "chooseFreeSamplePrefix": "¡Elige",
+      "chooseFreeSampleBold": "1 muestra gratis",
+      "chooseButton": "ELEGIR →"
+    },
+    "summary": {
+      "subtotal": "Subtotal",
+      "freeSample": "Muestra gratis",
+      "shipping": "Envío",
+      "free": "GRATIS",
+      "tax": "ITBMS",
+      "total": "Total"
+    },
+    "checkoutButton": "Ir a checkout",
+    "securePayment": "PAGO SEGURO CON STRIPE",
+    "confirmClear": {
+      "kicker": "Confirmación",
+      "headingPrefix": "Vaciar",
+      "headingEmphasis": "carrito",
+      "body": "Se eliminarán todos los productos del carrito. Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "confirm": "Sí, vaciar todo"
+    }
+  },
+  "productDetail": {
+    "variantTypes": {
+      "size": "TAMAÑO",
+      "color": "COLOR",
+      "weight": "PESO",
+      "count": "PRESENTACIÓN",
+      "flavor": "SABOR",
+      "scent": "FRAGANCIA"
+    },
+    "zoomAria": "Vista ampliada de {{name}}",
+    "closeZoomAria": "Cerrar vista ampliada",
+    "store": "TIENDA",
+    "thumbnailsAria": "Miniaturas del producto",
+    "imageAltFallback": "Imagen {{n}}",
+    "reviewsCount_one": "{{count}} reseña",
+    "reviewsCount_other": "{{count}} reseñas",
+    "noReviewsYet": "SIN RESEÑAS AÚN",
+    "outOfStock": "AGOTADO",
+    "lowStock": "SOLO QUEDAN {{count}}",
+    "inStock": "EN STOCK",
+    "outOfStockSuffix": ", agotado",
+    "colorAria": "Color {{label}}",
+    "noStockOption": " · Sin stock",
+    "savings": "AHORRA {{amount}}",
+    "decreaseQtyAria": "Disminuir cantidad",
+    "increaseQtyAria": "Aumentar cantidad",
+    "outOfStockButton": "Sin stock",
+    "addedToCart": "✓ Agregado al carrito",
+    "addToCart": "Agregar al carrito · {{price}}",
+    "buyNow": "Comprar ahora con un clic",
+    "subscribe": "Suscribirme a reposición automática",
+    "trust": {
+      "freeShipping": "Envío gratis en órdenes sobre {{amount}}",
+      "securePayment": "Pago seguro con Stripe · 3D Secure",
+      "verified": "Productos verificados por farmacéuticos"
+    },
+    "tabs": {
+      "benefits": "Beneficios",
+      "usage": "Modo de uso",
+      "ingredients": "Ingredientes",
+      "nutrition": "Info. nutricional",
+      "certs": "Certificaciones",
+      "interactions": "Compatibilidad",
+      "faq": "Preguntas frecuentes",
+      "shade": "Tono & tez",
+      "application": "Técnica",
+      "formula": "Fórmula",
+      "skintypes": "Tipos de piel",
+      "warnings": "Advertencias"
+    },
+    "related": {
+      "subtitle": "También te puede gustar",
+      "titlePrefix": "Productos",
+      "titleEmphasis": "relacionados"
+    }
+  },
+  "checkout": {
+    "backToStore": "Volver a la tienda",
+    "stepIndicator": "Checkout · Paso {{step}} de 3",
+    "headingPrefix": "Finaliza tu",
+    "headingEmphasis": "compra",
+    "progressAria": "Progreso del checkout",
+    "shipping": {
+      "methods": {
+        "delivery": "Envío a domicilio",
+        "pickup": "Retiro en tienda"
+      },
+      "eta": {
+        "delivery": "24h - 48h",
+        "pickup": "Listo en 24h"
+      },
+      "free": "GRATIS"
+    },
+    "steps": {
+      "auth": {
+        "title": "Identifícate",
+        "authenticated": "✓ AUTENTICADO",
+        "continueWithGoogle": "Continuar con Google",
+        "continueWithMicrosoft": "Continuar con Microsoft",
+        "otpEmail": "Recibir código OTP por email",
+        "protectedByClerk": "AUTENTICACIÓN PROTEGIDA POR CLERK",
+        "activeSession": "SESIÓN ACTIVA",
+        "defaultUserAlt": "Usuario"
+      },
+      "address": {
+        "titleShipping": "Dirección de envío",
+        "titlePickup": "Tus datos",
+        "deliveryLabel": "Entrega",
+        "unnamed": "Dirección {{n}}",
+        "form": {
+          "fullName": "Nombre completo",
+          "fullNamePlaceholder": "María Gómez",
+          "phone": "Teléfono",
+          "phonePlaceholder": "6123-4567",
+          "address": "Dirección",
+          "addressPlaceholder": "Calle, número, apto",
+          "city": "Ciudad",
+          "cityPlaceholder": "Ciudad",
+          "postal": "Código postal",
+          "postalPlaceholder": "10001"
+        },
+        "requiredFieldsError": "Por favor completa todos los campos requeridos",
+        "continueToPayment": "Continuar al pago"
+      },
+      "payment": {
+        "title": "Método de pago",
+        "securePayment": "PAGO SEGURO",
+        "useNewCard": "Usar tarjeta nueva",
+        "processingAria": "Procesando pago",
+        "processingButton": "Procesando pago…",
+        "payButton": "Pagar {{amount}}",
+        "stripeMissing": "Falta configurar VITE_STRIPE_PUBLISHABLE_KEY para procesar pagos."
+      }
+    },
+    "errors": {
+      "sessionUnavailable": "Sesión no disponible",
+      "cardFormFailed": "No se pudo cargar el formulario de tarjeta",
+      "paymentFailed": "No se pudo procesar el pago",
+      "paymentNotConfirmed": "El pago no se pudo confirmar. Intenta de nuevo.",
+      "paymentGeneric": "Error al procesar el pago",
+      "promoEmpty": "Ingresa un código de descuento.",
+      "promoNeedsSignIn": "Inicia sesión para aplicar un cupón.",
+      "promoGeneric": "No se pudo validar el cupón."
+    },
+    "summary": {
+      "title": "Resumen de orden",
+      "freeSampleBadge": "MUESTRA GRATIS · CLUB HEALTHORA",
+      "promoCodeLabel": "Código de descuento",
+      "promoPlaceholder": "BIENVENIDA",
+      "remove": "Quitar",
+      "validating": "Validando…",
+      "apply": "Aplicar",
+      "savings": "{{label}}: ahorras {{amount}}.",
+      "welcomeCodeNote": " Solo válido en tu primera compra pagada.",
+      "useLoyaltyPoints": "Usar mis {{points}} puntos del Club Healthora",
+      "subtotal": "Subtotal",
+      "discountLabel": "Descuento {{code}}",
+      "loyaltyPoints": "Puntos Club Healthora",
+      "freeSample": "Muestra gratis",
+      "shippingLabel": "Envío ({{eta}})",
+      "tax": "ITBMS",
+      "total": "Total",
+      "securedByStripe": "Pago procesado de forma segura por Stripe"
+    }
+  },
+  "success": {
+    "error": {
+      "title": "Tu pago se procesó, pero aún estamos confirmando tu orden.",
+      "body": "Puede tardar unos minutos en aparecer. Revisa \"Mis pedidos\" más tarde o contáctanos si no aparece."
+    },
+    "confirming": "Confirmando tu orden…",
+    "orderLabel": "ORDEN #{{id}} · {{status}}",
+    "status": {
+      "paid": "PAGADA",
+      "confirmed": "CONFIRMADA"
+    },
+    "headingPrefix": "¡Gracias por tu",
+    "headingEmphasis": "compra",
+    "receivedPrefix": "Hemos recibido tu pago de",
+    "receivedSuffix": ". Te enviamos la confirmación por email y te avisaremos cuando tu pedido esté en camino.",
+    "details": {
+      "status": "Estado",
+      "statusValue": "Pagada",
+      "estimatedShipping": "Envío estimado",
+      "estimatedShippingValue": "24 – 48h",
+      "tracking": "Seguimiento"
+    },
+    "continueShopping": "Seguir comprando"
+  },
+  "wishlist": {
+    "kicker": "Guardados · {{count}}",
+    "headingPrefix": "Mi",
+    "headingEmphasis": "wishlist",
+    "clearList": "Limpiar lista",
+    "empty": "Aún no guardaste productos. Toca el corazón en cualquier tarjeta.",
+    "exploreCatalog": "Explorar catálogo"
+  },
+  "club": {
+    "yourPoints": "Tus puntos",
+    "earnRate_one": "Ganas {{count}} punto por cada {{amount}} en compras pagadas.",
+    "earnRate_other": "Ganas {{count}} puntos por cada {{amount}} en compras pagadas.",
+    "redeemNote": " Canjéalos en el checkout: {{rate}} puntos = {{amount}} de descuento.",
+    "earned": "Ganados",
+    "redeemed": "Canjeados",
+    "kicker": "Club Healthora",
+    "headingPrefix": "Unirte es",
+    "headingEmphasis": "gratis",
+    "headingSuffix": " y siempre lo será.",
+    "subtitle": "Forma parte del club y disfruta de beneficios exclusivos en cada compra.",
+    "benefits": {
+      "sample": {
+        "title": "Muestra premium",
+        "desc": "Recibe 1 muestra seleccionada en órdenes mayores a {{amount}}."
+      },
+      "discounts": {
+        "title": "Descuentos exclusivos",
+        "desc": "Accede a ofertas solo para miembros antes que nadie."
+      },
+      "shipping": {
+        "title": "Envío prioritario",
+        "desc": "Tus pedidos se procesan primero, sin costo extra."
+      }
+    },
+    "ctaTitle": "¿Listo para unirte?",
+    "ctaBody": "Crea tu cuenta o inicia sesión para empezar a acumular beneficios desde tu primera compra.",
+    "ctaButton": "Comenzar ahora"
+  },
+  "errorPage": {
+    "errorCode": "ERROR {{code}}",
+    "goHome": "Ir al inicio",
+    "viewCatalog": "Ver catálogo",
+    "retry": "Reintentar",
+    "notFound": {
+      "titlePrefix": "Página",
+      "titleEmphasis": "no encontrada",
+      "message": "La página que buscas no existe o fue movida. Revisa la URL o vuelve al inicio."
+    },
+    "routeError": {
+      "titlePrefix": "Algo salió",
+      "titleEmphasis": "mal",
+      "message": "Ocurrió un error inesperado al cargar esta página. Puedes reintentar o volver al inicio."
+    }
+  },
+  "compare": {
+    "backAria": "Volver al catálogo",
+    "back": "Volver",
+    "kicker_one": "Comparador · {{count}} producto",
+    "kicker_other": "Comparador · {{count}} productos",
+    "headingPrefix": "Comparar",
+    "headingEmphasis": "productos",
+    "clearComparison": "Limpiar comparación",
+    "empty": "Agrega hasta 4 productos desde el catálogo usando el botón de comparar.",
+    "goToCatalog": "Ir al catálogo",
+    "attribute": "Atributo",
+    "removeAria": "Quitar {{name}} de la comparación",
+    "rows": {
+      "brand": "Marca",
+      "category": "Categoría",
+      "price": "Precio",
+      "rating": "Rating",
+      "stock": "Stock",
+      "description": "Descripción"
+    },
+    "outOfStock": "Agotado",
+    "lowStock": "Solo quedan {{count}}",
+    "inStock": "En stock",
+    "addButton": "Agregar",
+    "outOfStockButton": "Sin stock"
+  },
+  "samplePicker": {
+    "backToCart": "Volver al carrito",
+    "kicker": "Club Healthora · Muestra gratis",
+    "headingPrefix": "Elige tu muestra",
+    "headingEmphasis": "gratis",
+    "subtitle": "Selecciona 1 producto. Se incluirá en tu orden sin costo adicional.",
+    "optionsAvailable_one": "{{count}} opción disponible",
+    "optionsAvailable_other": "{{count}} opciones disponibles",
+    "selectedKicker": "MUESTRA SELECCIONADA",
+    "confirmButton": "Confirmar y volver"
+  },
+  "profile": {
+    "backToStore": "Volver a la tienda",
+    "kicker": "Mi cuenta",
+    "headingPrefix": "Tu",
+    "headingEmphasis": "perfil",
+    "defaultUserAlt": "Perfil",
+    "noName": "Sin nombre",
+    "editNameAndPhoto": "Editar nombre y foto",
+    "errors": {
+      "notAuthenticated": "No autenticado",
+      "cardSaveFailed": "No se pudo guardar la tarjeta",
+      "cardFormFailed": "No se pudo cargar el formulario de tarjeta",
+      "prefsSaveFailed": "No se pudo guardar el cambio.",
+      "prefsLoadFailed": "No se pudieron cargar tus preferencias. Recarga la página."
+    },
+    "subscriptions": {
+      "title": "Mis suscripciones",
+      "loading": "Cargando…",
+      "empty": "No tienes reposiciones automáticas activas. Puedes suscribirte desde la ficha de cualquier producto.",
+      "frequency": "Cada {{days}} días · {{amount}} por envío",
+      "status": {
+        "active": "Activa",
+        "paused": "Pausada",
+        "canceled": "Cancelada"
+      },
+      "nextShipment": "Próximo envío: {{date}}",
+      "pause": "Pausar",
+      "resume": "Reanudar",
+      "cancel": "Cancelar"
+    },
+    "addCard": {
+      "saving": "Guardando…",
+      "saveCard": "Guardar tarjeta",
+      "cancel": "Cancelar"
+    },
+    "paymentMethods": {
+      "title": "Métodos de pago",
+      "loading": "Cargando…",
+      "empty": "No tienes tarjetas guardadas todavía.",
+      "default": "PRINCIPAL",
+      "setDefaultAria": "Marcar tarjeta terminada en {{last4}} como principal",
+      "deleteAria": "Eliminar tarjeta terminada en {{last4}}",
+      "stripeMissing": "Falta configurar VITE_STRIPE_PUBLISHABLE_KEY para agregar tarjetas.",
+      "addCard": "Agregar tarjeta",
+      "securityNote": "Tus tarjetas se guardan de forma segura en Stripe — Healthora nunca almacena el número completo. Podrás elegir una tarjeta guardada al pagar en el checkout."
+    },
+    "notifications": {
+      "title": "Preferencias de notificación",
+      "loading": "Cargando…",
+      "loadError": "No se pudieron cargar tus preferencias. Recarga la página.",
+      "orderUpdates": {
+        "title": "Actualizaciones de pedidos y devoluciones",
+        "desc": "Cuando tu pedido cambia de estado (enviado, entregado) o hay novedades en una devolución."
+      },
+      "promotions": {
+        "title": "Recordatorios y promociones",
+        "desc": "Avisos de recompra y ofertas."
+      },
+      "unsubscribeAll": {
+        "title": "Darme de baja de todos los correos",
+        "desc": "No recibirás ningún correo de las categorías de arriba. La confirmación de tu compra siempre llega, sin importar esta opción."
+      }
+    }
+  },
+  "orders": {
+    "backAria": "Regresar al catálogo",
+    "back": "Regresar",
+    "kicker": "Cuenta",
+    "headingPrefix": "Mis",
+    "headingEmphasis": "pedidos",
+    "orderCount_one": "{{count}} pedido",
+    "orderCount_other": "{{count}} pedidos",
+    "empty": {
+      "title": "Sin pedidos aún",
+      "body": "Cuando realices una compra, aparecerá aquí con toda la información."
+    },
+    "card": {
+      "dateAndItems_one": "{{date}} · {{count}} artículo",
+      "dateAndItems_other": "{{date}} · {{count}} artículos",
+      "replacementSuffix": " · Reemplazo"
+    },
+    "status": {
+      "pendingPayment": "Pago pendiente",
+      "pending": "Pendiente",
+      "processing": "Preparando",
+      "shipped": "Enviada",
+      "delivered": "Entregada",
+      "cancelled": "Cancelada",
+      "refunded": "Reembolsada",
+      "readyForPickup": "Listo para retirar",
+      "pickedUp": "Retirado"
+    },
+    "timeline": {
+      "cancelledBadge": "Cancelado"
+    },
+    "returns": {
+      "status": {
+        "requested": "Solicitada",
+        "approved": "Aprobada",
+        "inTransit": "En tránsito",
+        "inReview": "En revisión",
+        "refundPending": "Reembolso en proceso",
+        "refunded": "Reembolsada",
+        "replaced": "Reemplazo en camino",
+        "rejected": "Rechazada"
+      },
+      "replacedInStore": "Reemplazo en tienda",
+      "badgeLabel": "Devolución {{label}}",
+      "flowNote": {
+        "storeDropoff": "Este pedido se retiró en tienda, así que la devolución también es en tienda: primero envías la solicitud y debes esperar a que la aprobemos - recién ahí puedes traer el producto, no antes. Ese día mismo lo revisamos en la tienda: si no coincide con lo reportado, te lo devolvemos en el momento; si todo está en orden, procesamos tu reembolso (o el reemplazo, según lo que hayas pedido).",
+        "courier": "Primero envías la solicitud y debes esperar a que la aprobemos. Una vez aprobada, un mensajero pasará a recoger el producto en la dirección de tu pedido - no lo envíes por tu cuenta antes de eso. Al llegar a nuestro almacén lo revisamos: si no coincide con lo reportado, te lo enviamos de vuelta a esa misma dirección; si todo está en orden, procesamos tu reembolso (o el reemplazo, según lo que hayas pedido)."
+      },
+      "messages": {
+        "refunded": "Reembolso de {{amount}} procesado.",
+        "refundPending": "Estamos procesando tu reembolso.",
+        "replacedStorePickup": "Confirmamos que te llegó el producto equivocado. Creamos un nuevo pedido sin costo adicional para el producto correcto - ya está listo, puedes pasar a recogerlo a la tienda cuando gustes.",
+        "replacedShipping": "Confirmamos que te llegó el producto equivocado. Creamos un nuevo pedido sin costo adicional para el producto correcto - revisa su progreso abajo.",
+        "inTransit": "Registramos que tu producto está en camino de vuelta a nuestro almacén.",
+        "inReview": "Recibimos tu producto y lo estamos revisando antes de continuar.",
+        "approvedStoreDropoff": "Puedes traer el producto a nuestra tienda cuando gustes, dentro de la ventana de devolución.",
+        "approvedCourierPickup": "Un mensajero pasará a recoger el producto en la dirección de tu pedido.",
+        "rejectedReturnedStorePickup": "Revisamos el producto y no coincide con lo reportado, así que no pudimos aprobar la devolución. Ya puedes pasar a la tienda a recogerlo.",
+        "rejectedReturnedShipped": "Revisamos el producto y no coincide con lo reportado, así que no pudimos aprobar la devolución. Te lo enviamos de vuelta a la dirección de tu pedido.",
+        "rejectedAfterReviewPending": "Revisamos el producto que recibimos y no coincide con lo reportado en tu solicitud, así que no pudimos aprobar la devolución. Contáctanos si tienes preguntas.",
+        "rejectedBeforeReview": "No pudimos aprobar tu solicitud de devolución. Contáctanos si tienes preguntas."
+      },
+      "requestedPrefix": "Solicitaste:",
+      "requestedReplacement": "que te reenvíen el producto correcto",
+      "requestedRefund": "reembolso",
+      "viewReplacementOrder": "Ver pedido de reemplazo #{{id}} →",
+      "requestButton": "Solicitar devolución",
+      "errors": {
+        "submitFailed": "No se pudo enviar la solicitud"
+      },
+      "form": {
+        "reasonCategoryLabel": "Tipo de motivo",
+        "selectPlaceholder": "Selecciona una opción…",
+        "reasons": {
+          "damaged": "Llegó dañado",
+          "wrongItem": "Me enviaron un producto diferente",
+          "defective": "No funciona / defectuoso",
+          "changedMind": "Ya no lo necesito",
+          "other": "Otro"
+        },
+        "detailsLabel": "Cuéntanos más detalles",
+        "detailsPlaceholder": "Cuéntanos qué pasó…",
+        "preferenceLabel": "¿Qué prefieres?",
+        "refundOption": "Reembolso",
+        "replacementOption": "Que me envíen el producto correcto",
+        "photosLabel": "Fotos de evidencia (1 a {{max}})",
+        "photoAlt": "Evidencia {{n}}",
+        "removePhotoAria": "Quitar foto",
+        "missingPrefix": "Falta completar: {{items}}.",
+        "missingReasonCategory": "el tipo de motivo",
+        "missingDetails": "los detalles",
+        "missingPhoto": "al menos 1 foto de evidencia",
+        "submitting": "Enviando…",
+        "submit": "Enviar solicitud",
+        "cancel": "Cancelar"
+      }
+    },
+    "detail": {
+      "orderNumber": "PEDIDO #{{id}}",
+      "replacementBadge": "Reemplazo del pedido #{{id}} · sin costo →",
+      "tracking": {
+        "label": "N° de guía",
+        "defaultCarrier": "Courier"
+      },
+      "productsLabel": "Productos",
+      "variantLabel": "Variante · {{label}}",
+      "freeSampleBadge": "MUESTRA GRATIS · CLUB HEALTHORA",
+      "replacementNoCostBadge": "REEMPLAZO · SIN COSTO",
+      "unitBreakdown": "{{qty}} unidades · {{price}} c/u",
+      "free": "GRATIS",
+      "reorderButton": "Volver a comprar",
+      "reorderingButton": "Agregando al carrito…",
+      "reorderNoneAvailable": "Ningún producto de este pedido está disponible ahora.",
+      "reorderSuccess_one": "{{count}} producto agregado al carrito.",
+      "reorderSuccess_other": "{{count}} productos agregados al carrito.",
+      "breakdownLabel": "Desglose del pedido",
+      "subtotalProducts": "Subtotal de productos",
+      "discountLabel": "Descuento {{code}}",
+      "shippingWithLabel": "Envío ({{label}})",
+      "shipping": "Envío",
+      "tax": "ITBMS",
+      "freeLowercase": "Gratis",
+      "total": "Total",
+      "contactInfo": "Datos de contacto",
+      "deliveryAddress": "Dirección de entrega",
+      "edit": "Editar",
+      "addressForm": {
+        "name": "Nombre",
+        "namePlaceholder": "Nombre completo",
+        "phone": "Teléfono",
+        "phonePlaceholder": "6123-4567",
+        "city": "Ciudad",
+        "cityPlaceholder": "Ciudad",
+        "postal": "Código postal",
+        "postalPlaceholder": "10001",
+        "address": "Dirección",
+        "addressPlaceholder": "Calle, número, apto",
+        "saving": "Guardando…",
+        "saveChanges": "Guardar cambios",
+        "cancel": "Cancelar",
+        "requiredFieldsError": "Completa todos los campos requeridos."
+      },
+      "cancelConfirm": {
+        "title": "¿Confirmar cancelación?",
+        "body": "Esta acción no se puede deshacer. El pedido quedará cancelado permanentemente.",
+        "cancelling": "Cancelando…",
+        "confirmButton": "Sí, cancelar pedido",
+        "abortButton": "No, mantener"
+      },
+      "cancelOrderButton": "Cancelar pedido",
+      "errors": {
+        "addressUpdateFailed": "No se pudo actualizar la dirección",
+        "cancelFailed": "No se pudo cancelar el pedido"
+      }
+    }
+  },
+  "notifications": {
+    "bellAria": "Notificaciones",
+    "bellAriaUnread": "Notificaciones ({{count}} sin leer)",
+    "panelAria": "Centro de notificaciones",
+    "markAllRead": "Marcar leídas",
+    "clearAll": "Borrar todas",
+    "empty": "No tienes notificaciones todavía.",
+    "autoDeleteNote": "Las notificaciones se eliminan automáticamente después de 60 días",
+    "dismissAria": "Borrar notificación",
+    "toastDismissAria": "Descartar",
+    "relativeTime": {
+      "now": "ahora",
+      "minutesAgo": "hace {{count}} min",
+      "hoursAgo": "hace {{count}} h",
+      "daysAgo": "hace {{count}} d"
+    }
+  },
+  "landing": {
+    "hero": {
+      "skinHealth": {
+        "pill": "Dermatología avanzada",
+        "titlePrefix": "Piel radiante y",
+        "titleEmphasis": "saludable",
+        "sub": "Dermocosmética de grado médico para proteger y revitalizar tu rostro día tras día."
+      },
+      "vitamins": {
+        "pill": "Defensas al máximo",
+        "titlePrefix": "Vitalidad para tu",
+        "titleEmphasis": "día a día",
+        "sub": "Refuerza tu sistema inmune y mantén tu energía con nuestra selección de vitaminas."
+      },
+      "babyCare": {
+        "pill": "Para los más pequeños",
+        "titlePrefix": "Protección muy",
+        "titleEmphasis": "delicada",
+        "sub": "Fórmulas suaves, hipoalergénicas y pediátricas para cuidar la piel de tu bebé."
+      },
+      "personalCare": {
+        "pill": "Rutina de higiene",
+        "titlePrefix": "Siéntete bien",
+        "titleEmphasis": "por dentro y fuera",
+        "sub": "Productos esenciales para tu cuidado e higiene personal de todos los días."
+      },
+      "wellnessSupplements": {
+        "pill": "Nutrición integral",
+        "titlePrefix": "Optimiza tu",
+        "titleEmphasis": "bienestar total",
+        "sub": "Complementos nutricionales de alta calidad para cubrir tus requerimientos diarios."
+      },
+      "fitness": {
+        "pill": "Rendimiento deportivo",
+        "titlePrefix": "Alcanza tu",
+        "titleEmphasis": "máximo nivel",
+        "sub": "Potencia tus entrenamientos, recupera músculos y supera tus límites."
+      },
+      "medications": {
+        "pill": "Botiquín esencial",
+        "titlePrefix": "Alivio rápido",
+        "titleEmphasis": "y seguro",
+        "sub": "Tu farmacia de confianza con medicamentos OTC para cualquier malestar."
+      },
+      "moisturizers": {
+        "pill": "Humectación profunda",
+        "titlePrefix": "Un oasis para",
+        "titleEmphasis": "tu piel",
+        "sub": "Fórmulas que retienen la humedad durante 24 horas para una piel sedosa y suave."
+      },
+      "fragrances": {
+        "pill": "Aromas exclusivos",
+        "titlePrefix": "Descubre tu",
+        "titleEmphasis": "firma personal",
+        "sub": "Perfumes de diseñador con notas inolvidables que dejan huella."
+      },
+      "makeup": {
+        "pill": "Expresa tu belleza",
+        "titlePrefix": "Color y",
+        "titleEmphasis": "luminosidad",
+        "sub": "Cosméticos en tendencia y clásicos infalibles para realzar tu rostro."
+      }
+    },
+    "ctaBuyNow": "Comprar ahora",
+    "ctaSeeBestsellers": "Ver best sellers",
+    "reviews": {
+      "happyCustomers": "{{amount}} clientes felices",
+      "noReviewsYet": "Sin reseñas aún",
+      "avgRatingLabel": "PROMEDIO GLOBAL DE RESEÑAS"
+    },
+    "categories": {
+      "kicker": "01 · Categorías",
+      "headingPrefix": "Compra por",
+      "headingEmphasis": "necesidad",
+      "seeAll": "Ver todas las categorías",
+      "subtitles": {
+        "vitamins": "Nutrición diaria",
+        "medications": "Botiquín de casa",
+        "personalCare": "Rutina esencial",
+        "babyCare": "Delicado y seguro",
+        "skinHealth": "Rutina avanzada",
+        "fitness": "Energía y recuperación",
+        "fragrances": "Aromas limpios",
+        "moisturizers": "Barrera reforzada",
+        "makeup": "Toque natural",
+        "wellnessSupplements": "Bienestar diario"
+      }
+    },
+    "bestsellers": {
+      "kicker": "02 · Más vendidos",
+      "headingPrefix": "Lo más vendido",
+      "headingEmphasis": "esta semana",
+      "seeAll": "Ver todos"
+    },
+    "cinematic": {
+      "kicker": "Nuestra selección",
+      "titlePrefix": "El aroma que",
+      "titleEmphasis": "te define"
+    },
+    "byNeed": {
+      "kicker": "03 · Por necesidad",
+      "headingPrefix": "¿Qué estás",
+      "headingEmphasis": "buscando",
+      "headingSuffix": "?",
+      "explore": "Explorar",
+      "items": {
+        "drySkin": "Piel seca",
+        "energyVitamins": "Energía y vitaminas",
+        "babyCare": "Cuidado del bebé",
+        "fitnessRecovery": "Fitness y recuperación"
+      }
+    },
+    "trust": {
+      "payments": { "title": "Pagos seguros", "sub": "Stripe · PCI DSS · 3D Secure" },
+      "verified": { "title": "Productos verificados", "sub": "Farmacéuticos colegiados" },
+      "shipping": { "title": "Envíos rápidos", "sub": "24–48h en toda la región" },
+      "support": { "title": "Atención al cliente", "sub": "Lun a sáb · 8am–8pm" }
+    },
+    "featured": {
+      "kicker": "04 · Nuevos ingresos",
+      "headingPrefix": "Recién",
+      "headingEmphasis": "llegados",
+      "seeAll": "Ver catálogo completo"
+    },
+    "brands": {
+      "kicker": "05 · Marcas",
+      "headingPrefix": "Las marcas en las que",
+      "headingEmphasis": "confías"
+    }
+  },
+  "admin": {
+    "mobileTopBar": {
+      "title": "Admin"
+    },
+    "sidebar": {
+      "panelLabel": "ADMIN PANEL",
+      "nav": {
+        "dashboard": "Dashboard",
+        "orders": "Pedidos",
+        "products": "Productos",
+        "categories": "Categorías",
+        "coupons": "Cupones",
+        "banners": "Banners",
+        "users": "Clientes",
+        "returns": "Devoluciones",
+        "reviews": "Reseñas",
+        "sales": "Ventas",
+        "earnings": "Ganancias",
+        "reports": "Cohortes",
+        "audit": "Auditoría",
+        "repurchase": "Recompra",
+        "analytics": "Analítica"
+      },
+      "toLightMode": "Cambiar a modo claro",
+      "toDarkMode": "Cambiar a modo oscuro",
+      "lightMode": "Modo claro",
+      "darkMode": "Modo oscuro",
+      "goToStore": "Ver tienda",
+      "defaultName": "Admin",
+      "defaultEmail": "ADMIN@HEALTHORA",
+      "openMenuAria": "Abrir menú de administración"
+    },
+    "charts": {
+      "noData": "Sin datos",
+      "dailyOrders": "Pedidos diarios",
+      "revenueByCategory": "Ingresos por categoría",
+      "date": "Fecha",
+      "category": "Categoría",
+      "orders": "Órdenes",
+      "revenue": "Ingresos"
+    },
+    "table": {
+      "sortByAria": "Ordenar por {{label}}",
+      "clearSortAria": "Quitar orden",
+      "sortLabel": "Orden: {{label}}"
+    },
+    "donut": {
+      "totalMonth": "TOTAL MES"
+    },
+    "productSuccessModal": {
+      "understood": "Entendido"
+    },
+    "pagination": {
+      "previousAria": "Página anterior",
+      "nextAria": "Página siguiente"
+    },
+    "formattedTextarea": {
+      "defaultBoldText": "texto",
+      "boldTitle": "Negrita (**texto**)",
+      "helpPrefix": "Selecciona texto y usa",
+      "helpSuffix": "para negrita, o empieza una línea con \"- \" para una lista."
+    },
+    "imageUpload": {
+      "uploadTitle": "Subir imagen",
+      "uploadError": "Error al subir imagen",
+      "uploading": "SUBIENDO…",
+      "change": "cambiar",
+      "dragOrClick": "ARRASTRA O HAZ CLIC"
+    },
+    "accessGate": {
+      "kicker": "Acceso interno",
+      "titlePrefix": "Panel de",
+      "titleEmphasis": "administración",
+      "signedOutBody": "Debes iniciar sesión con una cuenta autorizada como admin para continuar.",
+      "signInButton": "Iniciar sesión como admin",
+      "backToStore": "Volver a la tienda",
+      "validating": "Validando acceso admin…",
+      "deniedTitlePrefix": "Acceso",
+      "deniedTitleEmphasis": "denegado",
+      "deniedBody": "Tu cuenta no tiene permisos de administrador."
+    },
+    "repurchase": {
+      "kicker_one": "{{count}} recordatorio enviado",
+      "kicker_other": "{{count}} recordatorios enviados",
+      "titlePrefix": "Recordatorios de",
+      "titleEmphasis": "recompra",
+      "sub": "Correos sin costo enviados antes de que se le acabe a un cliente un producto ya comprado (HU-102).",
+      "scanButton": "Ejecutar ahora",
+      "scanning": "Escaneando…",
+      "lastScan": {
+        "prefix": "Último escaneo manual:",
+        "cyclesEvaluated_one": "{{count}} ciclo de compra evaluado",
+        "cyclesEvaluated_other": "{{count}} ciclos de compra evaluados",
+        "remindersSent_one": "{{count}} recordatorio nuevo enviado",
+        "remindersSent_other": "{{count}} recordatorios nuevos enviados"
+      },
+      "table": {
+        "title": "Enviados",
+        "sub": "Un cliente y producto solo aparece una vez por ciclo de compra (no se repite hasta que vuelva a comprar)",
+        "columns": {
+          "product": "Producto",
+          "customer": "Cliente",
+          "lastPurchase": "Última compra",
+          "estimatedRunOut": "Estimado de agotamiento",
+          "sentAt": "Enviado"
+        },
+        "empty": "Sin recordatorios enviados todavía."
+      }
+    },
+    "earnings": {
+      "kicker": "Ganancias",
+      "titlePrefix": "Las",
+      "titleEmphasis": "ganancias",
+      "sub": "Resumen bruto, neto y evolución mensual del ecommerce.",
+      "kpi": {
+        "grossRevenue": "Ingresos brutos",
+        "tax": "ITBMS",
+        "netProfit": "Utilidad neta",
+        "stripeFees": "Comisiones Stripe",
+        "stripeFeesSub": "estimado 2.9%"
+      },
+      "monthly": {
+        "title": "Detalle mensual",
+        "sub": "Ingresos y órdenes por mes",
+        "columns": {
+          "month": "Mes"
+        }
+      }
+    },
+    "productAnalytics": {
+      "titlePrefix": "Analítica de",
+      "titleEmphasis": "producto",
+      "sub": "Embudo de checkout y abandono de carrito, sobre el comportamiento real de los usuarios.",
+      "periodAria": "Periodo de analítica",
+      "period": {
+        "last7": "Últimos 7 días",
+        "last30": "Últimos 30 días",
+        "last90": "Últimos 90 días"
+      },
+      "notConfigured": {
+        "prefix": "PostHog no está configurado para consultas",
+        "body": "El embudo y el abandono de carrito se muestran en cero hasta configurarlos — ver"
+      },
+      "eventLabels": {
+        "checkoutStarted": "Checkout iniciado",
+        "checkoutCompleted": "Checkout completado",
+        "addedToCart": "Agregado al carrito"
+      },
+      "kpi": {
+        "conversion": "Conversión",
+        "cartAbandonment": "Abandono de carrito"
+      },
+      "table": {
+        "title": "Eventos clave recientes",
+        "sub": "Últimos eventos de embudo capturados por PostHog",
+        "columns": {
+          "event": "Evento",
+          "userSession": "Usuario/sesión",
+          "date": "Fecha"
+        },
+        "empty": "Sin eventos para este periodo."
+      }
+    },
+    "auditLogs": {
+      "kicker_one": "{{count}} registro",
+      "kicker_other": "{{count}} registros",
+      "titlePrefix": "Auditoría de",
+      "titleEmphasis": "administradores",
+      "sub": "Registro append-only de acciones administrativas: quién, qué y cuándo (HU-051).",
+      "filters": {
+        "searchPlaceholder": "Buscar por email de admin…",
+        "actorEmailAria": "Filtrar por email del actor",
+        "actionAria": "Filtrar por acción",
+        "allActions": "Todas las acciones",
+        "fromAria": "Desde",
+        "toAria": "Hasta"
+      },
+      "table": {
+        "columns": {
+          "date": "Fecha",
+          "actor": "Actor",
+          "action": "Acción",
+          "resource": "Recurso"
+        },
+        "empty": "Sin registros para estos filtros."
+      },
+      "actionLabels": {
+        "adminAccess": "Acceso al panel",
+        "adminAccessDenied": "Acceso denegado",
+        "authLogin": "Inicio de sesión",
+        "userRoleChanged": "Rol de usuario cambiado",
+        "productsCreate": "Producto creado",
+        "productsUpdate": "Producto actualizado",
+        "productsDelete": "Producto eliminado",
+        "categoriesCreate": "Categoría creada",
+        "categoriesUpdate": "Categoría actualizada",
+        "categoriesDelete": "Categoría eliminada",
+        "ordersCreate": "Pedido creado",
+        "ordersUpdate": "Pedido actualizado",
+        "ordersDelete": "Pedido eliminado",
+        "reviewsCreate": "Reseña creada / autor baneado",
+        "reviewsUpdate": "Reseña moderada",
+        "reviewsDelete": "Reseña eliminada / baneo quitado",
+        "returnsCreate": "Devolución creada",
+        "returnsUpdate": "Devolución actualizada",
+        "returnsDelete": "Devolución eliminada",
+        "uploadsCreate": "Imagen subida",
+        "uploadsUpdate": "Imagen actualizada",
+        "uploadsDelete": "Imagen eliminada"
+      }
+    },
+    "coupons": {
+      "kicker": "Promociones",
+      "titlePrefix": "Gestión de",
+      "titleEmphasis": "cupones",
+      "sub": "Crea y administra códigos de descuento para el checkout.",
+      "newButton": "+ Nuevo cupón",
+      "table": {
+        "columns": {
+          "code": "Código",
+          "label": "Etiqueta",
+          "discount": "Descuento",
+          "categories": "Categorías",
+          "uses": "Usos",
+          "status": "Estado",
+          "actions": "Acciones"
+        },
+        "allCategories": "Todas",
+        "statusActive": "Activo",
+        "statusInactive": "Inactivo",
+        "deactivate": "Desactivar",
+        "activate": "Activar",
+        "empty": "No hay cupones creados todavía."
+      },
+      "modal": {
+        "title": "Nuevo cupón",
+        "codePlaceholder": "Código (ej. SAVE10)",
+        "labelPlaceholder": "Etiqueta visible",
+        "discountTypePercent": "Porcentaje",
+        "discountTypeFixed": "Monto fijo",
+        "percentPlaceholder": "Porcentaje",
+        "amountPlaceholder": "Monto",
+        "maxUsesPlaceholder": "Máximo de usos (opcional)",
+        "firstPurchaseOnly": "Solo primera compra",
+        "eligibleCategoriesLabel": "Categorías elegibles (vacío = todas)",
+        "cancel": "Cancelar",
+        "create": "Crear cupón",
+        "saving": "Guardando…"
+      }
+    },
+    "reports": {
+      "kicker": "Reportes avanzados",
+      "titlePrefix": "Cohortes y",
+      "titleEmphasis": "LTV",
+      "sub": "Retención de clientes por mes de primera compra y valor de vida (LTV) acumulado por cohorte.",
+      "filters": {
+        "from": "Desde",
+        "to": "Hasta"
+      },
+      "kpi": {
+        "customersWithPurchase": "Clientes con compra",
+        "customersWithPurchaseSub": "pagaron al menos una vez",
+        "ordersPerCustomer": "Órdenes / cliente",
+        "ordersPerCustomerSub": "promedio histórico",
+        "avgLtv": "LTV promedio",
+        "avgLtvSub": "ingresos por cliente"
+      },
+      "monthColumn": "Mes {{n}}",
+      "table": {
+        "columns": {
+          "cohort": "Cohorte",
+          "customers": "Clientes"
+        }
+      },
+      "retention": {
+        "title": "Retención por cohorte",
+        "sub": "% de la cohorte que volvió a comprar, por mes transcurrido desde su primera compra",
+        "empty": "Todavía no hay suficientes órdenes pagadas para armar cohortes en este rango."
+      },
+      "ltv": {
+        "title": "LTV acumulado por cliente",
+        "sub": "Ingresos acumulados por cliente inicial de la cohorte, mes a mes",
+        "empty": "Todavía no hay suficientes órdenes pagadas para calcular LTV en este rango."
+      },
+      "modal": {
+        "cohortTitle": "Cohorte {{month}}",
+        "sub": "Clientes cuya primera compra fue este mes, y en cuáles meses después volvieron a comprar.",
+        "columns": {
+          "customer": "Cliente",
+          "firstPurchase": "Primera compra"
+        },
+        "empty": "Sin clientes para esta cohorte."
+      }
+    },
+    "banners": {
+      "colorPresets": {
+        "lime": "Lima",
+        "green": "Verde",
+        "coral": "Coral",
+        "cream": "Crema",
+        "custom": "Personalizado"
+      },
+      "colorPicker": {
+        "backgroundColorLabel": "Color de fondo"
+      },
+      "preview": {
+        "notConfigured": "Sin configurar",
+        "editButton": "Editar",
+        "promoLabel": "Promoción destacada",
+        "clubLabel": "Club Healthora"
+      },
+      "noSlotSelectedError": "Banner no seleccionado",
+      "titlePrefix": "Gestión de",
+      "titleEmphasis": "banners",
+      "sub": "Edita los 2 banners de la sección Ofertas del landing sin necesitar deploy.",
+      "modal": {
+        "editTitlePrefix": "Editar banner",
+        "langTab": {
+          "es": "Español",
+          "en": "English"
+        },
+        "kickerLabel": "Kicker (etiqueta pequeña)",
+        "titleLabel": "Título",
+        "titleHintPrefix": "Usa",
+        "titleHintJoiner": "y",
+        "titleHintSuffix": "donde quieras que se actualicen solas al cambiar la categoría o las fechas de vigencia.",
+        "categoryLabel": "Categoría (define las 2 fotos del banner y a dónde lleva el botón)",
+        "categoryPlaceholder": "Seleccionar categoría…",
+        "descriptionLabel": "Descripción",
+        "ctaTextLabel": "Texto del botón",
+        "previewLabel": "Vista previa (con la categoría y fecha elegidas)",
+        "startDateLabel": "Vigente desde",
+        "endDateLabel": "Vigente hasta",
+        "optionalSuffix": " (opcional)",
+        "cancel": "Cancelar",
+        "saving": "Guardando…",
+        "save": "Guardar"
+      }
+    },
+    "dashboard": {
+      "kicker": "Panel de administración",
+      "titleWord": "Dashboard",
+      "sub": "Resumen en vivo de ventas, órdenes, usuarios e inventario.",
+      "kpi": {
+        "revenueMonth": "Ingresos mes",
+        "revenueMonthSub": "vs mes anterior",
+        "ordersMonth": "Órdenes mes",
+        "ordersMonthSub": "pagadas o en curso",
+        "customers": "Clientes",
+        "customersSub": "clientes registrados",
+        "lowStock": "Existencias bajas",
+        "lowStockSub": "productos con 5 unidades o menos"
+      },
+      "revenueChart": {
+        "title": "Ingresos · últimos 30 días",
+        "sub": "Ingresos diarios, en USD"
+      },
+      "recentOrders": {
+        "title": "Pedidos recientes",
+        "sub": "Últimas 5 órdenes del ecommerce",
+        "columns": {
+          "order": "Orden",
+          "customer": "Cliente",
+          "total": "Total",
+          "payment": "Pago"
+        },
+        "defaultCustomerName": "Cliente",
+        "empty": "No hay pedidos recientes."
+      },
+      "paymentStatus": {
+        "paid": "Pagado",
+        "cancelled": "Cancelado",
+        "refunded": "Reembolsado",
+        "pending": "Pendiente"
+      },
+      "lowStockCard": {
+        "title": "Inventario crítico",
+        "sub": "Productos que requieren reposición",
+        "unitsBadge": "{{count}} uds",
+        "empty": "No hay productos con existencias críticas."
+      }
+    },
+    "categories": {
+      "kicker_one": "Catálogo · {{count}} categoría",
+      "kicker_other": "Catálogo · {{count}} categorías",
+      "titlePrefix": "Gestión de",
+      "titleEmphasis": "categorías",
+      "sub": "Crea, edita, desactiva y reasigna productos entre categorías sin tocar el seed.",
+      "newButton": "Nueva categoría",
+      "table": {
+        "columns": {
+          "category": "Categoría",
+          "id": "ID",
+          "products": "Productos",
+          "status": "Estado",
+          "actions": "Acciones"
+        },
+        "statusActive": "Activa",
+        "statusInactive": "Inactiva",
+        "editButton": "Editar"
+      },
+      "noCategorySelectedError": "Categoría no seleccionada",
+      "modal": {
+        "createTitle": "Nueva categoría",
+        "editTitle": "Editar categoría",
+        "idLabel": "ID (slug interno)",
+        "idPlaceholder": "Ej. Vitaminas",
+        "labelLabel": "Nombre visible",
+        "subLabel": "Subtítulo",
+        "colorLabel": "Color (CSS)",
+        "renameIdLabel": "Renombrar ID (reasigna productos)",
+        "activeCheckboxLabel": "Categoría activa en la tienda",
+        "reassignSectionLabel": "Reasignar todos los productos a otra categoría",
+        "reassignPlaceholder": "Seleccionar destino…",
+        "moving": "Moviendo…",
+        "reassign": "Reasignar",
+        "cancel": "Cancelar",
+        "saving": "Guardando…",
+        "save": "Guardar"
+      }
+    },
+    "variantTypes": {
+      "flavor": "Sabor",
+      "scent": "Aroma",
+      "size": "Tamaño",
+      "color": "Color",
+      "weight": "Peso",
+      "count": "Conteo"
+    },
+    "variantTypesPlural": {
+      "flavor": "Sabores",
+      "scent": "Aromas",
+      "color": "Colores",
+      "weight": "Pesos",
+      "count": "Conteos"
+    },
+    "products": {
+      "variantSummary": {
+        "combinations_one": "{{count}} combinación",
+        "combinations_other": "{{count}} combinaciones",
+        "variants_one": "{{count}} variante",
+        "variants_other": "{{count}} variantes"
+      },
+      "defaultProductName": "El producto",
+      "sessionExpiredError": "Sesión expirada",
+      "titlePrefix": "Gestión de",
+      "titleEmphasis": "productos",
+      "kicker_one": "Catálogo · {{count}} producto",
+      "kicker_other": "Catálogo · {{count}} productos",
+      "sub": "Agrega, edita, elimina y filtra el catálogo completo.",
+      "refreshing": "Refrescando…",
+      "refreshCatalog": "Refrescar catálogo",
+      "categoryDiscountButton": "Descuento por categoría",
+      "clubHealthoraButton": "Club Healthora",
+      "addProductButton": "+ Agregar producto",
+      "searchPlaceholder": "Buscar por nombre o marca…",
+      "filters": {
+        "statusActive": "Activo",
+        "statusInactive": "Inactivo"
+      },
+      "selectedInView_one": "{{count}} seleccionado en esta vista",
+      "selectedInView_other": "{{count}} seleccionados en esta vista",
+      "selectHint": "Selecciona varios productos para borrado masivo.",
+      "clearSelection": "Limpiar selección",
+      "deleteSelected": "Eliminar seleccionados",
+      "deleteSelectedDescription_one": "Se eliminará {{count}} producto seleccionado de esta vista.",
+      "deleteSelectedDescription_other": "Se eliminarán {{count}} productos seleccionados de esta vista.",
+      "deleteAllButton": "Eliminar todo",
+      "table": {
+        "columns": {
+          "product": "Producto",
+          "category": "Categoría",
+          "price": "Precio",
+          "stock": "Stock",
+          "rating": "Reseña",
+          "status": "Estado"
+        },
+        "selectVisibleAria": "Seleccionar productos visibles",
+        "selectProductAria": "Seleccionar {{name}}",
+        "noReviews": "SIN RESEÑAS",
+        "lowStockBadge": "Bajo",
+        "lowStockTitle": "Stock bajo (umbral: {{threshold}})",
+        "editTitle": "Editar producto",
+        "deleteTitle": "Eliminar producto",
+        "empty": "No hay productos para los filtros seleccionados."
+      },
+      "cancel": "Cancelar",
+      "deleting": "Eliminando…",
+      "confirmDelete": "Sí, eliminar",
+      "confirmKicker": "Confirmación",
+      "deleteModal": {
+        "titlePrefix": "Eliminar",
+        "titleEmphasis": "producto",
+        "body": "Esta acción eliminará el producto del catálogo. No se puede deshacer."
+      },
+      "deleteAllModal": {
+        "dangerKicker": "Peligro",
+        "title": "Eliminar todo el catálogo",
+        "bodyPrefix": "¿Estás seguro de que deseas eliminar",
+        "bodyStrong": "todos los productos",
+        "bodySuffix": "del catálogo? Esta acción no se puede deshacer.",
+        "confirmAll": "Sí, eliminar todo"
+      },
+      "deleteUserModal": {
+        "titlePrefix": "Eliminar",
+        "titleEmphasis": "usuario",
+        "body": "¿Eliminar a {{name}}? Esto eliminará su cuenta local. El usuario seguirá existiendo en Clerk."
+      },
+      "sampleSettingsModal": {
+        "freeSampleTitle": "Muestra gratis",
+        "freeSampleBody": "Un producto (o una de sus variantes/combinaciones) califica automáticamente para la muestra gratis si su precio es menor o igual a este tope. Un producto con \"Incluir siempre\"/\"Excluir siempre\" en su propio editor ignora este tope.",
+        "maxPriceLabel": "Precio máximo (USD)",
+        "loyaltyTitle": "Puntos de lealtad (HU-060)",
+        "loyaltyBody": "El cliente gana puntos por cada $1 pagado en una orden, y puede canjearlos por un descuento en el checkout.",
+        "pointsPerDollarLabel": "Puntos por cada $1",
+        "pointValueLabel": "Valor de 1 punto (¢)",
+        "updated": "Ajustes actualizados.",
+        "close": "Cerrar",
+        "saving": "Guardando…",
+        "save": "Guardar"
+      },
+      "categoryDiscountModal": {
+        "title": "Descuento por categoría",
+        "activeDiscountLabel": "Con descuento activo",
+        "categoryLabel": "Categoría",
+        "categoryPlaceholder": "Seleccionar categoría…",
+        "typeLabel": "Tipo",
+        "typePercent": "Porcentaje (%)",
+        "typeFixed": "Monto fijo ($)",
+        "valueLabel": "Valor",
+        "invalidRange": "\"Vigente hasta\" no puede ser anterior a \"Vigente desde\".",
+        "genericError": "No se pudo completar la acción.",
+        "applySuccess_one": "{{updated}} de {{total}} producto actualizado.",
+        "applySuccess_other": "{{updated}} de {{total}} productos actualizados.",
+        "removeSuccess_one": "Descuento quitado de {{count}} producto.",
+        "removeSuccess_other": "Descuento quitado de {{count}} productos.",
+        "removing": "Quitando…",
+        "removeButton": "Quitar descuento",
+        "applying": "Aplicando…",
+        "applyButton": "Aplicar descuento"
+      },
+      "successModal": {
+        "updated": {
+          "kicker": "Producto actualizado",
+          "title": "Cambios",
+          "emphasis": "guardados",
+          "message": "{{name}} se actualizó correctamente."
+        },
+        "created": {
+          "kicker": "Producto creado",
+          "title": "Agregado al",
+          "emphasis": "catálogo",
+          "message": "{{name}} ya está disponible en la tienda."
+        },
+        "deleted": {
+          "kicker": "Producto eliminado",
+          "title": "Producto",
+          "emphasis": "eliminado",
+          "message": "El producto se eliminó del catálogo correctamente."
+        },
+        "bulkDeleted": {
+          "kicker": "Productos eliminados",
+          "title_one": "{{count}} producto",
+          "title_other": "{{count}} productos",
+          "emphasis_one": "eliminado",
+          "emphasis_other": "eliminados",
+          "message": "Los productos se eliminaron del catálogo correctamente."
+        },
+        "allDeleted": {
+          "kicker": "Catálogo eliminado",
+          "title": "{{count}} productos",
+          "emphasis": "eliminados",
+          "message": "Todo el catálogo de productos se ha eliminado correctamente."
+        }
+      }
+    },
+    "orders": {
+      "titlePrefix": "Gestión de",
+      "titleEmphasis": "pedidos",
+      "sub": "Cambia estados y monitorea el ciclo completo de la orden.",
+      "exportCsv": "Exportar CSV",
+      "searchPlaceholder": "Buscar por ID, cliente, email o producto…",
+      "filters": {
+        "statusLabel": "Estado",
+        "shippingLabel": "Envío",
+        "paymentLabel": "Pago"
+      },
+      "resultsCount_one": "{{count}} resultado de {{total}}",
+      "resultsCount_other": "{{count}} resultados de {{total}}",
+      "ordersCount_one": "{{count}} pedido",
+      "ordersCount_other": "{{count}} pedidos",
+      "table": {
+        "columns": {
+          "order": "Orden",
+          "customerAddress": "Cliente / Dirección",
+          "shipping": "Envío",
+          "products": "Productos",
+          "total": "Total",
+          "payment": "Pago",
+          "status": "Estado",
+          "dateTime": "Fecha y hora"
+        }
+      },
+      "sortLabels": {
+        "total": "Total",
+        "date": "Fecha"
+      },
+      "replacementBadge": "REEMPLAZO · #{{id}}",
+      "replacementBadgeTitle": "Reemplazo sin costo por una devolución del pedido #{{id}}",
+      "subscriptionBadge": "REPOSICIÓN AUTOMÁTICA",
+      "subscriptionBadgeTitle": "Este pedido se generó automáticamente desde una reposición automática (suscripción)",
+      "carrier": {
+        "healthoraCourier": "Mensajería Healthora"
+      },
+      "noCourier": "Sin courier",
+      "itemsCount_one": "{{count}} producto",
+      "itemsCount_other": "{{count}} productos",
+      "saveButton": "Guardar",
+      "confirmModal": {
+        "kicker": "Confirmar estado",
+        "titlePrefix": "Actualizar",
+        "titleEmphasis": "pedido",
+        "bodyPrefix": "Vas a cambiar el pedido #{{orderNumber}} de",
+        "bodyMiddle": "a",
+        "bodySuffix": ". El cliente {{customerName}} recibirá un email de actualización.",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "saveChange": "Guardar cambio"
+      }
+    },
+    "variantsMatrixEditor": {
+      "tabs": {
+        "none": "Sin variante",
+        "simple": "Variante simple",
+        "matrix": "Variante × Tamaño"
+      },
+      "tabHints": {
+        "none": "El producto usa un solo precio y stock (los campos de arriba). No hay opciones para elegir.",
+        "simple": "Una lista de opciones de un solo tipo (ej. solo tamaño, o solo color) — cada una con su propio precio y stock.",
+        "matrix": "Dos dimensiones combinadas (ej. sabor + tamaño): cada combinación puede tener su propio precio, stock, imágenes y \"precio antes\" (descuento). El descuento por categoría también aplica aquí, por combinación."
+      },
+      "nameColumn": "Nombre",
+      "validFromOptional": "Vigente desde (opcional)",
+      "validUntilOptional": "Vigente hasta (opcional)",
+      "primarySection": {
+        "hint": "Solo el nombre — el precio, stock e imágenes de cada combinación se ajustan más abajo, en \"Combinaciones\".",
+        "removeTitle": "Eliminar {{type}}",
+        "addButton": "+ Agregar {{type}}"
+      },
+      "sizesSection": {
+        "title": "Tamaños",
+        "basePriceColumn": "Precio base",
+        "namePlaceholder": "ej. 5 lb",
+        "pricePlaceholder": "Precio",
+        "stockPlaceholder": "Stock",
+        "removeTitle": "Eliminar tamaño",
+        "addButton": "+ Agregar tamaño"
+      },
+      "combinationsSection": {
+        "title": "Combinaciones",
+        "headerSeparator": "{{primary}} \\ Tamaño",
+        "unnamed": "(sin nombre)",
+        "activeLabel": "Activo",
+        "pricePlaceholder": "Precio (default: {{amount}})",
+        "priceTitle": "Solo si esta combinación necesita un precio distinto al default",
+        "priceBeforePlaceholder": "Precio antes (sin descuento)",
+        "priceBeforeTitle": "Precio tachado para esta combinación - deja vacío para no mostrar descuento",
+        "stockPlaceholder": "Stock (default: {{amount}})",
+        "imagesLabel": "Imágenes",
+        "imagesInheritedHint": "Parten de \"{{label}}\" — agrega o quita libremente, solo afecta esta combinación.",
+        "defaultComboTitle": "Combo predeterminado",
+        "defaultLabel": "Default"
+      }
+    },
+    "shippingMethod": {
+      "all": "Todos",
+      "delivery": "Envío a domicilio",
+      "pickup": "Retiro en tienda"
+    },
+    "paymentBucket": {
+      "all": "Todos",
+      "paid": "Pagado",
+      "pending": "Pendiente",
+      "cancelled": "Cancelado",
+      "refunded": "Reembolsado",
+      "returnPending": "Devolución en curso",
+      "replaced": "Reemplazo",
+      "noCharge": "Sin costo"
+    },
+    "fulfillmentStatus": {
+      "all": "Todos",
+      "pending": "Pendiente",
+      "processing": "Preparando",
+      "shipped": "Enviada",
+      "delivered": "Entregada",
+      "pickedUp": "Retirado",
+      "cancelled": "Cancelada",
+      "readyForPickup": "Listo para retirar"
+    },
+    "productVariantsEditor": {
+      "typeLabel": "Tipo de variante",
+      "productVariantsLabel": "Variantes del producto",
+      "noVariants": "Sin variantes — el producto usa precio y stock global.",
+      "rowLabelField": "Etiqueta",
+      "priceLabel": "Precio ($)",
+      "stockLabel": "Stock",
+      "colorHexLabel": "Color (hex)",
+      "removeVariantTitle": "Eliminar variante",
+      "priceBeforeLabel": "Precio antes ($)",
+      "priceBeforePlaceholder": "Sin descuento",
+      "validFromLabel": "Vigente desde",
+      "validUntilLabel": "Vigente hasta",
+      "imagesLabel": "Imágenes (mínimo 1, máximo 4)",
+      "hoverHintMultiple": "La 2ª imagen se usa para el efecto hover de la card en el catálogo.",
+      "hoverHintSingle": "Si agregas una 2ª imagen aquí, se usará para el efecto hover de la card en el catálogo.",
+      "defaultRadioTitle": "Usa la imagen de esta variante como portada del producto en el catálogo",
+      "defaultRadioLabel": "Default (imagen de portada)",
+      "addVariantButton": "+ Agregar variante",
+      "labelPlaceholders": {
+        "flavor": "ej. Chocolate",
+        "scent": "ej. Lavanda",
+        "size": "ej. 500 ml",
+        "count": "ej. Pack de 2",
+        "color": "ej. Rojo",
+        "weight": "ej. 500 g"
+      }
+    },
+    "reviews": {
+      "kicker": "Moderación",
+      "titlePrefix": "Reseñas de",
+      "titleEmphasis": "clientes",
+      "sub": "Aprueba, oculta o elimina reseñas para mantener contenido apropiado y confiable en las fichas de producto.",
+      "bannedUsersButton": "Usuarios baneados",
+      "bansModal": {
+        "description": "No pueden dejar nuevas reseñas en el producto indicado. El baneo es por producto, no afecta al resto del catálogo.",
+        "empty": "Ningún usuario baneado por ahora.",
+        "removeBan": "Quitar baneo"
+      },
+      "status": {
+        "all": "Todos",
+        "pending": "Pendiente",
+        "published": "Publicada",
+        "hidden": "Oculta"
+      },
+      "allRatings": "Todas",
+      "filters": {
+        "starsAria": "Filtrar por estrellas",
+        "statusAria": "Filtrar por estado"
+      },
+      "searchPlaceholder": "Producto, texto o autor...",
+      "searchAria": "Buscar reseñas por producto, texto o autor",
+      "resultsCount_one": "{{count}} resultado",
+      "resultsCount_other": "{{count}} resultados",
+      "reviewsCount_one": "{{count}} reseña",
+      "reviewsCount_other": "{{count}} reseñas",
+      "table": {
+        "columns": {
+          "review": "Reseña",
+          "product": "Producto",
+          "status": "Estado",
+          "date": "Fecha",
+          "actions": "Acciones"
+        },
+        "empty": "Sin reseñas para este filtro."
+      },
+      "actions": {
+        "approveTitle": "Aprobar / publicar",
+        "hideTitle": "Ocultar",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar",
+        "ban": "Banear",
+        "deleteTitle": "Eliminar",
+        "banTitle": "Banear autor de este producto (elimina la reseña y evita que vuelva a comentar aquí)"
+      }
+    },
+    "users": {
+      "kicker_one": "Clientes · {{count}} cuenta",
+      "kicker_other": "Clientes · {{count}} cuentas",
+      "titlePrefix": "Gestión de",
+      "titleEmphasis": "clientes",
+      "sub": "Listado de clientes finales del e-commerce.",
+      "searchPlaceholder": "Buscar por nombre o email…",
+      "resultsCount_one": "{{count}} resultado de {{total}}",
+      "resultsCount_other": "{{count}} resultados de {{total}}",
+      "customersCount_one": "{{count}} cliente",
+      "customersCount_other": "{{count}} clientes",
+      "roleFilterLabel": "Rol",
+      "role": {
+        "all": "Todos",
+        "customer": "Cliente",
+        "admin": "Admin",
+        "owner": "Owner"
+      },
+      "table": {
+        "columns": {
+          "user": "Usuario",
+          "role": "Rol",
+          "orders": "Órdenes",
+          "spend": "Gasto total",
+          "registered": "Registro"
+        },
+        "defaultAvatarAlt": "Avatar",
+        "noName": "Sin nombre"
+      },
+      "saving": "Guardando…",
+      "confirm": "Confirmar",
+      "cancel": "Cancelar",
+      "removeAdmin": "Quitar admin",
+      "makeAdmin": "Hacer admin",
+      "roleChangeError": "No se pudo cambiar el rol."
+    },
+    "sales": {
+      "titlePrefix": "Análisis de",
+      "titleEmphasis": "ventas",
+      "sub": "Tendencia diaria, productos y categorías más vendidas.",
+      "kpi": {
+        "totalOrders": "Total órdenes",
+        "totalOrdersSub": "pagadas en total",
+        "totalRevenue": "Ingresos totales",
+        "totalRevenueSub": "todos los pedidos",
+        "avgOrderValue": "Promedio por pedido",
+        "avgOrderValueSub": "por orden",
+        "totalUnits": "Unidades vendidas",
+        "totalUnitsSub": "total de productos"
+      },
+      "dailyOrders": {
+        "title": "Órdenes por día",
+        "sub": "Pedidos diarios · últimos 30 días"
+      },
+      "revenueByCategory": {
+        "title": "Ingresos por categoría",
+        "sub": "Ingresos por categoría"
+      },
+      "topProducts": {
+        "title": "Productos con más ingresos",
+        "sub": "Basado en órdenes pagadas",
+        "columns": {
+          "product": "Producto",
+          "brand": "Marca",
+          "category": "Categoría",
+          "units": "Unidades",
+          "revenue": "Ingresos"
+        }
+      },
+      "topCategories": {
+        "title": "Mejores categorías",
+        "sub": "Por unidades vendidas"
+      },
+      "topBrands": {
+        "title": "Mejores marcas",
+        "sub": "Por unidades vendidas"
+      },
+      "topVariants": {
+        "title": "Top variantes vendidas",
+        "sub": "Combos sabor/color x tamaño con más unidades vendidas",
+        "empty": "No hay datos de variantes vendidas."
+      },
+      "noData": "No hay datos.",
+      "unitsAbbrev": "{{count}} uds"
+    },
+    "returns": {
+      "kicker": "Devoluciones y reembolsos",
+      "titlePrefix": "Devoluciones de",
+      "titleEmphasis": "clientes",
+      "sub": "Aprueba, marca en tránsito, confirma la revisión y procesa lo que el cliente pidió (reembolso vía Stripe o reenvío del producto correcto).",
+      "searchPlaceholder": "Buscar por cliente, email o pedido…",
+      "filters": {
+        "allStatus": "Todas",
+        "methodLabel": "Método",
+        "allMethods": "Todos"
+      },
+      "method": {
+        "courierPickup": "Mensajería recoge",
+        "storeDropoff": "Cliente trae a tienda"
+      },
+      "resolution": {
+        "refund": "Prefiere: reembolso",
+        "replacement": "Prefiere: reenvío del producto correcto"
+      },
+      "reasonCategory": {
+        "wrongItem": "Producto diferente al pedido"
+      },
+      "table": {
+        "title": "Solicitudes de devolución",
+        "requestsCount_one": "{{count}} solicitud",
+        "requestsCount_other": "{{count}} solicitudes",
+        "columns": {
+          "customer": "Cliente",
+          "reasonItems": "Motivo / ítems",
+          "amount": "Monto",
+          "method": "Método",
+          "location": "Ubicación",
+          "status": "Estado",
+          "action": "Acción"
+        },
+        "photoTitle": "Ver foto {{n}} de evidencia",
+        "photoAlt": "Evidencia {{n}} de {{name}}",
+        "defaultCustomerNameLower": "cliente",
+        "replacementOrderBadge": "PEDIDO DE REEMPLAZO #{{id}}",
+        "replacementOrderTitle": "Ver ese pedido en Pedidos - todavía necesita prepararse y enviarse.",
+        "notMatchingBadge": "No coincide con lo reportado",
+        "notMatchingTitle": "El producto ya había vuelto físicamente y no coincidía con lo reportado en la solicitud.",
+        "readyForPickup": "Listo para recoger",
+        "returnedToCustomer": "Devuelto",
+        "returnedOn": "el {{date}}",
+        "empty": "Sin solicitudes para este filtro."
+      },
+      "nextAction": {
+        "approve": "Aprobar",
+        "markInTransit": "Marcar en tránsito",
+        "markInReview": "En revisión"
+      },
+      "resolve": {
+        "prepareCorrectProduct": "Preparar producto correcto",
+        "resendCorrectProduct": "Reenviar producto correcto",
+        "refund": "Reembolsar"
+      },
+      "reject": "Rechazar",
+      "markReadyForPickup": "Marcar listo para recoger",
+      "markSentBack": "Marcar enviado de vuelta",
+      "rejectModal": {
+        "kicker": "Confirmar rechazo",
+        "titlePrefix": "Rechazar",
+        "titleEmphasis": "devolución",
+        "fromReviewBodyPrefix": "Vas a rechazar la devolución de",
+        "fromReviewBodySuffix": "para el pedido #{{orderId}} porque el producto recibido no coincide con lo reportado. El cliente recibirá un email y una notificación - esta acción no se puede deshacer. Recuerda coordinar aparte la devolución del producto físico al cliente.",
+        "defaultBodyPrefix": "Vas a rechazar la solicitud de devolución de",
+        "defaultBodySuffix": "para el pedido #{{orderId}}. El cliente recibirá un email y una notificación - esta acción no se puede deshacer.",
+        "cancel": "Cancelar",
+        "rejecting": "Rechazando...",
+        "confirmReject": "Sí, rechazar"
+      }
+    },
+    "productModal": {
+      "validation": {
+        "nameRequired": "El nombre es obligatorio.",
+        "brandRequired": "La marca es obligatoria.",
+        "categoryRequired": "La categoría es obligatoria.",
+        "shortRequired": "La descripción corta es obligatoria.",
+        "priceMustBePositive": "El precio debe ser mayor a 0.",
+        "stockMustBePositive": "Las existencias tienen que ser mayor a 0.",
+        "variantNeedsLabel": "Cada variante necesita una etiqueta.",
+        "variantNeedsPrice": "\"{{label}}\" necesita un precio mayor a 0.",
+        "variantNeedsStock": "\"{{label}}\" necesita stock mayor a 0.",
+        "variantNeedsImage": "\"{{label}}\" necesita al menos 1 imagen.",
+        "matrixNeedsPrimary": "Agrega al menos un sabor/variante.",
+        "matrixNeedsSize": "Agrega al menos un tamaño.",
+        "primaryNeedsLabel": "Cada sabor necesita una etiqueta.",
+        "sizeNeedsLabel": "Cada tamaño necesita una etiqueta.",
+        "sizeNeedsPrice": "\"{{label}}\" necesita un precio base mayor a 0.",
+        "sizeNeedsStock": "\"{{label}}\" necesita un stock base mayor a 0.",
+        "comboNeedsImage": "\"{{primary}} × {{size}}\" necesita al menos 1 imagen (o agrega imágenes a \"{{primary}}\" para que apliquen a todos sus tamaños).",
+        "image1Required": "La imagen 1 es obligatoria.",
+        "variantDateRange": "\"{{label}}\": \"Vigente hasta\" no puede ser anterior a \"Vigente desde\".",
+        "extraTabIncomplete": "Cada pestaña personalizada necesita título y contenido (o elimínala)."
+      },
+      "kickerNew": "Nuevo producto",
+      "kickerEdit": "Editar producto",
+      "addTitlePrefix": "Agregar",
+      "addTitleEmphasis": "producto",
+      "editFallbackTitle": "Editar",
+      "activeToggleAria": "Producto activo (visible en la tienda)",
+      "basicInfo": {
+        "sectionTitle": "Información básica",
+        "nameLabel": "Nombre",
+        "namePlaceholder": "Nombre del producto",
+        "brandLabel": "Marca",
+        "brandPlaceholder": "Nombre de la marca",
+        "categoryLabel": "Categoría",
+        "shortLabel": "Descripción corta",
+        "shortPlaceholder": "Breve descripción del producto…",
+        "lowStockLabel": "Umbral de stock bajo",
+        "lowStockPlaceholder": "Global ({{count}})",
+        "sampleEligibleLabel": "Muestra gratis (Club Healthora)",
+        "sampleAuto": "Automático (según tope de precio)",
+        "sampleInclude": "Incluir siempre",
+        "sampleExclude": "Excluir siempre"
+      },
+      "productType": {
+        "sectionTitle": "Tipo de producto",
+        "hint": "¿El producto tiene un solo precio/stock, o varía por opción (ej. sabor, tamaño, color)? Esto define qué campos ves más abajo."
+      },
+      "pricingInventory": {
+        "sectionTitle": "Precio · Inventario",
+        "priceLabel": "Precio ($)",
+        "stockLabel": "Existencias"
+      },
+      "images": {
+        "sectionTitle": "Imágenes del producto",
+        "image1Label": "Imagen 1 · principal",
+        "image2Label": "Imagen 2 (opcional)",
+        "image3Label": "Imagen 3 (opcional)",
+        "image4Label": "Imagen 4 (opcional)"
+      },
+      "details": {
+        "sectionTitle": "Detalles del producto (opcional)",
+        "benefitsLabel": "Beneficios (opcional)",
+        "benefitsHint": "(uno por línea)",
+        "benefitsPlaceholder": "Opcional: mejora el sistema inmune\nAumenta la energía\nReduce el estrés",
+        "usageLabel": "Modo de uso (opcional)",
+        "usagePlaceholder": "Opcional: tomar 1 cápsula al día con agua…",
+        "ingredientsLabel": "Ingredientes (opcional)",
+        "ingredientsPlaceholder": "Opcional: vitamina C 500mg, Zinc 10mg…",
+        "warningsLabel": "Advertencias (opcional)",
+        "warningsPlaceholder": "Opcional: mantener fuera del alcance de los niños…"
+      },
+      "extraTabs": {
+        "sectionTitle": "Pestañas personalizadas",
+        "titleLabel": "Título",
+        "titlePlaceholder": "ej: Fórmula",
+        "contentLabel": "Contenido",
+        "contentPlaceholder": "Contenido de la pestaña…",
+        "removeTitle": "Eliminar pestaña",
+        "addButton": "+ Agregar pestaña"
+      },
+      "cancel": "Cancelar",
+      "saving": "Guardando…",
+      "addProduct": "Agregar producto",
+      "saveChanges": "Guardar cambios"
+    }
+  }
+}

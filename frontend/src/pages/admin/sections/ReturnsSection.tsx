@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Card,
@@ -23,6 +25,7 @@ import { useAdminPanelContext } from '../AdminPanelContext';
 import { api } from '../../../lib/api';
 import type { OrderReturn, ReturnMethod, ReturnStatus } from '../../../types';
 import { formatPanamaDateTime } from '../../../lib/dates';
+import { formatCurrency } from '../../../lib/currency';
 
 function ButtonSpinner() {
   return (
@@ -44,7 +47,9 @@ function ButtonSpinner() {
   );
 }
 
-const STATUS_LABELS: Record<'' | ReturnStatus, string> = {
+// Raw (untranslated) label STATUS_COLORS is keyed by, for StatusPill's color-matching `status`
+// prop (HU-084) - the translated display `label` is resolved separately via STATUS_I18N_KEY.
+const STATUS_COLOR_KEY: Record<'' | ReturnStatus, string> = {
   '': 'Todas',
   requested: 'Solicitada',
   approved: 'Aprobada',
@@ -59,45 +64,46 @@ const STATUS_LABELS: Record<'' | ReturnStatus, string> = {
   rejected: 'Rechazada',
 };
 
+// i18n keys reused from the customer-facing `orders.returns.*` namespace, since these are the same
+// statuses shown to the customer on their own order (HU-084).
+const STATUS_I18N_KEY: Record<'' | ReturnStatus, string> = {
+  '': 'admin.returns.filters.allStatus',
+  requested: 'orders.returns.status.requested',
+  approved: 'orders.returns.status.approved',
+  in_transit: 'orders.returns.status.inTransit',
+  in_review: 'orders.returns.status.inReview',
+  refund_pending: 'orders.returns.status.refundPending',
+  refunded: 'orders.returns.status.refunded',
+  replaced: 'orders.returns.status.replaced',
+  rejected: 'orders.returns.status.rejected',
+};
+
 const STATUS_FILTER_OPTIONS = ['', 'requested', 'approved', 'in_transit', 'in_review', 'refund_pending', 'refunded', 'replaced', 'rejected'] as const;
-
-const RETURN_METHOD_LABELS: Record<OrderReturn['returnMethod'], string> = {
-  courier_pickup: 'Mensajería recoge',
-  store_dropoff: 'Cliente trae a tienda',
-};
-
-const METHOD_FILTER_LABELS: Record<'' | ReturnMethod, string> = {
-  '': 'Todos',
-  courier_pickup: 'Mensajería recoge',
-  store_dropoff: 'Cliente trae a tienda',
-};
 
 const METHOD_FILTER_OPTIONS = ['', 'courier_pickup', 'store_dropoff'] as const;
 
-const RESOLUTION_LABELS: Record<OrderReturn['desiredResolution'], string> = {
-  refund: 'Prefiere: reembolso',
-  replacement: 'Prefiere: reenvío del producto correcto',
-};
-
-const REASON_CATEGORY_LABELS: Record<OrderReturn['reasonCategory'], string> = {
-  damaged: 'Llegó dañado',
-  wrong_item: 'Producto diferente al pedido',
-  defective: 'No funciona / defectuoso',
-  changed_mind: 'Ya no lo necesita',
-  other: 'Otro',
+// Key suffixes under `admin.returns.reasonCategory.*` / `orders.returns.form.reasons.*` (HU-084) -
+// most wording is shared with the customer-facing form, "wrongItem" has its own admin phrasing.
+const REASON_CATEGORY_I18N_KEY: Record<OrderReturn['reasonCategory'], string> = {
+  damaged: 'orders.returns.form.reasons.damaged',
+  wrong_item: 'admin.returns.reasonCategory.wrongItem',
+  defective: 'orders.returns.form.reasons.defective',
+  changed_mind: 'orders.returns.form.reasons.changedMind',
+  other: 'orders.returns.form.reasons.other',
 };
 
 // Un retiro en tienda nunca salió por un courier, así que tampoco vuelve por uno: la devolución
-// salta "en tránsito" y pasa directo a revisión en cuanto está aprobada.
-const NEXT_STATUS: Record<OrderReturn['returnMethod'], Partial<Record<ReturnStatus, { next: ReturnStatus; label: string }>>> = {
+// salta "en tránsito" y pasa directo a revisión en cuanto está aprobada. `labelKey` is the suffix
+// under `admin.returns.nextAction.*` (HU-084).
+const NEXT_STATUS: Record<OrderReturn['returnMethod'], Partial<Record<ReturnStatus, { next: ReturnStatus; labelKey: string }>>> = {
   courier_pickup: {
-    requested: { next: 'approved', label: 'Aprobar' },
-    approved: { next: 'in_transit', label: 'Marcar en tránsito' },
-    in_transit: { next: 'in_review', label: 'En revisión' },
+    requested: { next: 'approved', labelKey: 'approve' },
+    approved: { next: 'in_transit', labelKey: 'markInTransit' },
+    in_transit: { next: 'in_review', labelKey: 'markInReview' },
   },
   store_dropoff: {
-    requested: { next: 'approved', label: 'Aprobar' },
-    approved: { next: 'in_review', label: 'En revisión' },
+    requested: { next: 'approved', labelKey: 'approve' },
+    approved: { next: 'in_review', labelKey: 'markInReview' },
   },
 };
 
@@ -107,12 +113,14 @@ const NEXT_STATUS: Record<OrderReturn['returnMethod'], Partial<Record<ReturnStat
 const RESOLVABLE_STATUS: ReturnStatus = 'in_review';
 
 type ReturnSortKey = 'amount' | 'date';
-const RETURN_SORT_LABEL: Record<ReturnSortKey, string> = { amount: 'Monto', date: 'Fecha' };
 
 // Un retiro en tienda nunca sale por courier, así que el reemplazo tampoco "viene en camino" - el
-// cliente lo recoge en la tienda una vez preparado (ver STATUS_LABELS.replaced para el caso courier).
-function replacedStatusLabel(returnMethod: ReturnMethod): string {
-  return returnMethod === 'store_dropoff' ? 'Reemplazo en tienda' : STATUS_LABELS.replaced;
+// cliente lo recoge en la tienda una vez preparado (ver STATUS_I18N_KEY.replaced para el caso
+// courier). `t` viene del componente llamador ya que esta funcion no puede usar el hook.
+function replacedStatusInfo(t: TFunction, returnMethod: ReturnMethod): { colorKey: string; label: string } {
+  return returnMethod === 'store_dropoff'
+    ? { colorKey: 'Reemplazo en tienda', label: t('orders.returns.replacedInStore') }
+    : { colorKey: STATUS_COLOR_KEY.replaced, label: t(STATUS_I18N_KEY.replaced) };
 }
 
 function matchesReturnSearch(ret: OrderReturn, term: string): boolean {
@@ -125,6 +133,24 @@ function matchesReturnSearch(ret: OrderReturn, term: string): boolean {
 }
 
 export function ReturnsSection() {
+  const { t } = useTranslation();
+  const RETURN_METHOD_LABELS: Record<OrderReturn['returnMethod'], string> = {
+    courier_pickup: t('admin.returns.method.courierPickup'),
+    store_dropoff: t('admin.returns.method.storeDropoff'),
+  };
+  const METHOD_FILTER_LABELS: Record<'' | ReturnMethod, string> = {
+    '': t('admin.returns.filters.allMethods'),
+    courier_pickup: t('admin.returns.method.courierPickup'),
+    store_dropoff: t('admin.returns.method.storeDropoff'),
+  };
+  const RESOLUTION_LABELS: Record<OrderReturn['desiredResolution'], string> = {
+    refund: t('admin.returns.resolution.refund'),
+    replacement: t('admin.returns.resolution.replacement'),
+  };
+  const RETURN_SORT_LABEL: Record<ReturnSortKey, string> = {
+    amount: t('admin.returns.table.columns.amount'),
+    date: t('admin.orders.sortLabels.date'),
+  };
   const { getToken } = useAuth();
   const { setPage: setAdminPage, setOrderSearch } = useAdminPanelContext();
   const queryClient = useQueryClient();
@@ -237,13 +263,13 @@ export function ReturnsSection() {
     <>
       <PageHeader
         loading={isLoading}
-        kicker="Devoluciones y reembolsos"
+        kicker={t('admin.returns.kicker')}
         title={
           <>
-            Devoluciones de <em style={{ color: 'var(--green)' }}>clientes</em>
+            {t('admin.returns.titlePrefix')} <em style={{ color: 'var(--green)' }}>{t('admin.returns.titleEmphasis')}</em>
           </>
         }
-        sub="Aprueba, marca en tránsito, confirma la revisión y procesa lo que el cliente pidió (reembolso vía Stripe o reenvío del producto correcto)."
+        sub={t('admin.returns.sub')}
       />
 
       {!isLoading && (
@@ -266,7 +292,7 @@ export function ReturnsSection() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por cliente, email o pedido…"
+              placeholder={t('admin.returns.searchPlaceholder')}
               style={{
                 border: 'none',
                 outline: 'none',
@@ -289,7 +315,7 @@ export function ReturnsSection() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-40)', flexShrink: 0, width: 48 }}>
-              Estado
+              {t('admin.orders.filters.statusLabel')}
             </span>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {STATUS_FILTER_OPTIONS.filter((status) => status === '' || status === statusFilter || (statusCounts[status] ?? 0) > 0).map((status) => (
@@ -310,7 +336,7 @@ export function ReturnsSection() {
                     fontFamily: '"Geist", sans-serif',
                   }}
                 >
-                  <span>{STATUS_LABELS[status]}</span>
+                  <span>{t(STATUS_I18N_KEY[status])}</span>
                   <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', opacity: statusFilter === status ? 0.8 : 0.6 }}>
                     {statusCounts[status] ?? 0}
                   </span>
@@ -321,7 +347,7 @@ export function ReturnsSection() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-40)', flexShrink: 0, width: 48 }}>
-              Método
+              {t('admin.returns.filters.methodLabel')}
             </span>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {METHOD_FILTER_OPTIONS.filter((method) => method === '' || method === methodFilter || (methodCounts[method] ?? 0) > 0).map((method) => (
@@ -354,11 +380,11 @@ export function ReturnsSection() {
       )}
 
       <Card
-        title="Solicitudes de devolución"
+        title={t('admin.returns.table.title')}
         sub={
           search || statusFilter || methodFilter
-            ? `${displayedReturns.length} resultado${displayedReturns.length !== 1 ? 's' : ''} de ${items.length}`
-            : `${items.length} solicitud${items.length !== 1 ? 's' : ''}`
+            ? t('admin.orders.resultsCount', { count: displayedReturns.length, total: items.length })
+            : t('admin.returns.table.requestsCount', { count: items.length })
         }
         pad={0}
         loading={isLoading}
@@ -388,14 +414,14 @@ export function ReturnsSection() {
           <table style={{ ...tableStyle, minWidth: 1120 }}>
             <thead>
               <tr>
-                <th scope="col" style={th}>Cliente</th>
-                <th scope="col" style={th}>Motivo / ítems</th>
-                <SortableTh label="Monto" sortKey="amount" activeSort={sort} onSort={toggleSort} />
-                <th scope="col" style={th}>Método</th>
-                <th scope="col" style={th}>Ubicación</th>
-                <th scope="col" style={th}>Estado</th>
-                <SortableTh label="Fecha" sortKey="date" activeSort={sort} onSort={toggleSort} />
-                <th scope="col" style={th}>Acción</th>
+                <th scope="col" style={th}>{t('admin.returns.table.columns.customer')}</th>
+                <th scope="col" style={th}>{t('admin.returns.table.columns.reasonItems')}</th>
+                <SortableTh label={t('admin.returns.table.columns.amount')} sortKey="amount" activeSort={sort} onSort={toggleSort} />
+                <th scope="col" style={th}>{t('admin.returns.table.columns.method')}</th>
+                <th scope="col" style={th}>{t('admin.returns.table.columns.location')}</th>
+                <th scope="col" style={th}>{t('admin.returns.table.columns.status')}</th>
+                <SortableTh label={t('admin.orders.sortLabels.date')} sortKey="date" activeSort={sort} onSort={toggleSort} />
+                <th scope="col" style={th}>{t('admin.returns.table.columns.action')}</th>
               </tr>
             </thead>
             <tbody>
@@ -410,12 +436,12 @@ export function ReturnsSection() {
                 return (
                   <tr key={ret._id} style={trStyle}>
                     <td style={td}>
-                      <div style={{ fontWeight: 500 }}>{ret.customerName || 'Cliente'}</div>
+                      <div style={{ fontWeight: 500 }}>{ret.customerName || t('admin.dashboard.recentOrders.defaultCustomerName')}</div>
                       <div style={{ fontSize: 11, color: 'var(--ink-60)' }}>{ret.customerEmail}</div>
                     </td>
                     <td style={{ ...td, maxWidth: 320 }}>
                       <div style={{ fontSize: 11, color: 'var(--ink)', fontWeight: 500 }}>
-                        {REASON_CATEGORY_LABELS[ret.reasonCategory]}
+                        {t(REASON_CATEGORY_I18N_KEY[ret.reasonCategory])}
                       </div>
                       <div style={{ color: 'var(--ink-60)', fontSize: 12, whiteSpace: 'normal', margin: '2px 0 4px' }}>{ret.reason}</div>
                       <div style={{ fontSize: 11, color: 'var(--ink-40)' }}>
@@ -427,10 +453,10 @@ export function ReturnsSection() {
                       {ret.photos?.length > 0 && (
                         <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
                           {ret.photos.map((url, idx) => (
-                            <a key={idx} href={url} target="_blank" rel="noreferrer" title={`Ver foto ${idx + 1} de evidencia`}>
+                            <a key={idx} href={url} target="_blank" rel="noreferrer" title={t('admin.returns.table.photoTitle', { n: idx + 1 })}>
                               <img
                                 src={url}
-                                alt={`Evidencia ${idx + 1} de ${ret.customerName || 'cliente'}`}
+                                alt={t('admin.returns.table.photoAlt', { n: idx + 1, name: ret.customerName || t('admin.returns.table.defaultCustomerNameLower') })}
                                 style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--ink-12)' }}
                               />
                             </a>
@@ -445,13 +471,13 @@ export function ReturnsSection() {
                             setAdminPage('orders');
                           }}
                           style={{ display: 'inline-block', marginTop: 6, fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em', color: 'var(--green)', background: 'color-mix(in oklab, var(--green) 10%, white)', border: '1px solid color-mix(in oklab, var(--green) 25%, white)', borderRadius: 999, padding: '2px 8px', cursor: 'pointer' }}
-                          title="Ver ese pedido en Pedidos - todavía necesita prepararse y enviarse."
+                          title={t('admin.returns.table.replacementOrderTitle')}
                         >
-                          PEDIDO DE REEMPLAZO #{ret.replacementOrderId.slice(-8).toUpperCase()}
+                          {t('admin.returns.table.replacementOrderBadge', { id: ret.replacementOrderId.slice(-8).toUpperCase() })}
                         </button>
                       )}
                     </td>
-                    <td style={td}>${ret.refundAmount.toFixed(2)}</td>
+                    <td style={td}>{formatCurrency(ret.refundAmount)}</td>
                     <td style={{ ...td, fontSize: 12, color: 'var(--ink-60)' }}>{RETURN_METHOD_LABELS[ret.returnMethod]}</td>
                     <td style={{ ...td, fontSize: 12, color: 'var(--ink-60)', maxWidth: 220 }}>
                       {ret.pickupAddress ? (
@@ -465,18 +491,21 @@ export function ReturnsSection() {
                     </td>
                     <td style={td}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
-                        <StatusPill status={ret.status === 'replaced' ? replacedStatusLabel(ret.returnMethod) : STATUS_LABELS[ret.status]} />
+                        <StatusPill
+                          status={ret.status === 'replaced' ? replacedStatusInfo(t, ret.returnMethod).colorKey : STATUS_COLOR_KEY[ret.status]}
+                          label={ret.status === 'replaced' ? replacedStatusInfo(t, ret.returnMethod).label : t(STATUS_I18N_KEY[ret.status])}
+                        />
                         {ret.status === 'rejected' && ret.rejectedAfterReview && (
                           <span
                             style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em', color: 'var(--coral)' }}
-                            title="El producto ya había vuelto físicamente y no coincidía con lo reportado en la solicitud."
+                            title={t('admin.returns.table.notMatchingTitle')}
                           >
-                            No coincide con lo reportado
+                            {t('admin.returns.table.notMatchingBadge')}
                           </span>
                         )}
                         {ret.status === 'rejected' && ret.rejectedAfterReview && ret.returnedToCustomerAt && (
                           <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em', color: 'var(--green)' }}>
-                            {ret.returnMethod === 'store_dropoff' ? 'Listo para recoger' : 'Devuelto'} el {formatPanamaDateTime(ret.returnedToCustomerAt)}
+                            {ret.returnMethod === 'store_dropoff' ? t('admin.returns.table.readyForPickup') : t('admin.returns.table.returnedToCustomer')} {t('admin.returns.table.returnedOn', { date: formatPanamaDateTime(ret.returnedToCustomerAt) })}
                           </span>
                         )}
                       </div>
@@ -494,7 +523,7 @@ export function ReturnsSection() {
                             style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'oklch(0.28 0.055 155)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--lime)', fontSize: 12 }}
                           >
                             {pendingStatus === nextAction.next && <ButtonSpinner />}
-                            {nextAction.label}
+                            {t(`admin.returns.nextAction.${nextAction.labelKey}`)}
                           </button>
                         )}
                         {canResolve && (
@@ -509,19 +538,19 @@ export function ReturnsSection() {
                           >
                             {(pendingStatus === 'refunded' || pendingStatus === 'replaced') && <ButtonSpinner />}
                             {ret.desiredResolution === 'replacement'
-                              ? (ret.returnMethod === 'store_dropoff' ? 'Preparar producto correcto' : 'Reenviar producto correcto')
-                              : 'Reembolsar'}
+                              ? (ret.returnMethod === 'store_dropoff' ? t('admin.returns.resolve.prepareCorrectProduct') : t('admin.returns.resolve.resendCorrectProduct'))
+                              : t('admin.returns.resolve.refund')}
                           </button>
                         )}
                         {(ret.status === 'requested' || ret.status === 'in_review') && (
                           <button
                             type="button"
-                            onClick={() => setConfirmReject({ id: ret._id, customerName: ret.customerName || 'Cliente', orderId: ret.orderId, fromReview: ret.status === 'in_review' })}
+                            onClick={() => setConfirmReject({ id: ret._id, customerName: ret.customerName || t('admin.dashboard.recentOrders.defaultCustomerName'), orderId: ret.orderId, fromReview: ret.status === 'in_review' })}
                             disabled={updateStatusMut.isPending}
                             style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--coral)', fontSize: 12 }}
                           >
                             {pendingStatus === 'rejected' && <ButtonSpinner />}
-                            Rechazar
+                            {t('admin.returns.reject')}
                           </button>
                         )}
                         {ret.status === 'rejected' && ret.rejectedAfterReview && !ret.returnedToCustomerAt && (
@@ -535,7 +564,7 @@ export function ReturnsSection() {
                             style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--ink-60)', fontSize: 12 }}
                           >
                             {returnToCustomerMut.isPending && returnToCustomerMut.variables === ret._id && <ButtonSpinner />}
-                            {ret.returnMethod === 'store_dropoff' ? 'Marcar listo para recoger' : 'Marcar enviado de vuelta'}
+                            {ret.returnMethod === 'store_dropoff' ? t('admin.returns.markReadyForPickup') : t('admin.returns.markSentBack')}
                           </button>
                         )}
                       </div>
@@ -546,7 +575,7 @@ export function ReturnsSection() {
               {!paginated.items.length && (
                 <tr>
                   <td style={{ ...td, textAlign: 'center', color: 'var(--ink-60)' }} colSpan={8}>
-                    Sin solicitudes para este filtro.
+                    {t('admin.returns.table.empty')}
                   </td>
                 </tr>
               )}
@@ -577,25 +606,25 @@ export function ReturnsSection() {
         >
           <div style={{ padding: '22px 24px 18px', borderBottom: '1px solid var(--ink-06)' }}>
             <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 8 }}>
-              Confirmar rechazo
+              {t('admin.returns.rejectModal.kicker')}
             </div>
             <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 32, lineHeight: 1, letterSpacing: '-0.03em', color: 'var(--ink)' }}>
-              Rechazar <em style={{ color: 'var(--coral)' }}>devolución</em>
+              {t('admin.returns.rejectModal.titlePrefix')} <em style={{ color: 'var(--coral)' }}>{t('admin.returns.rejectModal.titleEmphasis')}</em>
             </div>
             <p style={{ margin: '12px 0 0', fontSize: 14, lineHeight: 1.55, color: 'var(--ink-80)', fontFamily: '"Geist", sans-serif' }}>
               {confirmReject?.fromReview ? (
                 <>
-                  Vas a rechazar la devolución de <strong>{confirmReject?.customerName}</strong> para el pedido #{confirmReject?.orderId.slice(-8).toUpperCase()} porque el producto recibido no coincide con lo reportado. El cliente recibirá un email y una notificación - esta acción no se puede deshacer. Recuerda coordinar aparte la devolución del producto físico al cliente.
+                  {t('admin.returns.rejectModal.fromReviewBodyPrefix')} <strong>{confirmReject?.customerName}</strong> {t('admin.returns.rejectModal.fromReviewBodySuffix', { orderId: confirmReject?.orderId.slice(-8).toUpperCase() })}
                 </>
               ) : (
                 <>
-                  Vas a rechazar la solicitud de devolución de <strong>{confirmReject?.customerName}</strong> para el pedido #{confirmReject?.orderId.slice(-8).toUpperCase()}. El cliente recibirá un email y una notificación - esta acción no se puede deshacer.
+                  {t('admin.returns.rejectModal.defaultBodyPrefix')} <strong>{confirmReject?.customerName}</strong> {t('admin.returns.rejectModal.defaultBodySuffix', { orderId: confirmReject?.orderId.slice(-8).toUpperCase() })}
                 </>
               )}
             </p>
           </div>
           <div style={{ padding: 24, display: 'flex', gap: 10, justifyContent: 'flex-end', background: 'var(--cream-2)' }}>
-            <AnimatedButton variant="outline" onClick={() => setConfirmReject(null)} disabled={updateStatusMut.isPending} text="Cancelar" />
+            <AnimatedButton variant="outline" onClick={() => setConfirmReject(null)} disabled={updateStatusMut.isPending} text={t('admin.returns.rejectModal.cancel')} />
             <AnimatedButton
               variant="primary"
               onClick={() => {
@@ -606,7 +635,7 @@ export function ReturnsSection() {
                 );
               }}
               disabled={updateStatusMut.isPending}
-              text={updateStatusMut.isPending ? 'Rechazando...' : 'Sí, rechazar'}
+              text={updateStatusMut.isPending ? t('admin.returns.rejectModal.rejecting') : t('admin.returns.rejectModal.confirmReject')}
             />
           </div>
         </div>

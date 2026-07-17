@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import type { NotificationType } from '../types';
 
 /** Icon + accent colour for each notification type, shared by the toaster and the notification
@@ -35,16 +36,17 @@ export function notificationPresentation(
   }
 }
 
-/** Compact relative-time label (es), e.g. "ahora", "hace 5 min", "hace 2 h", "hace 3 d". */
-export function relativeTime(iso: string, now: number = Date.now()): string {
+/** Compact relative-time label, e.g. "now"/"ahora", "5 min ago"/"hace 5 min". `t` comes from the
+ * calling component's useTranslation() - this isn't a component itself (HU-084). */
+export function relativeTime(t: TFunction, iso: string, now: number = Date.now()): string {
   const then = new Date(iso).getTime();
   if (Number.isNaN(then)) return '';
   const diffSec = Math.max(0, Math.round((now - then) / 1000));
-  if (diffSec < 45) return 'ahora';
+  if (diffSec < 45) return t('notifications.relativeTime.now');
   const diffMin = Math.round(diffSec / 60);
-  if (diffMin < 60) return `hace ${diffMin} min`;
+  if (diffMin < 60) return t('notifications.relativeTime.minutesAgo', { count: diffMin });
   const diffHour = Math.round(diffMin / 60);
-  if (diffHour < 24) return `hace ${diffHour} h`;
+  if (diffHour < 24) return t('notifications.relativeTime.hoursAgo', { count: diffHour });
   const diffDay = Math.round(diffHour / 24);
-  return `hace ${diffDay} d`;
+  return t('notifications.relativeTime.daysAgo', { count: diffDay });
 }

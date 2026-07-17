@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import type {
   AdminAuditLogEntry,
   FulfillmentStatus,
@@ -42,13 +43,15 @@ export type VariantFormRow = {
   isDefault: boolean;
 };
 
-export const VARIANT_TYPE_OPTIONS: { value: ProductVariant['type']; label: string }[] = [
-  { value: 'flavor', label: 'Sabor' },
-  { value: 'scent', label: 'Aroma' },
-  { value: 'size', label: 'Tamaño' },
-  { value: 'color', label: 'Color' },
-  { value: 'weight', label: 'Peso' },
-  { value: 'count', label: 'Conteo' },
+// `labelKey` is the suffix under `admin.variantTypes.*` (HU-084) - a module-level const can't
+// call t(), so the display label is resolved at the call site inside a component.
+export const VARIANT_TYPE_OPTIONS: { value: ProductVariant['type']; labelKey: string }[] = [
+  { value: 'flavor', labelKey: 'flavor' },
+  { value: 'scent', labelKey: 'scent' },
+  { value: 'size', labelKey: 'size' },
+  { value: 'color', labelKey: 'color' },
+  { value: 'weight', labelKey: 'weight' },
+  { value: 'count', labelKey: 'count' },
 ];
 
 export const emptyVariantRow = (): VariantFormRow => ({
@@ -120,6 +123,8 @@ export type AdminOrder = {
   shippingMethod?: "delivery" | "pickup";
   shippingLabel?: string;
   shippingEta?: string;
+  carrier?: string;
+  trackingNumber?: string;
   address?: OrderAddress;
   createdAt?: string;
   replacesOrderId?: string;
@@ -235,10 +240,12 @@ export type ProductAnalyticsData = {
   error?: string;
 };
 
-export const productAnalyticsEventLabels: Record<string, string> = {
-  checkout_started: 'Checkout iniciado',
-  checkout_completed: 'Checkout completado',
-  add_to_cart: 'Agregado al carrito',
+// Maps the raw PostHog event name to an i18n key suffix under `admin.productAnalytics.eventLabels`
+// (HU-084) - kept as a plain lookup (not a component) so the display label stays translatable.
+export const productAnalyticsEventLabelKeys: Record<string, string> = {
+  checkout_started: 'checkoutStarted',
+  checkout_completed: 'checkoutCompleted',
+  add_to_cart: 'addedToCart',
 };
 
 export const fulfillmentStatusOptions: (FulfillmentStatus | "")[] = [
@@ -252,10 +259,12 @@ export const fulfillmentStatusOptions: (FulfillmentStatus | "")[] = [
 
 export const orderShippingMethodOptions: ("" | "delivery" | "pickup")[] = ["", "delivery", "pickup"];
 
-export const orderShippingMethodLabels: Record<"" | "delivery" | "pickup", string> = {
-  "": "Todos",
-  delivery: "Envío a domicilio",
-  pickup: "Retiro en tienda",
+// Key suffixes under `admin.shippingMethod.*` (HU-084) - see VARIANT_TYPE_OPTIONS above for why
+// this is a lookup instead of calling t() directly.
+export const orderShippingMethodLabelKeys: Record<"" | "delivery" | "pickup", string> = {
+  "": "all",
+  delivery: "delivery",
+  pickup: "pickup",
 };
 
 // Coarser than the exact pill shown in the Pago column (which distinguishes the return's
@@ -277,15 +286,16 @@ export const orderPaymentStatusOptions: OrderPaymentBucket[] = [
   "no_charge",
 ];
 
-export const orderPaymentStatusLabels: Record<OrderPaymentBucket, string> = {
-  "": "Todos",
-  paid: "Pagado",
-  pending_payment: "Pendiente",
-  cancelled: "Cancelado",
-  refunded: "Reembolsado",
-  return_pending: "Devolución en curso",
-  replaced: "Reemplazo",
-  no_charge: "Sin costo",
+// Key suffixes under `admin.paymentBucket.*` (HU-084).
+export const orderPaymentStatusLabelKeys: Record<OrderPaymentBucket, string> = {
+  "": "all",
+  paid: "paid",
+  pending_payment: "pending",
+  cancelled: "cancelled",
+  refunded: "refunded",
+  return_pending: "returnPending",
+  replaced: "replaced",
+  no_charge: "noCharge",
 };
 
 /** Same precedence as the Pago column's own pill logic (OrdersSection.tsx#paymentPillLabels). */
@@ -381,22 +391,25 @@ export const emptyForm: ProductForm = {
   variantsMatrix: emptyMatrixState(),
 };
 
-export const fulfillmentStatusLabels: Record<FulfillmentStatus | "", string> = {
-  "": "Todos",
-  unfulfilled: "Pendiente",
-  processing: "Preparando",
-  shipped: "Enviada",
-  delivered: "Entregada",
-  picked_up: "Retirado",
-  cancelled: "Cancelada",
+// Key suffixes under `admin.fulfillmentStatus.*` (HU-084).
+export const fulfillmentStatusLabelKeys: Record<FulfillmentStatus | "", string> = {
+  "": "all",
+  unfulfilled: "pending",
+  processing: "processing",
+  shipped: "shipped",
+  delivered: "delivered",
+  picked_up: "pickedUp",
+  cancelled: "cancelled",
 };
 
 /** "Entregada" no aplica a retiro en tienda: no se entrega nada, el cliente lo recoge - "delivered"
- * ahi es "listo para retirar", "picked_up" es cuando ya lo recogio. */
+ * ahi es "listo para retirar", "picked_up" es cuando ya lo recogio. `t` viene del componente
+ * llamador (useTranslation) ya que esta funcion no es un componente y no puede usar el hook. */
 export function getFulfillmentStatusLabel(
+  t: TFunction,
   status: FulfillmentStatus | "",
   shippingMethod?: "delivery" | "pickup",
 ): string {
-  if (status === "delivered" && shippingMethod === "pickup") return "Listo para retirar";
-  return fulfillmentStatusLabels[status];
+  if (status === "delivered" && shippingMethod === "pickup") return t('admin.fulfillmentStatus.readyForPickup');
+  return t(`admin.fulfillmentStatus.${fulfillmentStatusLabelKeys[status]}`);
 }

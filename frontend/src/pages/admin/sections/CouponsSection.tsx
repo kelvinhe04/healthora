@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   PageHeader,
@@ -16,6 +17,8 @@ import { Select } from '../../../components/shared/Select';
 import { api } from '../../../lib/api';
 import type { Category, Coupon } from '../../../types';
 import { useAdminToken } from '../hooks/useAdminToken';
+import { formatCurrency } from '../../../lib/currency';
+import { translatedCategoryLabel } from '../../../lib/categoryLabels';
 
 type CouponForm = {
   code: string;
@@ -44,6 +47,7 @@ const emptyForm = (): CouponForm => ({
 });
 
 export function CouponsSection() {
+  const { t } = useTranslation();
   const getAdminToken = useAdminToken();
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
@@ -114,15 +118,15 @@ export function CouponsSection() {
     <>
       <PageHeader
         loading={isLoading}
-        kicker="Promociones"
+        kicker={t('admin.coupons.kicker')}
         title={
           <>
-            Gestión de <em style={{ color: 'var(--green)' }}>cupones</em>
+            {t('admin.coupons.titlePrefix')} <em style={{ color: 'var(--green)' }}>{t('admin.coupons.titleEmphasis')}</em>
           </>
         }
-        sub="Crea y administra códigos de descuento para el checkout."
+        sub={t('admin.coupons.sub')}
         actions={
-          <AnimatedButton variant="primary" onClick={() => { setForm(emptyForm()); setError(''); setModalOpen(true); }} text="+ Nuevo cupón" />
+          <AnimatedButton variant="primary" onClick={() => { setForm(emptyForm()); setError(''); setModalOpen(true); }} text={t('admin.coupons.newButton')} />
         }
       />
 
@@ -130,13 +134,13 @@ export function CouponsSection() {
         <table style={tableStyle}>
           <thead>
             <tr>
-              <th style={th}>Código</th>
-              <th style={th}>Etiqueta</th>
-              <th style={th}>Descuento</th>
-              <th style={th}>Categorías</th>
-              <th style={th}>Usos</th>
-              <th style={th}>Estado</th>
-              <th style={th}>Acciones</th>
+              <th style={th}>{t('admin.coupons.table.columns.code')}</th>
+              <th style={th}>{t('admin.coupons.table.columns.label')}</th>
+              <th style={th}>{t('admin.coupons.table.columns.discount')}</th>
+              <th style={th}>{t('admin.coupons.table.columns.categories')}</th>
+              <th style={th}>{t('admin.coupons.table.columns.uses')}</th>
+              <th style={th}>{t('admin.coupons.table.columns.status')}</th>
+              <th style={th}>{t('admin.coupons.table.columns.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -147,21 +151,22 @@ export function CouponsSection() {
                 <td style={td}>
                   {coupon.discountType === 'percent'
                     ? `${coupon.percentOff ?? 0}%`
-                    : `$${(coupon.amountOff ?? 0).toFixed(2)}`}
+                    : formatCurrency(coupon.amountOff ?? 0)}
                 </td>
                 <td style={td}>
                   {coupon.eligibleCategories?.length
                     ? coupon.eligibleCategories.join(', ')
-                    : 'Todas'}
+                    : t('admin.coupons.table.allCategories')}
                 </td>
                 <td style={td}>
                   {coupon.usesCount ?? 0}
                   {coupon.maxUses ? ` / ${coupon.maxUses}` : ''}
                 </td>
                 <td style={td}>
-                  <StatusPill tone={coupon.active ? 'success' : 'neutral'}>
-                    {coupon.active ? 'Activo' : 'Inactivo'}
-                  </StatusPill>
+                  <StatusPill
+                    status={coupon.active ? 'Activo' : 'Inactivo'}
+                    label={coupon.active ? t('admin.coupons.table.statusActive') : t('admin.coupons.table.statusInactive')}
+                  />
                 </td>
                 <td style={td}>
                   <button
@@ -169,7 +174,7 @@ export function CouponsSection() {
                     onClick={() => toggleMutation.mutate({ coupon, active: !coupon.active })}
                     style={{ background: 'transparent', border: '1px solid var(--ink-12)', borderRadius: 999, padding: '6px 12px', cursor: 'pointer', fontSize: 12 }}
                   >
-                    {coupon.active ? 'Desactivar' : 'Activar'}
+                    {coupon.active ? t('admin.coupons.table.deactivate') : t('admin.coupons.table.activate')}
                   </button>
                 </td>
               </tr>
@@ -177,7 +182,7 @@ export function CouponsSection() {
             {!isLoading && coupons.length === 0 && (
               <tr>
                 <td style={{ ...td, padding: 24, textAlign: 'center', color: 'var(--ink-60)' }} colSpan={7}>
-                  No hay cupones creados todavía.
+                  {t('admin.coupons.table.empty')}
                 </td>
               </tr>
             )}
@@ -187,28 +192,28 @@ export function CouponsSection() {
 
       <ModalOverlay open={modalOpen} onClose={() => setModalOpen(false)} zIndex={120}>
         <div style={{ width: '100%', maxWidth: 520, background: 'var(--cream)', borderRadius: 20, padding: 24 }}>
-          <h3 style={{ margin: '0 0 16px', fontFamily: '"Instrument Serif", serif', fontSize: 28 }}>Nuevo cupón</h3>
+          <h3 style={{ margin: '0 0 16px', fontFamily: '"Instrument Serif", serif', fontSize: 28 }}>{t('admin.coupons.modal.title')}</h3>
           {error && <p style={{ color: 'var(--red)', fontSize: 13 }}>{error}</p>}
           <div style={{ display: 'grid', gap: 12 }}>
-            <input placeholder="Código (ej. SAVE10)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
-            <input placeholder="Etiqueta visible" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
+            <input placeholder={t('admin.coupons.modal.codePlaceholder')} value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
+            <input placeholder={t('admin.coupons.modal.labelPlaceholder')} value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
             <Select value={form.discountType} onChange={(e) => setForm({ ...form, discountType: e.target.value as 'percent' | 'fixed' })}>
-              <option value="percent">Porcentaje</option>
-              <option value="fixed">Monto fijo</option>
+              <option value="percent">{t('admin.coupons.modal.discountTypePercent')}</option>
+              <option value="fixed">{t('admin.coupons.modal.discountTypeFixed')}</option>
             </Select>
             {form.discountType === 'percent' ? (
-              <input type="number" min={1} max={100} placeholder="Porcentaje" value={form.percentOff} onChange={(e) => setForm({ ...form, percentOff: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
+              <input type="number" min={1} max={100} placeholder={t('admin.coupons.modal.percentPlaceholder')} value={form.percentOff} onChange={(e) => setForm({ ...form, percentOff: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
             ) : (
-              <input type="number" min={0.01} step="0.01" placeholder="Monto" value={form.amountOff} onChange={(e) => setForm({ ...form, amountOff: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
+              <input type="number" min={0.01} step="0.01" placeholder={t('admin.coupons.modal.amountPlaceholder')} value={form.amountOff} onChange={(e) => setForm({ ...form, amountOff: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
             )}
             <input type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
-            <input type="number" min={1} placeholder="Máximo de usos (opcional)" value={form.maxUses} onChange={(e) => setForm({ ...form, maxUses: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
+            <input type="number" min={1} placeholder={t('admin.coupons.modal.maxUsesPlaceholder')} value={form.maxUses} onChange={(e) => setForm({ ...form, maxUses: e.target.value })} style={{ padding: 10, borderRadius: 10, border: '1px solid var(--ink-20)' }} />
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
               <Checkbox checked={form.firstPurchaseOnly} onChange={(e) => setForm({ ...form, firstPurchaseOnly: e.target.checked })} />
-              Solo primera compra
+              {t('admin.coupons.modal.firstPurchaseOnly')}
             </label>
             <div>
-              <div style={{ fontSize: 12, color: 'var(--ink-60)', marginBottom: 8 }}>Categorías elegibles (vacío = todas)</div>
+              <div style={{ fontSize: 12, color: 'var(--ink-60)', marginBottom: 8 }}>{t('admin.coupons.modal.eligibleCategoriesLabel')}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {categoryNames.map((category) => (
                   <button
@@ -225,15 +230,15 @@ export function CouponsSection() {
                       fontSize: 12,
                     }}
                   >
-                    {category}
+                    {translatedCategoryLabel(t, category)}
                   </button>
                 ))}
               </div>
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 20 }}>
-            <AnimatedButton variant="secondary" onClick={() => setModalOpen(false)} text="Cancelar" />
-            <AnimatedButton variant="primary" onClick={() => createMutation.mutate()} text={createMutation.isPending ? 'Guardando…' : 'Crear cupón'} />
+            <AnimatedButton variant="secondary" onClick={() => setModalOpen(false)} text={t('admin.coupons.modal.cancel')} />
+            <AnimatedButton variant="primary" onClick={() => createMutation.mutate()} text={createMutation.isPending ? t('admin.coupons.modal.saving') : t('admin.coupons.modal.create')} />
           </div>
         </div>
       </ModalOverlay>

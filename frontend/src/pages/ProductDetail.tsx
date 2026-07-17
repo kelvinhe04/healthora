@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUser } from '@clerk/clerk-react';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import type { Product, ProductVariant } from '../types';
@@ -20,6 +21,7 @@ import { PRIMARY_VARIANT_TYPES, pickDefaultPrimary, sizesFor, pickDefaultSize, p
 import { renderInlineText, renderRichText } from '../lib/richText';
 import { isLowStock } from '../lib/stock';
 import { formatPurchasesLastMonth } from '../lib/purchases';
+import { formatCurrency } from '../lib/currency';
 
 interface ProductDetailProps {
   product: Product;
@@ -30,15 +32,6 @@ interface ProductDetailProps {
   subscribeModalOpen: boolean;
   onSubscribeModalOpenChange: (open: boolean) => void;
 }
-
-const VARIANT_TYPE_LABEL: Record<string, string> = {
-  size: 'TAMAÑO',
-  color: 'COLOR',
-  weight: 'PESO',
-  count: 'PRESENTACIÓN',
-  flavor: 'SABOR',
-  scent: 'FRAGANCIA',
-};
 
 const qtyBtn = (compact: boolean): CSSProperties => ({
   width: compact ? 44 : 36,
@@ -53,6 +46,8 @@ const qtyBtn = (compact: boolean): CSSProperties => ({
 });
 
 export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack, subscribeModalOpen, onSubscribeModalOpenChange }: ProductDetailProps) {
+  const { t } = useTranslation();
+  const variantTypeLabel = (type: string) => t(`productDetail.variantTypes.${type}`, type.toUpperCase());
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const isTablet = bp === 'tablet';
@@ -107,23 +102,23 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
   const hasText = (value?: string) => Boolean(value?.trim());
   const benefits = (product.benefits || []).filter((benefit) => benefit.trim());
   const detailTabs = [
-    ...(benefits.length ? [{ id: 'benefits', label: 'Beneficios' }] : []),
-    ...(hasText(product.usage) ? [{ id: 'usage', label: 'Modo de uso' }] : []),
-    ...(hasText(product.ingredients) ? [{ id: 'ingredients', label: 'Ingredientes' }] : []),
-    ...(hasText(product.nutritionFacts) ? [{ id: 'nutrition', label: 'Info. nutricional' }] : []),
-    ...(product.certifications?.length ? [{ id: 'certs', label: 'Certificaciones' }] : []),
-    ...(hasText(product.interactions) ? [{ id: 'interactions', label: 'Compatibilidad' }] : []),
-    ...(product.faq?.length ? [{ id: 'faq', label: 'Preguntas frecuentes' }] : []),
-    ...(hasText(product.shadeTips) ? [{ id: 'shade', label: 'Tono & tez' }] : []),
-    ...(hasText(product.applicationTips) ? [{ id: 'application', label: 'Técnica' }] : []),
-    ...(hasText(product.formulaDetails) ? [{ id: 'formula', label: 'Fórmula' }] : []),
-    ...(product.skinTypes?.length ? [{ id: 'skintypes', label: 'Tipos de piel' }] : []),
+    ...(benefits.length ? [{ id: 'benefits', label: t('productDetail.tabs.benefits') }] : []),
+    ...(hasText(product.usage) ? [{ id: 'usage', label: t('productDetail.tabs.usage') }] : []),
+    ...(hasText(product.ingredients) ? [{ id: 'ingredients', label: t('productDetail.tabs.ingredients') }] : []),
+    ...(hasText(product.nutritionFacts) ? [{ id: 'nutrition', label: t('productDetail.tabs.nutrition') }] : []),
+    ...(product.certifications?.length ? [{ id: 'certs', label: t('productDetail.tabs.certs') }] : []),
+    ...(hasText(product.interactions) ? [{ id: 'interactions', label: t('productDetail.tabs.interactions') }] : []),
+    ...(product.faq?.length ? [{ id: 'faq', label: t('productDetail.tabs.faq') }] : []),
+    ...(hasText(product.shadeTips) ? [{ id: 'shade', label: t('productDetail.tabs.shade') }] : []),
+    ...(hasText(product.applicationTips) ? [{ id: 'application', label: t('productDetail.tabs.application') }] : []),
+    ...(hasText(product.formulaDetails) ? [{ id: 'formula', label: t('productDetail.tabs.formula') }] : []),
+    ...(product.skinTypes?.length ? [{ id: 'skintypes', label: t('productDetail.tabs.skintypes') }] : []),
     ...(product.extraTabs?.length
       ? product.extraTabs
           .filter((extraTab) => hasText(extraTab.label) && hasText(extraTab.content))
           .map((extraTab) => ({ id: `extra:${extraTab.id}`, label: extraTab.label }))
       : []),
-    ...(hasText(product.warnings) ? [{ id: 'warnings', label: 'Advertencias' }] : []),
+    ...(hasText(product.warnings) ? [{ id: 'warnings', label: t('productDetail.tabs.warnings') }] : []),
   ];
 
   const closeZoom = () => {
@@ -212,13 +207,13 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
         <div 
           role="dialog"
           aria-modal="true"
-          aria-label={`Vista ampliada de ${product.name}`}
+          aria-label={t('productDetail.zoomAria', { name: product.name })}
           onClick={closeZoom} 
           style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(253, 252, 250, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out', backdropFilter: 'blur(10px)', padding: 40, animation: isZoomingOut ? 'zoomModalOut 0.25s cubic-bezier(0.3, 0, 0.8, 0.15) forwards' : 'zoomModalBgIn 0.3s ease-out' }}
         >
           <button
             type="button"
-            aria-label="Cerrar vista ampliada"
+            aria-label={t('productDetail.closeZoomAria')}
             onClick={closeZoom}
             style={{ position: 'absolute', top: 32, right: 32, background: 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 999, width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.2s', transform: isZoomingOut ? 'scale(0.8)' : 'scale(1)' }}
           >
@@ -243,7 +238,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
       )}
 
       <div style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', marginBottom: 24, letterSpacing: '0.06em' }}>
-        <button type="button" onClick={onBack} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'inherit', font: 'inherit' }}>TIENDA</button> · {product.category.toUpperCase()} · <span style={{ color: 'var(--ink)' }}>{product.name.toUpperCase()}</span>
+        <button type="button" onClick={onBack} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'inherit', font: 'inherit' }}>{t('productDetail.store')}</button> · {product.category.toUpperCase()} · <span style={{ color: 'var(--ink)' }}>{product.name.toUpperCase()}</span>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1.1fr 1fr', gap: isSmall ? 24 : 48, alignItems: 'start' }}>
@@ -260,7 +255,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
           </div>
           <div
             role="tablist"
-            aria-label="Miniaturas del producto"
+            aria-label={t('productDetail.thumbnailsAria')}
             style={{ display: 'flex', gap: 10, marginTop: 12 }}
           >
             {gallery.map((image, i) => (
@@ -269,7 +264,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
                 key={image.url}
                 role="tab"
                 aria-selected={i === activeImageIndex}
-                aria-label={image.alt || `Imagen ${i + 1}`}
+                aria-label={image.alt || t('productDetail.imageAltFallback', { n: i + 1 })}
                 onClick={() => setActiveImageIndex(i)}
                 onMouseEnter={() => setActiveImageIndex(i)}
                 style={{ 
@@ -303,31 +298,31 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
             {liveCount > 0 ? (
               <>
                 <Stars value={liveRating} size={14} />
-                <span style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>{liveRating} · {liveCount} {liveCount === 1 ? 'reseña' : 'reseñas'}</span>
+                <span style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif' }}>{liveRating} · {t('productDetail.reviewsCount', { count: liveCount })}</span>
               </>
             ) : (
-              <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-40)', letterSpacing: '0.06em' }}>SIN RESEÑAS AÚN</span>
+              <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-40)', letterSpacing: '0.06em' }}>{t('productDetail.noReviewsYet')}</span>
             )}
             {effectiveStock === 0 ? (
               <span style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'oklch(0.5 0.15 30)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 6, height: 6, background: 'oklch(0.5 0.15 30)', borderRadius: 999 }} />
-                AGOTADO
+                {t('productDetail.outOfStock')}
               </span>
             ) : isLowStock(effectiveStock) ? (
               <span style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'var(--coral)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 6, height: 6, background: 'var(--coral)', borderRadius: 999 }} />
-                SOLO QUEDAN {effectiveStock}
+                {t('productDetail.lowStock', { count: effectiveStock })}
               </span>
             ) : (
               <span style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 6, height: 6, background: 'var(--green)', borderRadius: 999 }} />
-                EN STOCK
+                {t('productDetail.inStock')}
               </span>
             )}
           </div>
 
           {purchasesLabel && (
-            <div style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginBottom: 20 }}>{purchasesLabel} compraron el último mes</div>
+            <div style={{ fontSize: 13, color: 'var(--ink-60)', fontFamily: '"Geist", sans-serif', marginBottom: 20 }}>{t('productCard.purchasesLastMonth', { count: purchasesLabel })}</div>
           )}
 
           <p style={{ fontSize: 17, lineHeight: 1.55, color: 'var(--ink-80)', marginBottom: product.variants?.length ? 20 : 32, maxWidth: 480 }}>{product.short}</p>
@@ -340,7 +335,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
                 onClick={onClick}
                 disabled={v.stock === 0}
                 aria-pressed={selected}
-                aria-label={`${v.label}${v.stock === 0 ? ', agotado' : ''}`}
+                aria-label={`${v.label}${v.stock === 0 ? t('productDetail.outOfStockSuffix') : ''}`}
                 style={{
                   padding: isMobile ? '12px 18px' : '8px 16px',
                   minHeight: isMobile ? 44 : undefined,
@@ -365,7 +360,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
                 type="button"
                 key={v.id}
                 onClick={onClick}
-                aria-label={`Color ${v.label}${v.stock === 0 ? ', agotado' : ''}`}
+                aria-label={t('productDetail.colorAria', { label: v.label }) + (v.stock === 0 ? t('productDetail.outOfStockSuffix') : '')}
                 aria-pressed={selected}
                 disabled={v.stock === 0}
                 style={{
@@ -406,7 +401,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
               >
                 {options.map((v) => (
                   <option key={v.id} value={v.id} disabled={v.stock === 0}>
-                    {v.label}{v.stock === 0 ? ' · Sin stock' : ''}
+                    {v.label}{v.stock === 0 ? t('productDetail.noStockOption') : ''}
                   </option>
                 ))}
               </Select>
@@ -414,7 +409,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
 
             if (hasTwoDimensions) {
               const primaryType = primaryVariants[0]?.type;
-              const primaryLabel = VARIANT_TYPE_LABEL[primaryType] ?? primaryType.toUpperCase();
+              const primaryLabel = variantTypeLabel(primaryType);
               const isPrimaryColor = primaryType === 'color';
               return (
                 <div style={{ marginBottom: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -440,10 +435,10 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
                   </div>
                   <div>
                     <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 10 }}>
-                      TAMAÑO{selectedSize && <span style={{ color: 'var(--ink)' }}> · {selectedSize.label.toUpperCase()}</span>}
+                      {variantTypeLabel('size')}{selectedSize && <span style={{ color: 'var(--ink)' }}> · {selectedSize.label.toUpperCase()}</span>}
                     </div>
                     {availableSizeVariantsWithStock.length > DROPDOWN_THRESHOLD ? (
-                      dropdown(availableSizeVariantsWithStock, selectedSize, (v) => setSelectedSize(v), 'TAMAÑO')
+                      dropdown(availableSizeVariantsWithStock, selectedSize, (v) => setSelectedSize(v), variantTypeLabel('size'))
                     ) : (
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         {availableSizeVariantsWithStock.map((v) => pillBtn(v, selectedSize?.id === v.id, () => setSelectedSize(v)))}
@@ -459,11 +454,11 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
             return (
               <div style={{ marginBottom: 28 }}>
                 <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.1em', color: 'var(--ink-60)', marginBottom: 10 }}>
-                  {VARIANT_TYPE_LABEL[variantType] ?? variantType.toUpperCase()}
+                  {variantTypeLabel(variantType)}
                   {selectedVariant && <span style={{ color: 'var(--ink)' }}> · {selectedVariant.label.toUpperCase()}</span>}
                 </div>
                 {!isColor && product.variants!.length > DROPDOWN_THRESHOLD ? (
-                  dropdown(product.variants!, selectedVariant, (v) => { setSelectedVariant(v); setQty(1); }, VARIANT_TYPE_LABEL[variantType] ?? variantType.toUpperCase())
+                  dropdown(product.variants!, selectedVariant, (v) => { setSelectedVariant(v); setQty(1); }, variantTypeLabel(variantType))
                 ) : (
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {product.variants!.map((v) => (isColor ? colorSwatchBtn : pillBtn)(v, selectedVariant?.id === v.id, () => { setSelectedVariant(v); setQty(1); }))}
@@ -474,39 +469,43 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
           })()}
 
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 28, paddingBottom: 28, borderBottom: '1px solid var(--ink-06)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 36 : isTablet ? 42 : 48, color: 'var(--ink)', lineHeight: 1 }}>${effectivePrice.toFixed(2)}</span>
+            <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 36 : isTablet ? 42 : 48, color: 'var(--ink)', lineHeight: 1 }}>{formatCurrency(effectivePrice)}</span>
             {effectivePriceBefore && (
               <>
-                <span style={{ fontSize: 20, color: 'var(--ink-40)', textDecoration: 'line-through' }}>${effectivePriceBefore.toFixed(2)}</span>
-                <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', background: 'var(--coral)', color: 'white', padding: '4px 8px', borderRadius: 999, fontWeight: 600 }}>AHORRA ${(effectivePriceBefore - effectivePrice).toFixed(2)}</span>
+                <span style={{ fontSize: 20, color: 'var(--ink-40)', textDecoration: 'line-through' }}>{formatCurrency(effectivePriceBefore)}</span>
+                <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', background: 'var(--coral)', color: 'white', padding: '4px 8px', borderRadius: 999, fontWeight: 600 }}>{t('productDetail.savings', { amount: formatCurrency(effectivePriceBefore - effectivePrice) })}</span>
               </>
             )}
           </div>
 
           <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', marginBottom: 16, flexDirection: isMobile ? 'column' : 'row' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--ink-20)', borderRadius: 999, padding: 4, opacity: effectiveStock === 0 ? 0.4 : 1, alignSelf: isMobile ? 'flex-start' : undefined }}>
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={qtyBtn(isMobile)} disabled={effectiveStock === 0 || qty <= 1} aria-label="Disminuir cantidad"><Icon name="minus" size={14} /></button>
+              <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={qtyBtn(isMobile)} disabled={effectiveStock === 0 || qty <= 1} aria-label={t('productDetail.decreaseQtyAria')}><Icon name="minus" size={14} /></button>
               <span style={{ width: 40, textAlign: 'center', fontFamily: '"Geist", sans-serif', fontSize: 15 }}>{qty}</span>
-              <button onClick={() => setQty((q) => Math.min(effectiveStock, q + 1))} style={qtyBtn(isMobile)} disabled={effectiveStock === 0 || qty >= effectiveStock} aria-label="Aumentar cantidad"><Icon name="plus" size={14} /></button>
+              <button onClick={() => setQty((q) => Math.min(effectiveStock, q + 1))} style={qtyBtn(isMobile)} disabled={effectiveStock === 0 || qty >= effectiveStock} aria-label={t('productDetail.increaseQtyAria')}><Icon name="plus" size={14} /></button>
             </div>
-            <AnimatedButton variant="primary" size="lg" onClick={handleAdd} disabled={effectiveStock === 0} style={{ flex: 1, width: isMobile ? '100%' : undefined }} text={effectiveStock === 0 ? 'Sin stock' : added ? '✓ Agregado al carrito' : `Agregar al carrito · $${(effectivePrice * qty).toFixed(2)}`} />
+            <AnimatedButton variant="primary" size="lg" onClick={handleAdd} disabled={effectiveStock === 0} style={{ flex: 1, width: isMobile ? '100%' : undefined }} text={effectiveStock === 0 ? t('productDetail.outOfStockButton') : added ? t('productDetail.addedToCart') : t('productDetail.addToCart', { price: formatCurrency(effectivePrice * qty) })} />
           </div>
-          <AnimatedButton aria-label="Comprar ahora con un clic" variant="outline" full onClick={() => onBuyNow(product, qty, cartVariant)} disabled={effectiveStock === 0} text="Comprar ahora con un clic" />
+          <AnimatedButton aria-label={t('productDetail.buyNow')} variant="outline" full onClick={() => onBuyNow(product, qty, cartVariant)} disabled={effectiveStock === 0} text={t('productDetail.buyNow')} />
           <AnimatedButton
-            aria-label="Suscribirme a reposición automática"
+            aria-label={t('productDetail.subscribe')}
             variant="outline"
             full
             icon={<Icon name="repeat" size={14} />}
             onClick={() => (isSignedIn ? onSubscribeModalOpenChange(true) : setShowSignInModal(true))}
             disabled={effectiveStock === 0}
             style={{ marginTop: 8, border: '1px solid var(--ink-12)', color: 'var(--ink-80)' }}
-            text="Suscribirme a reposición automática"
+            text={t('productDetail.subscribe')}
           />
 
           <div style={{ marginTop: 24, background: 'var(--cream-2)', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid var(--ink-06)' }}>
-            {[{ icon: 'truck', t: 'Envío gratis en órdenes sobre $50' }, { icon: 'shield', t: 'Pago seguro con Stripe · 3D Secure' }, { icon: 'check', t: 'Productos verificados por farmacéuticos' }].map((row) => (
-              <div key={row.t} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--ink-80)' }}>
-                <Icon name={row.icon} size={16} /> {row.t}
+            {[
+              { icon: 'truck', label: t('productDetail.trust.freeShipping', { amount: formatCurrency(50) }) },
+              { icon: 'shield', label: t('productDetail.trust.securePayment') },
+              { icon: 'check', label: t('productDetail.trust.verified') },
+            ].map((row) => (
+              <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--ink-80)' }}>
+                <Icon name={row.icon} size={16} /> {row.label}
               </div>
             ))}
           </div>
@@ -514,8 +513,8 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
           {detailTabs.length > 0 && (
           <div style={{ marginTop: 32 }}>
             <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--ink-06)', flexWrap: 'wrap' }}>
-              {detailTabs.map((t) => (
-                <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '14px 4px', marginRight: 28, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, fontFamily: '"Geist", sans-serif', color: tab === t.id ? 'var(--ink)' : 'var(--ink-60)', borderBottom: tab === t.id ? '2px solid var(--ink)' : '2px solid transparent', marginBottom: -1, whiteSpace: 'nowrap' }}>{t.label}</button>
+              {detailTabs.map((tabItem) => (
+                <button key={tabItem.id} onClick={() => setTab(tabItem.id)} style={{ padding: '14px 4px', marginRight: 28, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, fontFamily: '"Geist", sans-serif', color: tab === tabItem.id ? 'var(--ink)' : 'var(--ink-60)', borderBottom: tab === tabItem.id ? '2px solid var(--ink)' : '2px solid transparent', marginBottom: -1, whiteSpace: 'nowrap' }}>{tabItem.label}</button>
               ))}
             </div>
             <div style={{ padding: '20px 0', fontSize: 15, lineHeight: 1.6, color: 'var(--ink-80)', fontFamily: '"Geist", sans-serif', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
@@ -554,7 +553,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
                 </div>
               )}
               {tab.startsWith('extra:') &&
-                renderRichText(product.extraTabs?.find((t) => `extra:${t.id}` === tab)?.content || '')}
+                renderRichText(product.extraTabs?.find((extraTab) => `extra:${extraTab.id}` === tab)?.content || '')}
               {tab === 'warnings' && hasText(product.warnings) && (
                 <div style={{ color: 'var(--coral)' }}>
                   <span>⚠ </span>
@@ -574,8 +573,8 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
       />
 
       <RelatedProductsSection
-        subtitle="También te puede gustar"
-        title={<>Productos <em style={{ color: 'var(--green)' }}>relacionados</em></>}
+        subtitle={t('productDetail.related.subtitle')}
+        title={<>{t('productDetail.related.titlePrefix')} <em style={{ color: 'var(--green)' }}>{t('productDetail.related.titleEmphasis')}</em></>}
         products={related}
         onOpenProduct={onOpenProduct}
         onAdd={onAdd}

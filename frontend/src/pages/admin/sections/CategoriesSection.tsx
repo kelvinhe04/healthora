@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   PageHeader,
@@ -37,6 +38,7 @@ const emptyForm = (): CategoryForm => ({
 });
 
 export function CategoriesSection() {
+  const { t } = useTranslation();
   const getAdminToken = useAdminToken();
   const queryClient = useQueryClient();
   const [modal, setModal] = useState<'create' | 'edit' | null>(null);
@@ -70,7 +72,7 @@ export function CategoriesSection() {
           token,
         );
       }
-      if (!editingId) throw new Error('Categoría no seleccionada');
+      if (!editingId) throw new Error(t('admin.categories.noCategorySelectedError'));
       return api.admin.categories.update(
         editingId,
         {
@@ -132,15 +134,15 @@ export function CategoriesSection() {
     <>
       <PageHeader
         loading={isLoading}
-        kicker={isLoading ? undefined : `Catálogo · ${sorted.length} categorías`}
+        kicker={isLoading ? undefined : t('admin.categories.kicker', { count: sorted.length })}
         title={
           <>
-            Gestión de <em style={{ color: 'var(--green)' }}>categorías</em>
+            {t('admin.categories.titlePrefix')} <em style={{ color: 'var(--green)' }}>{t('admin.categories.titleEmphasis')}</em>
           </>
         }
-        sub="Crea, edita, desactiva y reasigna productos entre categorías sin tocar el seed."
+        sub={t('admin.categories.sub')}
         actions={
-          <AnimatedButton variant="primary" onClick={openCreate} text="Nueva categoría" />
+          <AnimatedButton variant="primary" onClick={openCreate} text={t('admin.categories.newButton')} />
         }
       />
 
@@ -149,11 +151,11 @@ export function CategoriesSection() {
           <table style={tableStyle}>
             <thead>
               <tr>
-                <th style={th}>Categoría</th>
-                <th style={th}>ID</th>
-                <th style={th}>Productos</th>
-                <th style={th}>Estado</th>
-                <th style={th}>Acciones</th>
+                <th style={th}>{t('admin.categories.table.columns.category')}</th>
+                <th style={th}>{t('admin.categories.table.columns.id')}</th>
+                <th style={th}>{t('admin.categories.table.columns.products')}</th>
+                <th style={th}>{t('admin.categories.table.columns.status')}</th>
+                <th style={th}>{t('admin.categories.table.columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -193,7 +195,7 @@ export function CategoriesSection() {
                         color: cat.active === false ? 'var(--ink-60)' : 'var(--green)',
                       }}
                     >
-                      {cat.active === false ? 'Inactiva' : 'Activa'}
+                      {cat.active === false ? t('admin.categories.table.statusInactive') : t('admin.categories.table.statusActive')}
                     </span>
                   </td>
                   <td style={td}>
@@ -209,7 +211,7 @@ export function CategoriesSection() {
                         fontSize: 12,
                       }}
                     >
-                      Editar
+                      {t('admin.categories.table.editButton')}
                     </button>
                   </td>
                 </tr>
@@ -231,23 +233,23 @@ export function CategoriesSection() {
           }}
         >
           <h2 style={{ margin: '0 0 16px', fontFamily: '"Instrument Serif", serif', fontSize: 28 }}>
-            {modal === 'create' ? 'Nueva categoría' : 'Editar categoría'}
+            {modal === 'create' ? t('admin.categories.modal.createTitle') : t('admin.categories.modal.editTitle')}
           </h2>
 
           {modal === 'create' ? (
             <label style={{ display: 'block', marginBottom: 12 }}>
-              <span style={{ fontSize: 12, color: 'var(--ink-60)' }}>ID (slug interno)</span>
+              <span style={{ fontSize: 12, color: 'var(--ink-60)' }}>{t('admin.categories.modal.idLabel')}</span>
               <input
                 value={form.id}
                 onChange={(e) => setForm((f) => ({ ...f, id: e.target.value }))}
-                placeholder="Ej. Vitaminas"
+                placeholder={t('admin.categories.modal.idPlaceholder')}
                 style={{ width: '100%', marginTop: 6, padding: '10px 12px', borderRadius: 12, border: '1px solid var(--ink-06)' }}
               />
             </label>
           ) : null}
 
           <label style={{ display: 'block', marginBottom: 12 }}>
-            <span style={{ fontSize: 12, color: 'var(--ink-60)' }}>Nombre visible</span>
+            <span style={{ fontSize: 12, color: 'var(--ink-60)' }}>{t('admin.categories.modal.labelLabel')}</span>
             <input
               value={form.label}
               onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
@@ -256,7 +258,7 @@ export function CategoriesSection() {
           </label>
 
           <label style={{ display: 'block', marginBottom: 12 }}>
-            <span style={{ fontSize: 12, color: 'var(--ink-60)' }}>Subtítulo</span>
+            <span style={{ fontSize: 12, color: 'var(--ink-60)' }}>{t('admin.categories.modal.subLabel')}</span>
             <input
               value={form.sub}
               onChange={(e) => setForm((f) => ({ ...f, sub: e.target.value }))}
@@ -265,7 +267,7 @@ export function CategoriesSection() {
           </label>
 
           <label style={{ display: 'block', marginBottom: 12 }}>
-            <span style={{ fontSize: 12, color: 'var(--ink-60)' }}>Color (CSS)</span>
+            <span style={{ fontSize: 12, color: 'var(--ink-60)' }}>{t('admin.categories.modal.colorLabel')}</span>
             <input
               value={form.color}
               onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
@@ -276,7 +278,7 @@ export function CategoriesSection() {
           {modal === 'edit' ? (
             <>
               <label style={{ display: 'block', marginBottom: 12 }}>
-                <span style={{ fontSize: 12, color: 'var(--ink-60)' }}>Renombrar ID (reasigna productos)</span>
+                <span style={{ fontSize: 12, color: 'var(--ink-60)' }}>{t('admin.categories.modal.renameIdLabel')}</span>
                 <input
                   value={form.newId}
                   onChange={(e) => setForm((f) => ({ ...f, newId: e.target.value }))}
@@ -290,12 +292,12 @@ export function CategoriesSection() {
                   checked={form.active}
                   onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
                 />
-                <span style={{ fontSize: 13 }}>Categoría activa en la tienda</span>
+                <span style={{ fontSize: 13 }}>{t('admin.categories.modal.activeCheckboxLabel')}</span>
               </label>
 
               <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--ink-06)' }}>
                 <div style={{ fontSize: 12, color: 'var(--ink-60)', marginBottom: 8 }}>
-                  Reasignar todos los productos a otra categoría
+                  {t('admin.categories.modal.reassignSectionLabel')}
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <Select
@@ -303,7 +305,7 @@ export function CategoriesSection() {
                     onChange={(e) => setForm((f) => ({ ...f, reassignTo: e.target.value }))}
                     wrapperStyle={{ flex: 1 }}
                   >
-                    <option value="">Seleccionar destino…</option>
+                    <option value="">{t('admin.categories.modal.reassignPlaceholder')}</option>
                     {sorted
                       .filter((c) => c.id !== editingId)
                       .map((c) => (
@@ -319,7 +321,7 @@ export function CategoriesSection() {
                       if (!editingId || !form.reassignTo) return;
                       reassignMutation.mutate({ fromId: editingId, toCategoryId: form.reassignTo });
                     }}
-                    text={reassignMutation.isPending ? 'Moviendo…' : 'Reasignar'}
+                    text={reassignMutation.isPending ? t('admin.categories.modal.moving') : t('admin.categories.modal.reassign')}
                   />
                 </div>
               </div>
@@ -331,12 +333,12 @@ export function CategoriesSection() {
           ) : null}
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 20 }}>
-            <AnimatedButton variant="secondary" onClick={() => setModal(null)} text="Cancelar" />
+            <AnimatedButton variant="secondary" onClick={() => setModal(null)} text={t('admin.categories.modal.cancel')} />
             <AnimatedButton
               variant="primary"
               disabled={saveMutation.isPending || !form.label.trim() || (modal === 'create' && !form.id.trim())}
               onClick={() => saveMutation.mutate()}
-              text={saveMutation.isPending ? 'Guardando…' : 'Guardar'}
+              text={saveMutation.isPending ? t('admin.categories.modal.saving') : t('admin.categories.modal.save')}
             />
           </div>
         </div>

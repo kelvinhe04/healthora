@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   KpiCard,
@@ -9,10 +10,11 @@ import {
 } from '../../../components/admin';
 import { useAdminPanelContext } from '../AdminPanelContext';
 import { formatPanamaDateTime } from '../../../lib/dates';
-import { productAnalyticsEventLabels } from '../types';
+import { productAnalyticsEventLabelKeys } from '../types';
 import { Select } from '../../../components/shared/Select';
 
 export function ProductAnalyticsSection() {
+  const { t } = useTranslation();
   const {
     showAnalyticsSkeleton,
     analyticsPeriodDays,
@@ -29,20 +31,20 @@ export function ProductAnalyticsSection() {
         kicker="PostHog"
         title={
           <>
-            Analítica de <em style={{ color: 'var(--green)' }}>producto</em>
+            {t('admin.productAnalytics.titlePrefix')} <em style={{ color: 'var(--green)' }}>{t('admin.productAnalytics.titleEmphasis')}</em>
           </>
         }
-        sub="Embudo de checkout y abandono de carrito, sobre el comportamiento real de los usuarios."
+        sub={t('admin.productAnalytics.sub')}
         actions={
           <Select
             value={analyticsPeriodDays}
             onChange={(event) => setAnalyticsPeriodDays(Number(event.target.value))}
-            aria-label="Periodo de analítica"
+            aria-label={t('admin.productAnalytics.periodAria')}
             wrapperStyle={{ width: 'auto' }}
           >
-            <option value={7}>Últimos 7 días</option>
-            <option value={30}>Últimos 30 días</option>
-            <option value={90}>Últimos 90 días</option>
+            <option value={7}>{t('admin.productAnalytics.period.last7')}</option>
+            <option value={30}>{t('admin.productAnalytics.period.last30')}</option>
+            <option value={90}>{t('admin.productAnalytics.period.last90')}</option>
           </Select>
         }
       />
@@ -51,8 +53,8 @@ export function ProductAnalyticsSection() {
         <div style={{ marginBottom: 24 }}>
           <Card pad={20}>
             <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-60)', lineHeight: 1.6 }}>
-              PostHog no está configurado para consultas (<code>POSTHOG_PERSONAL_API_KEY</code> / <code>POSTHOG_PROJECT_ID</code>).
-              El embudo y el abandono de carrito se muestran en cero hasta configurarlos — ver <code>backend/.env.example</code>.
+              {t('admin.productAnalytics.notConfigured.prefix')} (<code>POSTHOG_PERSONAL_API_KEY</code> / <code>POSTHOG_PROJECT_ID</code>).
+              {' '}{t('admin.productAnalytics.notConfigured.body')} <code>backend/.env.example</code>.
             </p>
           </Card>
         </div>
@@ -76,19 +78,19 @@ export function ProductAnalyticsSection() {
       >
         <KpiCard
           mode="dark"
-          label="Checkout iniciado"
+          label={t('admin.productAnalytics.eventLabels.checkoutStarted')}
           value={productAnalytics?.funnel.checkoutStarted ?? '—'}
           loading={showAnalyticsSkeleton}
           animKey="analytics_started"
         />
         <KpiCard
-          label="Checkout completado"
+          label={t('admin.productAnalytics.eventLabels.checkoutCompleted')}
           value={productAnalytics?.funnel.checkoutCompleted ?? '—'}
           loading={showAnalyticsSkeleton}
           animKey="analytics_completed"
         />
         <KpiCard
-          label="Conversión"
+          label={t('admin.productAnalytics.kpi.conversion')}
           value={productAnalytics ? `${productAnalytics.funnel.conversionRate}%` : '—'}
           loading={showAnalyticsSkeleton}
           animKey="analytics_conversion"
@@ -104,13 +106,13 @@ export function ProductAnalyticsSection() {
         }}
       >
         <KpiCard
-          label="Agregado al carrito"
+          label={t('admin.productAnalytics.eventLabels.addedToCart')}
           value={productAnalytics?.cartAbandonment.addedToCart ?? '—'}
           loading={showAnalyticsSkeleton}
           animKey="analytics_added"
         />
         <KpiCard
-          label="Abandono de carrito"
+          label={t('admin.productAnalytics.kpi.cartAbandonment')}
           value={productAnalytics ? `${productAnalytics.cartAbandonment.abandonmentRate}%` : '—'}
           loading={showAnalyticsSkeleton}
           animKey="analytics_abandonment"
@@ -118,8 +120,8 @@ export function ProductAnalyticsSection() {
       </div>
 
       <Card
-        title="Eventos clave recientes"
-        sub="Últimos eventos de embudo capturados por PostHog"
+        title={t('admin.productAnalytics.table.title')}
+        sub={t('admin.productAnalytics.table.sub')}
         pad={0}
         loading={showAnalyticsSkeleton}
       >
@@ -127,25 +129,28 @@ export function ProductAnalyticsSection() {
           <table style={{ ...tableStyle, minWidth: 700 }}>
             <thead>
               <tr>
-                <th scope="col" style={th}>Evento</th>
-                <th scope="col" style={th}>Usuario/sesión</th>
-                <th scope="col" style={th}>Fecha</th>
+                <th scope="col" style={th}>{t('admin.productAnalytics.table.columns.event')}</th>
+                <th scope="col" style={th}>{t('admin.productAnalytics.table.columns.userSession')}</th>
+                <th scope="col" style={th}>{t('admin.productAnalytics.table.columns.date')}</th>
               </tr>
             </thead>
             <tbody>
-              {(productAnalytics?.recentEvents || []).map((event, index) => (
+              {(productAnalytics?.recentEvents || []).map((event, index) => {
+                const labelKey = productAnalyticsEventLabelKeys[event.event];
+                return (
                 <tr key={`${event.distinctId}-${event.timestamp}-${index}`} style={trStyle}>
-                  <td style={td}>{productAnalyticsEventLabels[event.event] ?? event.event}</td>
+                  <td style={td}>{labelKey ? t(`admin.productAnalytics.eventLabels.${labelKey}`) : event.event}</td>
                   <td style={{ ...td, fontFamily: '"JetBrains Mono", monospace', fontSize: 12 }}>{event.distinctId}</td>
                   <td style={{ ...td, fontFamily: '"JetBrains Mono", monospace', fontSize: 12 }}>
                     {formatPanamaDateTime(event.timestamp)}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
               {!productAnalytics?.recentEvents.length && (
                 <tr>
                   <td style={{ ...td, textAlign: 'center', color: 'var(--ink-60)' }} colSpan={3}>
-                    Sin eventos para este periodo.
+                    {t('admin.productAnalytics.table.empty')}
                   </td>
                 </tr>
               )}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 import { useCartStore } from '../store/cartStore';
 import { ModalOverlay } from '../components/shared/ModalOverlay';
@@ -11,6 +12,7 @@ import { useBreakpoint } from '../hooks/useBreakpoint';
 import type { Product, ProductVariant } from '../types';
 import { PRIMARY_VARIANT_TYPES, hasTwoDimensions, pickSizeKeepingCurrent, resolveVariantById, sizesFor } from '../lib/productVariants';
 import { computeItbms } from '../lib/tax';
+import { formatCurrency } from '../lib/currency';
 
 interface CartDrawerProps {
   open: boolean;
@@ -52,6 +54,7 @@ function CartItemVariantEditor({
   currentVariantId: string;
   onChange: (next: ProductVariant) => void;
 }) {
+  const { t } = useTranslation();
   const variants = product.variants;
   if (!variants?.length) return null;
 
@@ -65,7 +68,7 @@ function CartItemVariantEditor({
     return (
       <div style={{ display: 'flex', gap: 6, marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
         <Select
-          aria-label="Cambiar sabor"
+          aria-label={t('cart.variantEditor.changeFlavorAria')}
           value={currentPrimary?.id ?? ''}
           onChange={(e) => {
             const nextPrimary = primaryVariants.find((v) => v.id === e.target.value);
@@ -83,7 +86,7 @@ function CartItemVariantEditor({
           ))}
         </Select>
         <Select
-          aria-label="Cambiar tamaño"
+          aria-label={t('cart.variantEditor.changeSizeAria')}
           value={currentSize?.id ?? ''}
           onChange={(e) => {
             if (!currentPrimary) return;
@@ -97,7 +100,7 @@ function CartItemVariantEditor({
             const stock = currentPrimary?.stockBySize?.[v.id] ?? v.stock;
             return (
               <option key={v.id} value={v.id} disabled={stock <= 0}>
-                {v.label}{stock <= 0 ? ' (agotado)' : ''}
+                {v.label}{stock <= 0 ? t('cart.variantEditor.outOfStockSuffix') : ''}
               </option>
             );
           })}
@@ -109,7 +112,7 @@ function CartItemVariantEditor({
   return (
     <div style={{ marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
       <Select
-        aria-label="Cambiar variante"
+        aria-label={t('cart.variantEditor.changeVariantAria')}
         value={currentVariantId}
         onChange={(e) => {
           const next = variants.find((v) => v.id === e.target.value);
@@ -119,7 +122,7 @@ function CartItemVariantEditor({
       >
         {variants.map((v) => (
           <option key={v.id} value={v.id} disabled={v.stock <= 0}>
-            {v.label}{v.stock <= 0 ? ' (agotado)' : ''}
+            {v.label}{v.stock <= 0 ? t('cart.variantEditor.outOfStockSuffix') : ''}
           </option>
         ))}
       </Select>
@@ -128,6 +131,7 @@ function CartItemVariantEditor({
 }
 
 export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: CartDrawerProps) {
+  const { t } = useTranslation();
   const { items, update, remove, clear, changeVariant, freeSample, setFreeSample } = useCartStore();
   const navigate = useNavigate();
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
@@ -198,18 +202,18 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
       >
         <div style={{ padding: `24px ${drawerPad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--ink-06)' }}>
           <div>
-            <div id="cart-drawer-title" style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Tu carrito</div>
-            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'var(--ink-60)', letterSpacing: '0.08em' }} aria-live="polite">{items.length} {items.length === 1 ? 'ARTÍCULO' : 'ARTÍCULOS'}</div>
+            <div id="cart-drawer-title" style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, letterSpacing: '-0.02em', color: 'var(--ink)' }}>{t('cart.title')}</div>
+            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'var(--ink-60)', letterSpacing: '0.08em' }} aria-live="polite">{t('cart.itemCount', { count: items.length })}</div>
           </div>
-          <button ref={closeButtonRef} onClick={onClose} style={iconBtn} aria-label="Cerrar carrito"><Icon name="x" /></button>
+          <button ref={closeButtonRef} onClick={onClose} style={iconBtn} aria-label={t('cart.closeAria')}><Icon name="x" /></button>
         </div>
 
         {items.length === 0 ? (
           <div style={{ padding: 48, textAlign: 'center', color: 'var(--ink-60)', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
             <Icon name="bag" size={32} />
-            <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, color: 'var(--ink)' }}>Tu carrito está vacío</div>
-            <p style={{ fontSize: 14, maxWidth: 280 }}>Agrega productos al carrito para empezar tu compra.</p>
-            <AnimatedButton variant="primary" onClick={() => { onClose(); window.history.pushState({}, '', '/?view=catalog'); window.dispatchEvent(new PopStateEvent('popstate')); }} text="Explorar productos" />
+            <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 28, color: 'var(--ink)' }}>{t('cart.emptyTitle')}</div>
+            <p style={{ fontSize: 14, maxWidth: 280 }}>{t('cart.emptyBody')}</p>
+            <AnimatedButton variant="primary" onClick={() => { onClose(); window.history.pushState({}, '', '/?view=catalog'); window.dispatchEvent(new PopStateEvent('popstate')); }} text={t('cart.exploreProducts')} />
           </div>
         ) : (
           <>
@@ -218,7 +222,7 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
                 <button
                   type="button"
                   onClick={() => setConfirmClearOpen(true)}
-                  aria-label="Vaciar carrito"
+                  aria-label={t('cart.clearCart')}
                   style={{
                     border: '1px solid #e8a5a0',
                     background: '#fef2f1',
@@ -234,7 +238,7 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
                     boxShadow: '0 10px 24px -18px rgba(0,0,0,0.28)',
                   }}
                 >
-                  Vaciar carrito
+                  {t('cart.clearCart')}
                 </button>
               </div>
               {items.map((it) => {
@@ -274,7 +278,7 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
                             onClick={() => setEditingKey(isEditing ? null : itemKey)}
                             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--green)', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', textDecoration: 'underline' }}
                           >
-                            {isEditing ? 'CERRAR' : 'CAMBIAR'}
+                            {isEditing ? t('cart.variantEditor.close') : t('cart.variantEditor.change')}
                           </button>
                         ) : null}
                       </div>
@@ -291,14 +295,14 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
                       <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--ink-20)', borderRadius: 999 }}>
-                        <button onClick={() => update(it.product.id, it.qty - 1, it.variant?.id)} style={qtyBtn} aria-label={`Reducir cantidad de ${it.product.name}`}><Icon name="minus" size={12} /></button>
-                        <span style={{ fontSize: 13, minWidth: 24, textAlign: 'center' }} aria-label={`Cantidad: ${it.qty}`}>{it.qty}</span>
-                        <button onClick={() => update(it.product.id, it.qty + 1, it.variant?.id)} style={qtyBtn} aria-label={`Aumentar cantidad de ${it.product.name}`}><Icon name="plus" size={12} /></button>
+                        <button onClick={() => update(it.product.id, it.qty - 1, it.variant?.id)} style={qtyBtn} aria-label={t('cart.reduceQtyAria', { name: it.product.name })}><Icon name="minus" size={12} /></button>
+                        <span style={{ fontSize: 13, minWidth: 24, textAlign: 'center' }} aria-label={t('cart.qtyAria', { qty: it.qty })}>{it.qty}</span>
+                        <button onClick={() => update(it.product.id, it.qty + 1, it.variant?.id)} style={qtyBtn} aria-label={t('cart.increaseQtyAria', { name: it.product.name })}><Icon name="plus" size={12} /></button>
                       </div>
-                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20 }}>${(effectivePrice * it.qty).toFixed(2)}</div>
+                      <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20 }}>{formatCurrency(effectivePrice * it.qty)}</div>
                     </div>
                   </div>
-                  <button onClick={() => remove(it.product.id, it.variant?.id)} style={{ ...iconBtn, alignSelf: 'start' }} aria-label="Eliminar"><Icon name="x" size={16} /></button>
+                  <button onClick={() => remove(it.product.id, it.variant?.id)} style={{ ...iconBtn, alignSelf: 'start' }} aria-label={t('cart.removeAria')}><Icon name="x" size={16} /></button>
                 </div>
               );})}
 
@@ -306,9 +310,9 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
               <div style={{ padding: '16px 0 8px' }}>
                 {!qualifiesForSample ? (
                   <div style={{ background: 'var(--cream-2)', border: '1px solid var(--ink-06)', borderRadius: 14, padding: '14px 16px' }}>
-                    <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>Club Healthora</div>
+                    <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>{t('cart.club.title')}</div>
                     <div style={{ fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', marginBottom: 10, lineHeight: 1.4 }}>
-                      Agrega <strong>${(200 - subtotal).toFixed(2)}</strong> más para recibir 1 muestra gratis
+                      {t('cart.club.addMorePrefix')} <strong>{formatCurrency(200 - subtotal)}</strong> {t('cart.club.addMoreSuffix')}
                     </div>
                     <div style={{ height: 4, background: 'var(--ink-10)', borderRadius: 999, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${Math.min(100, (subtotal / 200) * 100)}%`, background: 'var(--green)', borderRadius: 999, transition: 'width 400ms ease' }} />
@@ -316,7 +320,7 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
                   </div>
                 ) : (
                   <div style={{ background: 'color-mix(in srgb, var(--green) 8%, var(--cream))', border: '1px solid color-mix(in srgb, var(--green) 25%, transparent)', borderRadius: 14, padding: '14px 16px' }}>
-                    <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--green)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>✦ Club Healthora · Muestra gratis</div>
+                    <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--green)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>{t('cart.club.freeSampleKicker')}</div>
                     {freeSample ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <div style={{ width: 48, height: 54, background: 'white', borderRadius: 8, flexShrink: 0, overflow: 'hidden', border: '1px solid var(--ink-06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -334,19 +338,19 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
                           onClick={() => { onClose(); onOpenSamplePicker(); }}
                           style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--green)', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '0.06em', flexShrink: 0, textDecoration: 'underline' }}
                         >
-                          CAMBIAR
+                          {t('cart.variantEditor.change')}
                         </button>
                       </div>
                     ) : (
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
                         <div style={{ fontSize: 13, fontFamily: '"Geist", sans-serif', color: 'var(--ink)', lineHeight: 1.4 }}>
-                          ¡Elige <strong>1 muestra gratis</strong>!
+                          {t('cart.club.chooseFreeSamplePrefix')} <strong>{t('cart.club.chooseFreeSampleBold')}</strong>!
                         </div>
                         <button
                           onClick={() => { onClose(); onOpenSamplePicker(); }}
                           style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'white', background: 'var(--green)', border: 'none', cursor: 'pointer', letterSpacing: '0.06em', padding: '8px 14px', borderRadius: 999, flexShrink: 0, fontWeight: 700 }}
                         >
-                          ELEGIR →
+                          {t('cart.club.chooseButton')}
                         </button>
                       </div>
                     )}
@@ -356,20 +360,20 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
             </div>
 
             <div style={{ padding: `10px ${drawerPad} 14px`, borderTop: '1px solid var(--ink-06)', background: 'var(--cream-2)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}><span>{t('cart.summary.subtotal')}</span><span>{formatCurrency(subtotal)}</span></div>
               {freeSample && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--green)' }}><span>Muestra gratis</span><span>$0.00</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--green)' }}><span>{t('cart.summary.freeSample')}</span><span>{formatCurrency(0)}</span></div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}><span>Envío</span><span>{shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}><span>ITBMS</span><span>${tax.toFixed(2)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}><span>{t('cart.summary.shipping')}</span><span>{shipping === 0 ? t('cart.summary.free') : formatCurrency(shipping)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', fontSize: 12, fontFamily: '"Geist", sans-serif', color: 'var(--ink-60)' }}><span>{t('cart.summary.tax')}</span><span>{formatCurrency(tax)}</span></div>
               <div style={{ height: 1, background: 'var(--ink-06)', margin: '8px 0' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 0', marginBottom: 10 }}>
-                <strong style={{ fontSize: 14, fontFamily: '"Geist", sans-serif' }}>Total</strong>
-                <strong style={{ fontSize: 20, fontFamily: '"Instrument Serif", serif' }}>${total.toFixed(2)}</strong>
+                <strong style={{ fontSize: 14, fontFamily: '"Geist", sans-serif' }}>{t('cart.summary.total')}</strong>
+                <strong style={{ fontSize: 20, fontFamily: '"Instrument Serif", serif' }}>{formatCurrency(total)}</strong>
               </div>
-              <AnimatedButton variant="primary" size="lg" full onClick={onCheckout} icon={<Icon name="arrow-right" size={14} />} text="Ir a checkout" />
+              <AnimatedButton variant="primary" size="lg" full onClick={onCheckout} icon={<Icon name="arrow-right" size={14} />} text={t('cart.checkoutButton')} />
               <div style={{ textAlign: 'center', fontSize: 10, color: 'var(--ink-60)', fontFamily: '"JetBrains Mono", monospace', marginTop: 8, letterSpacing: '0.06em' }}>
-                <Icon name="lock" size={10} /> PAGO SEGURO CON STRIPE
+                <Icon name="lock" size={10} /> {t('cart.securePayment')}
               </div>
             </div>
           </>
@@ -390,18 +394,18 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
             >
               <div style={{ padding: '22px 24px 18px', borderBottom: '1px solid var(--ink-06)' }}>
                 <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 8 }}>
-                  Confirmación
+                  {t('cart.confirmClear.kicker')}
                 </div>
                 <div style={{ fontFamily: '"Instrument Serif", serif', fontSize: 32, lineHeight: 1, letterSpacing: '-0.03em', color: 'var(--ink)' }}>
-                  Vaciar <em style={{ color: 'var(--green)' }}>carrito</em>
+                  {t('cart.confirmClear.headingPrefix')} <em style={{ color: 'var(--green)' }}>{t('cart.confirmClear.headingEmphasis')}</em>
                 </div>
                 <p style={{ margin: '12px 0 0', fontSize: 14, lineHeight: 1.55, color: 'var(--ink-80)', fontFamily: '"Geist", sans-serif' }}>
-                  Se eliminarán todos los productos del carrito. Esta acción no se puede deshacer.
+                  {t('cart.confirmClear.body')}
                 </p>
               </div>
               <div style={{ padding: 24, display: 'flex', gap: 10, justifyContent: 'flex-end', background: 'var(--cream-2)' }}>
-                <AnimatedButton variant="outline" onClick={() => setConfirmClearOpen(false)} text="Cancelar" />
-                <AnimatedButton variant="primary" onClick={handleConfirmClear} text="Sí, vaciar todo" />
+                <AnimatedButton variant="outline" onClick={() => setConfirmClearOpen(false)} text={t('cart.confirmClear.cancel')} />
+                <AnimatedButton variant="primary" onClick={handleConfirmClear} text={t('cart.confirmClear.confirm')} />
               </div>
             </div>
         </ModalOverlay>
