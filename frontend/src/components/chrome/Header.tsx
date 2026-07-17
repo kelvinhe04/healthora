@@ -1260,10 +1260,9 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             width: isMobile ? 44 : 34,
             height: isMobile ? 44 : 34,
             borderRadius: 999,
-            border: "1px solid var(--ink-06)",
             justifyContent: "center",
             color: "var(--ink)",
-            transition: "background 200ms, border-color 200ms",
+            transition: "background 200ms",
           }}
           aria-label={
             theme === "dark" ? t("header.theme.toLight") : t("header.theme.toDark")
