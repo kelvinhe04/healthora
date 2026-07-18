@@ -198,6 +198,11 @@ export function CartDrawer({ open, onClose, onCheckout, onOpenSamplePicker }: Ca
         role="dialog"
         aria-modal="true"
         aria-labelledby="cart-drawer-title"
+        aria-hidden={!open}
+        // Sin esto, el drawer sigue en el árbol de accesibilidad (rol dialog + foco alcanzable)
+        // aunque esté fuera de pantalla via transform - un lector de pantalla o Tab podía
+        // "entrar" a un carrito visualmente cerrado.
+        inert={!open ? true : undefined}
         style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: `min(460px, 100vw)`, background: 'var(--cream)', zIndex: 101, transform: open ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 280ms cubic-bezier(.2,.8,.2,1)', display: 'flex', flexDirection: 'column' }}
       >
         <div style={{ padding: `24px ${drawerPad}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--ink-06)' }}>

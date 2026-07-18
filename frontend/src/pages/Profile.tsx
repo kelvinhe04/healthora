@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth, useClerk, useUser } from '@clerk/clerk-react';
+import { useClerk, useUser } from '@clerk/clerk-react';
+import { useEffectiveToken } from '../hooks/useEffectiveToken';
+import { getE2EUser } from '../lib/e2eAuth';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { loadStripe } from '@stripe/stripe-js';
 import { CardElement, Elements, useElements, useStripe } from '@stripe/react-stripe-js';
@@ -30,7 +32,7 @@ const STATUS_COLORS: Record<SubscriptionStatus, { bg: string; fg: string }> = {
 
 function SubscriptionsSection() {
   const { t } = useTranslation();
-  const { getToken } = useAuth();
+  const getToken = useEffectiveToken();
   const queryClient = useQueryClient();
 
   const subscriptionsQuery = useQuery({
@@ -150,7 +152,7 @@ function AddCardForm({ onSaved, onCancel }: { onSaved: () => void; onCancel: () 
   const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
-  const { getToken } = useAuth();
+  const getToken = useEffectiveToken();
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -204,7 +206,7 @@ function AddCardForm({ onSaved, onCancel }: { onSaved: () => void; onCancel: () 
 
 function PaymentMethodsSection() {
   const { t } = useTranslation();
-  const { getToken } = useAuth();
+  const getToken = useEffectiveToken();
   const queryClient = useQueryClient();
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -345,7 +347,7 @@ const NOTIFICATION_PREFERENCES_DEFAULTS: NotificationPreferences = {
 
 function NotificationPreferencesSection() {
   const { t } = useTranslation();
-  const { getToken } = useAuth();
+  const getToken = useEffectiveToken();
   const queryClient = useQueryClient();
 
   const [error, setError] = useState('');
@@ -448,7 +450,8 @@ export function Profile({ onBack }: ProfileProps) {
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
   const isSmall = isMobile || bp === 'tablet';
-  const { user } = useUser();
+  const { user: clerkUser } = useUser();
+  const user = getE2EUser() ?? clerkUser;
   const { openUserProfile } = useClerk();
 
   return (

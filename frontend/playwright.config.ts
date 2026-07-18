@@ -11,6 +11,10 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:5173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // Todos los specs usan copy en español (i18next-browser-languagedetector cae al locale del
+    // navegador si no hay 'healthora-lang' en localStorage) - sin esto, un runner con locale
+    // distinto a es-* (ej. CI en en-US) renderiza todo en inglés y rompe cada selector de texto.
+    locale: 'es-PA',
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },

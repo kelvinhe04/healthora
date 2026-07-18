@@ -13,8 +13,8 @@ test.describe('Carrito (HU-004, HU-005)', () => {
     await expect(addButton).toBeVisible();
     await addButton.click();
 
-    const cartButton = page.getByRole('button', { name: 'Carrito' });
-    await expect(cartButton.locator('span')).toHaveText(/[1-9]/);
+    const cartButton = page.getByRole('button', { name: 'Carrito', exact: true });
+    await expect(cartButton.locator('span').first()).toHaveText(/[1-9]/);
   });
 });
 

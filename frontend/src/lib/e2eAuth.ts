@@ -1,4 +1,5 @@
 const E2E_AUTH_STORAGE_KEY = 'healthora-e2e-auth';
+const E2E_ADMIN_STORAGE_KEY = 'healthora-e2e-admin';
 
 export type E2EUser = {
   id: string;
@@ -27,4 +28,9 @@ export function getE2EUser(): E2EUser | null {
 
 export function getE2EAuthToken(): string | null {
   return getE2EUser() ? 'e2e-token' : null;
+}
+
+export function isE2EAdmin(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem(E2E_ADMIN_STORAGE_KEY) === '1';
 }

@@ -936,8 +936,12 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
           {navLinks.map((link) => (
             <a
               key={link.anchor}
+              href={`/#${link.anchor}`}
               className="nav-link"
-              onClick={() => scrollToSection(link.anchor)}
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection(link.anchor);
+              }}
             >
               {link.label}
             </a>
@@ -1521,8 +1525,12 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               {navLinks.map((link) => (
                 <a
                   key={link.anchor}
+                  href={`/#${link.anchor}`}
                   className="mobile-nav-link"
-                  onClick={() => scrollToSection(link.anchor)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection(link.anchor);
+                  }}
                 >
                   {link.label}
                 </a>

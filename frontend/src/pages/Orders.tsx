@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@clerk/clerk-react';
 import { useOrders } from '../hooks/useOrders';
+import { useEffectiveToken } from '../hooks/useEffectiveToken';
 import { Icon } from '../components/shared/Icon';
 import { Select } from '../components/shared/Select';
 import { api } from '../lib/api';
@@ -177,7 +177,7 @@ function returnFlowNote(t: TFunction, isStoreDropoff: boolean): string {
 
 function ReturnPanel({ order, onSelectOrder }: { order: Order; onSelectOrder: (id: string) => void }) {
   const { t } = useTranslation();
-  const { getToken } = useAuth();
+  const getToken = useEffectiveToken();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
@@ -821,7 +821,7 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
   const ordersQuery = useOrders();
   const { data: orders, isLoading } = ordersQuery;
   const queryClient = useQueryClient();
-  const { getToken } = useAuth();
+  const getToken = useEffectiveToken();
 
   // Shares the ['returns'] cache key with ReturnPanel below - a return in progress is more
   // relevant than the plain fulfillment status, so both the sidebar card and the detail header
