@@ -32,13 +32,6 @@ async function enableE2EAuth(page: Page) {
 }
 
 async function mockApi(page: Page, checkoutStatus: 'ok' | 'error' = 'ok') {
-  await page.route('https://checkout.stripe.test/**', async (route) => {
-    await route.fulfill({
-      contentType: 'text/html',
-      body: '<!doctype html><title>Stripe Checkout E2E</title><h1>Stripe Checkout E2E</h1>',
-    });
-  });
-
   await page.route('**/api/products**', async (route) => {
     const url = route.request().url();
     if (url.match(/\/api\/products\/count$/)) {
@@ -76,7 +69,25 @@ async function mockApi(page: Page, checkoutStatus: 'ok' | 'error' = 'ok') {
     await route.fulfill({ json: [] });
   });
 
-  await page.route('**/api/checkout/session', async (route) => {
+  await page.route('**/api/account/loyalty**', async (route) => {
+    await route.fulfill({ json: { balance: 0, pointValueCents: 0 } });
+  });
+
+  await page.route('**/api/account/payment-methods**', async (route) => {
+    await route.fulfill({ json: [] });
+  });
+
+  await page.route('**/api/promotions/active**', async (route) => {
+    await route.fulfill({ json: [] });
+  });
+
+  // El checkout se paga con Stripe Elements embebido (PaymentIntent), no con un redirect a
+  // Stripe Checkout hospedado - `stripe.confirmCardPayment` llama directo a la API real de
+  // Stripe con el clientSecret, así que un clientSecret falso solo sirve para el camino de
+  // error (el error se lanza antes de llegar a Stripe). El camino feliz completo, incluyendo
+  // la confirmación real del pago, ya está cubierto por
+  // `backend/src/tests/payment-flow.integration.test.ts`.
+  await page.route('**/api/checkout/payment-intent', async (route) => {
     if (checkoutStatus === 'error') {
       await route.fulfill({
         status: 400,
@@ -86,7 +97,7 @@ async function mockApi(page: Page, checkoutStatus: 'ok' | 'error' = 'ok') {
     }
 
     await route.fulfill({
-      json: { url: 'https://checkout.stripe.test/session/e2e-ok' },
+      json: { clientSecret: 'pi_e2e_fake_secret_e2e', paymentIntentId: 'pi_e2e_fake' },
     });
   });
 }
@@ -113,15 +124,19 @@ test.describe('Checkout end-to-end (HU-072)', () => {
     await enableE2EAuth(page);
   });
 
-  test('camino feliz: agrega producto, completa checkout y redirige a Stripe', async ({ page }) => {
+  test('camino feliz: agrega producto, completa direccion y llega al paso de pago', async ({ page }) => {
     await mockApi(page);
     await addProductAndGoToCheckout(page);
 
     await fillAddress(page);
     await page.getByRole('button', { name: /Continuar al pago/ }).click();
-    await page.getByRole('button', { name: /Pagar/ }).click();
 
-    await expect(page).toHaveURL('https://checkout.stripe.test/session/e2e-ok');
+    // El formulario de tarjeta (Stripe Elements) carga en un iframe real de js.stripe.com -
+    // suficiente verificar que el paso de pago se alcanza (el iframe de Stripe monta) y el boton
+    // "Pagar" queda habilitado; la confirmacion real contra Stripe la cubre el test de
+    // integracion del backend.
+    await expect(page.locator('iframe[name^="__privateStripeFrame"]').first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('button', { name: /Pagar/ })).toBeEnabled();
   });
 
   test('camino de error: bloquea checkout sin direccion completa', async ({ page }) => {
@@ -142,5 +157,28 @@ test.describe('Checkout end-to-end (HU-072)', () => {
     await page.getByRole('button', { name: /Pagar/ }).click();
 
     await expect(page.getByRole('alert')).toContainText('No se pudo crear la sesion de pago');
+  });
+
+  test('aplica un cupón de descuento en el checkout (HU-049)', async ({ page }) => {
+    await mockApi(page);
+    await page.route('**/api/promotions/validate', async (route) => {
+      await route.fulfill({
+        json: {
+          valid: true,
+          code: 'BIENVENIDA',
+          label: 'Bienvenida',
+          discountAmount: 4.8,
+          subtotal: 32,
+          discountedSubtotal: 27.2,
+        },
+      });
+    });
+    await addProductAndGoToCheckout(page);
+    await fillAddress(page);
+
+    await page.getByLabel('Código de descuento').fill('BIENVENIDA');
+    await page.getByRole('button', { name: 'Aplicar' }).click();
+
+    await expect(page.getByText(/ahorras/)).toBeVisible({ timeout: 10_000 });
   });
 });

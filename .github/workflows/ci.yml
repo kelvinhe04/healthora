@@ -38,3 +38,40 @@ jobs:
           # build falla porque ClerkProvider revienta al montarse sin publishableKey.
           VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.VITE_CLERK_PUBLISHABLE_KEY }}
       - run: bun run lint
+
+  e2e:
+    runs-on: ubuntu-latest
+    # Requiere secrets de un entorno de prueba/staging (nunca producción) en Settings > Secrets
+    # and variables > Actions: MONGODB_URI, CLERK_SECRET_KEY, STRIPE_SECRET_KEY,
+    # VITE_STRIPE_PUBLISHABLE_KEY (no sensible, pero no está como variable todavía),
+    # MCP_SERVICE_TOKEN. VITE_CLERK_PUBLISHABLE_KEY ya existe como variable del repo.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+        working-directory: backend
+      - run: bun install --frozen-lockfile
+        working-directory: frontend
+      - run: bunx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: bun run test:e2e
+        working-directory: frontend
+        env:
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+          # Leídas por `bun run dev` del backend (playwright.config.ts levanta ambos servidores).
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB_NAME: healthora
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          MCP_SERVICE_TOKEN: ${{ secrets.MCP_SERVICE_TOKEN }}
+          FRONTEND_URL: http://localhost:5173
+          APP_ENV: staging
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7

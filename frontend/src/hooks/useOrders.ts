@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@clerk/clerk-react';
 import { api } from '../lib/api';
+import { useEffectiveToken } from './useEffectiveToken';
 
 export function useOrders() {
-  const { getToken } = useAuth();
+  const getToken = useEffectiveToken();
   return useQuery({
     queryKey: ['orders'],
     queryFn: async () => {
@@ -17,7 +17,7 @@ export function useOrders() {
 }
 
 export function useOrderBySession(sessionId: string) {
-  const { getToken } = useAuth();
+  const getToken = useEffectiveToken();
   return useQuery({
     queryKey: ['order-session', sessionId],
     queryFn: async () => {
@@ -31,7 +31,7 @@ export function useOrderBySession(sessionId: string) {
 }
 
 export function useOrderByPaymentIntent(paymentIntentId: string) {
-  const { getToken } = useAuth();
+  const getToken = useEffectiveToken();
   return useQuery({
     queryKey: ['order-payment-intent', paymentIntentId],
     queryFn: async () => {

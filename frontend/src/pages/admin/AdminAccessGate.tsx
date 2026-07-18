@@ -4,20 +4,28 @@ import { useTranslation } from 'react-i18next';
 import { AnimatedButton } from '../../components/shared/AnimatedButton';
 import { Icon } from '../../components/shared/Icon';
 import { api } from '../../lib/api';
+import { getE2EUser, isE2EAdmin } from '../../lib/e2eAuth';
 import { AdminPanel } from './AdminPanel';
 import { useAdminToken } from './hooks/useAdminToken';
 
 export function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
   const { t } = useTranslation();
   const getAdminToken = useAdminToken();
-  const { isSignedIn } = useUser();
+  const { isSignedIn: clerkIsSignedIn } = useUser();
   const { openSignIn } = useClerk();
+  const e2eAdmin = isE2EAdmin() && Boolean(getE2EUser());
+  const isSignedIn = Boolean(clerkIsSignedIn) || e2eAdmin;
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-access"],
     queryFn: async () => api.admin.access(await getAdminToken()),
     retry: false,
-    enabled: isSignedIn,
+    enabled: isSignedIn && !e2eAdmin,
   });
+  // 'owner' (no solo 'admin') para que las pruebas e2e alcancen tambien controles gated a
+  // isOwnerViewer (ej. cambio de rol en Clientes).
+  const effectiveData = e2eAdmin ? { allowed: true, role: 'owner' } : data;
+  const effectiveError = e2eAdmin ? null : error;
+  const effectiveLoading = e2eAdmin ? false : isLoading;
 
   if (!isSignedIn) {
     return (
@@ -83,7 +91,7 @@ export function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
     );
   }
 
-  if (isLoading) {
+  if (effectiveLoading) {
     return (
       <main
         style={{
@@ -98,7 +106,7 @@ export function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
     );
   }
 
-  if (error || !data?.allowed) {
+  if (effectiveError || !effectiveData?.allowed) {
     return (
       <main
         style={{
@@ -164,5 +172,5 @@ export function AdminAccessGate({ onGoToStore }: { onGoToStore: () => void }) {
     );
   }
 
-  return <AdminPanel access={data} onGoToStore={onGoToStore} />;
+  return <AdminPanel access={effectiveData} onGoToStore={onGoToStore} />;
 }
