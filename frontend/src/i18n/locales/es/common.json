@@ -709,6 +709,12 @@
     "addButton": "Agregar",
     "outOfStockButton": "Sin stock"
   },
+  "similarCompare": {
+    "kicker": "Comparar con productos similares",
+    "headingPrefix": "Compara con",
+    "headingEmphasis": "opciones parecidas",
+    "thisProduct": "Este producto"
+  },
   "samplePicker": {
     "backToCart": "Volver al carrito",
     "kicker": "Club Healthora · Muestra gratis",

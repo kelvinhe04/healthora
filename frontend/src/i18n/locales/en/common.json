@@ -709,6 +709,12 @@
     "addButton": "Add",
     "outOfStockButton": "Out of stock"
   },
+  "similarCompare": {
+    "kicker": "Compare with similar products",
+    "headingPrefix": "Compare with",
+    "headingEmphasis": "similar options",
+    "thisProduct": "This product"
+  },
   "samplePicker": {
     "backToCart": "Back to cart",
     "kicker": "Healthora Club · Free sample",
