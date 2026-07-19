@@ -68,7 +68,7 @@ function paymentPillInfos(order: { paymentStatus?: string; replacesOrderId?: str
 }
 
 export function OrdersSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const getAdminToken = useAdminToken();
   const orderShippingMethodLabels = {
     '': t('admin.shippingMethod.all'),
@@ -132,7 +132,8 @@ export function OrdersSection() {
                     type="button"
                     onClick={async () => {
                       const token = await getAdminToken();
-                      const csv = await api.admin.exportOrdersCsv(token);
+                      const lang = i18n.language?.startsWith('en') ? 'en' : 'es';
+                      const csv = await api.admin.exportOrdersCsv(token, { lang });
                       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
                       const url = URL.createObjectURL(blob);
                       const link = document.createElement('a');

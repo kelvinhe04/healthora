@@ -407,12 +407,13 @@ export const api = {
       ),
     exportOrdersCsv: async (
       token: string,
-      filters: { paymentStatus?: string; fulfillmentStatus?: string; limit?: number } = {},
+      filters: { paymentStatus?: string; fulfillmentStatus?: string; limit?: number; lang?: string } = {},
     ) => {
       const params = new URLSearchParams();
       if (filters.paymentStatus) params.set("paymentStatus", filters.paymentStatus);
       if (filters.fulfillmentStatus) params.set("fulfillmentStatus", filters.fulfillmentStatus);
       if (filters.limit) params.set("limit", String(filters.limit));
+      if (filters.lang) params.set("lang", filters.lang);
       const query = params.toString();
       const res = await fetch(`${BASE}/admin/orders/export.csv${query ? `?${query}` : ""}`, {
         headers: { Authorization: `Bearer ${token}` },

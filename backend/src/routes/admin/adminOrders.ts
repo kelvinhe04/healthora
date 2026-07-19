@@ -27,6 +27,10 @@ const adminOrdersQuerySchema = z.object({
   fulfillmentStatus: fulfillmentStatusSchema.optional(),
 });
 
+const csvExportQuerySchema = adminOrdersQuerySchema.extend({
+  lang: z.enum(['es', 'en']).optional(),
+});
+
 const adminOrderStatusSchema = z.object({
   paymentStatus: paymentStatusSchema.optional(),
   fulfillmentStatus: fulfillmentStatusSchema.optional(),
@@ -102,7 +106,7 @@ export const adminOrdersRouter = new Hono<AppEnv>()
     return c.json(orders.map((order) => normalizeOrder(order)));
   })
   .get('/export.csv', async (c) => {
-    const parsedQuery = parseQuery(c, adminOrdersQuerySchema);
+    const parsedQuery = parseQuery(c, csvExportQuerySchema);
     if (!parsedQuery.success) return parsedQuery.response;
 
     const limitRaw = c.req.query('limit');
@@ -111,6 +115,7 @@ export const adminOrdersRouter = new Hono<AppEnv>()
       paymentStatus: parsedQuery.data.paymentStatus,
       fulfillmentStatus: parsedQuery.data.fulfillmentStatus,
       limit: Number.isFinite(limit) ? limit : undefined,
+      lang: parsedQuery.data.lang,
     });
     return new Response(csv, {
       headers: {

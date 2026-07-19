@@ -5,6 +5,38 @@ type ExportFilters = {
   paymentStatus?: string;
   fulfillmentStatus?: string;
   limit?: number;
+  lang?: 'es' | 'en';
+};
+
+const UTF8_BOM = '﻿';
+
+const CSV_HEADERS: Record<'es' | 'en', string[]> = {
+  es: [
+    'idPedido',
+    'fechaCreacion',
+    'cliente',
+    'emailCliente',
+    'total',
+    'estadoPago',
+    'estadoEnvio',
+    'estado',
+    'metodoEnvio',
+    'cantidadItems',
+    'resumenItems',
+  ],
+  en: [
+    'orderId',
+    'createdAt',
+    'customerName',
+    'customerEmail',
+    'total',
+    'paymentStatus',
+    'fulfillmentStatus',
+    'status',
+    'shippingMethod',
+    'itemCount',
+    'itemsSummary',
+  ],
 };
 
 function escapeCsv(value: unknown): string {
@@ -21,19 +53,8 @@ export async function buildOrdersCsv(filters: ExportFilters = {}): Promise<strin
   const limit = Math.min(filters.limit ?? 500, 2000);
   const orders = await Order.find(filter).sort({ createdAt: -1 }).limit(limit).lean();
 
-  const header = [
-    'orderId',
-    'createdAt',
-    'customerName',
-    'customerEmail',
-    'total',
-    'paymentStatus',
-    'fulfillmentStatus',
-    'status',
-    'shippingMethod',
-    'itemCount',
-    'itemsSummary',
-  ].join(',');
+  const lang = filters.lang === 'es' ? 'es' : 'en';
+  const header = CSV_HEADERS[lang].join(',');
 
   const rows = orders.map((order) => {
     const normalized = normalizeOrder(order);
@@ -55,5 +76,5 @@ export async function buildOrdersCsv(filters: ExportFilters = {}): Promise<strin
     ].join(',');
   });
 
-  return [header, ...rows].join('\n');
+  return UTF8_BOM + [header, ...rows].join('\n');
 }
