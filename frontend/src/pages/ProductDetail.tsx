@@ -242,10 +242,10 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: isSmall ? '1fr' : '1.1fr 1fr', gap: isSmall ? 24 : 48, alignItems: 'start' }}>
-        <div>
+        <div style={{ minWidth: 0 }}>
           <div 
             onClick={() => setIsZoomed(true)}
-            style={{ background: hasRealImages ? 'white' : product.color, borderRadius: 28, padding: 40, minHeight: 620, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', border: hasRealImages ? '1px solid var(--ink-06)' : 'none', cursor: 'zoom-in' }}
+            style={{ background: hasRealImages ? 'white' : product.color, borderRadius: 28, padding: isMobile ? 20 : 40, minHeight: isMobile ? undefined : 620, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', border: hasRealImages ? '1px solid var(--ink-06)' : 'none', cursor: 'zoom-in' }}
           >
             <div style={{ position: 'absolute', top: 24, left: 24, fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--ink-60)', letterSpacing: '0.12em', zIndex: 2 }}>{String(activeImageIndex + 1).padStart(2, '0')} / 04 · PRODUCT SHOT</div>
             <div key={activeImage} style={{ animation: 'fadeInImage 0.4s ease-out', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -256,7 +256,19 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
           <div
             role="tablist"
             aria-label={t('productDetail.thumbnailsAria')}
-            style={{ display: 'flex', gap: 10, marginTop: 12 }}
+            style={{
+              display: 'flex',
+              gap: 10,
+              marginTop: 12,
+              // En mobile las miniaturas (ancho fijo via ProductImage 'xs') no encogen lo
+              // suficiente para 4+ items en una fila angosta - se hace scroll horizontal en vez
+              // de dejar que se corten fuera de vista sin forma de llegar a ellas.
+              // El padding evita que el borde de selección de la miniatura activa quede pegado
+              // al límite del contenedor con scroll y se vea recortado.
+              ...(isMobile
+                ? { overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', padding: '3px 2px' }
+                : {}),
+            }}
           >
             {gallery.map((image, i) => (
               <button
@@ -267,9 +279,10 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
                 aria-label={image.alt || t('productDetail.imageAltFallback', { n: i + 1 })}
                 onClick={() => setActiveImageIndex(i)}
                 onMouseEnter={() => setActiveImageIndex(i)}
-                style={{ 
-                  flex: 1, 
-                  borderRadius: 14, 
+                style={{
+                  flex: isMobile ? '0 0 84px' : 1,
+                  scrollSnapAlign: isMobile ? 'start' : undefined,
+                  borderRadius: 14,
                   padding: 16, 
                   background: hasRealImages ? 'white' : product.color, 
                   border: i === activeImageIndex ? '2px solid var(--ink)' : hasRealImages ? '1px solid var(--ink-06)' : '2px solid transparent', 
@@ -290,9 +303,9 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
           </div>
         </div>
 
-        <div style={{ paddingTop: 8 }}>
+        <div style={{ paddingTop: 8, minWidth: 0 }}>
           <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 12 }}>{product.brand} · {product.category}</div>
-          <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 42 : isTablet ? 52 : 64, lineHeight: 0.98, letterSpacing: '-0.035em', margin: '0 0 20px', color: 'var(--ink)', fontWeight: 400 }}>{product.name}{selectedVariant ? ` · ${selectedVariant.label}` : ''}{hasTwoDimensions && selectedSize ? ` · ${selectedSize.label}` : ''}</h1>
+          <h1 style={{ fontFamily: '"Instrument Serif", serif', fontSize: isMobile ? 42 : isTablet ? 52 : 64, lineHeight: 0.98, letterSpacing: '-0.035em', margin: '0 0 20px', color: 'var(--ink)', fontWeight: 400, overflowWrap: 'break-word' }}>{product.name}{selectedVariant ? ` · ${selectedVariant.label}` : ''}{hasTwoDimensions && selectedSize ? ` · ${selectedSize.label}` : ''}</h1>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
             {liveCount > 0 ? (
@@ -478,13 +491,13 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', marginBottom: 16, flexDirection: isMobile ? 'column' : 'row' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--ink-20)', borderRadius: 999, padding: 4, opacity: effectiveStock === 0 ? 0.4 : 1, alignSelf: isMobile ? 'flex-start' : undefined }}>
+          <div style={{ display: 'flex', gap: isMobile ? 8 : 12, alignItems: 'stretch', marginBottom: 16, flexDirection: 'row' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--ink-20)', borderRadius: 999, padding: 4, opacity: effectiveStock === 0 ? 0.4 : 1, flexShrink: 0 }}>
               <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={qtyBtn(isMobile)} disabled={effectiveStock === 0 || qty <= 1} aria-label={t('productDetail.decreaseQtyAria')}><Icon name="minus" size={14} /></button>
-              <span style={{ width: 40, textAlign: 'center', fontFamily: '"Geist", sans-serif', fontSize: 15 }}>{qty}</span>
+              <span style={{ width: isMobile ? 24 : 40, textAlign: 'center', fontFamily: '"Geist", sans-serif', fontSize: 15 }}>{qty}</span>
               <button onClick={() => setQty((q) => Math.min(effectiveStock, q + 1))} style={qtyBtn(isMobile)} disabled={effectiveStock === 0 || qty >= effectiveStock} aria-label={t('productDetail.increaseQtyAria')}><Icon name="plus" size={14} /></button>
             </div>
-            <AnimatedButton variant="primary" size="lg" onClick={handleAdd} disabled={effectiveStock === 0} style={{ flex: 1, width: isMobile ? '100%' : undefined }} text={effectiveStock === 0 ? t('productDetail.outOfStockButton') : added ? t('productDetail.addedToCart') : t('productDetail.addToCart', { price: formatCurrency(effectivePrice * qty) })} />
+            <AnimatedButton variant="primary" size={isMobile ? 'sm' : 'lg'} onClick={handleAdd} disabled={effectiveStock === 0} style={{ flex: 1, minWidth: 0 }} text={effectiveStock === 0 ? t('productDetail.outOfStockButton') : added ? t('productDetail.addedToCart') : t('productDetail.addToCart', { price: formatCurrency(effectivePrice * qty) })} />
           </div>
           <AnimatedButton aria-label={t('productDetail.buyNow')} variant="outline" full onClick={() => onBuyNow(product, qty, cartVariant)} disabled={effectiveStock === 0} text={t('productDetail.buyNow')} />
           <AnimatedButton

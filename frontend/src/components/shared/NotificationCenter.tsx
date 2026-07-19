@@ -5,6 +5,7 @@ import { useNotificationLink } from '../../hooks/useNotificationLink';
 import { notificationPresentation, relativeTime } from '../../lib/notificationPresentation';
 import type { AppNotification } from '../../types';
 import { Icon } from './Icon';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 interface NotificationCenterProps {
   /** Style for the trigger button, so it matches the surrounding header icon cluster. */
@@ -21,6 +22,7 @@ interface NotificationCenterProps {
  * shared inbox cache that the WebSocket also feeds, so it updates in real time and after a reload. */
 export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'right' }: NotificationCenterProps) {
   const { t } = useTranslation();
+  const isMobile = useBreakpoint() === 'mobile';
   const { notifications, unread, markRead, markAllRead, dismiss, clearAll } = useNotifications();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -77,8 +79,13 @@ export function NotificationCenter({ buttonStyle, iconSize = 18, panelAlign = 'r
           <span
             style={{
               position: 'absolute',
-              top: -4,
-              right: -6,
+              // El icono de campana tiene mas "tinta" cerca del borde superior de su propio
+              // viewBox que el de bolsa (carrito) - con el mismo offset que ese badge, este se veia
+              // flotando desalineado en vez de posado sobre la campana. Solo en mobile: en
+              // tablet/desktop el boton tiene mas aire alrededor y el offset original ya se veia bien
+              // (y aqui empujaba el badge encima del icono vecino).
+              top: isMobile ? 0 : -4,
+              right: isMobile ? -4 : -6,
               background: 'var(--coral)',
               color: 'white',
               fontSize: 10,

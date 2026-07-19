@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useProducts } from '../hooks/useProducts';
+import { useReviews } from '../hooks/useReviews';
 import { useCompareStore } from '../store/compareStore';
 import { ProductImage } from '../components/shared/ProductImage';
 import { Stars } from '../components/shared/Stars';
@@ -16,6 +17,25 @@ interface CompareProps {
   onBack: () => void;
   onOpenProduct: (p: Product) => void;
   onAdd: (p: Product) => void;
+}
+
+/** product.rating es un campo estatico del seed (siempre 0) - el rating real vive en la
+ * coleccion de reseñas, igual que en ProductCard. Necesita su propio componente porque
+ * useReviews es un hook y no puede llamarse dentro de la funcion `render` de una fila. */
+function CompareRatingCell({ product }: { product: Product }) {
+  const { t } = useTranslation();
+  const { data: reviews } = useReviews(product.id);
+  const count = reviews?.length ?? 0;
+  const rating = count > 0 ? Math.round((reviews!.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10 : 0;
+  if (count === 0) {
+    return <span style={{ color: 'var(--ink-40)' }}>{t('productDetail.noReviewsYet')}</span>;
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <Stars value={rating} size={12} />
+      <span style={{ fontSize: 12, color: 'var(--ink-60)' }}>{rating} · {count}</span>
+    </div>
+  );
 }
 
 export function Compare({ onBack, onOpenProduct, onAdd }: CompareProps) {
@@ -58,7 +78,11 @@ export function Compare({ onBack, onOpenProduct, onAdd }: CompareProps) {
           <AnimatedButton variant="primary" onClick={onBack} text={t('compare.goToCatalog')} />
         </div>
       ) : (
-        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ position: 'relative' }}>
+          {isSmall && products.length > 1 && (
+            <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: 32, pointerEvents: 'none', background: 'linear-gradient(to right, transparent, var(--cream) 85%)', zIndex: 1 }} />
+          )}
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehaviorX: 'contain', touchAction: 'pan-x pan-y' }}>
           <table style={{ width: '100%', minWidth: isSmall ? 640 : undefined, borderCollapse: 'separate', borderSpacing: 0 }}>
             <thead>
               <tr>
@@ -83,7 +107,7 @@ export function Compare({ onBack, onOpenProduct, onAdd }: CompareProps) {
                 { label: t('compare.rows.brand'), render: (p: Product) => p.brand },
                 { label: t('compare.rows.category'), render: (p: Product) => p.category },
                 { label: t('compare.rows.price'), render: (p: Product) => formatCurrency(getEffectivePrice(p)) },
-                { label: t('compare.rows.rating'), render: (p: Product) => <Stars value={p.rating} size={12} /> },
+                { label: t('compare.rows.rating'), render: (p: Product) => <CompareRatingCell product={p} /> },
                 {
                   label: t('compare.rows.stock'),
                   render: (p: Product) =>
@@ -116,6 +140,7 @@ export function Compare({ onBack, onOpenProduct, onAdd }: CompareProps) {
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

@@ -59,7 +59,10 @@ export function ProductRow({ products, onOpenProduct, onAdd, sectionKey, loading
 
   const arrowStyle = (side: 'left' | 'right', enabled: boolean): CSSProperties => ({
     position: 'absolute',
-    top: '35%',
+    // Centrado en el area de la imagen (ProductImage 'tile' = 280px fijo), no en toda la altura
+    // de la tarjeta - al 50% de la tarjeta completa quedaba tapando los botones de wishlist/comparar
+    // que viven al fondo de la imagen.
+    top: 140,
     [side]: isMobile ? -8 : -20,
     transform: 'translateY(-50%)',
     width: isMobile ? 38 : 44,

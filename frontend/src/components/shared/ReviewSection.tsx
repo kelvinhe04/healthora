@@ -9,6 +9,7 @@ import { AnimatedButton } from './AnimatedButton';
 import { Icon } from './Icon';
 import { SignInModal } from '../chrome/SignInModal';
 import { useReviews } from '../../hooks/useReviews';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { api } from '../../lib/api';
 import type { Review } from '../../types';
 
@@ -283,6 +284,8 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const { data: reviews = [], isLoading } = useReviews(productId);
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
 
   const [showForm, setShowForm] = useState(false);
   const [formRating, setFormRating] = useState(0);
@@ -454,8 +457,8 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '260px 1fr',
-          gap: 56,
+          gridTemplateColumns: isMobile ? '1fr' : '260px 1fr',
+          gap: isMobile ? 24 : 56,
           alignItems: 'start',
         }}
       >
@@ -466,7 +469,7 @@ export function ReviewSection({ productId }: ReviewSectionProps) {
             border: '1px solid var(--ink-06)',
             borderRadius: 24,
             padding: '32px 28px',
-            position: 'sticky',
+            position: isMobile ? 'static' : 'sticky',
             top: 24,
           }}
         >

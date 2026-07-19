@@ -18,6 +18,7 @@ import { NotificationCenter } from "../shared/NotificationCenter";
 import { LanguageSwitcher } from "../shared/LanguageSwitcher";
 import { formatPanamaDayMonth } from "../../lib/dates";
 import { formatCurrency } from "../../lib/currency";
+import { useBreakpoint } from "../../hooks/useBreakpoint";
 
 let _adminSessionId = "";
 const _shownSkeletons = new Set<string>();
@@ -277,6 +278,8 @@ const LineChartInner = ({
   height?: number;
 }) => {
   const { t } = useTranslation();
+  const bp = useBreakpoint();
+  const isMobile = bp === "mobile";
   const chartData = useMemo(() => {
     if (!data) return [];
     return data.map((d) => ({
@@ -284,6 +287,8 @@ const LineChartInner = ({
       revenue: d.revenue ?? d.value ?? 0,
     }));
   }, [data]);
+  // En mobile no caben todas las etiquetas del eje X sin solaparse - se muestra ~1 de cada 5.
+  const tickInterval = isMobile ? Math.max(0, Math.ceil(chartData.length / 6) - 1) : 0;
 
   if (!chartData.length)
     return (
@@ -315,7 +320,7 @@ const LineChartInner = ({
           fontFamily="JetBrains Mono"
           stroke="var(--ink-60)"
           tickLine={false}
-          interval={0}
+          interval={tickInterval}
           height={50}
           tick={{ fill: "var(--ink)" }}
         />
@@ -639,6 +644,8 @@ export function KpiCard({
   animKey,
 }: KpiCardProps) {
   const isDark = mode === "dark";
+  const bp = useBreakpoint();
+  const valueFontSize = bp === "mobile" ? 30 : 52;
   const rawNum =
     typeof value === "number"
       ? value
@@ -704,10 +711,11 @@ export function KpiCard({
           <div
             style={{
               fontFamily: '"Instrument Serif", serif',
-              fontSize: 52,
+              fontSize: valueFontSize,
               letterSpacing: "-0.035em",
               lineHeight: 0.95,
               fontWeight: 400,
+              wordBreak: "break-word",
             }}
           >
             {value ?? "—"}
@@ -798,10 +806,11 @@ export function KpiCard({
         <div
           style={{
             fontFamily: '"Instrument Serif", serif',
-            fontSize: 52,
+            fontSize: valueFontSize,
             letterSpacing: "-0.035em",
             lineHeight: 0.95,
             fontWeight: 400,
+            wordBreak: "break-word",
           }}
         >
           {displayValue}
@@ -874,17 +883,23 @@ export function PageHeader({
   actions,
   loading = false,
 }: PageHeaderProps) {
+  const bp = useBreakpoint();
+  // En tablet el titulo (serif grande) deja muy poco ancho al lado para los botones de accion,
+  // que terminaban envueltos en 2 filas aunque la pagina tuviera espacio de sobra debajo -
+  // se apilan igual que en mobile para darles todo el ancho.
+  const stackHeader = bp !== "desktop";
   return (
     <div
       style={{
         display: "flex",
-        alignItems: "end",
+        flexDirection: stackHeader ? "column" : "row",
+        alignItems: stackHeader ? "stretch" : "end",
         justifyContent: "space-between",
         marginBottom: 32,
-        gap: 24,
+        gap: stackHeader ? 16 : 24,
       }}
     >
-      <div style={{ width: "100%" }}>
+      <div style={{ width: stackHeader ? "100%" : undefined, flex: stackHeader ? undefined : "1 1 0%", minWidth: 0 }}>
         {/* Kicker */}
         {loading ? (
           <Skeleton height={12} width="180px" borderRadius={4} />
@@ -945,7 +960,7 @@ export function PageHeader({
           )
         )}
       </div>
-      {actions && <div style={{ display: "flex", gap: 8 }}>{actions}</div>}
+      {actions && <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flexShrink: 0 }}>{actions}</div>}
     </div>
   );
 }

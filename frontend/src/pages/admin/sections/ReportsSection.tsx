@@ -65,7 +65,7 @@ export function ReportsSection() {
         }
         sub={t('admin.reports.sub')}
         actions={
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'nowrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--ink-60)', whiteSpace: 'nowrap' }}>
               {t('admin.reports.filters.from')}
               <input

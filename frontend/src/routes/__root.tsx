@@ -111,7 +111,7 @@ function RootDocument({ children }: { children: ReactNode }) {
           }
           * { box-sizing: border-box; }
           html, body { margin: 0; padding: 0; background: var(--cream); color: var(--ink); font-family: 'Geist', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
-          body { overflow-x: hidden; }
+          html, body { overflow-x: hidden; }
           h1, h2, h3, h4 { margin: 0; }
           button { font-family: inherit; }
           a { color: inherit; }

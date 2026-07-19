@@ -944,6 +944,8 @@ export function Catalog({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
+                flexWrap: isMobile ? "wrap" : "nowrap",
+                gap: isMobile ? 12 : 16,
                 marginTop: 28,
                 paddingTop: 20,
                 borderTop: "1px solid var(--ink-06)",
