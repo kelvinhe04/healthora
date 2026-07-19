@@ -113,7 +113,7 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
           <button
             onClick={() => goToPage(page - 1)}
             disabled={page === 1}
-            style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid var(--ink-12)', background: 'var(--cream)', cursor: page === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: page === 1 ? 'var(--ink-30)' : 'var(--ink)', transition: 'all 150ms' }}
+            style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid var(--ink-12)', background: 'var(--cream-2)', cursor: page === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: page === 1 ? 'var(--ink-30)' : 'var(--ink)', transition: 'all 150ms' }}
           >
             <Icon name="arrow-left" size={14} />
           </button>
@@ -133,7 +133,7 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
               <button
                 key={n}
                 onClick={() => goToPage(n)}
-                style={{ width: 36, height: 36, borderRadius: 999, border: isActive ? 'none' : '1px solid var(--ink-12)', background: isActive ? 'var(--green)' : 'var(--cream)', color: isActive ? 'white' : 'var(--ink)', cursor: 'pointer', fontSize: 13, fontFamily: '"JetBrains Mono", monospace', fontWeight: isActive ? 700 : 400, transition: 'all 150ms' }}
+                style={{ width: 36, height: 36, borderRadius: 999, border: isActive ? 'none' : '1px solid var(--ink-12)', background: isActive ? 'var(--green)' : 'var(--cream-2)', color: isActive ? 'white' : 'var(--ink)', cursor: 'pointer', fontSize: 13, fontFamily: '"JetBrains Mono", monospace', fontWeight: isActive ? 700 : 400, transition: 'all 150ms' }}
               >
                 {n}
               </button>
@@ -143,7 +143,7 @@ export function SamplePicker({ onBack, onConfirm }: SamplePickerProps) {
           <button
             onClick={() => goToPage(page + 1)}
             disabled={page === totalPages}
-            style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid var(--ink-12)', background: 'var(--cream)', cursor: page === totalPages ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: page === totalPages ? 'var(--ink-30)' : 'var(--ink)', transition: 'all 150ms' }}
+            style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid var(--ink-12)', background: 'var(--cream-2)', cursor: page === totalPages ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: page === totalPages ? 'var(--ink-30)' : 'var(--ink)', transition: 'all 150ms' }}
           >
             <Icon name="arrow-right" size={14} />
           </button>
