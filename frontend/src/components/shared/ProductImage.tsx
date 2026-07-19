@@ -40,8 +40,13 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
   if (rawSrc) {
     const imagePadding = size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
     const objectFit = 'contain';
+    // 'lg' es el hero de ProductDetail: ancho fijo (520px) desborda su contenedor en mobile/tablet
+    // (recortado por el overflow:hidden del padre) - se vuelve fluido con el mismo aspect ratio.
+    const sizeStyle = size === 'lg'
+      ? { width: '100%', maxWidth: s.w, aspectRatio: `${s.w} / ${s.h}`, height: 'auto' }
+      : { width: s.w, height: s.h };
     return (
-      <div style={{ width: s.w, height: s.h, background: 'white', borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box' }}>
+      <div style={{ ...sizeStyle, background: 'white', borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box' }}>
         <img
           src={imgSrc || rawSrc}
           srcSet={srcSet}

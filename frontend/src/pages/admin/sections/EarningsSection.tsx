@@ -17,6 +17,8 @@ export function EarningsSection() {
   const {
   showEarningsSkeleton,
   earnings,
+  isMobile,
+  isTablet,
   } = useAdminPanelContext();
 
   return (
@@ -34,8 +36,8 @@ export function EarningsSection() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: 16,
+                gridTemplateColumns: isMobile || isTablet ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
+                gap: isMobile ? 12 : 16,
                 marginBottom: 24,
               }}
             >

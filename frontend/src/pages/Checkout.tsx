@@ -655,8 +655,9 @@ export function Checkout({ items, onBack }: CheckoutProps) {
           </section>
         </div>
 
-        {/* Order Summary */}
-        <aside style={{ position: isSmall ? 'static' : 'sticky', top: 100, background: 'var(--cream-2)', borderRadius: 24, padding: 28, border: '1px solid var(--ink-06)', marginBottom: isSmall ? 40 : 0 }}>
+        {/* Order Summary - primero en mobile (arriba del formulario de pago) para que el
+            cliente vea que esta pagando y pueda aplicar su cupon antes de llegar a esa seccion */}
+        <aside style={{ order: isMobile ? -1 : undefined, position: isSmall ? 'static' : 'sticky', top: 100, background: 'var(--cream-2)', borderRadius: 24, padding: 28, border: '1px solid var(--ink-06)', marginBottom: isSmall ? 40 : 0 }}>
           <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--ink-60)', marginBottom: 14 }}>{t('checkout.summary.title')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 28, marginBottom: 18 }}>
             {items.map((it) => (

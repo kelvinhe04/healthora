@@ -148,7 +148,7 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
       }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      style={{ cursor: 'pointer', background: 'var(--cream)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--ink-06)', transition: 'all 220ms cubic-bezier(.2,.8,.2,1)', transform: hover ? 'translateY(-2px)' : 'none', boxShadow: hover ? '0 18px 40px -20px rgba(0,0,0,0.15)' : '0 2px 6px -4px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}
+      style={{ cursor: 'pointer', background: 'var(--cream)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--ink-06)', transition: 'all 220ms cubic-bezier(.2,.8,.2,1)', transform: hover ? 'translateY(-2px)' : 'none', boxShadow: hover ? '0 18px 40px -20px rgba(0,0,0,0.15)' : '0 2px 6px -4px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box' }}
     >
       <div style={{ position: 'relative', overflow: 'hidden' }}>
         <div style={{ transform: hover ? 'scale(1.08)' : 'scale(1)', transition: 'transform 400ms cubic-bezier(.2,.8,.2,1)', width: '100%', height: '100%' }}>
@@ -207,10 +207,12 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
             aria-pressed={isCompared}
             style={{
               position: 'absolute',
-              top: 12,
-              right: product.stock > 0 && effectivePriceBefore ? 52 : 12,
-              width: 40,
-              height: 40,
+              bottom: 12,
+              // Al lado del corazón de wishlist (no arriba, donde el badge de descuento lo empujaba
+              // de lugar según el producto y desalineaba el ícono entre tarjetas de la misma fila).
+              left: 12 + (isMobile ? 32 : 40) + 8,
+              width: isMobile ? 32 : 40,
+              height: isMobile ? 32 : 40,
               borderRadius: 999,
               border: isCompared ? '2px solid var(--green)' : '1px solid var(--ink-12)',
               background: isCompared ? 'color-mix(in oklab, var(--green) 12%, white)' : 'rgba(255,255,255,0.92)',
@@ -240,8 +242,8 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
               position: 'absolute',
               bottom: 12,
               left: 12,
-              width: 40,
-              height: 40,
+              width: isMobile ? 32 : 40,
+              height: isMobile ? 32 : 40,
               borderRadius: 999,
               border: isWishlisted ? '2px solid var(--coral)' : '1px solid var(--ink-12)',
               background: isWishlisted ? 'color-mix(in oklab, var(--coral) 12%, white)' : 'rgba(255,255,255,0.92)',

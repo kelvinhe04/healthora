@@ -20,6 +20,7 @@ export function ProductAnalyticsSection() {
     analyticsPeriodDays,
     setAnalyticsPeriodDays,
     productAnalytics,
+    isMobile,
   } = useAdminPanelContext();
 
   const configured = productAnalytics?.configured ?? false;
@@ -71,8 +72,8 @@ export function ProductAnalyticsSection() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 16,
+          gridTemplateColumns: isMobile ? 'repeat(1, 1fr)' : 'repeat(3, 1fr)',
+          gap: isMobile ? 12 : 16,
           marginBottom: 16,
         }}
       >

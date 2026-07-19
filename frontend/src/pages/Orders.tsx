@@ -65,6 +65,8 @@ const formatShort = formatPanamaMedium;
 
 function FulfillmentTimeline({ status, shippingMethod }: { status: string; shippingMethod?: Order['shippingMethod'] }) {
   const { t } = useTranslation();
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
 
   if (status === 'cancelled') {
     return (
@@ -110,7 +112,7 @@ function FulfillmentTimeline({ status, shippingMethod }: { status: string; shipp
                   : <div style={{ width: 8, height: 8, borderRadius: 999, background: active ? 'var(--lime)' : 'var(--ink-20)' }} />
                 }
               </div>
-              <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', textTransform: 'uppercase', color: active ? 'var(--ink)' : done ? 'var(--green)' : 'var(--ink-40)', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: isMobile ? 9 : 10, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em', textTransform: 'uppercase', color: active ? 'var(--ink)' : done ? 'var(--green)' : 'var(--ink-40)', whiteSpace: isMobile ? 'normal' : 'nowrap', textAlign: 'center', maxWidth: isMobile ? 56 : undefined }}>
                 {step.label}
               </span>
             </div>
@@ -532,7 +534,7 @@ function OrderDetail({
   const divider = <div style={{ height: 1, background: 'var(--ink-06)', margin: '20px 0' }} />;
 
   return (
-    <div style={{ background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 24, padding: isMobileInner ? 20 : 32, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 24, padding: isMobileInner ? 20 : 32, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
       {/* Order header */}
       <div style={{ marginBottom: 6 }}>
@@ -994,10 +996,10 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
             ))}
           </div>
           {/* Detail skeleton */}
-          <div style={{ background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 24, padding: 32, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
-              <div><Skeleton height={12} width={180} borderRadius={4} /><div style={{ marginTop: 8 }}><Skeleton height={36} width={280} borderRadius={8} /></div></div>
-              <Skeleton height={24} width={90} borderRadius={8} />
+          <div style={{ background: 'var(--cream)', border: '1px solid var(--ink-06)', borderRadius: 24, padding: stackLayout ? 20 : 32, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 24 }}>
+              <div style={{ minWidth: 0 }}><Skeleton height={12} width={stackLayout ? 120 : 180} borderRadius={4} /><div style={{ marginTop: 8 }}><Skeleton height={36} width={stackLayout ? 160 : 280} borderRadius={8} /></div></div>
+              <Skeleton height={24} width={70} borderRadius={8} style={{ flexShrink: 0 }} />
             </div>
             <Skeleton height={100} borderRadius={12} style={{ marginBottom: 20 }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -1040,7 +1042,7 @@ export function Orders({ onBack, initialOrderId }: OrdersProps) {
         <div style={{ display: 'grid', gridTemplateColumns: stackLayout ? '1fr' : '260px 1fr', gap: 16, alignItems: 'start' }}>
 
           {/* Order list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, ...(stackLayout ? {} : { position: 'sticky', top: 88, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto', paddingRight: 4 }) }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, ...(stackLayout ? {} : { position: 'sticky', top: 88, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto', paddingRight: 4 }) }}>
             {sorted.map(order => {
               const s = STATUS_CFG[order.status] ?? STATUS_CFG.paid;
               const isActive = order._id === selected?._id;

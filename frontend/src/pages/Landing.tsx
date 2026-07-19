@@ -754,10 +754,10 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               
               // Centered fan composition for mobile at the bottom
               const mobilePoses = [
-                { x: 20, y: 30, rotate: 6, scale: 0.55, z: 4, delay: 0, anim: 'heroFloatA' },
-                { x: -70, y: 40, rotate: -14, scale: 0.48, z: 3, delay: 0.1, anim: 'heroFloatB' },
-                { x: 90, y: 45, rotate: 18, scale: 0.45, z: 2, delay: 0.2, anim: 'heroFloatC' },
-                { x: -130, y: 60, rotate: -24, scale: 0.38, z: 1, delay: 0.3, anim: 'heroFloatA' }
+                { x: 41, y: 30, rotate: 6, scale: 0.55, z: 4, delay: 0, anim: 'heroFloatA' },
+                { x: -49, y: 40, rotate: -14, scale: 0.48, z: 3, delay: 0.1, anim: 'heroFloatB' },
+                { x: 111, y: 45, rotate: 18, scale: 0.45, z: 2, delay: 0.2, anim: 'heroFloatC' },
+                { x: -109, y: 60, rotate: -24, scale: 0.38, z: 1, delay: 0.3, anim: 'heroFloatA' }
               ];
               
               const pose = isMobile ? mobilePoses[index] : basePoses[index];
@@ -1056,7 +1056,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               ))
             : NEEDS.map((n, i) => (
                 <StaggerItem key={n.id} index={i}>
-                  <div onClick={() => onNav('catalog', { category: n.category })} style={{ background: 'var(--cream-2)', borderRadius: 20, padding: '28px 24px', cursor: 'pointer', border: '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', gap: 40, minHeight: 200, transition: 'all 220ms' }}
+                  <div onClick={() => onNav('catalog', { category: n.category })} style={{ background: 'var(--cream-2)', borderRadius: 20, padding: '28px 24px', cursor: 'pointer', border: '1px solid var(--ink-06)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 40, minHeight: 200, height: '100%', boxSizing: 'border-box', transition: 'all 220ms' }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--green)'; e.currentTarget.style.color = 'var(--cream)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--cream-2)'; e.currentTarget.style.color = 'var(--ink)'; }}>
                     <div style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}>

@@ -859,8 +859,8 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
       >
         <div
           style={{
-            width: 28,
-            height: 28,
+            width: isMobile ? 24 : 28,
+            height: isMobile ? 24 : 28,
             borderRadius: 999,
             background: "var(--green)",
             display: "flex",
@@ -868,7 +868,8 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             justifyContent: "center",
             color: "var(--lime)",
             fontFamily: '"Instrument Serif", serif',
-            fontSize: 18,
+            fontSize: isMobile ? 15 : 18,
+            flexShrink: 0,
           }}
         >
           h
@@ -876,9 +877,10 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
         <span
           style={{
             fontFamily: '"Instrument Serif", serif',
-            fontSize: 24,
+            fontSize: isMobile ? 18 : 24,
             letterSpacing: "-0.02em",
             color: "var(--ink)",
+            whiteSpace: "nowrap",
           }}
         >
           Healthora
@@ -918,6 +920,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
           cursor: pointer;
           border-bottom: 1px solid var(--ink-06);
           letter-spacing: -0.02em;
+          text-decoration: none;
         }
         .mobile-nav-link:last-child { border-bottom: none; }
       `}</style>
@@ -1075,13 +1078,13 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
       <div
         style={{
           display: "flex",
-          gap: isMobile ? 10 : 18,
+          gap: isMobile ? 8 : 18,
           color: "var(--ink)",
           alignItems: "center",
           marginLeft: isMobile ? "auto" : undefined,
         }}
       >
-        <LanguageSwitcher buttonStyle={headerIconBtn} />
+        {!isMobile && <LanguageSwitcher buttonStyle={headerIconBtn} />}
 
         <div ref={userMenuRef} style={{ position: "relative" }}>
           <button
@@ -1112,8 +1115,8 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               style={{
                 position: "absolute",
                 top: "100%",
-                right: 0,
-                left: "auto",
+                right: isMobile ? "auto" : 0,
+                left: isMobile ? 0 : "auto",
                 transform: "none",
                 marginTop: 8,
                 background: "var(--cream)",
@@ -1121,6 +1124,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                 borderRadius: 12,
                 padding: 8,
                 minWidth: 220,
+                maxWidth: "calc(100vw - 32px)",
                 boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
                 zIndex: 100,
               }}
@@ -1254,34 +1258,36 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
           )}
         </div>
 
-        <button
-          onClick={(e) => {
-            const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-            toggleThemeWithTransition(left + width / 2, top + height / 2);
-          }}
-          style={{
-            ...headerIconBtn,
-            width: isMobile ? 44 : 34,
-            height: isMobile ? 44 : 34,
-            borderRadius: 999,
-            justifyContent: "center",
-            color: "var(--ink)",
-            transition: "background 200ms",
-          }}
-          aria-label={
-            theme === "dark" ? t("header.theme.toLight") : t("header.theme.toDark")
-          }
-        >
-          <span
-            style={{
-              display: "flex",
-              transition: "transform 400ms cubic-bezier(.34,1.56,.64,1)",
-              transform: theme === "dark" ? "rotate(180deg)" : "rotate(0deg)",
+        {!isMobile && (
+          <button
+            onClick={(e) => {
+              const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+              toggleThemeWithTransition(left + width / 2, top + height / 2);
             }}
+            style={{
+              ...headerIconBtn,
+              width: 34,
+              height: 34,
+              borderRadius: 999,
+              justifyContent: "center",
+              color: "var(--ink)",
+              transition: "background 200ms",
+            }}
+            aria-label={
+              theme === "dark" ? t("header.theme.toLight") : t("header.theme.toDark")
+            }
           >
-            <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
-          </span>
-        </button>
+            <span
+              style={{
+                display: "flex",
+                transition: "transform 400ms cubic-bezier(.34,1.56,.64,1)",
+                transform: theme === "dark" ? "rotate(180deg)" : "rotate(0deg)",
+              }}
+            >
+              <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
+            </span>
+          </button>
+        )}
 
         {isSignedIn && <NotificationCenter buttonStyle={headerIconBtn} />}
 
@@ -1295,8 +1301,8 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             <span
               style={{
                 position: "absolute",
-                top: -4,
-                right: -6,
+                top: isMobile ? 0 : -4,
+                right: isMobile ? -4 : -6,
                 background: "var(--coral)",
                 color: "white",
                 fontSize: 10,
@@ -1315,35 +1321,37 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
           )}
         </button>
 
-        <button
-          style={{ ...headerIconBtn, position: "relative" }}
-          onClick={() => onNav("compare")}
-          aria-label={t("header.compareAria")}
-        >
-          <Icon name="layers" />
-          {compareCount > 0 && (
-            <span
-              style={{
-                position: "absolute",
-                top: -4,
-                right: -6,
-                background: "var(--ink)",
-                color: "var(--cream)",
-                fontSize: 10,
-                fontFamily: '"JetBrains Mono", monospace',
-                minWidth: 18,
-                height: 18,
-                borderRadius: 999,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "0 4px",
-              }}
-            >
-              {compareCount}
-            </span>
-          )}
-        </button>
+        {!isMobile && (
+          <button
+            style={{ ...headerIconBtn, position: "relative" }}
+            onClick={() => onNav("compare")}
+            aria-label={t("header.compareAria")}
+          >
+            <Icon name="layers" />
+            {compareCount > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: -4,
+                  right: -6,
+                  background: "var(--ink)",
+                  color: "var(--cream)",
+                  fontSize: 10,
+                  fontFamily: '"JetBrains Mono", monospace',
+                  minWidth: 18,
+                  height: 18,
+                  borderRadius: 999,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "0 4px",
+                }}
+              >
+                {compareCount}
+              </span>
+            )}
+          </button>
+        )}
 
         <button
           style={{ ...headerIconBtn, position: "relative" }}
@@ -1355,8 +1363,8 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
             <span
               style={{
                 position: "absolute",
-                top: -4,
-                right: -6,
+                top: isMobile ? 0 : -4,
+                right: isMobile ? -4 : -6,
                 background: "var(--green)",
                 color: "var(--lime)",
                 fontSize: 10,
@@ -1485,13 +1493,13 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                 alignItems: "center",
                 gap: 8,
                 background: "var(--ink-04)",
-                padding: "10px 14px",
+                padding: "4px 4px 4px 16px",
                 borderRadius: 999,
                 marginBottom: 28,
                 border: "1px solid transparent",
               }}
             >
-              <Icon name="search" size={15} />
+              <Icon name="search" size={15} style={{ flexShrink: 0 }} />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -1499,6 +1507,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
                 aria-label={t("header.search.ariaSubmit")}
                 style={{
                   flex: 1,
+                  minWidth: 0,
                   border: "none",
                   outline: "none",
                   background: "transparent",
@@ -1509,17 +1518,84 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               />
               <button
                 type="submit"
+                aria-label={t("header.search.ariaSubmit")}
                 style={{
                   ...iconBtn,
-                  padding: "6px 10px",
+                  padding: "8px 12px",
+                  justifyContent: "center",
                   borderRadius: 999,
                   background: "var(--green)",
                   color: "var(--lime)",
+                  flexShrink: 0,
                 }}
               >
-                <Icon name="arrow-right" size={13} />
+                <Icon name="arrow-right" size={14} />
               </button>
             </form>
+
+            {isMobile && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  marginBottom: 28,
+                }}
+              >
+                <button
+                  type="button"
+                  style={{
+                    ...iconBtn,
+                    minHeight: 44,
+                    padding: "0 14px",
+                    borderRadius: 999,
+                    border: "1px solid var(--ink-06)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    fontSize: 13,
+                  }}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onNav("compare");
+                  }}
+                >
+                  <Icon name="layers" size={16} /> {t("header.compareAria")}
+                  {compareCount > 0 ? ` (${compareCount})` : ""}
+                </button>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button
+                    onClick={(e) => {
+                      const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+                      toggleThemeWithTransition(left + width / 2, top + height / 2);
+                    }}
+                    style={{
+                      ...iconBtn,
+                      minWidth: 44,
+                      minHeight: 44,
+                      borderRadius: 999,
+                      justifyContent: "center",
+                      border: "1px solid var(--ink-06)",
+                    }}
+                    aria-label={
+                      theme === "dark" ? t("header.theme.toLight") : t("header.theme.toDark")
+                    }
+                  >
+                    <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
+                  </button>
+                  <LanguageSwitcher
+                    buttonStyle={{
+                      ...iconBtn,
+                      width: 44,
+                      height: 44,
+                      borderRadius: 999,
+                      border: "1px solid var(--ink-06)",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
 
             <nav>
               {navLinks.map((link) => (

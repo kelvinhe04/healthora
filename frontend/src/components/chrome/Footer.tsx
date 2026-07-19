@@ -423,8 +423,8 @@ export function Footer({ onNav }: FooterProps) {
           >
             {t('footer.newsletter.body')}
           </motion.p>
-          <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: 'rgba(0,0,0,0.22)', borderRadius: 999, padding: 4, alignItems: 'center', overflow: 'hidden', gap: 4, width: 'fit-content', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <AnimatedInput delay={0.85} isAnimating={isAnimating} style={{ width: 160, minWidth: 0 }}>
+          <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: 'rgba(0,0,0,0.22)', borderRadius: 999, padding: 4, alignItems: 'center', overflow: 'hidden', gap: 4, width: '100%', maxWidth: 380, border: '1px solid rgba(255,255,255,0.1)' }}>
+            <AnimatedInput delay={0.85} isAnimating={isAnimating} style={{ flex: 1, minWidth: 0 }}>
               <input
                 className="newsletter-input"
                 type="email"
@@ -439,7 +439,7 @@ export function Footer({ onNav }: FooterProps) {
                 placeholder={t('footer.newsletter.placeholder')}
                 autoComplete="email"
                 disabled={status === 'loading'}
-                style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--cream)', WebkitTextFillColor: 'var(--cream)', caretColor: 'var(--cream)', padding: '10px 12px', fontSize: 13, fontFamily: '"Geist", sans-serif', opacity: status === 'loading' ? 0.7 : 1 }}
+                style={{ width: '100%', boxSizing: 'border-box', background: 'transparent', border: 'none', outline: 'none', color: 'var(--cream)', WebkitTextFillColor: 'var(--cream)', caretColor: 'var(--cream)', padding: '10px 12px', fontSize: 13, fontFamily: '"Geist", sans-serif', opacity: status === 'loading' ? 0.7 : 1 }}
               />
             </AnimatedInput>
             <RevealButton delay={0.9} isAnimating={isAnimating}>
