@@ -57,16 +57,34 @@ export function ProductRow({ products, onOpenProduct, onAdd, sectionKey, loading
   const itemBasis = `calc((100% - ${gap * (columns - 1)}px) / ${columns})`;
   const showArrows = !loading && products.length > columns;
 
+  const arrowSize = isMobile ? 38 : 44;
+  const arrowOffset = isMobile ? -8 : -20;
+
+  // Backdrop solido detras del boton: el boton flota mitad dentro/mitad fuera de la
+  // tarjeta (ver arrowStyle), asi que sin esto, al volverse translucido en estado
+  // disabled se ve el borde de la tarjeta atravesando el circulo por el medio.
+  const arrowBackdropStyle = (side: 'left' | 'right'): CSSProperties => ({
+    position: 'absolute',
+    top: 140,
+    [side]: arrowOffset,
+    transform: 'translateY(-50%)',
+    width: arrowSize,
+    height: arrowSize,
+    borderRadius: 999,
+    background: 'var(--cream)',
+    zIndex: 2,
+  });
+
   const arrowStyle = (side: 'left' | 'right', enabled: boolean): CSSProperties => ({
     position: 'absolute',
     // Centrado en el area de la imagen (ProductImage 'tile' = 280px fijo), no en toda la altura
     // de la tarjeta - al 50% de la tarjeta completa quedaba tapando los botones de wishlist/comparar
     // que viven al fondo de la imagen.
     top: 140,
-    [side]: isMobile ? -8 : -20,
+    [side]: arrowOffset,
     transform: 'translateY(-50%)',
-    width: isMobile ? 38 : 44,
-    height: isMobile ? 38 : 44,
+    width: arrowSize,
+    height: arrowSize,
     borderRadius: 999,
     border: '1.5px solid var(--ink-40)',
     background: 'var(--cream)',
@@ -76,7 +94,7 @@ export function ProductRow({ products, onOpenProduct, onAdd, sectionKey, loading
     justifyContent: 'center',
     cursor: enabled ? 'pointer' : 'not-allowed',
     opacity: enabled ? 1 : 0.5,
-    boxShadow: '0 12px 30px -10px rgba(0,0,0,0.4)',
+    boxShadow: enabled ? '0 12px 30px -10px rgba(0,0,0,0.4)' : 'none',
     zIndex: 3,
     transition: 'background 150ms ease, opacity 150ms ease',
   });
@@ -84,6 +102,8 @@ export function ProductRow({ products, onOpenProduct, onAdd, sectionKey, loading
   return (
     <div style={{ position: 'relative' }}>
       {showArrows && (
+        <>
+        <div aria-hidden style={arrowBackdropStyle('left')} />
         <button
           type="button"
           aria-label="Anterior"
@@ -95,6 +115,7 @@ export function ProductRow({ products, onOpenProduct, onAdd, sectionKey, loading
         >
           <Icon name="arrow-left" size={16} />
         </button>
+        </>
       )}
 
       <div
@@ -122,6 +143,8 @@ export function ProductRow({ products, onOpenProduct, onAdd, sectionKey, loading
       </div>
 
       {showArrows && (
+        <>
+        <div aria-hidden style={arrowBackdropStyle('right')} />
         <button
           type="button"
           aria-label="Siguiente"
@@ -133,6 +156,7 @@ export function ProductRow({ products, onOpenProduct, onAdd, sectionKey, loading
         >
           <Icon name="arrow-right" size={16} />
         </button>
+        </>
       )}
 
       <style>{`.product-row-scroller::-webkit-scrollbar { display: none; }`}</style>
