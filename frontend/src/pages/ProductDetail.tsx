@@ -17,6 +17,8 @@ import { ReviewSection } from '../components/shared/ReviewSection';
 import { RecentlyViewedSection } from '../components/shared/RecentlyViewedSection';
 import { RelatedProductsSection } from '../components/shared/RelatedProductsSection';
 import { getRelatedProducts } from '../lib/relatedProducts';
+import { useCompareStore } from '../store/compareStore';
+import { useWishlistStore } from '../store/wishlistStore';
 import { PRIMARY_VARIANT_TYPES, pickDefaultPrimary, sizesFor, pickDefaultSize, pickSizeKeepingCurrent, getPrimaryVariantStock } from '../lib/productVariants';
 import { renderInlineText, renderRichText } from '../lib/richText';
 import { isLowStock } from '../lib/stock';
@@ -69,6 +71,11 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
   const [isZoomingOut, setIsZoomingOut] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(() => pickDefaultPrimary(product.variants));
   const [selectedSize, setSelectedSize] = useState<ProductVariant | null>(() => pickDefaultSize(product.variants, pickDefaultPrimary(product.variants)));
+  const [compareHint, setCompareHint] = useState('');
+  const toggleCompare = useCompareStore((s) => s.toggle);
+  const isCompared = useCompareStore((s) => s.contains(product.id));
+  const toggleWishlist = useWishlistStore((s) => s.toggle);
+  const isWishlisted = useWishlistStore((s) => s.contains(product.id));
   const { data: allProducts = [] } = useProducts();
   const related = useMemo(() => getRelatedProducts(product, allProducts, 4), [allProducts, product]);
   const { data: liveReviews } = useReviews(product.id);
@@ -498,6 +505,57 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
               <button onClick={() => setQty((q) => Math.min(effectiveStock, q + 1))} style={qtyBtn(isMobile)} disabled={effectiveStock === 0 || qty >= effectiveStock} aria-label={t('productDetail.increaseQtyAria')}><Icon name="plus" size={14} /></button>
             </div>
             <AnimatedButton variant="primary" size={isMobile ? 'sm' : 'lg'} onClick={handleAdd} disabled={effectiveStock === 0} style={{ flex: 1, minWidth: 0 }} text={effectiveStock === 0 ? t('productDetail.outOfStockButton') : added ? t('productDetail.addedToCart') : t('productDetail.addToCart', { price: formatCurrency(effectivePrice * qty) })} />
+            <button
+              type="button"
+              onClick={() => toggleWishlist(product.id)}
+              aria-label={isWishlisted ? t('productCard.removeFromWishlistAria') : t('productCard.addToWishlistAria')}
+              aria-pressed={isWishlisted}
+              style={{
+                width: isMobile ? 44 : 52,
+                borderRadius: 999,
+                border: isWishlisted ? '2px solid var(--coral)' : '1px solid var(--ink-20)',
+                background: isWishlisted ? 'color-mix(in oklab, var(--coral) 12%, var(--cream))' : 'transparent',
+                color: isWishlisted ? 'var(--coral)' : 'var(--ink)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <Icon name="heart" size={16} stroke={isWishlisted ? 'var(--coral)' : 'currentColor'} />
+            </button>
+            <div style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  const result = toggleCompare(product.id);
+                  if (result === 'full') {
+                    setCompareHint(t('productCard.compareMax'));
+                    window.setTimeout(() => setCompareHint(''), 1800);
+                  }
+                }}
+                aria-label={isCompared ? t('productCard.removeFromCompareAria') : t('productCard.addToCompareAria')}
+                aria-pressed={isCompared}
+                style={{
+                  width: isMobile ? 44 : 52,
+                  borderRadius: 999,
+                  border: isCompared ? '2px solid var(--green)' : '1px solid var(--ink-20)',
+                  background: isCompared ? 'color-mix(in oklab, var(--green) 12%, var(--cream))' : 'transparent',
+                  color: 'var(--ink)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Icon name="layers" size={16} />
+              </button>
+              {compareHint && (
+                <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, whiteSpace: 'nowrap', fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--coral)' }}>{compareHint}</div>
+              )}
+            </div>
           </div>
           <AnimatedButton aria-label={t('productDetail.buyNow')} variant="outline" full onClick={() => onBuyNow(product, qty, cartVariant)} disabled={effectiveStock === 0} text={t('productDetail.buyNow')} />
           <AnimatedButton
