@@ -9,7 +9,7 @@ import { shouldSendEmail } from '../../lib/notificationPreferences';
 import { combineOrderStatus, normalizeOrder, type FulfillmentStatus } from '../../lib/orderStatus';
 import { notifyUser } from '../../lib/realtime';
 import { generateTrackingNumber } from '../../lib/tracking';
-import { buildOrdersCsv } from '../../lib/ordersCsv';
+import { buildOrdersXlsx } from '../../lib/ordersXlsx';
 import { objectIdSchema, optionalTextField, parseJson, parseParams, parseQuery } from '../../lib/validation';
 
 const paymentStatusSchema = z.enum(['pending_payment', 'paid', 'cancelled', 'refunded']);
@@ -105,22 +105,25 @@ export const adminOrdersRouter = new Hono<AppEnv>()
     const orders = await Order.find(filter).sort({ createdAt: -1 }).lean();
     return c.json(orders.map((order) => normalizeOrder(order)));
   })
-  .get('/export.csv', async (c) => {
+  .get('/export.xlsx', async (c) => {
     const parsedQuery = parseQuery(c, csvExportQuerySchema);
     if (!parsedQuery.success) return parsedQuery.response;
 
     const limitRaw = c.req.query('limit');
     const limit = limitRaw ? Number(limitRaw) : undefined;
-    const csv = await buildOrdersCsv({
+    const lang = parsedQuery.data.lang === 'es' ? 'es' : 'en';
+    const xlsx = await buildOrdersXlsx({
       paymentStatus: parsedQuery.data.paymentStatus,
       fulfillmentStatus: parsedQuery.data.fulfillmentStatus,
       limit: Number.isFinite(limit) ? limit : undefined,
-      lang: parsedQuery.data.lang,
+      lang,
     });
-    return new Response(csv, {
+    const filenamePrefix = lang === 'es' ? 'pedidos' : 'orders';
+    const dateSuffix = new Date().toISOString().slice(0, 10);
+    return new Response(new Uint8Array(xlsx), {
       headers: {
-        'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': 'attachment; filename="orders-export.csv"',
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="${filenamePrefix}-${dateSuffix}.xlsx"`,
       },
     });
   })

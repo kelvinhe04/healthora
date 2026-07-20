@@ -405,7 +405,7 @@ export const api = {
         { method: "PATCH", body: JSON.stringify(body) },
         token,
       ),
-    exportOrdersCsv: async (
+    exportOrdersXlsx: async (
       token: string,
       filters: { paymentStatus?: string; fulfillmentStatus?: string; limit?: number; lang?: string } = {},
     ) => {
@@ -415,7 +415,7 @@ export const api = {
       if (filters.limit) params.set("limit", String(filters.limit));
       if (filters.lang) params.set("lang", filters.lang);
       const query = params.toString();
-      const res = await fetch(`${BASE}/admin/orders/export.csv${query ? `?${query}` : ""}`, {
+      const res = await fetch(`${BASE}/admin/orders/export.xlsx${query ? `?${query}` : ""}`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-cache",
       });
@@ -423,7 +423,7 @@ export const api = {
         const err = await res.json().catch(() => ({ error: res.statusText }));
         throw new Error(err.error || `HTTP ${res.status}`);
       }
-      return res.text();
+      return res.blob();
     },
     returns: {
       list: (token: string, status?: ReturnStatus) =>

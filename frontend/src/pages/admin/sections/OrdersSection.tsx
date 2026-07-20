@@ -133,12 +133,13 @@ export function OrdersSection() {
                     onClick={async () => {
                       const token = await getAdminToken();
                       const lang = i18n.language?.startsWith('en') ? 'en' : 'es';
-                      const csv = await api.admin.exportOrdersCsv(token, { lang });
-                      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+                      const blob = await api.admin.exportOrdersXlsx(token, { lang });
                       const url = URL.createObjectURL(blob);
                       const link = document.createElement('a');
                       link.href = url;
-                      link.download = 'orders-export.csv';
+                      const filenamePrefix = lang === 'es' ? 'pedidos' : 'orders';
+                      const dateSuffix = new Date().toISOString().slice(0, 10);
+                      link.download = `${filenamePrefix}-${dateSuffix}.xlsx`;
                       link.click();
                       URL.revokeObjectURL(url);
                     }}

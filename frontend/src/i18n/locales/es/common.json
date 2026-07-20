@@ -1701,7 +1701,7 @@
       "titlePrefix": "Gestión de",
       "titleEmphasis": "pedidos",
       "sub": "Cambia estados y monitorea el ciclo completo de la orden.",
-      "exportCsv": "Exportar CSV",
+      "exportCsv": "Exportar Excel",
       "searchPlaceholder": "Buscar por ID, cliente, email o producto…",
       "filters": {
         "statusLabel": "Estado",
