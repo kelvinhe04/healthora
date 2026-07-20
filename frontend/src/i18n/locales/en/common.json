@@ -1701,7 +1701,7 @@
       "titlePrefix": "Order",
       "titleEmphasis": "management",
       "sub": "Change statuses and monitor the order's full cycle.",
-      "exportCsv": "Export CSV",
+      "exportCsv": "Export Excel",
       "searchPlaceholder": "Search by ID, customer, email, or product…",
       "filters": {
         "statusLabel": "Status",
