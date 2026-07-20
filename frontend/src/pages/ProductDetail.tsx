@@ -525,7 +525,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
             >
               <Icon name="heart" size={16} stroke={isWishlisted ? 'var(--coral)' : 'currentColor'} />
             </button>
-            <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
               <button
                 type="button"
                 onClick={() => {
