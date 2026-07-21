@@ -27,9 +27,15 @@ import type {
   LoyaltyAccount,
   NotificationPreferences,
 } from "../types";
-import type { CartItem } from "../types";
-
 const BASE = "/api";
+
+/** Cart line as sent to/returned by the backend - variant here is just the selected id (HU-035),
+ * not the resolved ProductVariant that the frontend CartItem carries. */
+export interface CartLineDTO {
+  product: Product;
+  qty: number;
+  variantId?: string;
+}
 
 async function request<T>(
   path: string,
@@ -205,9 +211,9 @@ export const api = {
     },
   },
   cart: {
-    get: (token: string) => request<CartItem[]>("/cart", undefined, token),
-    save: (items: { productId: string; qty: number }[], token: string) =>
-      request<CartItem[]>(
+    get: (token: string) => request<CartLineDTO[]>("/cart", undefined, token),
+    save: (items: { productId: string; qty: number; variantId?: string }[], token: string) =>
+      request<CartLineDTO[]>(
         "/cart",
         { method: "PUT", body: JSON.stringify({ items }) },
         token,
