@@ -16,6 +16,7 @@ import { useReviews } from '../hooks/useReviews';
 import { ReviewSection } from '../components/shared/ReviewSection';
 import { RecentlyViewedSection } from '../components/shared/RecentlyViewedSection';
 import { RelatedProductsSection } from '../components/shared/RelatedProductsSection';
+import { SimilarProductsCompareSection } from '../components/shared/SimilarProductsCompareSection';
 import { getRelatedProducts } from '../lib/relatedProducts';
 import { useCompareStore } from '../store/compareStore';
 import { useWishlistStore } from '../store/wishlistStore';
@@ -78,6 +79,7 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
   const isWishlisted = useWishlistStore((s) => s.contains(product.id));
   const { data: allProducts = [] } = useProducts();
   const related = useMemo(() => getRelatedProducts(product, allProducts, 4), [allProducts, product]);
+  const compareCandidates = useMemo(() => related.slice(0, 3), [related]);
   const { data: liveReviews } = useReviews(product.id);
   const liveCount = liveReviews?.length ?? 0;
   const liveRating = liveReviews && liveReviews.length > 0
@@ -647,6 +649,13 @@ export function ProductDetail({ product, onAdd, onBuyNow, onOpenProduct, onBack,
         subtitle={t('productDetail.related.subtitle')}
         title={<>{t('productDetail.related.titlePrefix')} <em style={{ color: 'var(--green)' }}>{t('productDetail.related.titleEmphasis')}</em></>}
         products={related}
+        onOpenProduct={onOpenProduct}
+        onAdd={onAdd}
+      />
+
+      <SimilarProductsCompareSection
+        product={product}
+        related={compareCandidates}
         onOpenProduct={onOpenProduct}
         onAdd={onAdd}
       />
