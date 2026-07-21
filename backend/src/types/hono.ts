@@ -11,6 +11,8 @@ export interface AuthUser {
 export interface CartItem {
   productId: string;
   qty: number;
+  /** Selected variant/combo id (HU-035) - "primary:size" format for a combo, plain id otherwise. */
+  variantId?: string;
 }
 
 export interface CartRequestBody {
@@ -21,6 +23,7 @@ export interface CartRequestBody {
 export interface CartResponseItem {
   product: Record<string, unknown>;
   qty: number;
+  variantId?: string;
 }
 
 export interface AppEnv {

@@ -18,6 +18,9 @@ const UserSchema = new Schema(
       {
         productId: { type: String, required: true },
         qty: { type: Number, required: true, min: 1 },
+        // Variante/combo elegido para esta linea (HU-035) - "primario:tamano" para un combo, id
+        // simple si no. Opcional: un producto sin variantes no lo necesita.
+        variantId: { type: String, default: undefined },
       },
     ],
     wishlist: [{ type: String }],

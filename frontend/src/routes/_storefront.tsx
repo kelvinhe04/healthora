@@ -13,6 +13,8 @@ import { useThemeStore, applyTheme } from "../store/themeStore";
 import { api } from "../lib/api";
 import { useStorefrontNav } from "../hooks/useStorefrontNav";
 import { getE2EAuthToken, getE2EUser } from "../lib/e2eAuth";
+import { resolveVariantById } from "../lib/productVariants";
+import type { CartItem } from "../types";
 
 export const Route = createFileRoute("/_storefront")({
   component: StorefrontLayout,
@@ -67,7 +69,12 @@ function StorefrontLayout() {
         const remoteItems = await api.cart.get(token);
         if (cancelled) return;
         skipNextCartSaveRef.current = true;
-        replaceItems(remoteItems);
+        const resolvedItems: CartItem[] = remoteItems.map((line) => ({
+          product: line.product,
+          qty: line.qty,
+          variant: resolveVariantById(line.product.variants, line.variantId),
+        }));
+        replaceItems(resolvedItems);
         lastLoadedOwnerRef.current = user.id;
       } catch (error) {
         console.error("Failed to load remote cart", error);
@@ -139,6 +146,7 @@ function StorefrontLayout() {
             items.map((item) => ({
               productId: item.product.id,
               qty: item.qty,
+              ...(item.variant?.id ? { variantId: item.variant.id } : {}),
             })),
             token,
           );
