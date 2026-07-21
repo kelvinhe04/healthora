@@ -701,7 +701,10 @@
       "price": "Precio",
       "rating": "Rating",
       "stock": "Stock",
-      "description": "Descripción"
+      "description": "Descripción",
+      "benefits": "Beneficios",
+      "usage": "Modo de uso",
+      "ingredients": "Ingredientes"
     },
     "outOfStock": "Agotado",
     "lowStock": "Solo quedan {{count}}",

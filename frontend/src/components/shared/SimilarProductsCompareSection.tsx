@@ -9,6 +9,7 @@ import { AnimatedButton } from './AnimatedButton';
 import { getEffectivePrice } from '../../lib/productVariants';
 import { isLowStock } from '../../lib/stock';
 import { formatCurrency } from '../../lib/currency';
+import { renderRichText } from '../../lib/richText';
 
 interface SimilarProductsCompareSectionProps {
   product: Product;
@@ -60,6 +61,29 @@ export function SimilarProductsCompareSection({ product, related, onOpenProduct,
           t('compare.inStock')
         ),
     },
+    { label: t('compare.rows.description'), render: (p: Product) => p.short },
+    {
+      label: t('compare.rows.benefits'),
+      render: (p: Product) => {
+        const benefits = (p.benefits || []).filter((b) => b.trim());
+        if (benefits.length === 0) return <span style={{ color: 'var(--ink-40)' }}>—</span>;
+        return (
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
+            {benefits.map((b, i) => (
+              <li key={i} style={{ marginBottom: 4 }}>{b}</li>
+            ))}
+          </ul>
+        );
+      },
+    },
+    {
+      label: t('compare.rows.usage'),
+      render: (p: Product) => (p.usage?.trim() ? renderRichText(p.usage) : <span style={{ color: 'var(--ink-40)' }}>—</span>),
+    },
+    {
+      label: t('compare.rows.ingredients'),
+      render: (p: Product) => (p.ingredients?.trim() ? renderRichText(p.ingredients) : <span style={{ color: 'var(--ink-40)' }}>—</span>),
+    },
   ];
 
   return (
@@ -78,22 +102,39 @@ export function SimilarProductsCompareSection({ product, related, onOpenProduct,
           <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: 32, pointerEvents: 'none', background: 'linear-gradient(to right, transparent, var(--cream) 85%)', zIndex: 1 }} />
         )}
         <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehaviorX: 'contain', touchAction: 'pan-x pan-y' }}>
-          <table style={{ width: '100%', minWidth: isSmall ? 640 : undefined, borderCollapse: 'separate', borderSpacing: 0 }}>
+          <table style={{ width: '100%', minWidth: isSmall ? 640 : undefined, borderCollapse: 'separate', borderSpacing: 0, tableLayout: 'fixed' }}>
+            <colgroup>
+              <col style={{ width: isSmall ? 100 : 140 }} />
+              {columns.map((p) => (
+                <col key={p.id} style={{ width: `calc((100% - ${isSmall ? 100 : 140}px) / ${columns.length})` }} />
+              ))}
+            </colgroup>
             <thead>
               <tr>
                 <th style={{ textAlign: 'left', padding: '12px 16px', fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: '1px solid var(--ink-06)' }}>
                   {t('compare.attribute')}
                 </th>
                 {columns.map((p, i) => (
-                  <th key={p.id} style={{ verticalAlign: 'top', padding: '12px 16px', borderBottom: i === 0 ? '2px solid var(--green)' : '1px solid var(--ink-06)', minWidth: 180 }}>
-                    <div onClick={() => i > 0 && onOpenProduct(p)} style={{ cursor: i > 0 ? 'pointer' : 'default' }}>
+                  <th key={p.id} style={{ verticalAlign: 'top', padding: '12px 16px', borderBottom: '1px solid var(--ink-06)' }}>
+                    <div onClick={() => i > 0 && onOpenProduct(p)} style={{ cursor: i > 0 ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                      {i === 0 && (
+                        <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+                          {t('similarCompare.thisProduct')}
+                        </div>
+                      )}
                       <ProductImage product={p} size="sm" />
-                      <div style={{ marginTop: 10, fontFamily: '"Geist", sans-serif', fontSize: 14, fontWeight: 500, lineHeight: 1.3 }}>
-                        {i === 0 && (
-                          <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
-                            {t('similarCompare.thisProduct')}
-                          </div>
-                        )}
+                      <div
+                        style={{
+                          marginTop: 10,
+                          maxWidth: 150,
+                          fontFamily: '"Geist", sans-serif',
+                          fontSize: 14,
+                          fontWeight: 500,
+                          lineHeight: 1.3,
+                          paddingBottom: i === 0 ? 10 : 0,
+                          borderBottom: i === 0 ? '2px solid var(--green)' : 'none',
+                        }}
+                      >
                         {p.name}
                       </div>
                     </div>

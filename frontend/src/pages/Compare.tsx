@@ -12,6 +12,7 @@ import type { Product } from '../types';
 import { getEffectivePrice } from '../lib/productVariants';
 import { isLowStock } from '../lib/stock';
 import { formatCurrency } from '../lib/currency';
+import { renderRichText } from '../lib/richText';
 
 interface CompareProps {
   onBack: () => void;
@@ -120,6 +121,28 @@ export function Compare({ onBack, onOpenProduct, onAdd }: CompareProps) {
                     ),
                 },
                 { label: t('compare.rows.description'), render: (p: Product) => p.short },
+                {
+                  label: t('compare.rows.benefits'),
+                  render: (p: Product) => {
+                    const benefits = (p.benefits || []).filter((b) => b.trim());
+                    if (benefits.length === 0) return <span style={{ color: 'var(--ink-40)' }}>—</span>;
+                    return (
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>
+                        {benefits.map((b, i) => (
+                          <li key={i} style={{ marginBottom: 4 }}>{b}</li>
+                        ))}
+                      </ul>
+                    );
+                  },
+                },
+                {
+                  label: t('compare.rows.usage'),
+                  render: (p: Product) => (p.usage?.trim() ? renderRichText(p.usage) : <span style={{ color: 'var(--ink-40)' }}>—</span>),
+                },
+                {
+                  label: t('compare.rows.ingredients'),
+                  render: (p: Product) => (p.ingredients?.trim() ? renderRichText(p.ingredients) : <span style={{ color: 'var(--ink-40)' }}>—</span>),
+                },
               ].map((row) => (
                 <tr key={row.label}>
                   <td style={{ padding: '14px 16px', fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', borderBottom: '1px solid var(--ink-06)', verticalAlign: 'top' }}>{row.label}</td>
