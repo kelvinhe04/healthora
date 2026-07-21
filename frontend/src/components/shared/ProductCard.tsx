@@ -126,13 +126,17 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
   const effectivePrice = getEffectivePrice(product);
   const effectivePriceBefore = getEffectivePriceBefore(product);
   const purchasesLabel = formatPurchasesLastMonth(product.purchasesLastMonth ?? 0);
-  const showOverlayActions = isMobile || hover || isWishlisted || isCompared;
-  const overlayActionStyle = {
-    opacity: showOverlayActions ? (hover || isMobile ? 1 : 0.85) : 0,
-    transform: showOverlayActions ? 'scale(1)' : 'scale(0.85)',
-    transition: 'all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-    pointerEvents: showOverlayActions ? ('auto' as const) : ('none' as const),
+  const buildOverlayActionStyle = (active: boolean) => {
+    const visible = isMobile || hover || active;
+    return {
+      opacity: visible ? (hover || isMobile ? 1 : 0.85) : 0,
+      transform: visible ? 'scale(1)' : 'scale(0.85)',
+      transition: 'all 500ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+      pointerEvents: visible ? ('auto' as const) : ('none' as const),
+    };
   };
+  const compareActionStyle = buildOverlayActionStyle(isCompared);
+  const wishlistActionStyle = buildOverlayActionStyle(isWishlisted);
 
   return (
     <div
@@ -222,7 +226,7 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 2,
-              ...overlayActionStyle,
+              ...compareActionStyle,
             }}
           >
             <Icon name="layers" size={16} />
@@ -253,7 +257,7 @@ export function ProductCard({ product, onClick, onAdd, priority = false, showCom
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 2,
-              ...overlayActionStyle,
+              ...wishlistActionStyle,
             }}
           >
             <Icon name="heart" size={16} stroke={isWishlisted ? 'var(--coral)' : 'currentColor'} />
