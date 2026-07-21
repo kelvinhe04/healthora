@@ -423,7 +423,7 @@ export function Footer({ onNav }: FooterProps) {
           >
             {t('footer.newsletter.body')}
           </motion.p>
-          <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: 'rgba(0,0,0,0.22)', borderRadius: 999, padding: 4, alignItems: 'center', overflow: 'hidden', gap: 4, width: '100%', maxWidth: 380, border: '1px solid rgba(255,255,255,0.1)' }}>
+          <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: 'rgba(0,0,0,0.22)', borderRadius: 999, padding: 4, alignItems: 'center', gap: 4, width: '100%', maxWidth: 380, border: '1px solid rgba(255,255,255,0.1)' }}>
             <AnimatedInput delay={0.85} isAnimating={isAnimating} style={{ flex: 1, minWidth: 0 }}>
               <input
                 className="newsletter-input"
