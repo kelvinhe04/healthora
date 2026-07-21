@@ -84,12 +84,18 @@ export function Compare({ onBack, onOpenProduct, onAdd }: CompareProps) {
             <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: 32, pointerEvents: 'none', background: 'linear-gradient(to right, transparent, var(--cream) 85%)', zIndex: 1 }} />
           )}
           <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehaviorX: 'contain', touchAction: 'pan-x pan-y' }}>
-          <table style={{ width: '100%', minWidth: isSmall ? 640 : undefined, borderCollapse: 'separate', borderSpacing: 0 }}>
+          <table style={{ width: '100%', minWidth: isSmall ? 640 : undefined, borderCollapse: 'separate', borderSpacing: 0, tableLayout: 'fixed' }}>
+            <colgroup>
+              <col style={{ width: isSmall ? 100 : 140 }} />
+              {products.map((p) => (
+                <col key={p.id} style={{ width: `calc((100% - ${isSmall ? 100 : 140}px) / ${products.length})` }} />
+              ))}
+            </colgroup>
             <thead>
               <tr>
                 <th style={{ textAlign: 'left', padding: '12px 16px', fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--ink-60)', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: '1px solid var(--ink-06)' }}>{t('compare.attribute')}</th>
                 {products.map((p) => (
-                  <th key={p.id} style={{ verticalAlign: 'top', padding: '12px 16px', borderBottom: '1px solid var(--ink-06)', minWidth: 180 }}>
+                  <th key={p.id} style={{ verticalAlign: 'top', padding: '12px 16px', borderBottom: '1px solid var(--ink-06)' }}>
                     <div style={{ position: 'relative' }}>
                       <button type="button" aria-label={t('compare.removeAria', { name: p.name })} onClick={() => remove(p.id)} style={{ position: 'absolute', top: 0, right: 0, border: 'none', background: 'var(--cream-2)', borderRadius: 999, width: 32, height: 32, cursor: 'pointer' }}>
                         <Icon name="x" size={14} />
