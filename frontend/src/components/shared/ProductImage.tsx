@@ -53,10 +53,10 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
       : { width: s.w, height: s.h };
     return (
       <div style={{ ...sizeStyle, background: 'white', borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box', position: 'relative' }}>
-        {!loaded && (
+        {!(loaded && priority) && (
           <div
             aria-hidden="true"
-            style={{ position: 'absolute', inset: 0, background: 'var(--skeleton-base)', overflow: 'hidden' }}
+            style={{ position: 'absolute', inset: 0, background: 'var(--skeleton-base)', overflow: 'hidden', opacity: loaded ? 0 : 1, transition: 'opacity 320ms ease' }}
           >
             <div
               style={{
