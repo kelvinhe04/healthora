@@ -100,9 +100,9 @@ export function Compare({ onBack, onOpenProduct, onAdd }: CompareProps) {
                       <button type="button" aria-label={t('compare.removeAria', { name: p.name })} onClick={() => remove(p.id)} style={{ position: 'absolute', top: 0, right: 0, border: 'none', background: 'var(--cream-2)', borderRadius: 999, width: 32, height: 32, cursor: 'pointer' }}>
                         <Icon name="x" size={14} />
                       </button>
-                      <div onClick={() => onOpenProduct(p)} style={{ cursor: 'pointer' }}>
+                      <div onClick={() => onOpenProduct(p)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                         <ProductImage product={p} size="sm" />
-                        <div style={{ marginTop: 10, fontFamily: '"Geist", sans-serif', fontSize: 14, fontWeight: 500, lineHeight: 1.3 }}>{p.name}</div>
+                        <div style={{ marginTop: 10, maxWidth: 150, fontFamily: '"Geist", sans-serif', fontSize: 14, fontWeight: 500, lineHeight: 1.3 }}>{p.name}</div>
                       </div>
                     </div>
                   </th>
