@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { Product } from '../../types';
 import { imageSizesForSize, imageWidthForSize, optimizeImageUrl, responsiveImageSrcSet, type ImageSizeKey } from '../../lib/cloudinary';
 import { getDefaultComboImage } from '../../lib/productVariants';
@@ -35,7 +35,13 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
   const srcSet = rawSrc ? responsiveImageSrcSet(rawSrc, imageSize) : undefined;
   const sizesAttr = imageSizesForSize(imageSize);
   const [failedOptimizedSrc, setFailedOptimizedSrc] = useState('');
+  const [loaded, setLoaded] = useState(priority);
   const imgSrc = failedOptimizedSrc === optimizedSrc ? rawSrc : optimizedSrc;
+  // Imagenes servidas desde cache del navegador ya estan "complete" al montar - sin este chequeo
+  // el shimmer parpadearia un frame de mas antes de que onLoad confirme lo que el browser ya sabe.
+  const imgRef = useCallback((img: HTMLImageElement | null) => {
+    if (img?.complete) setLoaded(true);
+  }, []);
 
   if (rawSrc) {
     const imagePadding = size === 'lg' ? 24 : size === 'tile' ? 18 : size === 'md' ? 14 : 8;
@@ -46,8 +52,25 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
       ? { width: '100%', maxWidth: s.w, aspectRatio: `${s.w} / ${s.h}`, height: 'auto' }
       : { width: s.w, height: s.h };
     return (
-      <div style={{ ...sizeStyle, background: 'white', borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box' }}>
+      <div style={{ ...sizeStyle, background: 'white', borderRadius: flat ? 0 : 6, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: imagePadding, boxSizing: 'border-box', position: 'relative' }}>
+        {!loaded && (
+          <div
+            aria-hidden="true"
+            style={{ position: 'absolute', inset: 0, background: 'var(--skeleton-base)', overflow: 'hidden' }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(90deg, transparent 0%, var(--skeleton-shimmer) 50%, transparent 100%)',
+                animation: 'shimmer 1.4s linear infinite',
+                willChange: 'transform',
+              }}
+            />
+          </div>
+        )}
         <img
+          ref={imgRef}
           src={imgSrc || rawSrc}
           srcSet={srcSet}
           sizes={srcSet ? sizesAttr : undefined}
@@ -55,10 +78,12 @@ export function ProductImage({ product, size = 'md', flat = false, imageUrl, alt
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
           fetchPriority={priority ? 'high' : 'auto'}
+          onLoad={() => setLoaded(true)}
           onError={() => {
             if (imgSrc !== rawSrc) setFailedOptimizedSrc(optimizedSrc);
+            setLoaded(true);
           }}
-          style={{ width: '100%', height: '100%', objectFit, objectPosition: 'center center' }}
+          style={{ width: '100%', height: '100%', objectFit, objectPosition: 'center center', position: 'relative', opacity: loaded ? 1 : 0, transition: 'opacity 320ms ease' }}
         />
       </div>
     );
