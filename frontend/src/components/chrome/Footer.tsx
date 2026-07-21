@@ -198,8 +198,8 @@ function AnimatedInput({ delay, isAnimating, children, style }: { delay: number;
   );
 }
 
-function RevealButton({ delay, isAnimating, children }: { delay: number; isAnimating: boolean; children: React.ReactNode }) {
-  return <AnimatedItem delay={delay} isAnimating={isAnimating} variants={buttonVariants}>{children}</AnimatedItem>;
+function RevealButton({ delay, isAnimating, children, style }: { delay: number; isAnimating: boolean; children: React.ReactNode; style?: React.CSSProperties }) {
+  return <AnimatedItem delay={delay} isAnimating={isAnimating} variants={buttonVariants} style={style}>{children}</AnimatedItem>;
 }
 
 export function Footer({ onNav }: FooterProps) {
@@ -423,8 +423,8 @@ export function Footer({ onNav }: FooterProps) {
           >
             {t('footer.newsletter.body')}
           </motion.p>
-          <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: 'rgba(0,0,0,0.22)', borderRadius: 999, padding: 4, alignItems: 'center', gap: 4, width: '100%', maxWidth: 380, border: '1px solid rgba(255,255,255,0.1)' }}>
-            <AnimatedInput delay={0.85} isAnimating={isAnimating} style={{ flex: 1, minWidth: 0 }}>
+          <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: 'rgba(0,0,0,0.22)', borderRadius: 999, alignItems: 'stretch', width: '100%', maxWidth: 380, border: '1px solid rgba(255,255,255,0.1)' }}>
+            <AnimatedInput delay={0.85} isAnimating={isAnimating} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center' }}>
               <input
                 className="newsletter-input"
                 type="email"
@@ -439,16 +439,16 @@ export function Footer({ onNav }: FooterProps) {
                 placeholder={t('footer.newsletter.placeholder')}
                 autoComplete="email"
                 disabled={status === 'loading'}
-                style={{ width: '100%', boxSizing: 'border-box', background: 'transparent', border: 'none', outline: 'none', color: 'var(--cream)', WebkitTextFillColor: 'var(--cream)', caretColor: 'var(--cream)', padding: '10px 12px', fontSize: 13, fontFamily: '"Geist", sans-serif', opacity: status === 'loading' ? 0.7 : 1 }}
+                style={{ width: '100%', boxSizing: 'border-box', background: 'transparent', border: 'none', outline: 'none', color: 'var(--cream)', WebkitTextFillColor: 'var(--cream)', caretColor: 'var(--cream)', padding: '10px 16px', fontSize: 13, fontFamily: '"Geist", sans-serif', opacity: status === 'loading' ? 0.7 : 1 }}
               />
             </AnimatedInput>
-            <RevealButton delay={0.9} isAnimating={isAnimating}>
+            <RevealButton delay={0.9} isAnimating={isAnimating} style={{ padding: 4 }}>
               <AnimatedButton
                 type="submit"
                 variant="lime"
                 size="sm"
                 disabled={status === 'loading'}
-                style={{ color: 'oklch(0.2 0.015 155)' }}
+                style={{ color: 'oklch(0.2 0.015 155)', height: '100%' }}
                 text={status === 'loading' ? t('footer.newsletter.submitting') : t('footer.newsletter.submit')}
               />
             </RevealButton>
