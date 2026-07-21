@@ -994,6 +994,9 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               fontSize: 13,
               fontFamily: '"Geist", sans-serif',
               minWidth: 0,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           />
           {search && (
