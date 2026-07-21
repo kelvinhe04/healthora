@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test';
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from 'bun:test';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Product } from '../db/models/Product';
@@ -9,7 +9,15 @@ import { SecurityAuditLog } from '../db/models/SecurityAuditLog';
 import { Return } from '../db/models/Return';
 import { Coupon } from '../db/models/Coupon';
 import { User } from '../db/models/User';
+import { Category } from '../db/models/Category';
+import { Banner } from '../db/models/Banner';
 import { seedCoupons } from '../db/seed-coupons';
+
+// La tool real sube a Cloudinary via HTTP firmado (ver imageStorage.ts / cloudinaryUpload.ts) -
+// mockeada para que el test no dependa de credenciales reales ni de red.
+mock.module('../lib/imageStorage', () => ({
+  saveImageFile: async () => 'https://res.cloudinary.com/mock/image/upload/variant.jpg',
+}));
 
 let mongo: MongoMemoryServer;
 let handleMcpRequest: (typeof import('./server'))['handleMcpRequest'];
@@ -66,6 +74,8 @@ describe('MCP server', () => {
     await Return.deleteMany({});
     await Coupon.deleteMany({});
     await User.deleteMany({});
+    await Category.deleteMany({});
+    await Banner.deleteMany({});
     await seedProduct();
     await seedCoupons();
   });
@@ -490,5 +500,341 @@ describe('MCP server', () => {
     expect(payload.kpis).toBeDefined();
     expect(Array.isArray(payload.dailySales)).toBe(true);
     expect(payload.dailySales).toHaveLength(30);
+  });
+
+  test('catalog.upsertProduct creates a new product and rejects one missing required fields', async () => {
+    const created = await rpc({
+      jsonrpc: '2.0',
+      id: 21,
+      method: 'tools/call',
+      params: {
+        name: 'catalog.upsertProduct',
+        arguments: { id: 'new-product', name: 'Nuevo', brand: 'Healthora', category: 'Vitaminas', price: 15 },
+      },
+    });
+    const createdPayload = JSON.parse(created.json.result.content[0].text);
+    expect(createdPayload.created).toBe(true);
+    expect(createdPayload.product.id).toBe('new-product');
+
+    const updated = await rpc({
+      jsonrpc: '2.0',
+      id: 22,
+      method: 'tools/call',
+      params: { name: 'catalog.upsertProduct', arguments: { id: 'new-product', price: 20 } },
+    });
+    const updatedPayload = JSON.parse(updated.json.result.content[0].text);
+    expect(updatedPayload.created).toBe(false);
+    expect(updatedPayload.product.price).toBe(20);
+
+    const rejected = await rpc({
+      jsonrpc: '2.0',
+      id: 23,
+      method: 'tools/call',
+      params: { name: 'catalog.upsertProduct', arguments: { id: 'incomplete-product', name: 'Solo nombre' } },
+    });
+    expect(rejected.json.result.isError).toBe(true);
+  });
+
+  test('categories.upsertCategory creates a category and renames it reassigning products', async () => {
+    const created = await rpc({
+      jsonrpc: '2.0',
+      id: 24,
+      method: 'tools/call',
+      params: { name: 'categories.upsertCategory', arguments: { id: 'Vitaminas', label: 'Vitaminas' } },
+    });
+    const createdPayload = JSON.parse(created.json.result.content[0].text);
+    expect(createdPayload.created).toBe(true);
+    expect(createdPayload.category.id).toBe('Vitaminas');
+
+    const renamed = await rpc({
+      jsonrpc: '2.0',
+      id: 25,
+      method: 'tools/call',
+      params: { name: 'categories.upsertCategory', arguments: { id: 'Vitaminas', newId: 'suplementos' } },
+    });
+    const renamedPayload = JSON.parse(renamed.json.result.content[0].text);
+    expect(renamedPayload.category.id).toBe('suplementos');
+    expect(renamedPayload.productsReassigned).toBe(1);
+
+    const product = await Product.findOne({ id: 'combo-product' }).lean();
+    expect(product?.category).toBe('suplementos');
+  });
+
+  test('variants.upsertVariant adds a new variant to an existing product', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 26,
+      method: 'tools/call',
+      params: {
+        name: 'variants.upsertVariant',
+        arguments: {
+          productId: 'combo-product',
+          variant: { id: 'strawberry', label: 'Fresa', type: 'flavor', price: 0, stock: 15 },
+        },
+      },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.created).toBe(true);
+
+    const product = await Product.findOne({ id: 'combo-product' }).lean();
+    expect(product?.variants.find((v) => v.id === 'strawberry')?.label).toBe('Fresa');
+  });
+
+  test('variants.uploadVariantImage uploads and sets the primary image', async () => {
+    const imageBase64 = Buffer.from('fake-image-bytes').toString('base64');
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 27,
+      method: 'tools/call',
+      params: {
+        name: 'variants.uploadVariantImage',
+        arguments: { productId: 'combo-product', variantId: 'chocolate', imageBase64, mimeType: 'image/jpeg' },
+      },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.url).toBe('https://res.cloudinary.com/mock/image/upload/variant.jpg');
+
+    const product = await Product.findOne({ id: 'combo-product' }).lean();
+    const variant = product?.variants.find((v) => v.id === 'chocolate');
+    expect(variant?.imageUrl).toBe(payload.url);
+    expect(variant?.images?.[0]).toBe(payload.url);
+  });
+
+  test('orders.listUserOrders lists a customer\'s orders by email', async () => {
+    await Order.create({
+      customerId: 'user-1',
+      customerEmail: 'buyer@test.com',
+      items: [{ productId: 'combo-product', productName: 'Combo Product', qty: 1, price: 10 }],
+      subtotal: 10,
+      tax: 0.7,
+      shipping: 0,
+      total: 10.7,
+      paymentStatus: 'paid',
+      fulfillmentStatus: 'delivered',
+      status: 'paid',
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 28,
+      method: 'tools/call',
+      params: { name: 'orders.listUserOrders', arguments: { email: 'buyer@test.com' } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.count).toBe(1);
+    expect(payload.orders[0].customerEmail).toBe('buyer@test.com');
+  });
+
+  test('orders.updateOrderStatus changes the payment status', async () => {
+    // Deja fulfillmentStatus sin cambios para no disparar el email real de actualizacion de orden
+    // (sendOrderStatusUpdateEmail solo se llama cuando cambia el fulfillment).
+    const order = await Order.create({
+      customerId: 'user-1',
+      customerEmail: 'buyer@test.com',
+      items: [{ productId: 'combo-product', productName: 'Combo Product', qty: 1, price: 10 }],
+      subtotal: 10,
+      tax: 0.7,
+      shipping: 0,
+      total: 10.7,
+      paymentStatus: 'pending_payment',
+      fulfillmentStatus: 'unfulfilled',
+      status: 'pending_payment',
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 29,
+      method: 'tools/call',
+      params: { name: 'orders.updateOrderStatus', arguments: { orderId: String(order._id), paymentStatus: 'paid' } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.paymentStatus).toBe('paid');
+    expect(payload.fulfillmentStatus).toBe('unfulfilled');
+  });
+
+  test('orders.getOrderItems returns the purchased items of an order', async () => {
+    const order = await Order.create({
+      customerId: 'user-1',
+      customerEmail: 'buyer@test.com',
+      customerName: 'Cliente Uno',
+      items: [{ productId: 'combo-product', productName: 'Combo Product', qty: 2, price: 10, variantId: 'vanilla:5lb' }],
+      subtotal: 20,
+      tax: 1.4,
+      shipping: 0,
+      total: 21.4,
+      paymentStatus: 'paid',
+      fulfillmentStatus: 'delivered',
+      status: 'paid',
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 30,
+      method: 'tools/call',
+      params: { name: 'orders.getOrderItems', arguments: { orderId: String(order._id) } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.customerName).toBe('Cliente Uno');
+    expect(payload.items).toHaveLength(1);
+    expect(payload.items[0].variantId).toBe('vanilla:5lb');
+  });
+
+  test('users.updateUserRole promotes a customer to admin', async () => {
+    const user = await User.create({ clerkId: 'promo-user-1', email: 'promo@test.com', role: 'customer' });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 31,
+      method: 'tools/call',
+      params: { name: 'users.updateUserRole', arguments: { userId: String(user._id), role: 'admin' } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.previousRole).toBe('customer');
+    expect(payload.role).toBe('admin');
+
+    const updated = await User.findById(user._id).lean();
+    expect(updated?.role).toBe('admin');
+  });
+
+  test('analytics.getSalesReport summarizes revenue and top products', async () => {
+    await Order.create({
+      customerId: 'user-1',
+      customerEmail: 'buyer@test.com',
+      items: [{ productId: 'combo-product', productName: 'Combo Product', qty: 2, price: 10 }],
+      subtotal: 20,
+      tax: 1.4,
+      shipping: 0,
+      total: 21.4,
+      paymentStatus: 'paid',
+      fulfillmentStatus: 'delivered',
+      status: 'paid',
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 32,
+      method: 'tools/call',
+      params: { name: 'analytics.getSalesReport', arguments: { days: 30 } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.summary.totalOrders).toBe(1);
+    expect(payload.topProducts[0].name).toBe('Combo Product');
+  });
+
+  test('analytics.getProductAnalytics reports unconfigured when PostHog has no keys', async () => {
+    const previousKey = process.env.POSTHOG_PERSONAL_API_KEY;
+    const previousProject = process.env.POSTHOG_PROJECT_ID;
+    delete process.env.POSTHOG_PERSONAL_API_KEY;
+    delete process.env.POSTHOG_PROJECT_ID;
+
+    try {
+      const { json } = await rpc({
+        jsonrpc: '2.0',
+        id: 33,
+        method: 'tools/call',
+        params: { name: 'analytics.getProductAnalytics', arguments: { days: 7 } },
+      });
+      const payload = JSON.parse(json.result.content[0].text);
+      expect(payload.configured).toBe(false);
+    } finally {
+      if (previousKey !== undefined) process.env.POSTHOG_PERSONAL_API_KEY = previousKey;
+      if (previousProject !== undefined) process.env.POSTHOG_PROJECT_ID = previousProject;
+    }
+  });
+
+  test('reviews.listReviews returns a product\'s reviews with avgRating', async () => {
+    await Review.create({ productId: 'combo-product', userId: 'user-1', userName: 'Cliente', rating: 4, body: 'Bien' });
+    await Review.create({ productId: 'combo-product', userId: 'user-2', userName: 'Otro', rating: 2, body: 'Regular' });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 34,
+      method: 'tools/call',
+      params: { name: 'reviews.listReviews', arguments: { productId: 'combo-product' } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.count).toBe(2);
+    expect(payload.avgRating).toBe(3);
+  });
+
+  test('recommendations.getRelatedProducts scores by shared category/need/brand', async () => {
+    await Product.create({
+      id: 'related-product',
+      name: 'Related',
+      brand: 'Healthora',
+      category: 'Vitaminas',
+      need: 'Test',
+      price: 8,
+      stock: 5,
+      active: true,
+      variants: [],
+    });
+
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 35,
+      method: 'tools/call',
+      params: { name: 'recommendations.getRelatedProducts', arguments: { productId: 'combo-product' } },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.count).toBe(1);
+    expect(payload.related[0].id).toBe('related-product');
+  });
+
+  test('notifications.broadcast persists a notification for all visitors', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 36,
+      method: 'tools/call',
+      params: {
+        name: 'notifications.broadcast',
+        arguments: { audience: 'all', title: 'Aviso', body: 'Mantenimiento programado' },
+      },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.audience).toBe('all');
+    expect(payload.persisted).toBe(true);
+    expect(payload.notificationId).toBeDefined();
+  });
+
+  test('promotions.validateCoupon validates a seeded coupon against cart items', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 37,
+      method: 'tools/call',
+      params: {
+        name: 'promotions.validateCoupon',
+        arguments: { code: 'BIENVENIDA', items: [{ productId: 'combo-product', qty: 1 }] },
+      },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.valid).toBe(true);
+    expect(payload.code).toBe('BIENVENIDA');
+    expect(payload.discountAmount).toBeGreaterThan(0);
+  });
+
+  test('banners.updateBanner edits the club banner and banners.listBanners returns it', async () => {
+    const { json } = await rpc({
+      jsonrpc: '2.0',
+      id: 38,
+      method: 'tools/call',
+      params: {
+        name: 'banners.updateBanner',
+        arguments: { slot: 'club', title: 'Club Healthora', ctaText: 'Unirme' },
+      },
+    });
+    const payload = JSON.parse(json.result.content[0].text);
+    expect(payload.slot).toBe('club');
+    expect(payload.ctaHref).toBe('/club');
+
+    const listed = await rpc({
+      jsonrpc: '2.0',
+      id: 39,
+      method: 'tools/call',
+      params: { name: 'banners.listBanners', arguments: {} },
+    });
+    const listedPayload = JSON.parse(listed.json.result.content[0].text);
+    expect(listedPayload.count).toBe(1);
+    expect(listedPayload.banners[0].title).toBe('Club Healthora');
   });
 });
