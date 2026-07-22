@@ -745,16 +745,11 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               const rDist = isTablet && !isMobile ? 0.65 : 1;
 
               // Asymmetric cool composition for desktop/tablet
-              // Card index 3 sits further from the cluster (x/y pushed out) than the others so it
-              // isn't mostly hidden under them - with solid opaque rotated cards, whatever a
-              // higher z-index card visually paints over also swallows the hover there, so a
-              // low-z card tucked too close to its neighbors ends up with almost no hoverable
-              // area (see issue #311).
               const basePoses = [
                 { x: 80, y: -20, rotate: -4, scale: 1.15, z: 3, delay: 0, anim: 'heroFloatA' },
                 { x: -90, y: -120, rotate: -15, scale: 0.85, z: 2, delay: 0.15, anim: 'heroFloatB' },
                 { x: 220, y: -60, rotate: 12, scale: 0.9, z: 4, delay: 0.3, anim: 'heroFloatC' },
-                { x: -140, y: 210, rotate: 8, scale: 0.75, z: 1, delay: 0.45, anim: 'heroFloatA' }
+                { x: -50, y: 140, rotate: 8, scale: 0.75, z: 1, delay: 0.45, anim: 'heroFloatA' }
               ];
               
               // Centered fan composition for mobile at the bottom
@@ -791,13 +786,18 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                 >
                   <div className="hero-card-parallax" data-speed={parallaxSpeed} style={{ display: 'inline-flex' }}>
                     <div style={{ animation: `${pose.anim} ${6 + index}s ease-in-out infinite` }}>
-                      <div style={{ 
-                        background: 'rgba(255,255,255,0.985)', 
-                        borderRadius: 20, 
-                        padding: 14, 
-                        boxShadow: '0 24px 54px -24px rgba(0,0,0,0.3), 0 56px 118px -56px rgba(0,0,0,0.36)', 
+                      <div style={{
+                        background: 'rgba(255,255,255,0.985)',
+                        borderRadius: 20,
+                        padding: 14,
+                        boxShadow: '0 24px 54px -24px rgba(0,0,0,0.3), 0 56px 118px -56px rgba(0,0,0,0.36)',
                         border: '1px solid rgba(255,255,255,0.6)',
                         cursor: 'pointer',
+                        // border-radius only clips what's painted, not the hit-testing area - without
+                        // this, each card's ~20px rounded-off corners still belong to its own square
+                        // hit box, silently swallowing hover from whatever card is stacked underneath
+                        // and peeking through that rounded gap (see issue #311).
+                        overflow: 'hidden',
                         transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease'
                       }}
                       onMouseEnter={(e) => {
