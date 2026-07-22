@@ -745,11 +745,16 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
               const rDist = isTablet && !isMobile ? 0.65 : 1;
 
               // Asymmetric cool composition for desktop/tablet
+              // Card index 3 sits further from the cluster (x/y pushed out) than the others so it
+              // isn't mostly hidden under them - with solid opaque rotated cards, whatever a
+              // higher z-index card visually paints over also swallows the hover there, so a
+              // low-z card tucked too close to its neighbors ends up with almost no hoverable
+              // area (see issue #311).
               const basePoses = [
                 { x: 80, y: -20, rotate: -4, scale: 1.15, z: 3, delay: 0, anim: 'heroFloatA' },
                 { x: -90, y: -120, rotate: -15, scale: 0.85, z: 2, delay: 0.15, anim: 'heroFloatB' },
                 { x: 220, y: -60, rotate: 12, scale: 0.9, z: 4, delay: 0.3, anim: 'heroFloatC' },
-                { x: -50, y: 140, rotate: 8, scale: 0.75, z: 1, delay: 0.45, anim: 'heroFloatA' }
+                { x: -140, y: 210, rotate: 8, scale: 0.75, z: 1, delay: 0.45, anim: 'heroFloatA' }
               ];
               
               // Centered fan composition for mobile at the bottom
