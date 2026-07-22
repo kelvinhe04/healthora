@@ -1,0 +1,794 @@
+<title>Healthora — Guion del video</title>
+<style>
+  :root {
+    --paper: #f7f6f0;
+    --paper-raised: #ffffff;
+    --ink: #1e1f16;
+    --ink-soft: #57584a;
+    --rule: rgba(30, 31, 22, 0.13);
+    --rule-strong: rgba(30, 31, 22, 0.24);
+    --accent: #7a8a12;
+    --accent-ink: #4c5709;
+    --accent-bg: rgba(122, 138, 18, 0.1);
+    --role-a: #c4602f;
+    --role-a-bg: rgba(196, 96, 47, 0.09);
+    --role-b: #4a58c7;
+    --role-b-bg: rgba(74, 88, 199, 0.09);
+    --role-c: #1f8a75;
+    --role-c-bg: rgba(31, 138, 117, 0.09);
+    --warn: #a4530a;
+    --warn-bg: rgba(164, 83, 10, 0.12);
+    --warn-rule: rgba(164, 83, 10, 0.35);
+    --code-bg: #edeae0;
+    --code-ink: #33341f;
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #17180f;
+    --paper-raised: #1e2013;
+    --ink: #eceadb;
+    --ink-soft: #a9a892;
+    --rule: rgba(236, 234, 219, 0.14);
+    --rule-strong: rgba(236, 234, 219, 0.26);
+    --accent: #c7d92e;
+    --accent-ink: #d7e85a;
+    --accent-bg: rgba(199, 217, 46, 0.13);
+    --role-a: #e8935f;
+    --role-a-bg: rgba(232, 147, 95, 0.14);
+    --role-b: #8b96ea;
+    --role-b-bg: rgba(139, 150, 234, 0.14);
+    --role-c: #5fd0b6;
+    --role-c-bg: rgba(95, 208, 182, 0.14);
+    --warn: #e2a34b;
+    --warn-bg: rgba(226, 163, 75, 0.14);
+    --warn-rule: rgba(226, 163, 75, 0.4);
+    --code-bg: #0f1009;
+    --code-ink: #d8d6c2;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #17180f;
+      --paper-raised: #1e2013;
+      --ink: #eceadb;
+      --ink-soft: #a9a892;
+      --rule: rgba(236, 234, 219, 0.14);
+      --rule-strong: rgba(236, 234, 219, 0.26);
+      --accent: #c7d92e;
+      --accent-ink: #d7e85a;
+      --accent-bg: rgba(199, 217, 46, 0.13);
+      --role-a: #e8935f;
+      --role-a-bg: rgba(232, 147, 95, 0.14);
+      --role-b: #8b96ea;
+      --role-b-bg: rgba(139, 150, 234, 0.14);
+      --role-c: #5fd0b6;
+      --role-c-bg: rgba(95, 208, 182, 0.14);
+      --warn: #e2a34b;
+      --warn-bg: rgba(226, 163, 75, 0.14);
+      --warn-rule: rgba(226, 163, 75, 0.4);
+      --code-bg: #0f1009;
+      --code-ink: #d8d6c2;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: ui-sans-serif, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+  }
+
+  .sheet {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+  }
+
+  .masthead {
+    padding: 48px 0 28px;
+    border-bottom: 3px solid var(--ink);
+  }
+
+  .kicker {
+    font: 700 12px/1 ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    margin: 0 0 14px;
+  }
+
+  h1 {
+    font-size: clamp(32px, 5.4vw, 50px);
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    line-height: 1.03;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+
+  .dek {
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 24px;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 28px;
+    font: 600 13px/1.3 ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    color: var(--ink-soft);
+  }
+
+  .meta-row strong { color: var(--ink); font-weight: 700; }
+
+  .cast {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+
+  .cast-chip {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 14px;
+    background: var(--paper-raised);
+    border: 1px solid var(--rule-strong);
+    border-left: 4px solid var(--r-color);
+    border-radius: 3px;
+  }
+
+  .cast-chip .name { font-weight: 700; font-size: 14px; }
+  .cast-chip .role { font-size: 12px; color: var(--ink-soft); }
+
+  section.part { margin-top: 56px; }
+
+  .part-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 10px;
+    margin-bottom: 22px;
+  }
+
+  .part-num {
+    font: 800 13px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 5px 9px;
+    border-radius: 2px;
+    letter-spacing: 0.04em;
+  }
+
+  .part-head h2 {
+    font-size: 25px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.005em;
+    flex: 1;
+  }
+
+  .part-head .part-time {
+    font: 700 13px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .part-intro {
+    color: var(--ink-soft);
+    font-size: 15px;
+    max-width: 68ch;
+    margin: 0 0 24px;
+  }
+
+  .rundown {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .rundown .cell {
+    border: 1px solid var(--rule-strong);
+    border-top: 4px solid var(--r-color, var(--ink));
+    background: var(--paper-raised);
+    padding: 12px 14px;
+    border-radius: 3px;
+  }
+
+  .rundown .cell .tc {
+    font: 700 12px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--r-color, var(--ink-soft));
+    font-variant-numeric: tabular-nums;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .rundown .cell .who { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .rundown .cell .what { font-size: 12.5px; color: var(--ink-soft); }
+
+  .block {
+    border: 1px solid var(--rule-strong);
+    border-left-width: 6px;
+    border-left-color: var(--r-color, var(--ink));
+    background: var(--paper-raised);
+    border-radius: 4px;
+    padding: 22px 26px 24px;
+    margin-bottom: 22px;
+  }
+
+  .block-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin-bottom: 14px;
+  }
+
+  .role-tag {
+    font: 800 12px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--r-color, var(--ink));
+    background: var(--r-bg, var(--accent-bg));
+    padding: 5px 10px;
+    border-radius: 2px;
+  }
+
+  .block-head h3 { margin: 0; font-size: 19px; font-weight: 800; flex: 1; min-width: 180px; }
+
+  .timecode {
+    font: 700 13px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .say-label, .show-label {
+    font: 700 11px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--ink-soft);
+    margin: 16px 0 6px;
+  }
+
+  .say-label:first-child { margin-top: 0; }
+
+  .say {
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-size: 16.5px;
+    line-height: 1.55;
+    color: var(--ink);
+    padding-left: 14px;
+    border-left: 2px solid var(--rule);
+  }
+
+  .say p { margin: 0 0 10px; }
+  .say p:last-child { margin-bottom: 0; }
+
+  .demo-block {
+    border: 1px solid var(--rule-strong);
+    border-top: 6px solid var(--r-color, var(--ink));
+    background: var(--paper-raised);
+    border-radius: 4px;
+    padding: 22px 26px 26px;
+    margin-bottom: 22px;
+  }
+
+  .demo-block h3 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
+  .demo-block .subhead { color: var(--ink-soft); font-size: 14px; margin-bottom: 18px; }
+
+  .feature-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+
+  .feature {
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 14px 16px 16px;
+    background: color-mix(in srgb, var(--paper) 55%, var(--paper-raised));
+  }
+
+  .feature-title {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    margin-bottom: 8px;
+  }
+
+  .feature-title .n {
+    font: 800 12px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--r-color, var(--accent-ink));
+    background: var(--r-bg, var(--accent-bg));
+    padding: 2px 7px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .feature-title b { font-size: 15.5px; font-weight: 800; }
+
+  .feature-title .hu {
+    font: 700 11px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--ink-soft);
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+
+  .feature-demo {
+    font-size: 14px;
+    color: var(--ink);
+    padding-left: 2px;
+  }
+
+  .feature-demo .demo-label {
+    font: 700 10.5px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-right: 6px;
+  }
+
+  .feature-demo .note { display: block; color: var(--ink-soft); font-size: 13px; margin-top: 4px; }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+
+  .steps li { display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: start; }
+
+  .steps .n {
+    font: 800 13px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--r-color, var(--accent-ink));
+    background: var(--r-bg, var(--accent-bg));
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+
+  .steps .step-body b { font-weight: 700; }
+  .steps .step-body .hu {
+    font: 700 11.5px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--ink-soft);
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin-left: 4px;
+  }
+  .steps .step-body .note { display: block; color: var(--ink-soft); font-size: 13.5px; margin-top: 3px; }
+
+  .warn {
+    border: 1px solid var(--warn-rule);
+    background: var(--warn-bg);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+
+  .warn .warn-label {
+    font: 800 12px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--warn);
+    margin-bottom: 6px;
+  }
+
+  .warn p { margin: 0; font-size: 14.5px; color: var(--ink); }
+  .warn p + p { margin-top: 8px; }
+
+  .checklist { display: flex; flex-direction: column; gap: 10px; }
+
+  .check-item {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 12px;
+    align-items: start;
+    background: var(--paper-raised);
+    border: 1px solid var(--rule-strong);
+    border-radius: 4px;
+    padding: 14px 18px;
+  }
+
+  .check-item.pending { border-color: var(--warn-rule); background: var(--warn-bg); }
+  .check-item .mark { font-size: 16px; line-height: 1.4; }
+  .check-item.done .mark { color: var(--accent-ink); }
+  .check-item.pending .mark { color: var(--warn); }
+  .check-item b { font-weight: 700; }
+  .check-item .detail { color: var(--ink-soft); font-size: 14px; display: block; margin-top: 2px; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 18px 0 26px; }
+
+  .stat { background: var(--paper-raised); border: 1px solid var(--rule-strong); border-radius: 4px; padding: 14px 16px; text-align: left; }
+  .stat .n { font: 800 26px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--accent-ink); font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+
+  footer.closing {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 3px solid var(--ink);
+    color: var(--ink-soft);
+    font-size: 13px;
+  }
+
+  code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  a { color: var(--accent-ink); }
+
+  @media (max-width: 640px) {
+    .rundown { grid-template-columns: 1fr; }
+    .sheet { padding: 0 16px 72px; }
+    .block, .demo-block { padding: 18px 18px 20px; }
+  }
+</style>
+
+<div class="sheet">
+
+  <header class="masthead">
+    <p class="kicker">Guion del video · Proyecto semestral</p>
+    <h1>Healthora</h1>
+    <p class="dek">E-commerce de farmacia y salud + panel administrativo + servidor MCP. React 19 · Bun · Hono · MongoDB.</p>
+    <div class="meta-row">
+      <span>Video grabado — sin sesión de preguntas en vivo</span>
+      <span>Grupo de <strong>3</strong></span>
+    </div>
+    <div class="cast">
+      <div class="cast-chip" style="--r-color:var(--role-a)"><span class="name">Roy Barrera</span><span class="role">Intro + no funcionales</span></div>
+      <div class="cast-chip" style="--r-color:var(--role-b)"><span class="name">Einer Mosquera</span><span class="role">Arquitectura + sus funcionales</span></div>
+      <div class="cast-chip" style="--r-color:var(--role-c)"><span class="name">Kelvin He</span><span class="role">MCP/calidad + sus funcionales</span></div>
+    </div>
+  </header>
+
+  <!-- ===================== PARTE 1 ===================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">PARTE 1</span>
+      <h2>Presentación — 5:00 exactos</h2>
+      <span class="part-time">00:00 → 05:00</span>
+    </div>
+    <p class="part-intro">Guion cerrado, ~1:40 por persona. Grábenlo con cronómetro visible o edítenlo después a estos cortes — a 150 palabras/min hay margen para respirar sin pasarse.</p>
+
+    <div class="rundown">
+      <div class="cell" style="--r-color:var(--role-a)"><span class="tc">00:00–01:40</span><div class="who">Roy Barrera</div><div class="what">Qué es Healthora y qué problema resuelve</div></div>
+      <div class="cell" style="--r-color:var(--role-b)"><span class="tc">01:40–03:20</span><div class="who">Einer Mosquera</div><div class="what">Arquitectura técnica del sistema</div></div>
+      <div class="cell" style="--r-color:var(--role-c)"><span class="tc">03:20–05:00</span><div class="who">Kelvin He</div><div class="what">Servidor MCP + calidad + transición a demo</div></div>
+    </div>
+
+    <div class="block" style="--r-color:var(--role-a); --r-bg:var(--role-a-bg)">
+      <div class="block-head">
+        <span class="role-tag">Roy Barrera</span>
+        <h3>Qué es y qué problema resuelve</h3>
+        <span class="timecode">00:00 – 01:40</span>
+      </div>
+      <p class="say-label">Qué decir</p>
+      <div class="say">
+        <p>Hola, ¿qué tal? Somos el equipo de Healthora — yo soy Roy, y me acompañan Einer y Kelvin. En los próximos minutos les vamos a mostrar en qué consiste nuestro proyecto: un e-commerce de farmacia y salud pensado para Panamá.</p>
+        <p>¿Y por qué farmacia? Porque comprar salud en línea acá todavía se siente genérico. Cuando uno entra a comprar, por ejemplo, un multivitamínico, casi ninguna tienda te deja elegir bien el sabor o el tamaño que realmente quieres, muchas veces el impuesto no se calcula como debería, y del lado del negocio, si el dueño de la farmacia quiere cambiar un precio o revisar un pedido, probablemente tiene que llamar a un programador.</p>
+        <p>Eso es justo lo que resolvimos con Healthora. Tenemos un catálogo con variantes reales — sabor, tamaño, todo eso —, un checkout que calcula el ITBMS correctamente y hasta exonera los medicamentos como marca la ley, opciones de envío o retiro en tienda, cupones, y algo que nos gusta mucho: una muestra gratis que el cliente puede elegir al final de su compra. Y para que la gente vuelva, armamos un Club de puntos y reposición automática de productos.</p>
+        <p>Este proyecto viene desde el MVP que entregamos en A7, y para esta entrega final metimos <b>37 funcionalidades nuevas</b> encima de esa base — y no es un número que nos inventamos, lo verificamos una por una contra el código real.</p>
+      </div>
+    </div>
+
+    <div class="block" style="--r-color:var(--role-b); --r-bg:var(--role-b-bg)">
+      <div class="block-head">
+        <span class="role-tag">Einer Mosquera</span>
+        <h3>Arquitectura técnica</h3>
+        <span class="timecode">01:40 – 03:20</span>
+      </div>
+      <p class="say-label">Qué decir</p>
+      <div class="say">
+        <p>Ahora bien, ¿con qué construimos todo esto? Yo soy Einer y les cuento la arquitectura.</p>
+        <p>Del lado que ve el cliente usamos React 19, con TanStack Router para manejar las rutas y TanStack Start con SSR completo — el servidor renderiza cada página antes de mandarla al navegador, corriendo como función serverless en Vercel —, Zustand para guardar cosas como el carrito, la wishlist y la comparación de productos, y TanStack Query para hablar con la API. Todo está en español e inglés gracias a i18next.</p>
+        <p>Del lado del servidor la apuesta fue distinta: en vez de Node usamos Bun. ¿Por qué? Porque arranca casi al instante, corre TypeScript directo sin tener que compilar nada, y encima trae su propio test runner integrado — con eso corrimos toda nuestra suite de pruebas. Encima de Bun montamos Hono, un framework bien liviano para armar la API. Y todo se guarda en MongoDB.</p>
+        <p>Y después están las piezas que conectamos: Clerk para el login, Stripe para los pagos — ahí entra el checkout, los webhooks, los reembolsos y hasta las suscripciones recurrentes —, Cloudinary para las imágenes, Redis para no golpear la base de datos cada vez que alguien abre el catálogo, y PostHog para entender cómo se comportan los usuarios. Y algo importante: absolutamente todo lo que entra por un endpoint pasa primero por una validación con Zod, y esos mismos esquemas los reutiliza el servidor MCP del que les va a hablar mi compañero.</p>
+      </div>
+    </div>
+
+    <div class="block" style="--r-color:var(--role-c); --r-bg:var(--role-c-bg)">
+      <div class="block-head">
+        <span class="role-tag">Kelvin He</span>
+        <h3>MCP, calidad y transición</h3>
+        <span class="timecode">03:20 – 05:00</span>
+      </div>
+      <p class="say-label">Qué decir</p>
+      <div class="say">
+        <p>Y hablando de eso, yo soy Kelvin y me tocó la parte de MCP, más el cierre de calidad.</p>
+        <p>MCP significa Model Context Protocol, y básicamente es un servidor que montamos encima del mismo backend, en la ruta <code>/mcp</code>. Ahí expusimos <b>32 herramientas</b>, protegidas con un token, que un agente como Claude Code o Codex puede usar directamente para operar el negocio: consultar el catálogo, ajustar el stock, cambiar el estado de un pedido, moderar una reseña, lo que sea. La regla que nos pusimos desde el principio fue simple: si una tool de MCP puede hacer algo, ese algo también tiene que poderse hacer desde el panel — nunca al revés.</p>
+        <p>En cuanto a calidad, tenemos más de 30 archivos de pruebas entre unitarias e integración en el backend, pruebas en el frontend, y 16 pruebas end-to-end con Playwright que recorren el catálogo, el checkout, el panel admin, las devoluciones, las reseñas y hasta la accesibilidad — y todo eso corre solo, automáticamente, cada vez que subimos un cambio a GitHub. Todo el trabajo lo organizamos con issues de GitHub enlazados a cada Pull Request, y un tablero de Projects para llevar el control.</p>
+        <p>Y lo mejor: nada de esto es teoría, ya está funcionando gratis en producción — el frontend en Vercel, el backend en Koyeb. Así que mejor se los mostramos ahí mismo, en vivo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PARTE 2 ===================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">PARTE 2</span>
+      <h2>Demo — ambiente desplegado</h2>
+    </div>
+    <p class="part-intro">Sin límite de tiempo fijo, pero apunten a algo fluido y sin relleno. Todo se graba contra el ambiente <b>desplegado</b>, no localhost. Cada tarjeta de abajo es <b>una sola funcionalidad</b> — sin combinar varias HU en un mismo punto —: primero el título con su código de HU, después exactamente qué hacer en pantalla para demostrarla. Roy cubre lo <b>no funcional</b> (Sección III del docx: seguridad, testing, rendimiento, accesibilidad — no cuenta entre las 37). Einer y Kelvin, juntos, demuestran las <b>37 funcionalidades nuevas</b> de Cliente/Administrador (Sección II): 8 + 29.</p>
+
+    <div class="meta-row" style="margin-bottom: 18px;">
+      <span>Frontend → <strong>healthora-shop.vercel.app</strong></span>
+      <span>Backend → <strong>excessive-lara-personal-api-school-2d60e8b3.koyeb.app</strong></span>
+    </div>
+
+    <div class="warn">
+      <p class="warn-label">Verificar antes de grabar</p>
+      <p><b>Acceso admin/owner en producción.</b> Hay un incidente documentado (<code>docs/produccion-acceso-admin.md</code>) de un caso donde Clerk rechazaba el token en prod por CORS mal configurado. Inicien sesión con la cuenta admin/owner en <b>healthora-shop.vercel.app</b> el día antes de grabar y confirmen que el panel carga.</p>
+      <p><b>Redeploy pendiente del backend — <code>/docs</code> estaba roto.</b> Se probó <code>/docs</code> en producción y la página cargaba en blanco. Causa real: el Content-Security-Policy global del backend no incluía <code>cdn.jsdelivr.net</code>, que es de donde Swagger UI carga su JS/CSS — el navegador los bloqueaba silenciosamente. Ya se corrigió en <code>backend/src/middleware/securityHeaders.ts</code> (CSP relajado solo para la ruta <code>/docs</code>, el resto del sitio mantiene la política estricta). <b>Hace falta redeployar el backend a Koyeb</b> antes de grabar para que el fix esté en producción — probar <code>/docs</code> ahí mismo el día antes.</p>
+      <p><b><code>MCP_SERVICE_TOKEN</code> en Koyeb.</b> La demo de MCP contra el ambiente desplegado necesita esa variable configurada en producción, no solo en <code>.env</code> local. Prueben la conexión desde Claude Code/Codex contra la URL de Koyeb antes de grabar.</p>
+      <p><b>Datos de ejemplo.</b> Confirmen que la base de producción tenga productos con variantes, un cupón activo, y al menos un pedido — si algo depende de crearse desde cero en la toma, un imprevisto de red arruina la grabación.</p>
+    </div>
+
+    <div class="demo-block" style="--r-color:var(--role-a); --r-bg:var(--role-a-bg)">
+      <span class="role-tag">Roy Barrera</span>
+      <h3>Tour general + no funcionales</h3>
+      <div class="subhead">Recorrido rápido de la tienda, luego lo que sostiene todo por debajo</div>
+      <ol class="feature-list">
+        <li class="feature">
+          <div class="feature-title"><span class="n">1</span><b>Tour de landing y navegación</b></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Abrir <span class="hu" style="color:var(--accent-ink)">healthora-shop.vercel.app</span> (Landing). Usar el menú superior — el link "Ofertas" hace scroll a la sección de banners editables del admin; el link "Categorías" baja a la grilla de categorías. Solo 20–30s de contexto visual antes de que Einer y Kelvin entren al detalle.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">2</span><b>Security headers (CSP, HSTS, X-Frame)</b><span class="hu">HU-064</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>DevTools (F12) → pestaña <b>Network</b> → recargar la página → click en la primera request (el documento, o cualquier llamada <code>/api</code>) → pestaña <b>Headers</b> → señalar <code>Content-Security-Policy</code> y <code>Strict-Transport-Security</code> en la respuesta.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">3</span><b>Validación de inputs con Zod</b><span class="hu">HU-063</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sin pantalla propia — mencionarlo en voz justo después del punto anterior: "cada input que llega a un endpoint pasa por un esquema de Zod antes de tocar MongoDB". Si da tiempo, mostrar en <code>/docs</code> (punto 4) el schema de un endpoint como evidencia visual.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">4</span><b>Documentación de API (OpenAPI/Swagger)</b><span class="hu">HU-089</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En una pestaña nueva, ir a <code>https://excessive-lara-personal-api-school-2d60e8b3.koyeb.app/docs</code> — se abre el Swagger UI generado desde <code>/openapi.json</code>, con todos los endpoints del backend listados y probables desde ahí mismo.<span class="note">Requiere el redeploy del backend mencionado en la advertencia de arriba — probarlo el día antes, no en vivo por primera vez.</span></div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">5</span><b>Tests unitarios y de integración</b><span class="hu">HU-070/HU-071</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Terminal abierta en <code>backend/</code>, correr <code>bun test</code> y dejar que corran los ~28 archivos de test en pantalla. Alternativa: repo en GitHub → pestaña <b>Actions</b> → señalar el check <code>backend</code> del run más reciente.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">6</span><b>Tests end-to-end con Playwright</b><span class="hu">HU-072</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En la misma pestaña <b>Actions</b> de GitHub, señalar el check <code>e2e</code> del run más reciente sobre <code>main</code> — 16 specs corriendo headless contra el flujo completo (catálogo, checkout, admin, devoluciones, reseñas, accesibilidad).</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">7</span><b>CI/CD automático</b><span class="hu">HU-073</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Vista general de la pestaña <b>Actions</b>: los 3 checks (<code>backend</code>, <code>frontend</code>, <code>e2e</code>) corren solos en cada push a <code>main</code>, sin intervención manual.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">8</span><b>Rendimiento de imágenes (Cloudinary, lazy load)</b><span class="hu">HU-080</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En <span class="hu" style="color:var(--accent-ink)">/catalog</span>, scroll lento para mostrar que las imágenes van cargando de forma diferida a medida que entran al viewport (lazy load vía Cloudinary).</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">9</span><b>Accesibilidad por teclado</b><span class="hu">HU-082</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Parado en cualquier página, presionar <b>Tab</b> una sola vez desde arriba del todo — aparece el enlace "Saltar al contenido" (skip link) y un anillo de foco visible marcando el primer elemento interactivo.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">10</span><b>SSR con TanStack Start</b><span class="hu">HU-091</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Click derecho en cualquier página → "Ver código fuente de la página" (o Ctrl+U) — el HTML que llega del servidor ya trae el contenido real (productos, texto, todo), no un <code>&lt;div id="root"&gt;&lt;/div&gt;</code> vacío esperando a que cargue el JS. Corre como función serverless en Vercel.</div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="demo-block" style="--r-color:var(--role-b); --r-bg:var(--role-b-bg)">
+      <span class="role-tag">Einer Mosquera</span>
+      <h3>Descubrimiento de producto + admin de catálogo</h3>
+      <div class="subhead">8 de las 37 funcionalidades nuevas — una tarjeta por HU, sin combinar</div>
+      <ol class="feature-list">
+        <li class="feature">
+          <div class="feature-title"><span class="n">1</span><b>Lista de deseos (wishlist)</b><span class="hu">HU-044 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Desde <span class="hu" style="color:var(--accent-ink)">/catalog</span>, abrir cualquier producto y click en el ícono de <b>corazón</b> junto a "Agregar al carrito · $X".</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">2</span><b>Comparación de productos</b><span class="hu">HU-047</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En la misma ficha, click en el ícono de <b>capas</b> junto al corazón para agregarlo a comparación. Arriba a la derecha del header, click en el ícono de capas (junto a la bolsa del carrito) — abre <span class="hu" style="color:var(--accent-ink)">/compare</span>: tabla lado a lado con Marca, Categoría, Precio, Rating, Stock, Beneficios, Modo de uso, Ingredientes.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">3</span><b>Productos relacionados</b><span class="hu">HU-045 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En la ficha del producto, bajar hasta la sección "También te puede gustar".</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">4</span><b>Productos vistos recientemente</b><span class="hu">HU-046</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Bajar más en el Landing hasta la sección "Vistos recientemente" (o volver a <span class="hu" style="color:var(--accent-ink)">/catalog</span> tras haber abierto 2-3 fichas) — muestra los últimos productos visitados por el usuario.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">5</span><b>Indicador de compras recientes</b><span class="hu">HU-104</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En una tarjeta de producto del catálogo o su ficha, señalar la insignia "N+ compraron el último mes" (solo aparece si el producto supera el umbral mínimo; el número siempre se redondea a un rango, nunca la cifra exacta).</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">6</span><b>Volver a comprar (reorder)</b><span class="hu">HU-043</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Ícono de usuario → "Mis pedidos" (o ir directo a <span class="hu" style="color:var(--accent-ink)">/orders</span>) → abrir el detalle de un pedido anterior → botón "Volver a comprar".</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">7</span><b>CRUD de categorías desde el admin</b><span class="hu">HU-048 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Panel admin (ícono de usuario → "Panel Admin") → sidebar, "Categorías" → botón "Nueva categoría"; en una fila existente, "Editar" → cambiar el ID para mostrar que reasigna automáticamente los productos de esa categoría.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">8</span><b>Gestión de cupones (UI admin)</b><span class="hu">HU-049 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar del admin, "Cupones" → "+ Nuevo cupón" (código, tipo de descuento, vigencia); en uno existente, "Editar" → togglear "Cupón activo".<span class="note">Mencionar en voz: "la validación de este mismo cupón en el checkout la van a ver en el bloque de Kelvin" (HU-040).</span></div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="demo-block" style="--r-color:var(--role-c); --r-bg:var(--role-c-bg)">
+      <span class="role-tag">Kelvin He</span>
+      <h3>Variantes, checkout completo, club, admin y MCP en vivo</h3>
+      <div class="subhead">29 de las 37 funcionalidades nuevas — una tarjeta por HU, sin combinar</div>
+      <ol class="feature-list">
+        <li class="feature">
+          <div class="feature-title"><span class="n">1</span><b>Gestión de variantes desde el panel admin</b><span class="hu">HU-032 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Panel admin → "Productos" → editar un producto → sección de variantes: agregar una nueva (tipo, etiqueta, SKU) o editar una existente, y marcar una como predeterminada.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">2</span><b>Precio por variante aplicado en checkout</b><span class="hu">HU-033</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En la ficha pública de ese producto, elegir un sabor distinto — el precio mostrado cambia en vivo sin recargar (es el mismo precio que después cobra Stripe, no el precio base).</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">3</span><b>Stock por variante</b><span class="hu">HU-034 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En la misma ficha, elegir un tamaño distinto — el indicador de stock ("EN STOCK" / "SOLO QUEDAN N") cambia según la variante, no según el producto en general.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">4</span><b>Variante persistida en el carrito</b><span class="hu">HU-035</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Click "Agregar al carrito · $X" → abrir el carrito (ícono de bolsa) para confirmar la variante elegida → recargar la página (F5) → volver a abrir el carrito: la variante <b>sigue ahí</b>.<span class="note">Fix arreglado esta misma semana (antes, recargar perdía la variante) — vale la pena nombrarlo como ejemplo de mantenimiento activo.</span></div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">5</span><b>Enforcement de stock (inventario)</b><span class="hu">HU-037 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Intentar subir la cantidad de un ítem en el carrito por encima del stock disponible de esa variante — el sistema bloquea la cantidad excedente antes de llegar al checkout.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">6</span><b>Muestra gratis con elegibilidad automática</b><span class="hu">HU-105</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Dentro de "Tu carrito", si aplica, la tarjeta verde "¡Elige 1 muestra gratis!" con botón "ELEGIR →" abre <span class="hu" style="color:var(--accent-ink)">/sample-picker</span> — elegir una opción y click "Confirmar y volver".</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">7</span><b>Envío a domicilio o retiro en tienda</b><span class="hu">HU-038 · Simplificada</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Click "Ir a checkout". En "Dirección de envío" / "Tus datos", alternar entre "Envío a domicilio" y "Retiro en tienda" y mostrar cómo cambia el costo mostrado (gratis en retiro, tarifa plana o gratis sobre $50 en domicilio).</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">8</span><b>Velocidad de entrega</b><span class="hu">HU-100 · Simplificada</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sin pantalla propia — mencionar en voz que se consolidó con el punto anterior: en vez de estándar/express por separado, quedó resuelto con la misma elección domicilio/retiro.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">9</span><b>Cálculo de ITBMS</b><span class="hu">HU-039</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En el resumen de la orden (columna derecha del checkout), señalar la línea "ITBMS" en el desglose de totales — aplica 7% a productos gravados y exonera medicamentos.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">10</span><b>Código promocional aplicado en checkout</b><span class="hu">HU-040 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En el mismo resumen, campo "Código de descuento" (placeholder <code>BIENVENIDA</code>) con botón "Aplicar" — el descuento se refleja en el total antes de pagar.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">11</span><b>Pago con Stripe</b><span class="hu">MVP — contexto, no cuenta entre las 37</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Pagar con Stripe Elements embebido (tarjeta de prueba <code>4242 4242 4242 4242</code>, cualquier fecha futura y CVC) → llega a la pantalla de confirmación.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">12</span><b>Variante registrada en la orden</b><span class="hu">HU-036 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Abrir el detalle de la orden que se acaba de crear (o <span class="hu" style="color:var(--accent-ink)">/orders</span>) — el ítem muestra el id y la etiqueta de la variante comprada, igual que el email de confirmación.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">13</span><b>Devoluciones y reembolsos</b><span class="hu">HU-041 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En <span class="hu" style="color:var(--accent-ink)">/orders</span>, abrir un pedido "enviado" → botón "Solicitar devolución" (tipo de motivo, detalles, fotos de evidencia, "¿Qué prefieres?" con Reembolso / Reenvío).</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">14</span><b>Seguimiento de envío (tracking)</b><span class="hu">HU-042</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En ese mismo pedido, mostrar "N° de guía" + courier bajo el timeline de estado (preparando, enviado, en tránsito, entregado).</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">15</span><b>Página de perfil editable</b><span class="hu">HU-057</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Ícono de usuario → "Mi perfil" (<span class="hu" style="color:var(--accent-ink)">/profile</span>) → editar nombre o foto y mostrar que se guarda de inmediato.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">16</span><b>Preferencias de notificación</b><span class="hu">HU-058</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En el mismo perfil, sección "Preferencias de notificación": 2 toggles por tipo de correo + "Darme de baja de todos los correos".</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">17</span><b>Métodos de pago guardados</b><span class="hu">HU-059</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sección "Métodos de pago" del perfil: botón "Agregar tarjeta" (Stripe PaymentMethods) y opción de eliminar una guardada.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">18</span><b>Programa de lealtad / puntos (Club)</b><span class="hu">HU-060</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Ícono de usuario → "Club" (<span class="hu" style="color:var(--accent-ink)">/club</span>): tarjeta "Tus puntos" con desglose Ganados/Canjeados.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">19</span><b>Suscripción de reposición automática</b><span class="hu">HU-101</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sección "Mis suscripciones" del perfil: botones Pausar/Reanudar/Cancelar sobre una suscripción activa (elegida en la ficha de producto con una frecuencia de 7/15/30/60 días).</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">20</span><b>Recordatorio de recompra</b><span class="hu">HU-102</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sin demo en vivo posible — es un email programado según la fecha estimada de agotamiento. Mencionar en voz o mostrar el código en <code>backend/src/lib/repurchase.ts</code>.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">21</span><b>Dashboard administrativo</b><span class="hu">MVP — contexto, no cuenta entre las 37</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Panel admin → "Dashboard": tarjetas KPI "Ingresos mes", "Órdenes mes", "Clientes", "Existencias bajas".</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">22</span><b>Alertas de stock bajo</b><span class="hu">HU-055</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En el mismo Dashboard, tarjeta "Inventario crítico" resaltando productos/variantes bajo el umbral definido por el admin.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">23</span><b>Notificaciones en tiempo real</b><span class="hu">HU-061 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Si llega un pedido nuevo durante la grabación, señalar la campana de notificaciones (header) recibiéndolo al instante vía WebSockets, sin recargar.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">24</span><b>Descuentos automáticos por producto y categoría</b><span class="hu">HU-092 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Productos": editar un producto → "Descuento por categoría" → elegir categoría, tipo (Porcentaje/Monto fijo) y valor → "Aplicar descuento" → volver al catálogo público y mostrar el precio tachado junto al rebajado.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">25</span><b>Exportación de órdenes a Excel</b><span class="hu">HU-050 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Pedidos": botón "Exportar Excel" arriba de la tabla.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">26</span><b>CMS de banners</b><span class="hu">HU-053</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Banners": "Editar" en uno de los 2 banners fijos (promo/club) y cambiar un texto para mostrar que se refleja en el Landing sin redeploy.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">27</span><b>Analítica de producto (PostHog)</b><span class="hu">HU-054 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Analítica": embudo de conversión y abandono de carrito capturado por PostHog.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">28</span><b>Reportes avanzados (cohortes, LTV)</b><span class="hu">HU-052 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Cohortes": retención de clientes por período y LTV promedio, filtrable por rango de fecha.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">29</span><b>Moderación de reseñas</b><span class="hu">HU-056 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Reseñas": sobre una reseña, los botones "Aprobar / publicar", "Ocultar", "Eliminar" y "Banear"; arriba, el botón "Usuarios baneados".</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">30</span><b>Audit trail de acciones administrativas</b><span class="hu">HU-051 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Auditoría": filtros por email de admin, acción y rango de fechas sobre el registro append-only.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">31</span><b>Rol de administrador supremo (owner)</b><span class="hu">HU-103</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Con el usuario logueado como <b>owner</b>, sidebar "Clientes" → mostrar el filtro "Rol" (Cliente/Admin/Owner) y el botón "Hacer admin" / "Quitar admin".</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">32</span><b>Servidor MCP en vivo</b><span class="hu">32 tools — no es una HU nueva, es la capa que las expone a un agente</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En Claude Code o Codex, con el servidor MCP apuntando a <code>https://excessive-lara-personal-api-school-2d60e8b3.koyeb.app/mcp</code> y el Bearer token, pedirle al agente que llame en vivo: <code>catalog.listProducts</code>, <code>inventory.adjustStock</code> (y refrescar la sección Productos del admin para ver el cambio reflejado), y <code>notifications.broadcast</code> (y ver la campana recibirla en tiempo real). Cerrar mencionando: 32 tools, cada una con su equivalente exacto en la UI que acaban de ver.</div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===================== PARTE 3 ===================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">PARTE 3</span>
+      <h2>Checklist de cierre de entrega</h2>
+    </div>
+    <p class="part-intro">Los 5 requisitos de la rúbrica, y cómo quedan cubiertos hoy.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="n">37/37</div><div class="l">Funcionales nuevos (A13)</div></div>
+      <div class="stat"><div class="n">32</div><div class="l">Tools MCP</div></div>
+      <div class="stat"><div class="n">28+8</div><div class="l">Archivos test back/front</div></div>
+      <div class="stat"><div class="n">16</div><div class="l">Specs e2e Playwright</div></div>
+    </div>
+
+    <div class="checklist">
+      <div class="check-item done">
+        <span class="mark">✓</span>
+        <div><b>Funcionalidades de A13 implementadas + comentarios del profesor.</b><span class="detail">37/37 requisitos funcionales nuevos verificados contra el código. HU-038/HU-100 quedaron con alcance simplificado a propósito (envío tarifa plana / retiro en tienda en vez de zona × velocidad).</span></div>
+      </div>
+      <div class="check-item done">
+        <span class="mark">✓</span>
+        <div><b>Servidor MCP integrado.</b><span class="detail">32 tools bajo autenticación por token de servicio, importables en Claude Code/Codex vía <code>docs/mcp-server.md</code>.</span></div>
+      </div>
+      <div class="check-item done">
+        <span class="mark">✓</span>
+        <div><b>GitHub Issues + Projects, tickets vinculados a PRs.</b><span class="detail">Tablero "Healthora - Roadmap MVP a Production Ready" + cada PR reciente cierra su issue con <code>Closes #NNN</code>.</span></div>
+      </div>
+      <div class="check-item pending">
+        <span class="mark">⚠</span>
+        <div><b>Despliegue remoto gratuito funcionando.</b><span class="detail">Vercel + Koyeb están arriba, pero confirmar el día antes de grabar: login admin en prod, redeploy del backend con el fix de <code>/docs</code>, y <code>MCP_SERVICE_TOKEN</code> configurado en Koyeb (ver advertencia en Parte 2).</span></div>
+      </div>
+      <div class="check-item done">
+        <span class="mark">✓</span>
+        <div><b>Al menos un proceso de QA + Playwright cubriendo todas las funcionalidades.</b><span class="detail">16 specs e2e + revisión manual con Playwright MCP antes de mergear cada PR.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="closing">
+    Ensayen la Parte 1 con cronómetro al menos dos veces antes de grabar. En la Parte 2, cada quien graba su propio tramo de pantalla — más fácil de editar después que intentarlo todo en una sola toma continua.
+  </footer>
+
+</div>

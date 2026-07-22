@@ -1,0 +1,593 @@
+<title>Healthora — Funcionalidades implementadas</title>
+<style>
+  :root {
+    --bg: #f4f5f1;
+    --paper: #ffffff;
+    --ink: #171a16;
+    --ink-soft: #565b52;
+    --ink-faint: #8a8f83;
+    --rule: rgba(23, 26, 22, 0.11);
+    --rule-strong: rgba(23, 26, 22, 0.2);
+    --accent: #0e6b57;
+    --accent-ink: #0a5445;
+    --accent-bg: rgba(14, 107, 87, 0.08);
+    --accent-bg-strong: rgba(14, 107, 87, 0.14);
+    --tag-mcp: #9a5b12;
+    --tag-mcp-bg: rgba(154, 91, 18, 0.1);
+    --code-bg: #eceee7;
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #12140f;
+    --paper: #191c15;
+    --ink: #e9ebe2;
+    --ink-soft: #a7ac9e;
+    --ink-faint: #767b70;
+    --rule: rgba(233, 235, 226, 0.12);
+    --rule-strong: rgba(233, 235, 226, 0.22);
+    --accent: #4fcbaa;
+    --accent-ink: #7adcc0;
+    --accent-bg: rgba(79, 203, 170, 0.12);
+    --accent-bg-strong: rgba(79, 203, 170, 0.2);
+    --tag-mcp: #e0a24a;
+    --tag-mcp-bg: rgba(224, 162, 74, 0.14);
+    --code-bg: #21251a;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12140f;
+      --paper: #191c15;
+      --ink: #e9ebe2;
+      --ink-soft: #a7ac9e;
+      --ink-faint: #767b70;
+      --rule: rgba(233, 235, 226, 0.12);
+      --rule-strong: rgba(233, 235, 226, 0.22);
+      --accent: #4fcbaa;
+      --accent-ink: #7adcc0;
+      --accent-bg: rgba(79, 203, 170, 0.12);
+      --accent-bg-strong: rgba(79, 203, 170, 0.2);
+      --tag-mcp: #e0a24a;
+      --tag-mcp-bg: rgba(224, 162, 74, 0.14);
+      --code-bg: #21251a;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: ui-sans-serif, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-size: 15.5px;
+  }
+
+  ::selection { background: var(--accent-bg-strong); }
+
+  a { color: var(--accent-ink); }
+
+  code, .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+  }
+
+  .page { max-width: 980px; margin: 0 auto; padding: 0 28px 100px; }
+
+  /* ---------- Header ---------- */
+
+  header.masthead {
+    padding: 52px 0 30px;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+
+  .eyebrow {
+    font: 700 11.5px/1 ui-monospace, "SF Mono", Consolas, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent-ink);
+    margin: 0 0 16px;
+  }
+
+  h1 {
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+    font-size: clamp(30px, 4.6vw, 44px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.08;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+
+  .dek {
+    font-size: 16px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 30px;
+  }
+
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--rule-strong);
+    border: 1px solid var(--rule-strong);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .summary-cell {
+    background: var(--paper);
+    padding: 16px 18px;
+  }
+
+  .summary-cell .n {
+    font: 700 26px/1 ui-monospace, "SF Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent-ink);
+  }
+
+  .summary-cell .l {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 5px;
+  }
+
+  /* ---------- Legend / provenance note ---------- */
+
+  .provenance {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-top: 26px;
+    padding: 13px 16px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-bg-strong);
+    border-radius: 6px;
+    font-size: 13.5px;
+    color: var(--ink);
+  }
+
+  .provenance .mark { color: var(--accent-ink); font-weight: 700; flex-shrink: 0; }
+
+  /* ---------- Module sections ---------- */
+
+  nav.toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 28px 0 0;
+  }
+
+  nav.toc a {
+    font: 600 12.5px/1 ui-sans-serif, sans-serif;
+    text-decoration: none;
+    color: var(--ink-soft);
+    background: var(--paper);
+    border: 1px solid var(--rule-strong);
+    border-radius: 100px;
+    padding: 7px 13px;
+  }
+
+  nav.toc a:hover { color: var(--accent-ink); border-color: var(--accent-ink); }
+  nav.toc a:focus-visible, a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-ink);
+    outline-offset: 2px;
+  }
+
+  section.module { margin-top: 52px; scroll-margin-top: 20px; }
+
+  .module-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 9px;
+    margin-bottom: 4px;
+  }
+
+  .module-head h2 {
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    flex: 1;
+  }
+
+  .module-count {
+    font: 700 12.5px ui-monospace, "SF Mono", Consolas, monospace;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rows { display: flex; flex-direction: column; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 74px 1fr auto;
+    gap: 16px;
+    align-items: start;
+    padding: 15px 4px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .row:last-child { border-bottom: none; }
+
+  .row .hu {
+    font: 700 12px ui-monospace, "SF Mono", Consolas, monospace;
+    color: var(--ink-faint);
+    padding-top: 2px;
+  }
+
+  .row .title { font-weight: 600; font-size: 15px; margin: 0 0 4px; }
+
+  .row .evidence {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .row .tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-self: end;
+    padding-top: 2px;
+  }
+
+  .tag {
+    font: 700 10.5px/1 ui-monospace, "SF Mono", Consolas, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .tag.mcp { color: var(--tag-mcp); background: var(--tag-mcp-bg); }
+  .tag.done { color: var(--accent-ink); background: var(--accent-bg); }
+  .tag.partial { color: var(--tag-mcp); background: var(--tag-mcp-bg); }
+
+  /* ---------- Footer ---------- */
+
+  footer.closing {
+    margin-top: 64px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule-strong);
+    color: var(--ink-faint);
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  @media (max-width: 720px) {
+    .summary-bar { grid-template-columns: repeat(2, 1fr); }
+    .row { grid-template-columns: 1fr; gap: 6px; }
+    .row .hu { padding-top: 0; }
+    .row .tags { justify-self: start; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto !important; }
+  }
+
+  html { scroll-behavior: smooth; }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">Healthora · Entrega A13 · Verificación de requisitos</p>
+    <h1>Funcionalidades implementadas</h1>
+    <p class="dek">Los 37 requisitos funcionales nuevos definidos para esta entrega (Sección II de <code>Healthora-Historias-de-Usuario.docx</code>), verificados uno por uno contra el código real del repositorio — no contra lo que dice el documento de historias, que quedó desactualizado a medida que avanzó el desarrollo (su propio encabezado dice "32", pero cuenta 37 historias reales).</p>
+
+    <div class="summary-bar">
+      <div class="summary-cell"><div class="n">37/37</div><div class="l">Requisitos funcionales nuevos</div></div>
+      <div class="summary-cell"><div class="n">26</div><div class="l">Con herramienta MCP (18 nuevas + 8 del MVP)</div></div>
+      <div class="summary-cell"><div class="n">7</div><div class="l">Módulos de negocio</div></div>
+      <div class="summary-cell"><div class="n">2026-07-21</div><div class="l">Última verificación</div></div>
+    </div>
+
+    <div class="provenance">
+      <span class="mark">＊</span>
+      <span>El campo "Estado" del documento de historias de usuario no se actualizó al ritmo del código: varias historias que ahí figuran como "Pendiente" ya están implementadas y en producción. Esta página refleja el estado verificado directamente contra <code>backend/src/routes</code>, <code>backend/src/mcp</code> y el frontend — no una copia del docx.</span>
+    </div>
+
+    <div class="provenance">
+      <span class="mark">＊</span>
+      <span>Esta página lista <b>45 filas en total</b>, no 37: son las <b>37</b> funcionalidades nuevas (módulos Variantes a Notificaciones) <b>más 8</b> del módulo "MCP sobre el MVP" al final, que ya existían desde antes y no cuentan entre las 37. De las 37, 35 están "Implementada" y 2 "Simplificada" (HU-038, HU-100); las 8 del MVP están todas "Implementada".</span>
+    </div>
+
+    <div class="provenance">
+      <span class="mark">＊</span>
+      <span><b>18 ≠ 23 ≠ 32</b> — son 3 unidades distintas, no cifras que se contradicen. <b>18</b> es cuántas de las 37 funcionalidades nuevas tienen algún soporte MCP (la unidad "funcionalidad"). <b>23</b> es cuántas <i>tools</i> individuales hacen falta para cubrir esas 18 — 5 de ellas (variantes, devoluciones, cupones, banners, reseñas) se implementaron con 2 tools cada una: una para leer/listar y otra para crear/modificar. <b>32</b> es el total de tools en todo el servidor MCP: las 23 de arriba, más 8 que cubren funcionalidad que ya existía en el MVP (Sección I — ver módulo "MCP sobre el MVP" abajo), más 1 (<code>search.reindexCatalog</code>) que no es una de las 37 sino una operación de caché ligada a un requisito no funcional (HU-077, Sección III).</span>
+    </div>
+
+    <nav class="toc" aria-label="Ir a módulo">
+      <a href="#variantes">Variantes</a>
+      <a href="#compra">Compra y checkout</a>
+      <a href="#descubrimiento">Descubrimiento</a>
+      <a href="#administracion">Administración</a>
+      <a href="#usuarios">Usuarios</a>
+      <a href="#notificaciones">Notificaciones</a>
+      <a href="#mcp-mvp">MCP sobre el MVP</a>
+    </nav>
+  </header>
+
+  <section class="module" id="variantes">
+    <div class="module-head"><h2>Variantes</h2><span class="module-count">5 de 5</span></div>
+    <div class="rows">
+      <div class="row">
+        <span class="hu">HU-032</span>
+        <div><p class="title">Gestión de variantes desde el panel admin</p><p class="evidence">El admin agrega/edita/elimina variantes (tipo, etiqueta, SKU) desde el editor de producto; una puede marcarse predeterminada.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-033</span>
+        <div><p class="title">Precio por variante aplicado en checkout</p><p class="evidence">El backend cobra el precio de la variante seleccionada, no el precio base; el line item de Stripe lo refleja.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-034</span>
+        <div><p class="title">Stock por variante</p><p class="evidence">Cada variante mantiene su propio nivel de stock; el checkout valida y descuenta el de la variante exacta, no el del producto.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-035</span>
+        <div><p class="title">Variante persistida en el carrito</p><p class="evidence">El carrito guardado en MongoDB conserva la variante elegida entre sesiones y tras recargar la página (fix reciente, HU-035).</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-036</span>
+        <div><p class="title">Variante registrada en las órdenes</p><p class="evidence">Cada ítem de orden guarda id y etiqueta de la variante; se ve en el detalle de la orden, el email y los reportes de ventas.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="module" id="compra">
+    <div class="module-head"><h2>Compra y checkout</h2><span class="module-count">8 de 8</span></div>
+    <div class="rows">
+      <div class="row">
+        <span class="hu">HU-037</span>
+        <div><p class="title">Enforcement de stock (inventario)</p><p class="evidence">Se valida disponibilidad al agregar al carrito y se revalida al pagar; el stock se descuenta de forma atómica al confirmarse el pago.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-038</span>
+        <div><p class="title">Costo de envío según modalidad</p><p class="evidence">Alcance simplificado a propósito: tarifa plana / gratis sobre $50 en domicilio, o retiro en tienda sin costo — en vez de zona × velocidad de Panamá.</p></div>
+        <div class="tags"><span class="tag partial">Simplificada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-039</span>
+        <div><p class="title">Cálculo de ITBMS (Panamá)</p><p class="evidence">Aplica 7% a productos gravados y exonera medicamentos/artículos de salud según ley; el desglose se muestra en checkout y orden.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-040</span>
+        <div><p class="title">Códigos promocionales en checkout</p><p class="evidence">El cliente ingresa un cupón, se valida y el descuento se aplica al total antes de pagar; cupones inválidos o expirados se rechazan.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-041</span>
+        <div><p class="title">Devoluciones y reembolsos</p><p class="evidence">El cliente inicia una devolución (motivo, evidencia, reembolso o reenvío); el reembolso se procesa vía Stripe Refunds API con emails automáticos por cambio de estado.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-042</span>
+        <div><p class="title">Seguimiento de envío (tracking)</p><p class="evidence">La orden muestra carrier y número de guía cuando está disponible, con el estado de envío en un timeline visual.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-043</span>
+        <div><p class="title">Volver a comprar (reorder)</p><p class="evidence">Desde el detalle de una orden previa, un botón agrega todos sus ítems al carrito actual respetando variante y cantidad cuando siguen disponibles.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-100</span>
+        <div><p class="title">Velocidad de entrega (estándar / express)</p><p class="evidence">Consolidada con HU-038: en vez de dos velocidades de envío por separado, se resolvió con la misma elección domicilio/retiro — no hay opción "express" independiente.</p></div>
+        <div class="tags"><span class="tag partial">Simplificada</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="module" id="descubrimiento">
+    <div class="module-head"><h2>Descubrimiento de producto</h2><span class="module-count">5 de 5</span></div>
+    <div class="rows">
+      <div class="row">
+        <span class="hu">HU-044</span>
+        <div><p class="title">Lista de deseos (wishlist)</p><p class="evidence">El cliente agrega/quita productos de su wishlist desde la ficha; persiste asociada a la cuenta y puede moverse al carrito.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-045</span>
+        <div><p class="title">Productos relacionados y recomendaciones</p><p class="evidence">La ficha de producto muestra "También te puede gustar" basado en categoría; el carrito sugiere complementos.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-046</span>
+        <div><p class="title">Productos vistos recientemente</p><p class="evidence">Se registran los últimos productos vistos por el usuario y se muestran en una sección dedicada en el Landing y la ficha.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-047</span>
+        <div><p class="title">Comparación de productos</p><p class="evidence">Vista <code>/compare</code>: tabla lado a lado de marca, categoría, precio, rating, stock, beneficios e ingredientes de los productos agregados.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-104</span>
+        <div><p class="title">Indicador de compras recientes ("500+ compraron")</p><p class="evidence">Calculado desde órdenes pagadas de los últimos 30 días (<code>lib/purchases.ts</code>); redondea a rangos (10+, 50+, 100+, 1K+) y se oculta bajo el umbral mínimo, igual que el stock bajo.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="module" id="administracion">
+    <div class="module-head"><h2>Administración</h2><span class="module-count">11 de 11</span></div>
+    <div class="rows">
+      <div class="row">
+        <span class="hu">HU-048</span>
+        <div><p class="title">CRUD de categorías en el admin</p><p class="evidence">Alta, edición y desactivación de categorías; reasignar el ID de una categoría reubica sus productos automáticamente.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-049</span>
+        <div><p class="title">Gestión de cupones y descuentos (UI admin)</p><p class="evidence">Alta de cupones con tipo de descuento y vigencia, activación/desactivación, límite de uso por cupón o usuario.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-050</span>
+        <div><p class="title">Exportación de órdenes a Excel</p><p class="evidence">Botón "Exportar Excel" en Pedidos del admin, con los campos relevantes para contabilidad.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-051</span>
+        <div><p class="title">Audit trail de acciones administrativas</p><p class="evidence">Registro append-only con actor, acción y timestamp; filtrable por admin, acción y rango de fechas.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-103</span>
+        <div><p class="title">Rol de administrador supremo (owner)</p><p class="evidence">Rol <code>owner</code> por encima de <code>admin</code>, asignado a una única cuenta; solo el owner puede otorgar o quitar el rol admin, y no puede ser degradado por nadie más.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-052</span>
+        <div><p class="title">Reportes avanzados (cohortes, LTV)</p><p class="evidence">Panel "Cohortes" con retención por período y valor de vida del cliente promedio, filtrable por rango de fecha.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-053</span>
+        <div><p class="title">CMS básico de banners</p><p class="evidence">El admin edita los banners fijos del Landing (texto, vigencia) y el cambio se refleja sin redeploy. La tool <code>banners.updateBanner</code> existe en el código pero el docx no la marca con [MCP].</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-054</span>
+        <div><p class="title">Analítica de producto (PostHog)</p><p class="evidence">Panel "Analítica": embudo de checkout, tasa de conversión por período y abandono de carrito, restringido a rol admin.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-055</span>
+        <div><p class="title">Alertas de stock bajo</p><p class="evidence">Tarjeta "Inventario crítico" en el Dashboard resalta productos/variantes bajo el umbral definido por el admin.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-056</span>
+        <div><p class="title">Moderación de reseñas</p><p class="evidence">El admin aprueba, oculta, elimina o banea autores de reseñas; las ocultas no aparecen en la ficha pública.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-092</span>
+        <div><p class="title">Descuentos automáticos por producto y categoría</p><p class="evidence">El admin aplica % o monto fijo a un producto o a toda una categoría de una vez; el catálogo muestra precio tachado vs. rebajado sin acción del cliente.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="module" id="usuarios">
+    <div class="module-head"><h2>Usuarios</h2><span class="module-count">7 de 7</span></div>
+    <div class="rows">
+      <div class="row">
+        <span class="hu">HU-057</span>
+        <div><p class="title">Página de perfil editable</p><p class="evidence"><code>/profile</code>: el cliente actualiza nombre, foto y preferencias de cuenta con guardado inmediato.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-058</span>
+        <div><p class="title">Preferencias de notificación</p><p class="evidence">Toggles por tipo de correo/notificación y opción de baja total; se respetan al enviar emails.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-059</span>
+        <div><p class="title">Métodos de pago guardados</p><p class="evidence">El cliente agrega, selecciona en checkout y elimina tarjetas guardadas vía Stripe PaymentMethods.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-060</span>
+        <div><p class="title">Programa de lealtad / puntos (Club)</p><p class="evidence"><code>/club</code>: acumulación de puntos por compra, canje por descuentos, saldo visible con desglose ganado/canjeado.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-101</span>
+        <div><p class="title">Suscripción de reposición automática</p><p class="evidence">El cliente elige frecuencia (7/15/30/60 días) en la ficha; Stripe cobra por ciclo y el cliente puede pausar/cancelar desde el perfil.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-102</span>
+        <div><p class="title">Recordatorio de recompra</p><p class="evidence">Se estima la fecha de agotamiento según la última compra y se envía un email recordatorio sin cobro automático.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-105</span>
+        <div><p class="title">Muestra gratis con elegibilidad automática</p><p class="evidence">El admin define un tope de precio y excepciones manuales; el selector de muestra ofrece las opciones elegibles en orden aleatorio por visita, validado también en el backend al pagar.</p></div>
+        <div class="tags"><span class="tag done">Implementada</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="module" id="notificaciones">
+    <div class="module-head"><h2>Notificaciones en tiempo real</h2><span class="module-count">1 de 1</span></div>
+    <div class="rows">
+      <div class="row">
+        <span class="hu">HU-061</span>
+        <div><p class="title">Notificaciones en tiempo real (WebSockets)</p><p class="evidence">Centro de notificaciones persistente en el frontend vía WebSockets de Hono; el admin recibe avisos de stock bajo y nuevas reseñas al instante.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="module" id="mcp-mvp">
+    <div class="module-head"><h2>MCP sobre el MVP (Sección I)</h2><span class="module-count">8 de 8</span></div>
+    <p class="part-note" style="color:var(--ink-soft); font-size:13.5px; margin:0 0 4px;">Estas 8 no son parte de las 37 nuevas — ya eran funcionalidades del MVP (A7). Se listan aparte porque también tienen tool MCP y suman al total de 26.</p>
+    <div class="rows">
+      <div class="row">
+        <span class="hu">HU-001</span>
+        <div><p class="title">Catálogo de productos</p><p class="evidence">Tool <code>catalog.listProducts</code>: filtra por categoría, marca, stock o texto libre. Equivalente al catálogo público y a "Gestión de productos" del admin.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-009</span>
+        <div><p class="title">Historial de órdenes</p><p class="evidence">Tool <code>orders.listUserOrders</code>: lista las órdenes de un cliente con estado, fecha y total.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-010</span>
+        <div><p class="title">Sistema de reseñas</p><p class="evidence">Tool <code>reviews.listReviews</code>: consulta reseñas de un producto con rating y texto.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-015</span>
+        <div><p class="title">Dashboard administrativo con estadísticas</p><p class="evidence">Tool <code>dashboard.getSummary</code>: mismas métricas que el Dashboard del admin. El docx no la marca con [MCP] (mismo tipo de omisión que HU-053).</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-016</span>
+        <div><p class="title">CRUD de productos</p><p class="evidence">Tool <code>catalog.upsertProduct</code>: crea o edita un producto, igual que el formulario del admin.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-017</span>
+        <div><p class="title">Gestión de usuarios y roles</p><p class="evidence">Tool <code>users.updateUserRole</code>: cambia el rol de un usuario, igual que el admin.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-018</span>
+        <div><p class="title">Gestión del estado de órdenes</p><p class="evidence">Tool <code>orders.updateOrderStatus</code>: avanza el estado de una orden y dispara el email al cliente.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+      <div class="row">
+        <span class="hu">HU-019</span>
+        <div><p class="title">Estadísticas de ventas y ganancias</p><p class="evidence">Tool <code>analytics.getSalesReport</code>: revenue, ticket promedio y top productos, igual que el panel de Ventas.</p></div>
+        <div class="tags"><span class="tag mcp">MCP</span><span class="tag done">Implementada</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="closing">
+    <span>Fuente: código en <code>backend/</code> y <code>frontend/</code>, verificado contra <code>deliverables/Healthora-Historias-de-Usuario.docx</code> § Secciones I y II.</span>
+    <span>35/37 implementadas al alcance original; HU-038 y HU-100 se resolvieron juntas con alcance simplificado (domicilio/retiro en vez de zona × velocidad).</span>
+  </footer>
+
+</div>

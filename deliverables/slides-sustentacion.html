@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Healthora — Slides de sustentación</title>
+<style>
+  :root {
+    --paper: #15160e;
+    --paper-raised: #1c1e12;
+    --ink: #ece9d8;
+    --ink-soft: #a7a58e;
+    --rule: rgba(236, 233, 216, 0.14);
+    --rule-strong: rgba(236, 233, 216, 0.24);
+    --accent: #c7d92e;
+    --accent-ink: #d7e85a;
+    --accent-bg: rgba(199, 217, 46, 0.13);
+    --role-a: #e8935f;
+    --role-a-bg: rgba(232, 147, 95, 0.14);
+    --role-b: #8b96ea;
+    --role-b-bg: rgba(139, 150, 234, 0.14);
+    --role-c: #5fd0b6;
+    --role-c-bg: rgba(95, 208, 182, 0.14);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--ink);
+    font-family: ui-sans-serif, "Helvetica Neue", Arial, sans-serif;
+    overflow: hidden;
+  }
+
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: var(--paper);
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(28px, 6vw, 90px) clamp(28px, 9vw, 130px);
+    background:
+      radial-gradient(circle at 88% 8%, var(--r-bg, var(--accent-bg)) 0%, transparent 42%),
+      var(--paper);
+    background-attachment: local, local;
+    color: var(--ink);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(14px);
+    transition: opacity 380ms ease, transform 380ms ease;
+  }
+
+  .slide::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(var(--rule) 1px, transparent 1px);
+    background-size: 26px 26px;
+    -webkit-mask-image: linear-gradient(to bottom, black, transparent 72%);
+    mask-image: linear-gradient(to bottom, black, transparent 72%);
+    pointer-events: none;
+  }
+
+  .slide.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide { transition: opacity 1ms linear; transform: none; }
+  }
+
+  .tag {
+    font: 800 12px/1 ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--r-color, var(--accent-ink));
+    background: var(--r-bg, var(--accent-bg));
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 13px;
+    border-radius: 3px;
+    width: fit-content;
+    margin-bottom: clamp(18px, 3vw, 34px);
+  }
+
+  .tag .icon-tag { width: 14px; height: 14px; stroke: var(--r-color, var(--accent-ink)); }
+
+  .hero-badge {
+    position: absolute;
+    top: clamp(22px, 4vw, 56px);
+    right: clamp(24px, 6vw, 90px);
+    width: clamp(72px, 9.5vw, 128px);
+    height: clamp(72px, 9.5vw, 128px);
+    border-radius: 26%;
+    background: var(--r-bg, var(--accent-bg));
+    border: 1px solid var(--rule-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-icon {
+    width: 46%;
+    height: 46%;
+    stroke: var(--r-color, var(--accent-ink));
+  }
+
+  .icon { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .hero-icon.icon { stroke-width: 1.3; }
+
+  .bicon {
+    position: absolute;
+    left: 0;
+    top: 0.05em;
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: var(--r-bg, var(--accent-bg));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .bicon svg {
+    width: 14px; height: 14px;
+    fill: none; stroke: var(--r-color, var(--accent-ink));
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .bicon.logo svg { fill: var(--r-color, var(--accent-ink)); stroke: none; width: 13px; height: 13px; }
+
+  .stack-card .chead { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .stack-card .cicon {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: var(--r-bg, var(--accent-bg));
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .stack-card .cicon svg {
+    width: 19px; height: 19px;
+    fill: none; stroke: var(--r-color, var(--accent-ink));
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .stack-card .cicon.logo svg { fill: var(--r-color, var(--accent-ink)); stroke: none; width: 18px; height: 18px; }
+  .stack-card .k { margin-bottom: 0; }
+
+  h1.slide-title {
+    font-size: clamp(34px, 6.4vw, 84px);
+    font-weight: 900;
+    letter-spacing: -0.015em;
+    line-height: 1.02;
+    margin: 0 0 clamp(16px, 2.6vw, 28px);
+    text-wrap: balance;
+    max-width: 20ch;
+  }
+
+  h1.slide-title em {
+    font-style: normal;
+    color: var(--r-color, var(--accent-ink));
+  }
+
+  .slide-sub {
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-size: clamp(17px, 2vw, 24px);
+    color: var(--ink-soft);
+    max-width: 56ch;
+    line-height: 1.5;
+    margin: 0 0 clamp(20px, 3vw, 36px);
+  }
+
+  .bullets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(10px, 1.6vw, 18px);
+    max-width: 60ch;
+  }
+
+  .bullets li {
+    position: relative;
+    padding-left: 34px;
+    font-size: clamp(16px, 1.7vw, 21px);
+    line-height: 1.5;
+    min-height: 22px;
+  }
+
+  .bullets b { font-weight: 700; }
+  .bullets .dim { color: var(--ink-soft); font-size: 0.88em; }
+
+  .stat-row {
+    display: flex;
+    gap: clamp(24px, 5vw, 64px);
+    flex-wrap: wrap;
+    margin-top: clamp(10px, 2vw, 20px);
+  }
+
+  .stat .n {
+    font: 800 clamp(40px, 7vw, 92px)/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--r-color, var(--accent-ink));
+    font-variant-numeric: tabular-nums;
+    display: block;
+  }
+
+  .stat .l {
+    font-size: clamp(13px, 1.3vw, 16px);
+    color: var(--ink-soft);
+    margin-top: 6px;
+    max-width: 20ch;
+    line-height: 1.4;
+  }
+
+  .stat.stat-wide { max-width: 640px; }
+  .stat.stat-wide .l { max-width: 42ch; font-size: clamp(15px, 1.6vw, 19px); }
+
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: clamp(12px, 2vw, 20px);
+    max-width: 900px;
+  }
+
+  .stack-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    padding: 18px 20px 20px;
+  }
+
+  .stack-card .k {
+    font: 700 11px ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-soft);
+  }
+
+  .stack-card .v { font-size: 18px; font-weight: 700; line-height: 1.3; }
+  .stack-card .d { font-size: 13px; color: var(--ink-soft); margin-top: 5px; line-height: 1.45; }
+
+  .rule-line {
+    font: 700 clamp(17px, 2.1vw, 24px)/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--ink);
+    background: var(--r-bg, var(--accent-bg));
+    border-left: 4px solid var(--r-color, var(--accent-ink));
+    padding: 16px 22px;
+    max-width: 56ch;
+  }
+
+  .title-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .mark {
+    width: 52px; height: 52px; border-radius: 999px;
+    background: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--paper);
+    font-family: ui-serif, Georgia, serif;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+
+  .cast-list {
+    display: flex;
+    gap: clamp(14px, 3vw, 30px);
+    margin-top: clamp(18px, 2.6vw, 26px);
+    padding-top: clamp(18px, 2.6vw, 26px);
+    border-top: 1px solid var(--rule-strong);
+    flex-wrap: wrap;
+  }
+
+  .cast-list .who {
+    border-left: 3px solid var(--r-color);
+    padding-left: 12px;
+  }
+  .cast-list .who .name { font-weight: 700; font-size: 16px; }
+  .cast-list .who .role { font-size: 12.5px; color: var(--ink-soft); }
+  .cast-list .who.a { --r-color: var(--role-a); }
+  .cast-list .who.b { --r-color: var(--role-b); }
+  .cast-list .who.c { --r-color: var(--role-c); }
+
+  /* ---------- chrome: progress, arrows, counter ---------- */
+
+  .chrome {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .progress-track {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--rule);
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent-ink);
+    transition: width 380ms ease;
+  }
+
+  .counter {
+    position: absolute;
+    bottom: 22px;
+    right: 26px;
+    font: 700 13px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    background: var(--paper-raised);
+    border: 1px solid var(--rule-strong);
+    padding: 6px 11px;
+    border-radius: 999px;
+  }
+
+  .navbtn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    border: 1px solid var(--rule-strong);
+    background: var(--paper-raised);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
+    font-size: 20px;
+    opacity: 0.8;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+  .navbtn:hover { opacity: 1; transform: translateY(-50%) scale(1.06); }
+  .navbtn:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; opacity: 1; }
+  .navbtn.prev { left: 18px; }
+  .navbtn.next { right: 18px; }
+  .navbtn[disabled] { opacity: 0.15; cursor: default; }
+
+  .dots {
+    position: absolute;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 7px;
+    pointer-events: auto;
+  }
+
+  .dots button {
+    width: 7px; height: 7px;
+    border-radius: 999px;
+    border: none;
+    background: var(--rule-strong);
+    cursor: pointer;
+    padding: 0;
+    transition: background 160ms ease, width 160ms ease;
+  }
+  .dots button.on { background: var(--accent-ink); width: 20px; }
+  .dots button:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 3px; }
+
+  .hint {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font: 600 11.5px ui-monospace, monospace;
+    color: var(--ink-soft);
+    background: var(--paper-raised);
+    border: 1px solid var(--rule-strong);
+    padding: 5px 12px;
+    border-radius: 999px;
+    opacity: 0.85;
+    z-index: 21;
+  }
+
+  @media (max-width: 640px) {
+    .navbtn { width: 40px; height: 40px; font-size: 16px; }
+    .hint { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- 0. Title -->
+  <section class="slide active" style="--r-color:var(--accent-ink); --r-bg:var(--accent-bg)">
+    <div class="hero-badge"><svg class="icon hero-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4.5 14.5 14.5 4.5a5 5 0 1 1 7 7L11.5 21.5a5 5 0 0 1-7-7Z"/><path d="M9 9l6 6"/></svg></div>
+    <div class="title-brand">
+      <div class="mark">h</div>
+      <h1 class="slide-title" style="margin:0; font-size: clamp(28px, 5vw, 46px);">Healthora</h1>
+    </div>
+    <p class="slide-sub">E-commerce de farmacia y salud + panel administrativo + servidor MCP.<br>Sustentación final — Proyecto semestral.</p>
+    <div class="cast-list">
+      <div class="who a"><div class="name">Roy Barrera</div><div class="role">Qué es y qué problema resuelve</div></div>
+      <div class="who b"><div class="name">Einer Mosquera</div><div class="role">Arquitectura técnica</div></div>
+      <div class="who c"><div class="name">Kelvin He</div><div class="role">MCP + calidad</div></div>
+    </div>
+  </section>
+
+  <!-- 1. Roy — el problema -->
+  <section class="slide" style="--r-color:var(--role-a); --r-bg:var(--role-a-bg)">
+    <div class="hero-badge"><svg class="icon hero-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5"/><path d="M12 16.2v.1"/></svg></div>
+    <span class="tag"><svg class="icon icon-tag" aria-hidden="true" viewBox="0 0 24 24"><path d="M4.5 14.5 14.5 4.5a5 5 0 1 1 7 7L11.5 21.5a5 5 0 0 1-7-7Z"/><path d="M9 9l6 6"/></svg>Roy Barrera</span>
+    <h1 class="slide-title">Comprar salud en línea, en Panamá, se siente <em>genérico</em>.</h1>
+    <ul class="bullets">
+      <li><span class="bicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5"/><path d="M12 16.2v.1"/></svg></span>Casi ninguna tienda deja elegir bien <b>sabor o tamaño</b> de un mismo producto.</li>
+      <li><span class="bicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5"/><path d="M12 16.2v.1"/></svg></span>El <b>ITBMS</b> muchas veces no se calcula como debería.</li>
+      <li><span class="bicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5"/><path d="M12 16.2v.1"/></svg></span>La farmacia no tiene un panel real — para cambiar un precio, necesita a un programador.</li>
+    </ul>
+  </section>
+
+  <!-- 2. Roy — la solución -->
+  <section class="slide" style="--r-color:var(--role-a); --r-bg:var(--role-a-bg)">
+    <div class="hero-badge"><svg class="icon hero-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16.5 9"/></svg></div>
+    <span class="tag"><svg class="icon icon-tag" aria-hidden="true" viewBox="0 0 24 24"><path d="M4.5 14.5 14.5 4.5a5 5 0 1 1 7 7L11.5 21.5a5 5 0 0 1-7-7Z"/><path d="M9 9l6 6"/></svg>Roy Barrera</span>
+    <h1 class="slide-title">Eso es exactamente lo que resuelve <em>Healthora</em>.</h1>
+    <ul class="bullets">
+      <li><span class="bicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16.5 9"/></svg></span>Catálogo con <b>variantes reales</b> — sabor, tamaño, todo eso.</li>
+      <li><span class="bicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16.5 9"/></svg></span>Checkout con <b>ITBMS correcto</b>, exención legal para medicamentos, envío o retiro en tienda, cupones.</li>
+      <li><span class="bicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16.5 9"/></svg></span>Una <b>muestra gratis</b> que el cliente elige al finalizar su compra.</li>
+      <li><span class="bicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16.5 9"/></svg></span><b>Club de puntos</b> + reposición automática, para que la gente vuelva.</li>
+    </ul>
+  </section>
+
+  <!-- 3. Roy — cifra -->
+  <section class="slide" style="--r-color:var(--role-a); --r-bg:var(--role-a-bg)">
+    <div class="hero-badge"><svg class="icon hero-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 6h6v6"/></svg></div>
+    <span class="tag"><svg class="icon icon-tag" aria-hidden="true" viewBox="0 0 24 24"><path d="M4.5 14.5 14.5 4.5a5 5 0 1 1 7 7L11.5 21.5a5 5 0 0 1-7-7Z"/><path d="M9 9l6 6"/></svg>Roy Barrera</span>
+    <h1 class="slide-title">De MVP a entrega final.</h1>
+    <div class="stat-row">
+      <div class="stat stat-wide"><span class="n">37</span><span class="l">funcionalidades nuevas sobre el MVP de A7, verificadas una por una contra el código</span></div>
+    </div>
+  </section>
+
+  <!-- 4. Einer — frontend -->
+  <section class="slide" style="--r-color:var(--role-b); --r-bg:var(--role-b-bg)">
+    <div class="hero-badge"><svg class="icon hero-icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9.5h18"/></svg></div>
+    <span class="tag"><svg class="icon icon-tag" aria-hidden="true" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></svg>Einer Mosquera</span>
+    <h1 class="slide-title">¿Con qué construimos <em>Healthora</em>?</h1>
+    <p class="slide-sub">React 19 corre sobre <b>TanStack Start</b> con SSR completo — reemplazamos react-router-dom por completo, y el servidor renderiza cada página antes de mandarla al navegador (función serverless en Vercel).</p>
+    <div class="stack-grid">
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"/></svg></span><div class="k">Frontend</div></div><div class="v">React 19</div><div class="d">+ TanStack Router &amp; Start (SSR completo)</div></div>
+      <div class="stack-card"><div class="chead"><span class="cicon"><svg viewBox="0 0 24 24"><path d="M12 3 21 8 12 13 3 8 12 3Z"/><path d="M3 13l9 5 9-5"/></svg></span><div class="k">Estado</div></div><div class="v">Zustand</div><div class="d">carrito, wishlist, comparación</div></div>
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.078.042c.316-.042.65-.014.97-.014 1.181 0 2.341.184 3.472.532a12.3 12.3 0 0 1 3.973 2.086 11.9 11.9 0 0 1 3.432 4.33c1.446 3.15 1.436 6.97-.046 10.107-.958 2.029-2.495 3.727-4.356 4.965-1.518 1.01-3.293 1.629-5.1 1.848-2.298.279-4.784-.129-6.85-1.188-3.88-1.99-6.518-5.994-6.57-10.382-.01-.846.003-1.697.17-2.534.273-1.365.748-2.683 1.463-3.88a12 12 0 0 1 2.966-3.36A12.3 12.3 0 0 1 9.357.3a12 12 0 0 1 1.255-.2l.133-.016zM7.064 19.99c-.535.057-1.098.154-1.557.454.103.025.222 0 .33 0 .258 0 .52-.01.778.002.647.028 1.32.131 1.945.303.8.22 1.505.65 2.275.942.813.307 1.622.402 2.484.402.435 0 .866-.001 1.287-.12-.22-.117-.534-.095-.778-.144a11 11 0 0 1-1.556-.416 12 12 0 0 1-1.093-.467l-.23-.108a15 15 0 0 0-1.012-.44c-.905-.343-1.908-.512-2.873-.408m.808-2.274c-1.059 0-2.13.187-3.083.667q-.346.177-.659.41c-.063.046-.175.106-.199.188s.061.151.11.204c.238-.127.464-.261.718-.357 1.64-.624 3.63-.493 5.268.078.817.285 1.569.712 2.365 1.046.89.374 1.798.616 2.753.74 1.127.147 2.412.028 3.442-.48.362-.179.865-.451 1.018-.847-.189.017-.36.098-.539.154a9 9 0 0 1-.868.222c-.994.2-2.052.24-3.053.06-.943-.17-1.82-.513-2.693-.873l-.111-.046-.223-.092-.112-.046a26 26 0 0 0-1.35-.527c-.89-.31-1.842-.5-2.784-.5M9.728 1.452c-1.27.28-2.407.826-3.502 1.514-.637.4-1.245.81-1.796 1.323-.82.765-1.447 1.695-1.993 2.666-.563 1-.924 2.166-1.098 3.297-.172 1.11-.2 2.277-.004 3.388.245 1.388.712 2.691 1.448 3.897.248-.116.424-.38.629-.557.414-.359.85-.691 1.317-.978a3.5 3.5 0 0 1 .539-.264c.07-.029.187-.055.22-.132.053-.124-.045-.34-.062-.468a7 7 0 0 1-.068-1.109 9.7 9.7 0 0 1 .61-3.177c.29-.76.73-1.45 1.254-2.069.177-.21.365-.405.56-.6.115-.114.258-.212.33-.359-.376 0-.751.108-1.108.218-.769.237-1.518.588-2.155 1.084-.291.226-.504.522-.779.76-.084.073-.235.17-.352.116-.176-.083-.149-.43-.169-.59-.078-.612.154-1.387.45-1.918.473-.852 1.348-1.58 2.376-1.555.444.011.833.166 1.257.266-.107-.153-.252-.264-.389-.39a5.4 5.4 0 0 0-1.107-.8c-.163-.085-.338-.136-.509-.2-.086-.03-.195-.074-.227-.17-.06-.177.26-.342.377-.417.453-.289 1.01-.527 1.556-.54.854-.021 1.688.452 2.04 1.258.123.284.16.583.184.885l.004.057.006.085.002.029.005.057.004.056c.268-.218.457-.54.718-.774.612-.547 1.45-.79 2.245-.544a2.97 2.97 0 0 1 1.71 1.378c.097.173.365.595.171.767-.152.134-.344.03-.504-.026a3 3 0 0 0-.372-.094l-.068-.014-.069-.013a3.9 3.9 0 0 0-1.377-.002c-.282.05-.557.15-.838.192v.06c.768.006 1.51.444 1.89 1.109.157.275.235.59.295.9.075.38.022.796-.082 1.168-.035.125-.098.336-.247.365-.106.02-.195-.085-.256-.155a4.6 4.6 0 0 0-.492-.522 20 20 0 0 0-1.467-1.14c-.267-.19-.56-.44-.868-.556.087.208.171.402.2.63.088.667-.192 1.296-.612 1.798a2.6 2.6 0 0 1-.426.427c-.067.05-.151.114-.24.1-.277-.044-.31-.463-.353-.677-.144-.726-.086-1.447.114-2.158-.178.09-.307.287-.418.45a5.3 5.3 0 0 0-.612 1.138c-.61 1.617-.604 3.51.186 5.066.088.174.221.15.395.15h.157a3 3 0 0 1 .472.018c.08.01.193 0 .257.06.077.072.036.194.018.282-.05.246-.066.469-.066.72.328-.051.419-.576.535-.84.131-.298.265-.597.387-.9.06-.148.14-.314.119-.479-.024-.185-.157-.381-.25-.54-.177-.298-.378-.606-.508-.929-.104-.258-.007-.58.286-.672.161-.05.334.049.439.166.22.244.363.609.523.896l1.249 2.248q.159.286.32.57c.043.074.086.188.173.219.077.028.182-.012.26-.027.198-.04.398-.083.598-.12.24-.043.605-.035.778-.222-.253-.08-.545-.075-.808-.057-.158.01-.333.067-.479-.025-.216-.137-.36-.455-.492-.667-.326-.525-.633-1.057-.945-1.59l-.05-.084-.1-.17q-.075-.126-.149-.255c-.037-.066-.092-.153-.039-.227.056-.076.179-.08.29-.081h.021q.066.001.117-.004a10 10 0 0 1 1.347-.107c-.035-.122-.135-.26-.103-.39.071-.292.49-.383.686-.174.131.14.207.334.292.504.113.223.24.44.361.66.211.383.441.757.658 1.138l.055.094.028.047c.093.156.187.314.238.489-.753-.035-1.318-.909-1.646-1.499-.027.095.016.179.05.27q.103.282.262.54c.152.244.326.495.556.673.408.315.945.317 1.436.283.315-.022.708-.165 1.018-.068s.434.438.25.7c-.138.196-.321.27-.55.3.162.346.373.667.527 1.02.064.146.13.37.283.448.102.051.248.003.358 0-.11-.292-.317-.54-.419-.839.31.015.61.176.898.28.567.202 1.128.424 1.687.648l.258.104c.23.092.462.183.689.283.083.037.198.123.29.07.074-.043.123-.146.169-.215a10.3 10.3 0 0 0 1.393-3.208c.75-2.989.106-6.287-1.695-8.783-.692-.96-1.562-1.789-2.522-2.476-2.401-1.718-5.551-2.407-8.44-1.768m4.908 14.904c-.636.166-1.292.317-1.945.401.086.293.296.577.45.84.059.101.122.237.24.281.132.05.292-.03.417-.072-.058-.158-.155-.3-.235-.45-.033-.06-.084-.133-.056-.206.05-.137.263-.13.381-.153.31-.063.617-.142.928-.204.114-.023.274-.085.389-.047.086.03.138.1.187.174l.022.033q.043.07.097.122c.125.113.313.13.472.162-.097-.219-.259-.41-.362-.63-.06-.127-.11-.315-.242-.388-.182-.102-.557.089-.743.137m-4.01-1.457c-.03.38-.147.689-.33 1.019.21.026.423.036.629.087.154.038.296.11.449.153-.082-.224-.233-.423-.35-.63-.12-.208-.226-.462-.398-.63"/></svg></span><div class="k">Datos</div></div><div class="v">TanStack Query</div><div class="d">contra la API</div></div>
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.93646 2.48699v4.51684l5.0758 13.03647s1.5495 3.1839-2.8824 3.9597H7.01922s-4.13084-.4311-3.14053-3.7019L9.21276 7.00401V2.48699h5.7237Zm2.0894 13.10781c-4.4301-1.3742-8.15457-.6365-9.97498-.0788l-1.83572 4.4186c-.78296 2.499 2.27302 2.9417 2.59687 2.9813l.02755.0032h8.44448c3.5407-.5982 2.511-2.972 2.4147-3.1773l-.0068-.0142-1.6661-4.1328Zm-7.81345.7772c.78905.0004 1.42905.3862 1.42905.8646 0 .4764-.6404.864-1.42905.864-.7887 0-1.42711-.3878-1.42711-.864 0-.4784.6384-.8646 1.4271-.8646Zm5.08375 0c.7871.0004 1.4271.3862 1.4271.8646 0 .4764-.6403.864-1.4271.864-.791 0-1.429-.3878-1.429-.864 0-.4784.638-.8646 1.429-.8646Zm-4.5001-5.2131c-.55227 0-.99993.5395-.99993 1.2051 0 .6656.44766 1.2051.99993 1.2051.5522 0 .9998-.5395.9998-1.2051 0-.6656-.4476-1.2051-.9998-1.2051Zm3.6413-1.29686c-.6549 0-1.1862.63806-1.1862 1.42906 0 .7871.5313 1.4271 1.1862 1.4271.653 0 1.1862-.64 1.1862-1.4271 0-.7907-.5328-1.42906-1.1862-1.42906Zm6.0363-2.73783s-2.1219 1.54591-4.0858-.41975V4.55615s2.7243-.60065 4.0858 2.56806Zm-14.84367 0C5.9908 3.9555 8.71543 4.55615 8.71543 4.55615v2.14831c-1.96566 1.96566-4.08544.41975-4.08544.41975ZM15.04366 0c.4954 0 .8958.4387.8958.98109 0 .54203-.4006.98074-.8958.98074H8.95478c-.49315 0-.89428-.43871-.89428-.98074C8.0605.43871 8.46146 0 8.95478 0h6.08888Z"/></svg></span><div class="k">Idioma</div></div><div class="v">i18next</div><div class="d">español / inglés</div></div>
+    </div>
+  </section>
+
+  <!-- 5. Einer — backend -->
+  <section class="slide" style="--r-color:var(--role-b); --r-bg:var(--role-b-bg)">
+    <div class="hero-badge"><svg class="icon hero-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></div>
+    <span class="tag"><svg class="icon icon-tag" aria-hidden="true" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></svg>Einer Mosquera</span>
+    <h1 class="slide-title">Del lado del servidor, la apuesta fue distinta.</h1>
+    <div class="stack-grid" style="max-width: 480px; margin-bottom: 22px;">
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22.596c6.628 0 12-4.338 12-9.688 0-3.318-2.057-6.248-5.219-7.986-1.286-.715-2.297-1.357-3.139-1.89C14.058 2.025 13.08 1.404 12 1.404c-1.097 0-2.334.785-3.966 1.821a49.92 49.92 0 0 1-2.816 1.697C2.057 6.66 0 9.59 0 12.908c0 5.35 5.372 9.687 12 9.687v.001ZM10.599 4.715c.334-.759.503-1.58.498-2.409 0-.145.202-.187.23-.029.658 2.783-.902 4.162-2.057 4.624-.124.048-.199-.121-.103-.209a5.763 5.763 0 0 0 1.432-1.977Zm2.058-.102a5.82 5.82 0 0 0-.782-2.306v-.016c-.069-.123.086-.263.185-.172 1.962 2.111 1.307 4.067.556 5.051-.082.103-.23-.003-.189-.126a5.85 5.85 0 0 0 .23-2.431Zm1.776-.561a5.727 5.727 0 0 0-1.612-1.806v-.014c-.112-.085-.024-.274.114-.218 2.595 1.087 2.774 3.18 2.459 4.407a.116.116 0 0 1-.049.071.11.11 0 0 1-.153-.026.122.122 0 0 1-.022-.083 5.891 5.891 0 0 0-.737-2.331Zm-5.087.561c-.617.546-1.282.76-2.063 1-.117 0-.195-.078-.156-.181 1.752-.909 2.376-1.649 2.999-2.778 0 0 .155-.118.188.085 0 .304-.349 1.329-.968 1.874Zm4.945 11.237a2.957 2.957 0 0 1-.937 1.553c-.346.346-.8.565-1.286.62a2.178 2.178 0 0 1-1.327-.62 2.955 2.955 0 0 1-.925-1.553.244.244 0 0 1 .064-.198.234.234 0 0 1 .193-.069h3.965a.226.226 0 0 1 .19.07c.05.053.073.125.063.197Zm-5.458-2.176a1.862 1.862 0 0 1-2.384-.245 1.98 1.98 0 0 1-.233-2.447c.207-.319.503-.566.848-.713a1.84 1.84 0 0 1 1.092-.11c.366.075.703.261.967.531a1.98 1.98 0 0 1 .408 2.114 1.931 1.931 0 0 1-.698.869v.001Zm8.495.005a1.86 1.86 0 0 1-2.381-.253 1.964 1.964 0 0 1-.547-1.366c0-.384.11-.76.32-1.079.207-.319.503-.567.849-.713a1.844 1.844 0 0 1 1.093-.108c.367.076.704.262.968.534a1.98 1.98 0 0 1 .4 2.117 1.932 1.932 0 0 1-.702.868Z"/></svg></span><div class="k">Runtime</div></div><div class="v">Bun</div></div>
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.445.002a45.529 45.529 0 0 0-5.252 8.146 8.595 8.595 0 0 1-.555-.53 27.796 27.796 0 0 0-1.205-1.542 8.762 8.762 0 0 0-1.251 2.12 20.743 20.743 0 0 0-1.448 5.88 8.867 8.867 0 0 0 .338 3.468c1.312 3.48 3.794 5.593 7.445 6.337 3.055.438 5.755-.333 8.097-2.312 2.677-2.59 3.359-5.634 2.047-9.132a33.287 33.287 0 0 0-2.988-5.59A91.34 91.34 0 0 0 12.615.053a.216.216 0 0 0-.17-.051Zm-.336 3.906a50.93 50.93 0 0 1 4.794 6.552c.448.767.817 1.57 1.108 2.41.606 2.386-.044 4.354-1.951 5.904-1.845 1.298-3.87 1.683-6.072 1.156-2.376-.737-3.75-2.335-4.121-4.794a5.107 5.107 0 0 1 .242-2.266c.358-.908.79-1.774 1.3-2.601l1.446-2.121a397.33 397.33 0 0 0 3.254-4.24Z"/></svg></span><div class="k">Framework</div></div><div class="v">Hono</div></div>
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.193 9.555c-1.264-5.58-4.252-7.414-4.573-8.115-.28-.394-.53-.954-.735-1.44-.036.495-.055.685-.523 1.184-.723.566-4.438 3.682-4.74 10.02-.282 5.912 4.27 9.435 4.888 9.884l.07.05A73.49 73.49 0 0111.91 24h.481c.114-1.032.284-2.056.51-3.07.417-.296.604-.463.85-.693a11.342 11.342 0 003.639-8.464c.01-.814-.103-1.662-.197-2.218zm-5.336 8.195s0-8.291.275-8.29c.213 0 .49 10.695.49 10.695-.381-.045-.765-1.76-.765-2.405z"/></svg></span><div class="k">Base de datos</div></div><div class="v">MongoDB</div></div>
+    </div>
+    <ul class="bullets">
+      <li><span class="bicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16.5 9"/></svg></span>Bun arranca <b>casi al instante</b> y corre <b>TypeScript directo</b>, sin compilar nada.</li>
+      <li><span class="bicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16.5 9"/></svg></span>Trae su <b>propio test runner</b> — con eso corrimos toda la suite.</li>
+      <li><span class="bicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16.5 9"/></svg></span>Hono es un framework HTTP <b>liviano</b> encima de Bun.</li>
+    </ul>
+  </section>
+
+  <!-- 6. Einer — integraciones -->
+  <section class="slide" style="--r-color:var(--role-b); --r-bg:var(--role-b-bg)">
+    <div class="hero-badge"><svg class="icon hero-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8 5.5 5.5 0 0 0-10.7-1.7A4.5 4.5 0 0 0 7 18Z"/></svg></div>
+    <span class="tag"><svg class="icon icon-tag" aria-hidden="true" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></svg>Einer Mosquera</span>
+    <h1 class="slide-title">Las piezas que conectamos.</h1>
+    <div class="stack-grid">
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21.47 20.829-2.881-2.881a.572.572 0 0 0-.7-.084 6.854 6.854 0 0 1-7.081 0 .576.576 0 0 0-.7.084l-2.881 2.881a.576.576 0 0 0-.103.69.57.57 0 0 0 .166.186 12 12 0 0 0 14.113 0 .58.58 0 0 0 .239-.423.576.576 0 0 0-.172-.453Zm.002-17.668-2.88 2.88a.569.569 0 0 1-.701.084A6.857 6.857 0 0 0 8.724 8.08a6.862 6.862 0 0 0-1.222 3.692 6.86 6.86 0 0 0 .978 3.764.573.573 0 0 1-.083.699l-2.881 2.88a.567.567 0 0 1-.864-.063A11.993 11.993 0 0 1 6.771 2.7a11.99 11.99 0 0 1 14.637-.405.566.566 0 0 1 .232.418.57.57 0 0 1-.168.448Zm-7.118 12.261a3.427 3.427 0 1 0 0-6.854 3.427 3.427 0 0 0 0 6.854Z"/></svg></span><div class="k">Login</div></div><div class="v">Clerk</div></div>
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.594-7.305h.003z"/></svg></span><div class="k">Pagos</div></div><div class="v">Stripe</div><div class="d">checkout, webhooks, reembolsos, suscripciones</div></div>
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 14.8598c0 2.1729-1.3757 3.974-3.5903 4.6996l-.0995.0318V17.989c1.3777-.5805 2.1869-1.7275 2.1869-3.1291-.0072-2-1.6087-3.6288-3.6082-3.6699h-.5964l-.1432-.5686c-.7025-2.8996-3.2886-4.9489-6.2721-4.97a6.3915 6.3915 0 0 0-5.811 3.664l-.1828.3757-.4175.0437a4.4311 4.4311 0 0 0-3.3052 2.088c-1.2803 2.0856-.6274 4.8143 1.4583 6.0947v1.6897h-.01l-.149-.0675a5.9402 5.9402 0 0 1-3.3658-4.3494c-.5787-3.2291 1.57-6.3161 4.7991-6.8948a7.8766 7.8766 0 0 1 6.9839-4.149c3.4724.025 6.535 2.28 7.5901 5.5883 2.5789.3366 4.5138 2.5245 4.5327 5.1251zm-15.3176-1.322h.5647a.0656.0656 0 0 0 .0457-.1113L7.084 11.2158l-.0007-.0007a.0656.0656 0 0 0-.0927.0007L4.78 13.4265a.0656.0656 0 0 0 .0477.1113h.5566a.0656.0656 0 0 1 .0657.0656v5.0574c0 .6588.534 1.1928 1.1928 1.1928H9.247a.0656.0656 0 0 0 .0457-.1113l-.33-.33a1.1928 1.1928 0 0 1-.348-.839v-4.97a.0676.0676 0 0 1 .0676-.0655zm9.769 2.5466h.5667a.0655.0655 0 0 0 .0457-.1133l-2.2107-2.2087-.0015-.0015a.0636.0636 0 0 0-.0899.0015L14.551 15.971a.0657.0657 0 0 0 .0457.1133h.5567a.0656.0656 0 0 1 .0656.0656v2.5108c0 .6588.534 1.1928 1.1928 1.1928h2.6063a.0655.0655 0 0 0 .0457-.1113l-.33-.33a1.1928 1.1928 0 0 1-.348-.839V16.15a.0656.0656 0 0 1 .0657-.0656zm-4.8844-1.2743h.5646a.0656.0656 0 0 0 .0477-.1114l-2.2107-2.2027-.0006-.0006a.0656.0656 0 0 0-.0928.0006l-2.2087 2.2068a.0656.0656 0 0 0 .0457.1113h.5626a.0676.0676 0 0 1 .0657.0676v3.7791c0 .6588.534 1.1928 1.1928 1.1928h2.5983a.0656.0656 0 0 0 .0477-.1113l-.332-.33a1.193 1.193 0 0 1-.346-.839v-3.6956c0-.0366.0291-.0665.0657-.0676z"/></svg></span><div class="k">Imágenes</div></div><div class="v">Cloudinary</div></div>
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22.71 13.145c-1.66 2.092-3.452 4.483-7.038 4.483-3.203 0-4.397-2.825-4.48-5.12.701 1.484 2.073 2.685 4.214 2.63 4.117-.133 6.94-3.852 6.94-7.239 0-4.05-3.022-6.972-8.268-6.972-3.752 0-8.4 1.428-11.455 3.685C2.59 6.937 3.885 9.958 4.35 9.626c2.648-1.904 4.748-3.13 6.784-3.744C8.12 9.244.886 17.05 0 18.425c.1 1.261 1.66 4.648 2.424 4.648.232 0 .431-.133.664-.365a100.49 100.49 0 0 0 5.54-6.765c.222 3.104 1.748 6.898 6.014 6.898 3.819 0 7.604-2.756 9.33-8.965.2-.764-.73-1.361-1.261-.73zm-4.349-5.013c0 1.959-1.926 2.922-3.685 2.922-.941 0-1.664-.247-2.235-.568 1.051-1.592 2.092-3.225 3.21-4.973 1.972.334 2.71 1.43 2.71 2.619z"/></svg></span><div class="k">Cache</div></div><div class="v">Redis</div><div class="d">catálogo</div></div>
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.854 14.5 5 9.647.854 5.5A.5.5 0 0 0 0 5.854V8.44a.5.5 0 0 0 .146.353L5 13.647l.147.146L9.854 18.5l.146.147v-.049c.065.03.134.049.207.049h2.586a.5.5 0 0 0 .353-.854L9.854 14.5zm0-5-4-4a.487.487 0 0 0-.409-.144.515.515 0 0 0-.356.21.493.493 0 0 0-.089.288V8.44a.5.5 0 0 0 .147.353l9 9a.5.5 0 0 0 .853-.354v-2.585a.5.5 0 0 0-.146-.354l-5-5zm1-4a.5.5 0 0 0-.854.354V8.44a.5.5 0 0 0 .147.353l4 4a.5.5 0 0 0 .853-.354V9.854a.5.5 0 0 0-.146-.354l-4-4zm12.647 11.515a3.863 3.863 0 0 1-2.232-1.1l-4.708-4.707a.5.5 0 0 0-.854.354v6.585a.5.5 0 0 0 .5.5H23.5a.5.5 0 0 0 .5-.5v-.6c0-.276-.225-.497-.499-.532zm-5.394.032a.8.8 0 1 1 0-1.6.8.8 0 0 1 0 1.6zM.854 15.5a.5.5 0 0 0-.854.354v2.293a.5.5 0 0 0 .5.5h2.293c.222 0 .39-.135.462-.309a.493.493 0 0 0-.109-.545L.854 15.501zM5 14.647.854 10.5a.5.5 0 0 0-.854.353v2.586a.5.5 0 0 0 .146.353L4.854 18.5l.146.147h2.793a.5.5 0 0 0 .353-.854L5 14.647z"/></svg></span><div class="k">Analítica</div></div><div class="v">PostHog</div></div>
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.584 3.582a2.247 2.247 0 0 1 2.112-1.479h14.617c.948 0 1.794.595 2.115 1.487l2.44 6.777a2.248 2.248 0 0 1-.624 2.443l-9.61 8.52a2.247 2.247 0 0 1-2.963.018L.776 12.773a2.248 2.248 0 0 1-.64-2.467Zm12.038 4.887-9.11 5.537 5.74 5.007c.456.399 1.139.396 1.593-.006l5.643-5.001H14.4l6.239-3.957c.488-.328.69-.947.491-1.5l-1.24-3.446a1.535 1.535 0 0 0-1.456-1.015H5.545a1.535 1.535 0 0 0-1.431 1.01l-1.228 3.37z"/></svg></span><div class="k">Validación</div></div><div class="v">Zod</div><div class="d">en cada endpoint — mismos esquemas que usa MCP</div></div>
+    </div>
+  </section>
+
+  <!-- 7. Kelvin — MCP -->
+  <section class="slide" style="--r-color:var(--role-c); --r-bg:var(--role-c-bg)">
+    <div class="hero-badge"><svg class="icon hero-icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3"/><path d="M13 15h4"/></svg></div>
+    <span class="tag"><svg class="icon icon-tag" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3"/><path d="M13 15h4"/></svg>Kelvin He</span>
+    <h1 class="slide-title">Un servidor <em>MCP</em> sobre el mismo backend.</h1>
+    <p class="slide-sub"><code>POST /mcp</code> — Model Context Protocol. Un agente como Claude Code o Codex puede operar el negocio directo: consultar catálogo, ajustar stock, cambiar el estado de un pedido, moderar una reseña.</p>
+    <div class="stat-row">
+      <div class="stat"><span class="n">32</span><span class="l">herramientas, protegidas con token</span></div>
+    </div>
+    <p class="rule-line" style="margin-top: 26px;">Si una tool puede hacer algo, ese algo también se puede hacer desde el panel — nunca al revés.</p>
+  </section>
+
+  <!-- 8. Kelvin — calidad -->
+  <section class="slide" style="--r-color:var(--role-c); --r-bg:var(--role-c-bg)">
+    <div class="hero-badge"><svg class="icon hero-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 4 6.3v5.9c0 5 3.4 8.3 8 8.8 4.6-.5 8-3.8 8-8.8V6.3L12 3Z"/><path d="M9 12.3l2 2 4-4.2"/></svg></div>
+    <span class="tag"><svg class="icon icon-tag" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3"/><path d="M13 15h4"/></svg>Kelvin He</span>
+    <h1 class="slide-title">Calidad, no de palabra.</h1>
+    <div class="stat-row">
+      <div class="stat"><span class="n">30+</span><span class="l">archivos de test unitarios / integración (backend)</span></div>
+      <div class="stat"><span class="n">16</span><span class="l">specs end-to-end con Playwright</span></div>
+    </div>
+    <ul class="bullets" style="margin-top: 26px;">
+      <li><span class="bicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span>Todo corre solo en <b>GitHub Actions</b> en cada Pull Request.</li>
+      <li><span class="bicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span>Issues de GitHub enlazados a cada PR + tablero de <b>GitHub Projects</b>.</li>
+    </ul>
+  </section>
+
+  <!-- 9. Kelvin — cierre / transición -->
+  <section class="slide" style="--r-color:var(--role-c); --r-bg:var(--role-c-bg)">
+    <div class="hero-badge"><svg class="icon hero-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8 5.5 5.5 0 0 0-10.7-1.7A4.5 4.5 0 0 0 7 18Z"/></svg></div>
+    <span class="tag"><svg class="icon icon-tag" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3"/><path d="M13 15h4"/></svg>Kelvin He</span>
+    <h1 class="slide-title">Ya está en producción. Vamos a mostrarlo.</h1>
+    <div class="stack-grid" style="max-width: 560px;">
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 1.608 12 20.784H0Z"/></svg></span><div class="k">Frontend</div></div><div class="v">Vercel</div></div>
+      <div class="stack-card"><div class="chead"><span class="cicon logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M0 12.822V7.044L11.985.115 24 7.037v5.77L11.992 5.892Zm11.985 1.114L1.92 19.759 0 18.645v-3.557l11.985-6.93L24 15.089v3.542l-1.92 1.13Zm-3.028 9.949L3.95 21.004l8.036-4.656 8.066 4.656-5.009 2.88-3.05-1.759Z"/></svg></span><div class="k">Backend</div></div><div class="v">Koyeb</div></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="chrome">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <button class="navbtn prev" id="prevBtn" aria-label="Diapositiva anterior">‹</button>
+  <button class="navbtn next" id="nextBtn" aria-label="Siguiente diapositiva">›</button>
+  <div class="counter" id="counter">1 / 10</div>
+  <div class="dots" id="dots"></div>
+</div>
+<div class="hint">← → · espacio · click a los lados</div>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var total = slides.length;
+    var current = 0;
+
+    var progressFill = document.getElementById('progressFill');
+    var counter = document.getElementById('counter');
+    var dotsWrap = document.getElementById('dots');
+    var prevBtn = document.getElementById('prevBtn');
+    var nextBtn = document.getElementById('nextBtn');
+
+    slides.forEach(function (_, i) {
+      var b = document.createElement('button');
+      b.setAttribute('aria-label', 'Ir a diapositiva ' + (i + 1));
+      b.addEventListener('click', function () { go(i); });
+      dotsWrap.appendChild(b);
+    });
+    var dots = Array.prototype.slice.call(dotsWrap.children);
+
+    function render() {
+      slides.forEach(function (s, i) { s.classList.toggle('active', i === current); });
+      dots.forEach(function (d, i) { d.classList.toggle('on', i === current); });
+      progressFill.style.width = ((current + 1) / total * 100) + '%';
+      counter.textContent = (current + 1) + ' / ' + total;
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === total - 1;
+    }
+
+    function go(i) {
+      current = Math.max(0, Math.min(total - 1, i));
+      render();
+    }
+
+    prevBtn.addEventListener('click', function () { go(current - 1); });
+    nextBtn.addEventListener('click', function () { go(current + 1); });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(current + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(current - 1); }
+      else if (e.key === 'Home') { go(0); }
+      else if (e.key === 'End') { go(total - 1); }
+    });
+
+    document.getElementById('deck').addEventListener('click', function (e) {
+      var x = e.clientX, w = window.innerWidth;
+      if (e.target.closest('.navbtn') || e.target.closest('.dots')) return;
+      if (x < w * 0.18) go(current - 1);
+      else if (x > w * 0.82) go(current + 1);
+    });
+
+    render();
+  })();
+</script>
+</body>
+</html>
