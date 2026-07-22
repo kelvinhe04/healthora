@@ -1,10 +1,15 @@
 import { defineConfig } from 'vite'
 import viteReact from '@vitejs/plugin-react'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import { nitro } from 'nitro/vite'
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
-    tanstackStart({ spa: { enabled: true, prerender: { outputPath: 'index.html' } } }),
+    tanstackStart(),
+    // Only wired up for `vite build`: in dev mode the vercel preset's env-runner tries to run
+    // `vercel env pull` and hangs without a Vercel CLI session (breaks `bun run dev` and the
+    // Playwright webServer in CI, which has no Vercel auth).
+    ...(command === 'build' ? [nitro({ config: { preset: 'vercel' } })] : []),
     viteReact(),
   ],
   server: {
@@ -19,4 +24,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

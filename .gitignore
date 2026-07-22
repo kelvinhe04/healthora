@@ -9,6 +9,7 @@ pnpm-lock.yaml
 **/.turbo/
 **/.cache/
 **/.output/
+**/.vercel/
 frontend/src/routeTree.gen.ts
 frontend/.tanstack/
 
