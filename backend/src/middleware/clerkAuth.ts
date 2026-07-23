@@ -69,6 +69,7 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
             name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
             email,
             role,
+            imageUrl: clerkUser.imageUrl,
           },
           { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
         );
@@ -88,12 +89,12 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
     const role = resolveRole(email, clerkUser.publicMetadata?.role as string | undefined, user.role);
     const nextName = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim();
 
-    if (user.email !== email || user.role !== role || user.name !== nextName) {
+    if (user.email !== email || user.role !== role || user.name !== nextName || user.imageUrl !== clerkUser.imageUrl) {
       await User.updateOne(
         { clerkId },
-        { email, role, name: nextName }
+        { email, role, name: nextName, imageUrl: clerkUser.imageUrl }
       );
-      user = { ...user, email, role, name: nextName };
+      user = { ...user, email, role, name: nextName, imageUrl: clerkUser.imageUrl };
     }
 
     c.set('user', {
