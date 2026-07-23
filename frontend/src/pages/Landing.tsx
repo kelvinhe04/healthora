@@ -419,6 +419,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   const cinematicRef = useRef<HTMLDivElement>(null);
   const [activeHeroIdx, setActiveHeroIdx] = useState(0);
   const [hoveredHeroCardIdx, setHoveredHeroCardIdx] = useState<number | null>(null);
+  const heroCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   
   useGSAP(() => {
     if (!cinematicRef.current) return;
@@ -763,46 +764,60 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
 
             const activePoses = isMobile ? mobilePoses : basePoses;
 
-            // Card centers (relative to the composition's own center), used only as a
-            // fallback for the rare gaps where no card's own box is actually hit (e.g.
-            // the thin transparent margin left by a rotated bounding box).
-            const cardCenters = activePoses.map((pose) => ({
-              x: pose.x * rDist,
-              y: pose.y * rDist + baseYOffset,
-            }));
-
-            // The 4 cards are opaque rotated rectangles that overlap; the lowest
-            // z-index card is genuinely painted over by the others across part of its
-            // area, and the browser correctly hit-tests to whichever card is actually
-            // on top there — that's expected, not a bug. The real bug was that each
-            // card only listened for its own onMouseEnter/Leave on its innermost div,
-            // so a point that topmost-hit-tested to a card's outer wrapper (but not
-            // its innermost div, e.g. the sliver just outside the rotated inner
-            // content) triggered nothing. Delegating from the whole composition and
-            // reading which tagged card wrapper the real event target belongs to
-            // (via data-hero-card-index) fixes that without guessing — it still
-            // honors genuine occlusion (topmost card wins) and only falls back to
-            // nearest-center proximity when no card wrapper was hit at all.
+            // The 4 cards are opaque rotated rectangles that overlap, so a chunk of
+            // the lowest z-index card is genuinely painted over by the others. Plain
+            // per-card onMouseEnter/Leave never reacts there since the browser
+            // (correctly) hit-tests to whichever card is topmost at that pixel.
+            //
+            // Instead of trusting hit-testing, for each mousemove we test the cursor
+            // against every card's own true rotated rectangle (inverse-transforming
+            // the point into that card's local space, using its untransformed
+            // offsetWidth/offsetHeight so rotation is exact, not an axis-aligned
+            // approximation). If the cursor lands inside exactly one card's
+            // rectangle, that one wins unambiguously — this matches native hit-test
+            // everywhere a card is fully exposed, so it can't steal hover from a
+            // clearly visible different card. Only when the cursor is inside more
+            // than one card's rectangle at once (a genuine overlap zone) do we break
+            // the tie by nearest center, letting the buried card win there — which is
+            // exactly the "stacked photos" trick: the buried card reacts as soon as
+            // the cursor is closer to it than to whatever's drawn on top. If the
+            // cursor is inside no card's rectangle (background gaps), fall back to
+            // nearest-edge distance.
             const handleCompositionMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-              const target = (e.target as HTMLElement).closest<HTMLElement>('[data-hero-card-index]');
-              if (target) {
-                setHoveredHeroCardIdx(Number(target.dataset.heroCardIndex));
-                return;
-              }
+              const px = e.clientX;
+              const py = e.clientY;
 
-              const rect = e.currentTarget.getBoundingClientRect();
-              const mouseX = e.clientX - rect.left - rect.width / 2;
-              const mouseY = e.clientY - rect.top - rect.height / 2;
-              let closestIdx = 0;
-              let closestDist = Infinity;
-              cardCenters.forEach((center, idx) => {
-                const dist = Math.hypot(mouseX - center.x, mouseY - center.y);
-                if (dist < closestDist) {
-                  closestDist = dist;
-                  closestIdx = idx;
-                }
-              });
-              setHoveredHeroCardIdx(closestIdx);
+              // Read each card's real current box straight from the DOM (via
+              // getBoundingClientRect) instead of recomputing it from the pose data.
+              // The rendered position is the sum of several independent transforms
+              // (this composition's own translate/rotate/scale, a GSAP scroll-linked
+              // parallax translateY on `.hero-card-parallax`, and a CSS bounce
+              // animation) — asking the browser for the live box sidesteps having to
+              // keep all of those in sync by hand, at the cost of using its
+              // axis-aligned bounding box rather than the exact rotated rectangle.
+              const candidates = activeProducts.map((_product, index) => {
+                const el = heroCardRefs.current[index];
+                if (!el) return null;
+
+                const rect = el.getBoundingClientRect();
+                const cx = (rect.left + rect.right) / 2;
+                const cy = (rect.top + rect.bottom) / 2;
+
+                const clampedX = Math.max(rect.left, Math.min(rect.right, px));
+                const clampedY = Math.max(rect.top, Math.min(rect.bottom, py));
+                const edgeDist = Math.hypot(px - clampedX, py - clampedY);
+
+                return { index, contains: edgeDist === 0, edgeDist, centerDist: Math.hypot(px - cx, py - cy) };
+              }).filter((c): c is NonNullable<typeof c> => c !== null);
+
+              if (candidates.length === 0) return;
+
+              const containing = candidates.filter((c) => c.contains);
+              const winner = containing.length > 0
+                ? containing.reduce((a, b) => (a.centerDist <= b.centerDist ? a : b))
+                : candidates.reduce((a, b) => (a.edgeDist <= b.edgeDist ? a : b));
+
+              setHoveredHeroCardIdx(winner.index);
             };
 
             return (
@@ -839,7 +854,9 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                     >
                       <div className="hero-card-parallax" data-speed={parallaxSpeed} style={{ display: 'inline-flex' }}>
                         <div style={{ animation: `${pose.anim} ${6 + index}s ease-in-out infinite` }}>
-                          <div style={{
+                          <div
+                            ref={(el) => { heroCardRefs.current[index] = el; }}
+                            style={{
                             background: 'rgba(255,255,255,0.985)',
                             borderRadius: 20,
                             padding: 14,
