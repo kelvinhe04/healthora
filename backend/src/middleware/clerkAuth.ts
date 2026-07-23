@@ -6,6 +6,7 @@ import type { AppEnv } from '../types/hono';
 import { userRateLimit } from './rateLimit';
 import { recordSecurityEvent } from '../lib/securityAudit';
 import { getAuthorizedParties } from '../lib/appEnv';
+import { shouldRecordThrottled, AUDIT_ACCESS_THROTTLE_MS } from '../lib/auditThrottle';
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || process.env.CLERK_ADMIN_EMAILS || '')
   .split(',')
@@ -108,17 +109,22 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
     const rateLimitedResponse = await userRateLimit(c, async () => undefined);
     if (rateLimitedResponse) return rateLimitedResponse;
 
-    recordSecurityEvent(c, {
-      actor: {
-        clerkId,
-        role: user.role,
-        name: user.name,
-        email: user.email,
-        _id: user._id,
-      },
-      action: 'auth.login',
-      metadata: { newUser: createdUser },
-    });
+    // Fires on every authenticated request, not just an actual sign-in - throttled per clerkId so
+    // it doesn't flood the append-only audit log and bury less-active admins' real actions (#315).
+    // A brand-new user is always logged, since that only happens once per account.
+    if (createdUser || shouldRecordThrottled(`auth.login:${clerkId}`, AUDIT_ACCESS_THROTTLE_MS)) {
+      recordSecurityEvent(c, {
+        actor: {
+          clerkId,
+          role: user.role,
+          name: user.name,
+          email: user.email,
+          _id: user._id,
+        },
+        action: 'auth.login',
+        metadata: { newUser: createdUser },
+      });
+    }
 
     await next();
   } catch (error) {
