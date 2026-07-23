@@ -8,6 +8,7 @@ import { Order } from '../../db/models/Order';
 import { clerk } from '../../lib/clerk';
 import { objectIdSchema, parseJson, parseParams } from '../../lib/validation';
 import { recordSecurityEvent } from '../../lib/securityAudit';
+import { getExternalAvatarUrl } from '../../lib/clerkAvatar';
 
 const userIdParamsSchema = z.object({
   id: objectIdSchema,
@@ -48,7 +49,9 @@ export const adminUsersRouter = new Hono<AppEnv>()
           ...user,
           orderCount: orders.length,
           ltv: Math.round(ltv * 100) / 100,
-          imageUrl: cUser?.imageUrl
+          imageUrl: cUser?.imageUrl,
+          // Secondary source if img.clerk.com fails to load client-side (#314) - see UsersSection.tsx.
+          imageUrlFallback: getExternalAvatarUrl(cUser),
         };
       })
     );

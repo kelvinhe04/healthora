@@ -139,6 +139,7 @@ export type AdminUser = {
   ltv?: number;
   createdAt?: string;
   imageUrl?: string;
+  imageUrlFallback?: string;
 };
 export type SalesData = {
   summary?: {

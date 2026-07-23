@@ -6,6 +6,7 @@ import type { AppEnv } from '../types/hono';
 import { userRateLimit } from './rateLimit';
 import { recordSecurityEvent } from '../lib/securityAudit';
 import { getAuthorizedParties } from '../lib/appEnv';
+import { getExternalAvatarUrl } from '../lib/clerkAvatar';
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || process.env.CLERK_ADMIN_EMAILS || '')
   .split(',')
@@ -69,7 +70,7 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
             name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
             email,
             role,
-            imageUrl: clerkUser.imageUrl,
+            imageUrl: getExternalAvatarUrl(clerkUser) || clerkUser.imageUrl,
           },
           { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
         );
@@ -88,13 +89,16 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
     const email = clerkUser.emailAddresses[0]?.emailAddress;
     const role = resolveRole(email, clerkUser.publicMetadata?.role as string | undefined, user.role);
     const nextName = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim();
+    // Prefer the OAuth provider's own avatar URL over Clerk's img.clerk.com proxy - that proxy
+    // domain isn't guaranteed to resolve on every network (#314).
+    const imageUrl = getExternalAvatarUrl(clerkUser) || clerkUser.imageUrl;
 
-    if (user.email !== email || user.role !== role || user.name !== nextName || user.imageUrl !== clerkUser.imageUrl) {
+    if (user.email !== email || user.role !== role || user.name !== nextName || user.imageUrl !== imageUrl) {
       await User.updateOne(
         { clerkId },
-        { email, role, name: nextName, imageUrl: clerkUser.imageUrl }
+        { email, role, name: nextName, imageUrl }
       );
-      user = { ...user, email, role, name: nextName, imageUrl: clerkUser.imageUrl };
+      user = { ...user, email, role, name: nextName, imageUrl };
     }
 
     c.set('user', {
@@ -102,7 +106,7 @@ export const clerkAuth = createMiddleware<AppEnv>(async (c, next) => {
       role: user.role,
       name: user.name,
       email: user.email,
-      imageUrl: clerkUser.imageUrl,
+      imageUrl,
       _id: user._id,
     });
 
