@@ -94,6 +94,7 @@ export type AdminAccess = {
   role: string;
   name?: string;
   email?: string;
+  imageUrl?: string;
 };
 export type DashboardData = {
   kpis: {

@@ -18,5 +18,9 @@ export const adminAccessRouter = new Hono<AppEnv>()
       role: user.role,
       name: user.name,
       email: user.email,
+      // c.get('user').imageUrl already prefers the OAuth provider's own avatar URL over Clerk's
+      // img.clerk.com proxy (see clerkAuth.ts) - the sidebar used Clerk's frontend `useUser()`
+      // directly before, same img.clerk.com dependency as the customer list (#314).
+      imageUrl: user.imageUrl,
     });
   });
