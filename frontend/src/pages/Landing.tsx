@@ -763,20 +763,33 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
 
             const activePoses = isMobile ? mobilePoses : basePoses;
 
-            // Card centers (relative to the composition's own center) used for
-            // proximity-based hover: the 4 cards are opaque rotated rectangles that
-            // overlap heavily, so the lowest z-index card is genuinely painted over
-            // by the others across most of its area. Per-card onMouseEnter/Leave
-            // can't react there since the browser correctly routes the event to
-            // whichever card is actually on top. Instead we track a single
-            // hoveredHeroCardIdx driven by whichever card's center is nearest the
-            // cursor, so the "buried" card still gets a hover response.
+            // Card centers (relative to the composition's own center), used only as a
+            // fallback for the rare gaps where no card's own box is actually hit (e.g.
+            // the thin transparent margin left by a rotated bounding box).
             const cardCenters = activePoses.map((pose) => ({
               x: pose.x * rDist,
               y: pose.y * rDist + baseYOffset,
             }));
 
+            // The 4 cards are opaque rotated rectangles that overlap; the lowest
+            // z-index card is genuinely painted over by the others across part of its
+            // area, and the browser correctly hit-tests to whichever card is actually
+            // on top there — that's expected, not a bug. The real bug was that each
+            // card only listened for its own onMouseEnter/Leave on its innermost div,
+            // so a point that topmost-hit-tested to a card's outer wrapper (but not
+            // its innermost div, e.g. the sliver just outside the rotated inner
+            // content) triggered nothing. Delegating from the whole composition and
+            // reading which tagged card wrapper the real event target belongs to
+            // (via data-hero-card-index) fixes that without guessing — it still
+            // honors genuine occlusion (topmost card wins) and only falls back to
+            // nearest-center proximity when no card wrapper was hit at all.
             const handleCompositionMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+              const target = (e.target as HTMLElement).closest<HTMLElement>('[data-hero-card-index]');
+              if (target) {
+                setHoveredHeroCardIdx(Number(target.dataset.heroCardIndex));
+                return;
+              }
+
               const rect = e.currentTarget.getBoundingClientRect();
               const mouseX = e.clientX - rect.left - rect.width / 2;
               const mouseY = e.clientY - rect.top - rect.height / 2;
@@ -814,6 +827,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
                   return (
                     <div
                       key={product.id}
+                      data-hero-card-index={index}
                       style={{
                         position: 'absolute',
                         zIndex: pose.z,
