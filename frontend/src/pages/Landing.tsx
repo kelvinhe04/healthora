@@ -418,6 +418,7 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   const cinematicRef = useRef<HTMLDivElement>(null);
   const [activeHeroIdx, setActiveHeroIdx] = useState(0);
+  const [hoveredHeroCardIdx, setHoveredHeroCardIdx] = useState<number | null>(null);
   
   useGSAP(() => {
     if (!cinematicRef.current) return;
@@ -739,82 +740,115 @@ export function Landing({ onNav, onOpenProduct, onAdd }: LandingProps) {
           )}
 
           {/* FLOATING COMPOSITION */}
-          <div key={`comp-${activeHeroIdx}`} style={{ position: 'absolute', top: isMobile ? 'auto' : 0, left: isMobile ? 0 : 'auto', right: isMobile ? 0 : isTablet ? '5%' : '0%', bottom: isMobile ? 0 : 0, height: isMobile ? 220 : 'auto', width: isMobile ? '100%' : isTablet ? '45%' : '45%', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 2 }}>
-            {activeProducts.map((product, index) => {
-              const rScale = isTablet && !isMobile ? 0.7 : 1;
-              const rDist = isTablet && !isMobile ? 0.65 : 1;
+          {(() => {
+            const rScale = isTablet && !isMobile ? 0.7 : 1;
+            const rDist = isTablet && !isMobile ? 0.65 : 1;
+            const baseYOffset = isMobile ? 0 : 55;
 
-              // Asymmetric cool composition for desktop/tablet
-              const basePoses = [
-                { x: 80, y: -20, rotate: -4, scale: 1.15, z: 3, delay: 0, anim: 'heroFloatA' },
-                { x: -90, y: -120, rotate: -15, scale: 0.85, z: 2, delay: 0.15, anim: 'heroFloatB' },
-                { x: 220, y: -60, rotate: 12, scale: 0.9, z: 4, delay: 0.3, anim: 'heroFloatC' },
-                { x: -50, y: 140, rotate: 8, scale: 0.75, z: 1, delay: 0.45, anim: 'heroFloatA' }
-              ];
-              
-              // Centered fan composition for mobile at the bottom
-              const mobilePoses = [
-                { x: 41, y: 30, rotate: 6, scale: 0.55, z: 4, delay: 0, anim: 'heroFloatA' },
-                { x: -49, y: 40, rotate: -14, scale: 0.48, z: 3, delay: 0.1, anim: 'heroFloatB' },
-                { x: 111, y: 45, rotate: 18, scale: 0.45, z: 2, delay: 0.2, anim: 'heroFloatC' },
-                { x: -109, y: 60, rotate: -24, scale: 0.38, z: 1, delay: 0.3, anim: 'heroFloatA' }
-              ];
-              
-              const pose = isMobile ? mobilePoses[index] : basePoses[index];
-              if (!pose) return null;
+            // Asymmetric cool composition for desktop/tablet
+            const basePoses = [
+              { x: 80, y: -20, rotate: -4, scale: 1.15, z: 3, delay: 0, anim: 'heroFloatA' },
+              { x: -90, y: -120, rotate: -15, scale: 0.85, z: 2, delay: 0.15, anim: 'heroFloatB' },
+              { x: 220, y: -60, rotate: 12, scale: 0.9, z: 4, delay: 0.3, anim: 'heroFloatC' },
+              { x: -50, y: 140, rotate: 8, scale: 0.75, z: 1, delay: 0.45, anim: 'heroFloatA' }
+            ];
 
-              const x = pose.x * rDist;
-              const y = pose.y * rDist;
-              const scale = pose.scale * rScale;
+            // Centered fan composition for mobile at the bottom
+            const mobilePoses = [
+              { x: 41, y: 30, rotate: 6, scale: 0.55, z: 4, delay: 0, anim: 'heroFloatA' },
+              { x: -49, y: 40, rotate: -14, scale: 0.48, z: 3, delay: 0.1, anim: 'heroFloatB' },
+              { x: 111, y: 45, rotate: 18, scale: 0.45, z: 2, delay: 0.2, anim: 'heroFloatC' },
+              { x: -109, y: 60, rotate: -24, scale: 0.38, z: 1, delay: 0.3, anim: 'heroFloatA' }
+            ];
 
-              const baseYOffset = isMobile ? 0 : 55;
+            const activePoses = isMobile ? mobilePoses : basePoses;
 
-              const parallaxSpeeds = [18, 22, 20, 16];
-              const parallaxSpeed = parallaxSpeeds[index] ?? 10;
+            // Card centers (relative to the composition's own center) used for
+            // proximity-based hover: the 4 cards are opaque rotated rectangles that
+            // overlap heavily, so the lowest z-index card is genuinely painted over
+            // by the others across most of its area. Per-card onMouseEnter/Leave
+            // can't react there since the browser correctly routes the event to
+            // whichever card is actually on top. Instead we track a single
+            // hoveredHeroCardIdx driven by whichever card's center is nearest the
+            // cursor, so the "buried" card still gets a hover response.
+            const cardCenters = activePoses.map((pose) => ({
+              x: pose.x * rDist,
+              y: pose.y * rDist + baseYOffset,
+            }));
 
-              return (
-                <div
-                  key={product.id}
-                  style={{
-                    position: 'absolute',
-                    zIndex: pose.z,
-                    transform: `translate(${x}px, ${y + baseYOffset}px) rotate(${pose.rotate}deg) scale(${scale})`,
-                    opacity: 0,
-                    animation: `cardEnterSpread 0.9s cubic-bezier(0.18, 0.88, 0.24, 1) ${pose.delay}s forwards`,
-                    pointerEvents: 'auto'
-                  }}
-                >
-                  <div className="hero-card-parallax" data-speed={parallaxSpeed} style={{ display: 'inline-flex' }}>
-                    <div style={{ animation: `${pose.anim} ${6 + index}s ease-in-out infinite` }}>
-                      <div style={{ 
-                        background: 'rgba(255,255,255,0.985)', 
-                        borderRadius: 20, 
-                        padding: 14, 
-                        boxShadow: '0 24px 54px -24px rgba(0,0,0,0.3), 0 56px 118px -56px rgba(0,0,0,0.36)', 
-                        border: '1px solid rgba(255,255,255,0.6)',
-                        cursor: 'pointer',
-                        transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease'
+            const handleCompositionMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const mouseX = e.clientX - rect.left - rect.width / 2;
+              const mouseY = e.clientY - rect.top - rect.height / 2;
+              let closestIdx = 0;
+              let closestDist = Infinity;
+              cardCenters.forEach((center, idx) => {
+                const dist = Math.hypot(mouseX - center.x, mouseY - center.y);
+                if (dist < closestDist) {
+                  closestDist = dist;
+                  closestIdx = idx;
+                }
+              });
+              setHoveredHeroCardIdx(closestIdx);
+            };
+
+            return (
+              <div
+                key={`comp-${activeHeroIdx}`}
+                onMouseMove={handleCompositionMouseMove}
+                onMouseLeave={() => setHoveredHeroCardIdx(null)}
+                style={{ position: 'absolute', top: isMobile ? 'auto' : 0, left: isMobile ? 0 : 'auto', right: isMobile ? 0 : isTablet ? '5%' : '0%', bottom: isMobile ? 0 : 0, height: isMobile ? 220 : 'auto', width: isMobile ? '100%' : isTablet ? '45%' : '45%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}
+              >
+                {activeProducts.map((product, index) => {
+                  const pose = activePoses[index];
+                  if (!pose) return null;
+
+                  const x = pose.x * rDist;
+                  const y = pose.y * rDist;
+                  const scale = pose.scale * rScale;
+
+                  const parallaxSpeeds = [18, 22, 20, 16];
+                  const parallaxSpeed = parallaxSpeeds[index] ?? 10;
+                  const isHovered = hoveredHeroCardIdx === index;
+
+                  return (
+                    <div
+                      key={product.id}
+                      style={{
+                        position: 'absolute',
+                        zIndex: pose.z,
+                        transform: `translate(${x}px, ${y + baseYOffset}px) rotate(${pose.rotate}deg) scale(${scale})`,
+                        opacity: 0,
+                        animation: `cardEnterSpread 0.9s cubic-bezier(0.18, 0.88, 0.24, 1) ${pose.delay}s forwards`,
+                        pointerEvents: 'auto'
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'scale(1.08) translateY(-4px)';
-                        e.currentTarget.style.boxShadow = '0 30px 60px -20px rgba(0,0,0,0.4), 0 60px 120px -40px rgba(0,0,0,0.5)';
-                        e.currentTarget.style.borderColor = 'rgba(255,255,255,1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 24px 54px -24px rgba(0,0,0,0.3), 0 56px 118px -56px rgba(0,0,0,0.36)';
-                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)';
-                      }}
-                      onClick={() => onOpenProduct(product)}
-                      >
-                        <ProductImage product={product} size="md" priority />
+                    >
+                      <div className="hero-card-parallax" data-speed={parallaxSpeed} style={{ display: 'inline-flex' }}>
+                        <div style={{ animation: `${pose.anim} ${6 + index}s ease-in-out infinite` }}>
+                          <div style={{
+                            background: 'rgba(255,255,255,0.985)',
+                            borderRadius: 20,
+                            padding: 14,
+                            boxShadow: isHovered
+                              ? '0 30px 60px -20px rgba(0,0,0,0.4), 0 60px 120px -40px rgba(0,0,0,0.5)'
+                              : '0 24px 54px -24px rgba(0,0,0,0.3), 0 56px 118px -56px rgba(0,0,0,0.36)',
+                            border: `1px solid ${isHovered ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.6)'}`,
+                            cursor: 'pointer',
+                            transform: isHovered ? 'scale(1.08) translateY(-4px)' : 'scale(1) translateY(0)',
+                            transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease'
+                          }}
+                          onClick={() => onOpenProduct(product)}
+                          >
+                            <ProductImage product={product} size="md" priority />
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
 <style>{`
             @keyframes fadeInUp {
               0% { opacity: 0; transform: translateY(20px); }
