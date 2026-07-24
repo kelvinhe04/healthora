@@ -59,12 +59,10 @@ export function UsersSection() {
   } = useAdminPanelContext();
   const [confirmRoleChange, setConfirmRoleChange] = useState<{ id: string; nextRole: 'admin' | 'customer' } | null>(null);
   const [justUpdatedId, setJustUpdatedId] = useState<string | null>(null);
-  // `imageUrl` (Clerk's own img.clerk.com proxy) can fail to load on some networks even though
-  // the account has a real photo - confirmed one admin's router couldn't resolve that domain at
-  // all while the underlying Google CDN worked fine (#314). Track per-user which source is
-  // currently showing so a failure can step down: imageUrl -> imageUrlFallback (raw Google URL,
-  // when Clerk exposes one) -> initials, instead of leaving the browser's broken-image icon up.
-  const [avatarStage, setAvatarStage] = useState<Record<string, 'fallback' | 'broken'>>({});
+  // imageUrl is already the most reliable source the backend has (#314) - this is just a safety
+  // net so a network hiccup falls back to initials instead of leaving the browser's broken-image
+  // icon up.
+  const [brokenAvatarIds, setBrokenAvatarIds] = useState<Set<string>>(new Set());
   const isOwnerViewer = access.role === 'owner';
 
   return (
@@ -315,10 +313,7 @@ export function UsersSection() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedUsers.items.map((user) => {
-                    const stage = avatarStage[user._id];
-                    const avatarSrc = stage === 'fallback' ? user.imageUrlFallback : user.imageUrl;
-                    return (
+                  {paginatedUsers.items.map((user) => (
                     <tr key={user._id} style={trStyle}>
                       <td style={td}>
                         <div
@@ -328,15 +323,12 @@ export function UsersSection() {
                             gap: 12,
                           }}
                         >
-                          {avatarSrc && stage !== 'broken' ? (
+                          {user.imageUrl && !brokenAvatarIds.has(user._id) ? (
                             <img
-                              src={avatarSrc}
+                              src={user.imageUrl}
                               alt={user.name || t('admin.users.table.defaultAvatarAlt')}
                               onError={() =>
-                                setAvatarStage((prev) => ({
-                                  ...prev,
-                                  [user._id]: prev[user._id] !== 'fallback' && user.imageUrlFallback ? 'fallback' : 'broken',
-                                }))
+                                setBrokenAvatarIds((prev) => new Set(prev).add(user._id))
                               }
                               style={{
                                 width: 36,
@@ -504,8 +496,7 @@ export function UsersSection() {
                           : "—"}
                       </td>
                     </tr>
-                    );
-                  })}
+                  ))}
                 </tbody>
               </table>
               </div>

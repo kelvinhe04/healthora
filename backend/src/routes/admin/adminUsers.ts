@@ -49,9 +49,10 @@ export const adminUsersRouter = new Hono<AppEnv>()
           ...user,
           orderCount: orders.length,
           ltv: Math.round(ltv * 100) / 100,
-          imageUrl: cUser?.imageUrl,
-          // Secondary source if img.clerk.com fails to load client-side (#314) - see UsersSection.tsx.
-          imageUrlFallback: getExternalAvatarUrl(cUser),
+          // Prefer the OAuth provider's own avatar URL over Clerk's img.clerk.com proxy - that
+          // proxy isn't guaranteed to resolve on every network, and trying it first meant every
+          // row waited out its timeout before falling back to the URL that actually works (#314).
+          imageUrl: getExternalAvatarUrl(cUser) || cUser?.imageUrl,
         };
       })
     );
