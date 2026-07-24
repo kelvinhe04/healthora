@@ -496,7 +496,7 @@
       <div class="say">
         <p>Y hablando de eso, yo soy Kelvin y me tocó la parte de MCP, más el cierre de calidad.</p>
         <p>MCP significa Model Context Protocol, y básicamente es un servidor que montamos encima del mismo backend, en la ruta <code>/mcp</code>. Ahí expusimos <b>32 herramientas</b>, protegidas con un token, que un agente como Claude Code o Codex puede usar directamente para operar el negocio: consultar el catálogo, ajustar el stock, cambiar el estado de un pedido, moderar una reseña, lo que sea. La regla que nos pusimos desde el principio fue simple: si una tool de MCP puede hacer algo, ese algo también tiene que poderse hacer desde el panel — nunca al revés.</p>
-        <p>En cuanto a calidad, tenemos 28 archivos de pruebas entre unitarias e integración en el backend, 8 más en el frontend, y 16 pruebas end-to-end con Playwright que recorren el catálogo, el checkout, el panel admin, las devoluciones, las reseñas y hasta la accesibilidad — y todo eso corre solo, automáticamente, cada vez que subimos un cambio a GitHub. Todo el trabajo lo organizamos con issues de GitHub enlazados a cada Pull Request, y un tablero de Projects para llevar el control.</p>
+        <p>En cuanto a calidad, tenemos más de 30 archivos de pruebas entre unitarias e integración en el backend, pruebas en el frontend, y 16 pruebas end-to-end con Playwright que recorren el catálogo, el checkout, el panel admin, las devoluciones, las reseñas y hasta la accesibilidad — y todo eso corre solo, automáticamente, cada vez que subimos un cambio a GitHub. Todo el trabajo lo organizamos con issues de GitHub enlazados a cada Pull Request, y un tablero de Projects para llevar el control.</p>
         <p>Y lo mejor: nada de esto es teoría, ya está funcionando gratis en producción — el frontend en Vercel, el backend en Koyeb. Así que mejor se los mostramos ahí mismo, en vivo.</p>
       </div>
     </div>
@@ -508,7 +508,7 @@
       <span class="part-num">PARTE 2</span>
       <h2>Demo — ambiente desplegado</h2>
     </div>
-    <p class="part-intro">Sin límite de tiempo fijo, pero apunten a algo fluido y sin relleno. Todo se graba contra el ambiente <b>desplegado</b>, no localhost. Cada tarjeta numerada es <b>una sola funcionalidad nueva</b> — con una sola excepción marcada explícitamente (precio y stock por variante comparten la misma acción en pantalla, verificado contra el código: ambos salen de la misma tabla combo sabor×tamaño) —: primero el título con su código de HU, después exactamente qué hacer para demostrarla. Las paradas marcadas con <b>•</b> (pago con Stripe, Dashboard, MCP en vivo) son contexto necesario para que la grabación fluya de una toma a otra, pero no son funcionalidades nuevas — por eso no llevan número ni cuentan entre las 37. Roy cubre lo <b>no funcional</b> (Sección III del docx: seguridad, testing, rendimiento, accesibilidad — no cuenta entre las 37). Einer y Kelvin, juntos, demuestran las <b>37 funcionalidades nuevas</b> de Cliente/Administrador (Sección II): 8 + 29.</p>
+    <p class="part-intro">Sin límite de tiempo fijo, pero apunten a algo fluido y sin relleno. Todo se graba contra el ambiente <b>desplegado</b>, no localhost. Cada tarjeta de abajo es <b>una sola funcionalidad</b> — sin combinar varias HU en un mismo punto —: primero el título con su código de HU, después exactamente qué hacer en pantalla para demostrarla. Roy cubre lo <b>no funcional</b> (Sección III del docx: seguridad, testing, rendimiento, accesibilidad — no cuenta entre las 37). Einer y Kelvin, juntos, demuestran las <b>37 funcionalidades nuevas</b> de Cliente/Administrador (Sección II): 8 + 29.</p>
 
     <div class="meta-row" style="margin-bottom: 18px;">
       <span>Frontend → <strong>healthora-shop.vercel.app</strong></span>
@@ -614,130 +614,134 @@
     <div class="demo-block" style="--r-color:var(--role-c); --r-bg:var(--role-c-bg)">
       <span class="role-tag">Kelvin He</span>
       <h3>Variantes, checkout completo, club, admin y MCP en vivo</h3>
-      <div class="subhead">29 de las 37 funcionalidades nuevas — un número por HU; las paradas con • son contexto y no cuentan</div>
+      <div class="subhead">29 de las 37 funcionalidades nuevas — una tarjeta por HU, sin combinar</div>
       <ol class="feature-list">
         <li class="feature">
           <div class="feature-title"><span class="n">1</span><b>Gestión de variantes desde el panel admin</b><span class="hu">HU-032 · MCP</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Panel admin → "Productos" → editar un producto → sección de variantes: agregar una nueva (tipo, etiqueta, SKU) o editar una existente, y marcar una como predeterminada.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">2</span><b>Precio y stock por variante</b><span class="hu">HU-033 · HU-034 · MCP</span></div>
-          <div class="feature-demo"><span class="demo-label">Demo</span>En la ficha pública de ese producto, cambiar de sabor y de tamaño — precio y stock ("EN STOCK" / "SOLO QUEDAN N") se recalculan juntos en vivo sin recargar, según la combinación exacta elegida (mismo precio que después cobra Stripe, no el precio base).<span class="note">Una sola acción en pantalla demuestra las dos HU: en <code>ProductDetail.tsx</code> ambos valores salen de la misma tabla combo sabor×tamaño (<code>priceBySize</code>/<code>stockBySize</code>), así que cambiar cualquiera de los dos selectores mueve ambos a la vez — no hace falta grabarlo dos veces.</span></div>
+          <div class="feature-title"><span class="n">2</span><b>Precio por variante aplicado en checkout</b><span class="hu">HU-033</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En la ficha pública de ese producto, elegir un sabor distinto — el precio mostrado cambia en vivo sin recargar (es el mismo precio que después cobra Stripe, no el precio base).</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">3</span><b>Variante persistida en el carrito</b><span class="hu">HU-035</span></div>
+          <div class="feature-title"><span class="n">3</span><b>Stock por variante</b><span class="hu">HU-034 · MCP</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>En la misma ficha, elegir un tamaño distinto — el indicador de stock ("EN STOCK" / "SOLO QUEDAN N") cambia según la variante, no según el producto en general.</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">4</span><b>Variante persistida en el carrito</b><span class="hu">HU-035</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Click "Agregar al carrito · $X" → abrir el carrito (ícono de bolsa) para confirmar la variante elegida → recargar la página (F5) → volver a abrir el carrito: la variante <b>sigue ahí</b>.<span class="note">Fix arreglado esta misma semana (antes, recargar perdía la variante) — vale la pena nombrarlo como ejemplo de mantenimiento activo.</span></div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">4</span><b>Enforcement de stock (inventario)</b><span class="hu">HU-037 · MCP</span></div>
+          <div class="feature-title"><span class="n">5</span><b>Enforcement de stock (inventario)</b><span class="hu">HU-037 · MCP</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Intentar subir la cantidad de un ítem en el carrito por encima del stock disponible de esa variante — el sistema bloquea la cantidad excedente antes de llegar al checkout.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">5</span><b>Muestra gratis con elegibilidad automática</b><span class="hu">HU-105</span></div>
+          <div class="feature-title"><span class="n">6</span><b>Muestra gratis con elegibilidad automática</b><span class="hu">HU-105</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Dentro de "Tu carrito", si aplica, la tarjeta verde "¡Elige 1 muestra gratis!" con botón "ELEGIR →" abre <span class="hu" style="color:var(--accent-ink)">/sample-picker</span> — elegir una opción y click "Confirmar y volver".</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">6</span><b>Envío a domicilio o retiro en tienda</b><span class="hu">HU-038 · Simplificada</span></div>
+          <div class="feature-title"><span class="n">7</span><b>Envío a domicilio o retiro en tienda</b><span class="hu">HU-038 · Simplificada</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Click "Ir a checkout". En "Dirección de envío" / "Tus datos", alternar entre "Envío a domicilio" y "Retiro en tienda" y mostrar cómo cambia el costo mostrado (gratis en retiro, tarifa plana o gratis sobre $50 en domicilio).</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">7</span><b>Velocidad de entrega</b><span class="hu">HU-100 · Simplificada</span></div>
-          <div class="feature-demo"><span class="demo-label">Demo</span>Sin pantalla propia — mencionar en voz que se consolidó con el punto anterior: la primera versión sí diferenciaba zona (capital/interior) × velocidad (estándar/express, 4 tarifas — commit real en <code>fix/hu-038-100-envio-zona-velocidad</code>), pero se simplificó a una sola elección domicilio/retiro para reducir superficie de error. No es un recorte inventado para el video: quedó documentado en <code>docs/seguimiento-hu.md</code>.</div>
+          <div class="feature-title"><span class="n">8</span><b>Velocidad de entrega</b><span class="hu">HU-100 · Simplificada</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sin pantalla propia — mencionar en voz que se consolidó con el punto anterior: en vez de estándar/express por separado, quedó resuelto con la misma elección domicilio/retiro.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">8</span><b>Cálculo de ITBMS</b><span class="hu">HU-039</span></div>
+          <div class="feature-title"><span class="n">9</span><b>Cálculo de ITBMS</b><span class="hu">HU-039</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>En el resumen de la orden (columna derecha del checkout), señalar la línea "ITBMS" en el desglose de totales — aplica 7% a productos gravados y exonera medicamentos.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">9</span><b>Código promocional aplicado en checkout</b><span class="hu">HU-040 · MCP</span></div>
+          <div class="feature-title"><span class="n">10</span><b>Código promocional aplicado en checkout</b><span class="hu">HU-040 · MCP</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>En el mismo resumen, campo "Código de descuento" (placeholder <code>BIENVENIDA</code>) con botón "Aplicar" — el descuento se refleja en el total antes de pagar.</div>
         </li>
-        <li class="feature" style="opacity:0.75">
-          <div class="feature-title"><span class="n">•</span><b>Pago con Stripe</b><span class="hu">MVP — contexto, no cuenta entre las 37</span></div>
-          <div class="feature-demo"><span class="demo-label">Demo</span>Pagar con Stripe Elements embebido (tarjeta de prueba <code>4242 4242 4242 4242</code>, cualquier fecha futura y CVC) → llega a la pantalla de confirmación.<span class="note">Parada obligatoria para poder crear la orden real que alimenta las tarjetas siguientes — no es una funcionalidad nueva de esta entrega, viene del MVP (A7).</span></div>
+        <li class="feature">
+          <div class="feature-title"><span class="n">11</span><b>Pago con Stripe</b><span class="hu">MVP — contexto, no cuenta entre las 37</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Pagar con Stripe Elements embebido (tarjeta de prueba <code>4242 4242 4242 4242</code>, cualquier fecha futura y CVC) → llega a la pantalla de confirmación.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">10</span><b>Variante registrada en la orden</b><span class="hu">HU-036 · MCP</span></div>
+          <div class="feature-title"><span class="n">12</span><b>Variante registrada en la orden</b><span class="hu">HU-036 · MCP</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Abrir el detalle de la orden que se acaba de crear (o <span class="hu" style="color:var(--accent-ink)">/orders</span>) — el ítem muestra el id y la etiqueta de la variante comprada, igual que el email de confirmación.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">11</span><b>Devoluciones y reembolsos</b><span class="hu">HU-041 · MCP</span></div>
+          <div class="feature-title"><span class="n">13</span><b>Devoluciones y reembolsos</b><span class="hu">HU-041 · MCP</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>En <span class="hu" style="color:var(--accent-ink)">/orders</span>, abrir un pedido "enviado" → botón "Solicitar devolución" (tipo de motivo, detalles, fotos de evidencia, "¿Qué prefieres?" con Reembolso / Reenvío).</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">12</span><b>Seguimiento de envío (tracking)</b><span class="hu">HU-042</span></div>
+          <div class="feature-title"><span class="n">14</span><b>Seguimiento de envío (tracking)</b><span class="hu">HU-042</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>En ese mismo pedido, mostrar "N° de guía" + courier bajo el timeline de estado (preparando, enviado, en tránsito, entregado).</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">13</span><b>Página de perfil editable</b><span class="hu">HU-057</span></div>
+          <div class="feature-title"><span class="n">15</span><b>Página de perfil editable</b><span class="hu">HU-057</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Ícono de usuario → "Mi perfil" (<span class="hu" style="color:var(--accent-ink)">/profile</span>) → editar nombre o foto y mostrar que se guarda de inmediato.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">14</span><b>Preferencias de notificación</b><span class="hu">HU-058</span></div>
+          <div class="feature-title"><span class="n">16</span><b>Preferencias de notificación</b><span class="hu">HU-058</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>En el mismo perfil, sección "Preferencias de notificación": 2 toggles por tipo de correo + "Darme de baja de todos los correos".</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">15</span><b>Métodos de pago guardados</b><span class="hu">HU-059</span></div>
+          <div class="feature-title"><span class="n">17</span><b>Métodos de pago guardados</b><span class="hu">HU-059</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Sección "Métodos de pago" del perfil: botón "Agregar tarjeta" (Stripe PaymentMethods) y opción de eliminar una guardada.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">16</span><b>Programa de lealtad / puntos (Club)</b><span class="hu">HU-060</span></div>
+          <div class="feature-title"><span class="n">18</span><b>Programa de lealtad / puntos (Club)</b><span class="hu">HU-060</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Ícono de usuario → "Club" (<span class="hu" style="color:var(--accent-ink)">/club</span>): tarjeta "Tus puntos" con desglose Ganados/Canjeados.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">17</span><b>Suscripción de reposición automática</b><span class="hu">HU-101</span></div>
+          <div class="feature-title"><span class="n">19</span><b>Suscripción de reposición automática</b><span class="hu">HU-101</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Sección "Mis suscripciones" del perfil: botones Pausar/Reanudar/Cancelar sobre una suscripción activa (elegida en la ficha de producto con una frecuencia de 7/15/30/60 días).</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">18</span><b>Recordatorio de recompra</b><span class="hu">HU-102</span></div>
-          <div class="feature-demo"><span class="demo-label">Demo</span>Sin demo en vivo posible, pero sí es automático: cada compra pagada actualiza la fecha estimada de agotamiento de ese cliente para ese producto (última compra + ciclo de reposición de su categoría). Un job en el backend (arranca al iniciar el servidor y se repite solo — <code>setInterval</code> en <code>backend/src/index.ts</code>) escanea todas las órdenes y manda el email en cuanto la fecha estimada cae dentro de la ventana de aviso, sin ningún botón ni intervención manual. Mencionar en voz o mostrar el código en <code>backend/src/lib/repurchase.ts</code>.</div>
-        </li>
-        <li class="feature" style="opacity:0.75">
-          <div class="feature-title"><span class="n">•</span><b>Dashboard administrativo</b><span class="hu">MVP — contexto, no cuenta entre las 37</span></div>
-          <div class="feature-demo"><span class="demo-label">Demo</span>Panel admin → "Dashboard": tarjetas KPI "Ingresos mes", "Órdenes mes", "Clientes", "Existencias bajas".<span class="note">Ya existía desde el MVP (A7) — se muestra solo como escenario para el punto siguiente, no como funcionalidad nueva. (Sí tiene tool MCP propia, <code>dashboard.getSummary</code>, pero eso no lo vuelve una HU de esta entrega — ver <code>deliverables/funcionalidades-implementadas.html</code>, sección "MCP sobre el MVP".)</span></div>
+          <div class="feature-title"><span class="n">20</span><b>Recordatorio de recompra</b><span class="hu">HU-102</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Sin demo en vivo posible — es un email programado según la fecha estimada de agotamiento. Mencionar en voz o mostrar el código en <code>backend/src/lib/repurchase.ts</code>.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">19</span><b>Alertas de stock bajo</b><span class="hu">HU-055</span></div>
+          <div class="feature-title"><span class="n">21</span><b>Dashboard administrativo</b><span class="hu">MVP — contexto, no cuenta entre las 37</span></div>
+          <div class="feature-demo"><span class="demo-label">Demo</span>Panel admin → "Dashboard": tarjetas KPI "Ingresos mes", "Órdenes mes", "Clientes", "Existencias bajas".</div>
+        </li>
+        <li class="feature">
+          <div class="feature-title"><span class="n">22</span><b>Alertas de stock bajo</b><span class="hu">HU-055</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>En el mismo Dashboard, tarjeta "Inventario crítico" resaltando productos/variantes bajo el umbral definido por el admin.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">20</span><b>Notificaciones en tiempo real</b><span class="hu">HU-061 · MCP</span></div>
+          <div class="feature-title"><span class="n">23</span><b>Notificaciones en tiempo real</b><span class="hu">HU-061 · MCP</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Si llega un pedido nuevo durante la grabación, señalar la campana de notificaciones (header) recibiéndolo al instante vía WebSockets, sin recargar.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">21</span><b>Descuentos automáticos por producto y categoría</b><span class="hu">HU-092 · MCP</span></div>
+          <div class="feature-title"><span class="n">24</span><b>Descuentos automáticos por producto y categoría</b><span class="hu">HU-092 · MCP</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Productos": editar un producto → "Descuento por categoría" → elegir categoría, tipo (Porcentaje/Monto fijo) y valor → "Aplicar descuento" → volver al catálogo público y mostrar el precio tachado junto al rebajado.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">22</span><b>Exportación de órdenes a Excel</b><span class="hu">HU-050 · MCP</span></div>
+          <div class="feature-title"><span class="n">25</span><b>Exportación de órdenes a Excel</b><span class="hu">HU-050 · MCP</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Pedidos": botón "Exportar Excel" arriba de la tabla.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">23</span><b>CMS de banners</b><span class="hu">HU-053</span></div>
+          <div class="feature-title"><span class="n">26</span><b>CMS de banners</b><span class="hu">HU-053</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Banners": "Editar" en uno de los 2 banners fijos (promo/club) y cambiar un texto para mostrar que se refleja en el Landing sin redeploy.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">24</span><b>Analítica de producto (PostHog)</b><span class="hu">HU-054 · MCP</span></div>
+          <div class="feature-title"><span class="n">27</span><b>Analítica de producto (PostHog)</b><span class="hu">HU-054 · MCP</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Analítica": embudo de conversión y abandono de carrito capturado por PostHog.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">25</span><b>Reportes avanzados (cohortes, LTV)</b><span class="hu">HU-052 · MCP</span></div>
+          <div class="feature-title"><span class="n">28</span><b>Reportes avanzados (cohortes, LTV)</b><span class="hu">HU-052 · MCP</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Cohortes": retención de clientes por período y LTV promedio, filtrable por rango de fecha.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">26</span><b>Moderación de reseñas</b><span class="hu">HU-056 · MCP</span></div>
+          <div class="feature-title"><span class="n">29</span><b>Moderación de reseñas</b><span class="hu">HU-056 · MCP</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Reseñas": sobre una reseña, los botones "Aprobar / publicar", "Ocultar", "Eliminar" y "Banear"; arriba, el botón "Usuarios baneados".</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">27</span><b>Audit trail de acciones administrativas</b><span class="hu">HU-051 · MCP</span></div>
+          <div class="feature-title"><span class="n">30</span><b>Audit trail de acciones administrativas</b><span class="hu">HU-051 · MCP</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Sidebar "Auditoría": filtros por email de admin, acción y rango de fechas sobre el registro append-only.</div>
         </li>
         <li class="feature">
-          <div class="feature-title"><span class="n">28</span><b>Rol de administrador supremo (owner)</b><span class="hu">HU-103</span></div>
+          <div class="feature-title"><span class="n">31</span><b>Rol de administrador supremo (owner)</b><span class="hu">HU-103</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>Con el usuario logueado como <b>owner</b>, sidebar "Clientes" → mostrar el filtro "Rol" (Cliente/Admin/Owner) y el botón "Hacer admin" / "Quitar admin".</div>
         </li>
-        <li class="feature" style="opacity:0.75">
-          <div class="feature-title"><span class="n">•</span><b>Servidor MCP en vivo</b><span class="hu">32 tools — no es una HU nueva, es la capa que las expone a un agente</span></div>
+        <li class="feature">
+          <div class="feature-title"><span class="n">32</span><b>Servidor MCP en vivo</b><span class="hu">32 tools — no es una HU nueva, es la capa que las expone a un agente</span></div>
           <div class="feature-demo"><span class="demo-label">Demo</span>En Claude Code o Codex, con el servidor MCP apuntando a <code>https://excessive-lara-personal-api-school-2d60e8b3.koyeb.app/mcp</code> y el Bearer token, pedirle al agente que llame en vivo: <code>catalog.listProducts</code>, <code>inventory.adjustStock</code> (y refrescar la sección Productos del admin para ver el cambio reflejado), y <code>notifications.broadcast</code> (y ver la campana recibirla en tiempo real). Cerrar mencionando: 32 tools, cada una con su equivalente exacto en la UI que acaban de ver.</div>
         </li>
       </ol>
