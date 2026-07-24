@@ -56,6 +56,12 @@ function normalizeAddresses(addresses: Address[]) {
 
 export const accountRouter = new Hono<AppEnv>()
   .use('*', clerkAuth)
+  .get('/profile', async (c) => {
+    // imageUrl ya viene resuelto por clerkAuth con preferencia al avatar real del proveedor OAuth
+    // sobre el proxy img.clerk.com (#314) - el storefront (Header, Profile) usaba antes
+    // useUser().imageUrl de Clerk directo en el navegador, que siempre pasa por ese proxy.
+    return c.json({ imageUrl: c.get('user').imageUrl ?? null });
+  })
   .get('/loyalty', async (c) => {
     const account = await getLoyaltyAccount(c.get('user').clerkId);
     return c.json(account);
