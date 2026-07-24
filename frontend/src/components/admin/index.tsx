@@ -1273,6 +1273,9 @@ export function Sidebar({
 }: SidebarProps) {
   const { t } = useTranslation();
   const { theme, toggle: toggleTheme } = useThemeStore();
+  // img.clerk.com (Clerk's avatar proxy) isn't guaranteed to resolve on every network - fall back
+  // to initials instead of leaving the browser's broken-image icon up (#314).
+  const [adminPhotoBroken, setAdminPhotoBroken] = useState(false);
   const items: {
     id: AdminPage;
     label: string;
@@ -1521,8 +1524,13 @@ export function Sidebar({
                 flexShrink: 0,
               }}
             >
-              {adminPhoto ? (
-                <img src={adminPhoto} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              {adminPhoto && !adminPhotoBroken ? (
+                <img
+                  src={adminPhoto}
+                  alt=""
+                  onError={() => setAdminPhotoBroken(true)}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
               ) : (
                 (adminName?.[0] ?? "A").toUpperCase()
               )}

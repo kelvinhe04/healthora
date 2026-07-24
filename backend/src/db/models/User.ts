@@ -5,6 +5,10 @@ const UserSchema = new Schema(
     clerkId: { type: String, required: true, unique: true },
     name: String,
     email: String,
+    // Snapshot del avatar de Clerk, resincronizado en cada login (ver clerkAuth.ts) - antes de
+    // #314 nunca se persistia, asi que cualquier lector de este campo directo desde Mongo (en vez
+    // de pedirselo a Clerk en vivo) siempre recibia undefined.
+    imageUrl: { type: String, default: null },
     // Un solo Stripe Customer por usuario, creado la primera vez que hace falta (agregar una
     // tarjeta guardada, pagar, o suscribirse a reposición automática, HU-101) - ver
     // lib/stripeCustomer.ts. No se crea al registrarse.

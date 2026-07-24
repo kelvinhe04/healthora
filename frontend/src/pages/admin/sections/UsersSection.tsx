@@ -59,6 +59,10 @@ export function UsersSection() {
   } = useAdminPanelContext();
   const [confirmRoleChange, setConfirmRoleChange] = useState<{ id: string; nextRole: 'admin' | 'customer' } | null>(null);
   const [justUpdatedId, setJustUpdatedId] = useState<string | null>(null);
+  // imageUrl is already the most reliable source the backend has (#314) - this is just a safety
+  // net so a network hiccup falls back to initials instead of leaving the browser's broken-image
+  // icon up.
+  const [brokenAvatarIds, setBrokenAvatarIds] = useState<Set<string>>(new Set());
   const isOwnerViewer = access.role === 'owner';
 
   return (
@@ -319,10 +323,13 @@ export function UsersSection() {
                             gap: 12,
                           }}
                         >
-                          {user.imageUrl ? (
+                          {user.imageUrl && !brokenAvatarIds.has(user._id) ? (
                             <img
                               src={user.imageUrl}
                               alt={user.name || t('admin.users.table.defaultAvatarAlt')}
+                              onError={() =>
+                                setBrokenAvatarIds((prev) => new Set(prev).add(user._id))
+                              }
                               style={{
                                 width: 36,
                                 height: 36,

@@ -8,6 +8,7 @@ import { Order } from '../../db/models/Order';
 import { clerk } from '../../lib/clerk';
 import { objectIdSchema, parseJson, parseParams } from '../../lib/validation';
 import { recordSecurityEvent } from '../../lib/securityAudit';
+import { getExternalAvatarUrl } from '../../lib/clerkAvatar';
 
 const userIdParamsSchema = z.object({
   id: objectIdSchema,
@@ -48,7 +49,10 @@ export const adminUsersRouter = new Hono<AppEnv>()
           ...user,
           orderCount: orders.length,
           ltv: Math.round(ltv * 100) / 100,
-          imageUrl: cUser?.imageUrl
+          // Prefer the OAuth provider's own avatar URL over Clerk's img.clerk.com proxy - that
+          // proxy isn't guaranteed to resolve on every network, and trying it first meant every
+          // row waited out its timeout before falling back to the URL that actually works (#314).
+          imageUrl: getExternalAvatarUrl(cUser) || cUser?.imageUrl,
         };
       })
     );
