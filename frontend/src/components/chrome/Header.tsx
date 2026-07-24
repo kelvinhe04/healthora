@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useSearchParamsCompat as useSearchParams } from "../../hooks/useSearchParamsCompat";
 import { useCartStore } from "../../store/cartStore";
@@ -607,6 +608,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   }, []);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [avatarBroken, setAvatarBroken] = useState(false);
   const [signInModalOpen, setSignInModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
@@ -683,6 +685,22 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
       cancelled = true;
     };
   }, [authLoaded, userLoaded, getToken, isSignedIn]);
+
+  // Misma queryKey que Profile.tsx: comparten el cache de TanStack Query (un solo
+  // QueryClient en __root.tsx), asi que volver de /admin o /profile no dispara un
+  // refetch en blanco - se sigue viendo el avatar ya resuelto mientras revalida atras.
+  const avatarQuery = useQuery({
+    queryKey: ["profile-avatar"],
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) return { imageUrl: null };
+      return api.account.profile.get(token);
+    },
+    enabled: authLoaded && userLoaded && isSignedIn,
+  });
+  // El avatar real (proveedor OAuth) resuelto por el backend - evita el proxy img.clerk.com que
+  // useUser().imageUrl usa directo y que no resuelve en todas las redes (#314/#320).
+  const resolvedAvatarUrl = avatarQuery.data?.imageUrl ?? null;
 
   useEffect(() => {
     if (!addressModalOpen || !isSignedIn) return;
@@ -1098,10 +1116,11 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               else setSignInModalOpen(true);
             }}
           >
-            {isSignedIn && user?.imageUrl ? (
+            {isSignedIn && (resolvedAvatarUrl || user?.imageUrl) && !avatarBroken ? (
               <img
-                src={user.imageUrl}
+                src={resolvedAvatarUrl || user?.imageUrl}
                 alt={t("header.account.profileAlt")}
+                onError={() => setAvatarBroken(true)}
                 style={{
                   width: 24,
                   height: 24,

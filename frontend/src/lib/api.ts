@@ -164,6 +164,9 @@ export const api = {
     },
   },
   account: {
+    profile: {
+      get: (token: string) => request<{ imageUrl: string | null }>("/account/profile", undefined, token),
+    },
     loyalty: {
       get: (token: string) => request<LoyaltyAccount>("/account/loyalty", undefined, token),
     },

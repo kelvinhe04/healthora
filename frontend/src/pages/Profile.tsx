@@ -452,6 +452,20 @@ export function Profile({ onBack }: ProfileProps) {
   const isSmall = isMobile || bp === 'tablet';
   const { user: clerkUser } = useUser();
   const user = getE2EUser() ?? clerkUser;
+  const [avatarBroken, setAvatarBroken] = useState(false);
+  const getToken = useEffectiveToken();
+  const avatarQuery = useQuery({
+    queryKey: ['profile-avatar'],
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) return { imageUrl: null };
+      return api.account.profile.get(token);
+    },
+    enabled: Boolean(user),
+  });
+  // El avatar real (proveedor OAuth) resuelto por el backend - evita el proxy img.clerk.com que
+  // useUser().imageUrl usa directo y que no resuelve en todas las redes (#314/#320).
+  const avatarUrl = avatarQuery.data?.imageUrl || user?.imageUrl;
   const { openUserProfile } = useClerk();
 
   return (
@@ -469,8 +483,8 @@ export function Profile({ onBack }: ProfileProps) {
 
       <section style={{ ...sectionCard, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          {user?.imageUrl ? (
-            <img src={user.imageUrl} alt={user.fullName || t('profile.defaultUserAlt')} style={{ width: 48, height: 48, borderRadius: 999, objectFit: 'cover' }} />
+          {avatarUrl && !avatarBroken ? (
+            <img src={avatarUrl} alt={user?.fullName || t('profile.defaultUserAlt')} onError={() => setAvatarBroken(true)} style={{ width: 48, height: 48, borderRadius: 999, objectFit: 'cover' }} />
           ) : (
             <div style={{ width: 48, height: 48, borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontFamily: '"Instrument Serif", serif' }}>
               {user?.firstName?.[0] || user?.primaryEmailAddress?.emailAddress?.[0]?.toUpperCase() || 'U'}
