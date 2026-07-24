@@ -87,7 +87,7 @@ function AdminPanelLayout({
           counts={sidebarCounts}
           adminName={access.name}
           adminEmail={access.email}
-          adminPhoto={user?.imageUrl}
+          adminPhoto={access.imageUrl || user?.imageUrl}
         />
       )}
 
@@ -102,7 +102,7 @@ function AdminPanelLayout({
               counts={sidebarCounts}
               adminName={access.name}
               adminEmail={access.email}
-              adminPhoto={user?.imageUrl}
+              adminPhoto={access.imageUrl || user?.imageUrl}
             />
           </div>
         </div>
