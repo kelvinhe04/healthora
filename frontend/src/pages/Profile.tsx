@@ -452,6 +452,7 @@ export function Profile({ onBack }: ProfileProps) {
   const isSmall = isMobile || bp === 'tablet';
   const { user: clerkUser } = useUser();
   const user = getE2EUser() ?? clerkUser;
+  const [avatarBroken, setAvatarBroken] = useState(false);
   const { openUserProfile } = useClerk();
 
   return (
@@ -469,8 +470,8 @@ export function Profile({ onBack }: ProfileProps) {
 
       <section style={{ ...sectionCard, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          {user?.imageUrl ? (
-            <img src={user.imageUrl} alt={user.fullName || t('profile.defaultUserAlt')} style={{ width: 48, height: 48, borderRadius: 999, objectFit: 'cover' }} />
+          {user?.imageUrl && !avatarBroken ? (
+            <img src={user.imageUrl} alt={user.fullName || t('profile.defaultUserAlt')} onError={() => setAvatarBroken(true)} style={{ width: 48, height: 48, borderRadius: 999, objectFit: 'cover' }} />
           ) : (
             <div style={{ width: 48, height: 48, borderRadius: 999, background: 'var(--green)', color: 'var(--lime)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontFamily: '"Instrument Serif", serif' }}>
               {user?.firstName?.[0] || user?.primaryEmailAddress?.emailAddress?.[0]?.toUpperCase() || 'U'}

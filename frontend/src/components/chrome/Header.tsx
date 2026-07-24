@@ -607,6 +607,7 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
   }, []);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [avatarBroken, setAvatarBroken] = useState(false);
   const [signInModalOpen, setSignInModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
@@ -1098,10 +1099,11 @@ export function Header({ onNav, onOpenCart }: HeaderProps) {
               else setSignInModalOpen(true);
             }}
           >
-            {isSignedIn && user?.imageUrl ? (
+            {isSignedIn && user?.imageUrl && !avatarBroken ? (
               <img
                 src={user.imageUrl}
                 alt={t("header.account.profileAlt")}
+                onError={() => setAvatarBroken(true)}
                 style={{
                   width: 24,
                   height: 24,
